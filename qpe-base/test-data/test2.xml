@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<net> 
+  <colors> 
+    <color name="new color" real-color="#8035c8" id="1136372848387"/>  
+    <color name="new color 1" real-color="#2522e6" id="1136372848388"/>  
+    <color name="new color 2" real-color="#87a27e" id="1136372848389"/>  
+    <color name="new color 3" real-color="#a33c17" id="1136372848390"/>  
+    <color name="new color 4" real-color="#ca529f" id="1136372848391" description="test"/>  
+    <color name="new color 5" real-color="#e39233" id="1136372848392"/>  
+    <color name="new color 6" real-color="#57617c" id="1136372848393" description=""/>  
+    <color name="new color 7" real-color="#64a1bd" id="1136372848394"/>  
+    <color name="new color 8" real-color="#7bdce6" id="1136979074611"/>
+    <color name="new color 9" real-color="#45fd38" id="1136979074612"/>
+    <color name="new color 10" real-color="#0edb40" id="1136979074613"/>
+  </colors>  
+  <places> 
+    <place type="ordinary-place" id="1" name="testdf"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="447" location-y="149"/> 
+      </meta-attributes>  
+      <color-refs> 
+        <color-ref color-id="1136372848387" id="1136372848401"/>  
+        <color-ref color-id="1136372848390" id="1136372848404"/>  
+        <color-ref color-id="1136372848391" id="1136372848405"/>  
+        <color-ref color-id="1136372848388" id="1136373622570"/>  
+        <color-ref color-id="1136372848389" id="1136373622571"/> 
+      </color-refs> 
+    </place>  
+    <place type="queueing-place" strategy="PRIO" number-of-servers="0" name="test2" id="2"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="316" location-y="63"/> 
+      </meta-attributes>  
+      <color-refs> 
+        <color-ref color-id="1136372848387" id="1136372848395"/>  
+        <color-ref color-id="1136372848388" id="1136372848396"/>  
+        <color-ref color-id="1136372848390" id="1136372848398"/>  
+        <color-ref color-id="1136372848391" id="1136372848399"/>  
+        <color-ref color-id="1136372848392" id="1136372848400"/>  
+        <color-ref color-id="1136372848389" id="1136373622573"/>  
+        <color-ref color-id="1136372848394" id="1136373622574"/> 
+      </color-refs> 
+    </place>  
+    <place type="subnet-place" name="test3" id="3"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="420" location-y="320"/> 
+      </meta-attributes> 
+    </place>  
+    <place type="subnet-place" id="1136815892690"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="150" location-y="204"/> 
+      </meta-attributes>
+      <fixed>
+        <input-place/>
+        <input-transition/>
+        <actual-population/>
+        <output-transition/>
+        <outpuz-place/>
+      </fixed>
+      <subnet>
+        <colors/>
+        <places/>
+        <transitions/>
+        <connections/>
+      </subnet> 
+    </place>  
+    <place type="ordinary-place" id="1136815892692" name="test"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="243" location-y="359"/> 
+      </meta-attributes>  
+      <color-refs>
+        <color-ref color-id="1136372848387" id="1136979074621"/>
+        <color-ref color-id="1136372848388" id="1136979074622"/>
+        <color-ref color-id="1136372848389" id="1136979074623"/>
+        <color-ref color-id="1136372848390" id="1136979074624"/>
+        <color-ref color-id="1136372848391" id="1136979074625"/>
+        <color-ref color-id="1136372848392" id="1136979074626"/>
+        <color-ref color-id="1136372848393" id="1136979074627"/>
+        <color-ref color-id="1136372848394" id="1136979074628"/>
+        <color-ref color-id="1136979074611" id="1136979074629"/>
+        <color-ref color-id="1136979074612" id="1136979074630"/>
+        <color-ref color-id="1136979074613" id="1136979074631"/>
+      </color-refs>
+    </place> 
+  </places>  
+  <transitions> 
+    <transition type="timed-transition" name="test4" id="4"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="172" location-y="299"/> 
+      </meta-attributes>  
+      <modes> 
+        <mode name="mode 1" real-color="#924dd3" id="1136373622575"/>  
+        <mode name="mode 2" real-color="#bbd3a2" id="1136373622576"/>  
+        <mode name="mode 3" real-color="#5fdc1a" id="1136373622577"/>  
+        <mode name="mode 4" real-color="#ec013f" id="1136373622578"/>  
+        <mode name="mode 5" real-color="#c83001" id="1136373622579"/>  
+        <mode name="mode 6" real-color="#c5061c" id="1136373622580"/>  
+        <mode name="mode 7" real-color="#6ea055" id="1136373622581"/>  
+        <mode name="mode 8" real-color="#29a289" id="1136373622582"/>  
+        <mode name="mode 9" real-color="#992858" id="1136373622583"/>  
+        <mode name="mode 10" real-color="#81549f" id="1136373622584"/>  
+        <mode name="mode 11" real-color="#969abd" id="1136373622585"/>  
+        <mode name="mode 12" real-color="#b0276a" id="1136373622586"/>  
+        <mode name="mode 13" real-color="#4bb1bc" id="1136373622587"/>  
+        <mode name="mode 14" real-color="#e5de16" id="1136373622588"/>  
+        <mode name="mode 15" real-color="#9cd343" id="1136373622589"/> 
+      </modes> 
+      <connections>
+        <connection id="7858" source-id="1136979074625" target-id="1136373622584"/>
+        <connection id="7859" source-id="1136979074625" target-id="1136373622578"/>
+        <connection id="7860" source-id="1136979074625" target-id="1136373622588"/>
+      </connections>
+    </transition>  
+    <transition type="immediate-transition" name="test5" id="5"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="319" location-y="210"/> 
+      </meta-attributes>  
+      <modes> 
+        <mode name="mode 1" real-color="#5769a2" id="1136373622590"/>  
+        <mode name="mode 2" real-color="#7d067d" id="1136373622591"/>  
+        <mode name="mode 3" real-color="#0d1814" id="1136373622592"/>  
+        <mode name="mode 4" real-color="#2226b7" id="1136373622593"/>  
+        <mode name="mode 5" real-color="#0f9330" id="1136373622594"/>  
+        <mode name="mode 6" real-color="#c954f6" id="1136373622595"/> 
+      </modes> 
+    </transition>  
+    <transition type="timed-transition" id="1136826970570"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="456" location-y="246"/> 
+      </meta-attributes> 
+    </transition>  
+    <transition type="immediate-transition" id="1136826970572"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="380" location-y="81"/> 
+      </meta-attributes> 
+    </transition>  
+    <transition type="timed-transition" id="1136850786179"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="195" location-y="104"/> 
+      </meta-attributes> 
+    </transition>  
+    <transition type="immediate-transition" id="1136850786181"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="343" location-y="362"/> 
+      </meta-attributes> 
+    </transition>  
+    <transition type="timed-transition" id="1136979074608" name="sdfs">
+      <meta-attributes>
+        <meta-attribute name="location" location-x="426" location-y="8" x-position="640" y-position="73"/>
+      </meta-attributes>
+      <modes>
+        <mode name="mode 1" real-color="#a33dfe" id="1136979074615"/>
+        <mode name="mode 2" real-color="#8c648c" id="1136979074616"/>
+        <mode name="mode 3" real-color="#de7f46" id="1136979074617"/>
+        <mode name="mode 4" real-color="#baf0c9" id="1136979074618"/>
+        <mode name="mode 5" real-color="#b18b16" id="1136979074619"/>
+        <mode name="mode 6" real-color="#cbc994" id="1136979074620"/>
+      </modes>
+    </transition>
+  </transitions>  
+  <connections> 
+    <connection source-id="1" target-id="5" id="1136822065928"/>  
+    <connection source-id="1136815892692" target-id="4" id="1136824703957"/>  
+    <connection source-id="5" target-id="1136815892692" id="1136824703959"/>  
+    <connection source-id="5" target-id="1136815892690" id="1136824703965"/>  
+    <connection source-id="1136815892690" target-id="4" id="1136824703966"/>  
+    <connection source-id="5" target-id="2" id="1136849817426"/>  
+    <connection source-id="5" target-id="3" id="1136849817427"/>  
+    <connection source-id="3" target-id="1136826970570" id="1136849817428"/>  
+    <connection source-id="2" id="1136849817429" target-id="1136826970572"/>  
+    <connection source-id="1136826970572" target-id="1" id="1136849817430"/>  
+    <connection source-id="1136826970570" target-id="1" id="1136849817431"/>  
+    <connection source-id="3" target-id="1136850786181" id="1136850786182"/>  
+    <connection source-id="1136850786181" target-id="1136815892692" id="1136850786183"/>  
+    <connection source-id="1136815892690" target-id="1136850786179" id="1136850786184"/>  
+    <connection source-id="1136850786179" target-id="2" id="1136850786185"/> 
+  </connections> 
+</net>

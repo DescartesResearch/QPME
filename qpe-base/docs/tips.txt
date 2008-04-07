@@ -1,0 +1,5 @@
+- In order to access classes in the simQPN plugin the classes have to be exported.
+- If Objects are passed from the editor to the pugin, theses classes have to be
+  exproted too.
+- Even if these utility classes are exported, they have to be manually added to 
+  the plugin classpath.

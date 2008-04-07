@@ -1,0 +1,4 @@
+-	The status of the views in the Edit menu is occasionally inconsistent. For example, if you close all views from the menu and restart the tool, the status of the views is no longer shown correctly in the menu, i.e. when you open a view; it is not shown as enabled in the menu.
+-	When I create a place and enter its name, if the name is longer than 8 characters, e.g. “WLS-Thread-Pool” it is displayed as “WLS-Thr...”. If I then move the element with the mouse, the complete name “WLS-Thread-Pool” is displayed. Is there a way to avoid long names being abbreviated in the first place? It is rather annoying.
+-   Ctrl+C, Ctrl+V, Ctrl+A, Ctrl+X Ctrl+=, Ctrl+-, Del, Ctrl+S, Ctrl+N (File-New). Keyboard shortcuts should be displayed in the menu next to the respective menu options. Also, if you implement “Select All” and “Cut” add shortcuts for them as well, i.e. .
+-	Subnet place editor should be added.

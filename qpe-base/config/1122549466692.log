@@ -1,0 +1,42 @@
+!SESSION 2005-07-28 12:17:46.531 -----------------------------------------------
+eclipse.buildId=unknown
+java.version=1.5.0
+java.vendor=BEA Systems, Inc.
+BootLoader constants: OS=win32, ARCH=x86, WS=win32, NL=de_DE
+Framework arguments:  -product QPE_Base.QPE -pdelaunch
+Command-line arguments:  -product QPE_Base.QPE -data C:\Dokumente und Einstellungen\cdutz\runtime-EclipseApplication(2) -dev file:D:/Entwicklung/Uni/QPE-Base/config/dev.properties -pdelaunch -os win32 -ws win32 -arch x86
+
+!ENTRY org.eclipse.osgi 2005-07-28 12:17:48.795
+!MESSAGE Bundle initial@reference:file:D:/Entwicklung/Uni/QPE-Base/ [1] was not resolved.
+!SUBENTRY 1 org.eclipse.osgi 2005-07-28 12:17:48.795
+!MESSAGE Missing required bundle org.eclipse.gef_0.0.0.
+!SUBENTRY 1 org.eclipse.osgi 2005-07-28 12:17:48.795
+!MESSAGE Missing required bundle org.eclipse.ui.views_0.0.0.
+!SUBENTRY 1 org.eclipse.osgi 2005-07-28 12:17:48.795
+!MESSAGE Missing required bundle org.eclipse.ui.editors_0.0.0.
+!SUBENTRY 1 org.eclipse.osgi 2005-07-28 12:17:48.795
+!MESSAGE Missing required bundle org.eclipse.core.resources_0.0.0.
+
+!ENTRY org.eclipse.osgi 2005-07-28 12:17:48.835
+!MESSAGE Application error
+!STACK 1
+java.lang.RuntimeException: Application "QPE.Base" could not be found in the registry. The applications available are: <NONE>.
+	at org.eclipse.core.internal.runtime.PlatformActivator$1.run(PlatformActivator.java:216)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:376)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:163)
+	at java.lang.reflect.Method.invoke(Ljava.lang.Object;[Ljava.lang.Object;I)Ljava.lang.Object;(Unknown Source)
+	at org.eclipse.core.launcher.Main.invokeFramework(Main.java:334)
+	at org.eclipse.core.launcher.Main.basicRun(Main.java:278)
+	at org.eclipse.core.launcher.Main.run(Main.java:973)
+	at org.eclipse.core.launcher.Main.main(Main.java:948)
+
+!ENTRY org.eclipse.osgi 2005-07-28 12:17:48.835
+!MESSAGE Bundle initial@reference:file:D:/Entwicklung/Uni/QPE-Base/ [1] was not resolved.
+!SUBENTRY 1 org.eclipse.osgi 2005-07-28 12:17:48.835
+!MESSAGE Missing required bundle org.eclipse.gef_0.0.0.
+!SUBENTRY 1 org.eclipse.osgi 2005-07-28 12:17:48.835
+!MESSAGE Missing required bundle org.eclipse.ui.views_0.0.0.
+!SUBENTRY 1 org.eclipse.osgi 2005-07-28 12:17:48.835
+!MESSAGE Missing required bundle org.eclipse.ui.editors_0.0.0.
+!SUBENTRY 1 org.eclipse.osgi 2005-07-28 12:17:48.835
+!MESSAGE Missing required bundle org.eclipse.core.resources_0.0.0.

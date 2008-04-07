@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+      <extension
+            id="qpe.application"
+            point="org.eclipse.core.runtime.applications">
+            <application>
+                  <run class="de.tud.cs.qpe.Application"/> 
+            </application>
+      </extension>
+      <extension point="org.eclipse.ui.perspectives">
+            <perspective name="de.tud.cs.qpe.perspective" class="de.tud.cs.qpe.rcp.Perspective"
+                  id="de.tud.cs.qpe.perspective"/> 
+      </extension>
+      <extension id="QPE" point="org.eclipse.core.runtime.products">
+            <product
+                  application="QPE_Base.qpe.application"
+                  name="QPME - Queueing Petri net Modeling Environment">
+               <property
+                     name="windowImages"
+                     value="images/QPME-Icon16.gif,images/QPME-Icon32.gif"/>
+               <property
+                     name="appName"
+                     value="QPME"/>
+               <property
+                     name="aboutImage"
+                     value="QPME-AboutImage.gif"/>
+               <property
+                     name="aboutText"
+                     value="Copyright 2007 Samuel Kounev and Christofer Dutz"/>
+            </product>
+      </extension>
+      <extension point="org.eclipse.ui.intro">
+            <intro class="org.eclipse.ui.intro.config.CustomizableIntroPart" id="qPE_Base.introID"> </intro>
+            <introProductBinding introId="qPE_Base.introID" productId="QPE_Base.QPE"/> 
+      </extension>
+      <extension point="org.eclipse.ui.intro.config">
+            <config introId="qPE_Base.introID" content="introContent.xml" id="QPE_Base.configId">
+                  <presentation home-page-id="root">
+                        <implementation kind="html" os="win32,linux,macosx"> </implementation>
+                  </presentation>
+            </config>
+      </extension>
+      <extension point="org.eclipse.ui.intro.configExtension">
+            <configExtension content="ext.xml" configId="QPE_Base.configId"> </configExtension>
+      </extension>
+      <extension point="org.eclipse.ui.editors">
+            <editor name="Net Editor" icon="icons/sample.gif"
+                  contributorClass="de.tud.cs.qpe.editors.net.gef.NetEditorActionBarContributor"
+                  class="de.tud.cs.qpe.editors.net.MultipageNetEditor" id="de.tud.cs.qpe.editor.net"
+                  default="false"/> 
+            <editor name="Subnet Editor" icon="icons/sample.gif"
+                  contributorClass="de.tud.cs.qpe.editors.net.gef.NetEditorActionBarContributor"
+                  class="de.tud.cs.qpe.editors.subnet.SubnetEditor" id="de.tud.cs.qpe.editor.subnet"
+                  default="false"/> 
+            <editor class="de.tud.cs.qpe.editors.incidence.IncidenceFunctionEditor"
+                  contributorClass="de.tud.cs.qpe.editors.incidence.gef.IncidenceFunctionEditorActionBarContributor"
+                  default="false" icon="icons/sample.gif" id="de.tud.cs.qpe.editor.incidence"
+                  name="Incidence Function Editor"/>
+      </extension>
+      <extension point="org.eclipse.ui.popupMenus">
+            <objectContribution id="de.tud.cs.qpe.editor.net.popup"
+                  objectClass="de.tud.cs.qpe.editors.net.controller.editpart.editor.TransitionEditPart">
+                  <action id="de.tud.cs.qpe.editor.net.popup.openIncidenceFunction"
+                        class="de.tud.cs.qpe.editors.net.gef.action.OpenIncidenceFunctionDelegate"
+                        menubarPath="elementActions" label="Edit Incidence Function"/>
+            </objectContribution>
+      </extension>
+      <extension point="org.eclipse.ui.popupMenus">
+            <objectContribution id="de.tud.cs.qpe.editor.net.popup"
+                  objectClass="de.tud.cs.qpe.editors.net.controller.editpart.editor.SubnetPlaceEditPart">
+                  <action id="de.tud.cs.qpe.editor.net.popup.openSubnet"
+                        class="de.tud.cs.qpe.editors.net.gef.action.OpenSubnetDelegate"
+                        menubarPath="elementActions" label="Edit Subnet"/>
+            </objectContribution>
+      </extension>
+      <extension point="org.eclipse.ui.popupMenus">
+            <objectContribution id="de.tud.cs.qpe.editor.net.popup"
+                  objectClass="de.tud.cs.qpe.editors.net.controller.editpart.editor.PlaceTransitionEditPart">
+                  <action id="de.tud.cs.qpe.editor.net.popup.showProperties"
+                        class="de.tud.cs.qpe.editors.net.gef.action.ShowPropertyDelegate"
+                        menubarPath="properties" label="Properties..."/>
+            </objectContribution>
+      </extension>
+      <extension
+            point="org.eclipse.ui.actionSets">
+            <actionSet label="View Actions" visible="true" id="de.tud.cs.qpe.actionset.view">
+                  <action label="Outline"
+                        class="de.tud.cs.qpe.rcp.actions.window.OutlineViewDelegate"
+                        tooltip="Shows/Hides The Outlines View" menubarPath="qpeView/viewMenuGroup"
+                        id="de.tud.cs.qpe.view.actions.outlineAction"/>
+                  <action label="Properties"
+                        class="de.tud.cs.qpe.rcp.actions.window.ProppertiesViewDelegate"
+                        tooltip="Shows/Hides The Properties View"
+                        menubarPath="qpeView/viewMenuGroup"
+                        id="de.tud.cs.qpe.view.actions.propertiesAction"/>
+                  <!--action label="Tasks" class="de.tud.cs.qpe.rcp.actions.window.TaskViewDelegate"
+                        tooltip="Shows/Hides The Tasks View" menubarPath="qpeView/viewMenuGroup"
+                        id="de.tud.cs.qpe.view.actions.tasksAction"/-->
+                  <action label="Console"
+                        class="de.tud.cs.qpe.rcp.actions.window.ConsoleViewDelegate"
+                        tooltip="Shows/Hides The Console View" menubarPath="qpeView/viewMenuGroup"
+                        id="de.tud.cs.qpe.view.actions.consoleAction"/>
+            </actionSet>
+            <actionSet label="Help Actions" visible="true" id="de.tud.cs.qpe.actionset.help"/>
+      </extension>
+</plugin>

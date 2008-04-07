@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="net">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="colors">
+                     <xs:complexType>
+                         <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                             <xs:element name="color">
+                                 <xs:complexType>
+                                     <xs:sequence>
+                                         <xs:element name="meta-attributes">
+                                             <xs:complexType>
+                                                 <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                                                     <xs:element name="meta-attribute">
+                                                         <xs:complexType>
+                                                             <xs:attribute name="name" type="xs:string"/>
+                                                         </xs:complexType>
+                                                     </xs:element>
+                                                 </xs:sequence>
+                                             </xs:complexType>
+                                         </xs:element>
+                                     </xs:sequence>
+                                     <xs:attribute name="id" type="xs:ID"/>
+                                     <xs:attribute name="name" type="xs:string"/>
+                                     <xs:attribute name="real-color" type="xs:string"/>
+                                     <xs:attribute name="description" type="xs:string"/>
+                                 </xs:complexType>
+                             </xs:element>
+                         </xs:sequence>
+                     </xs:complexType>
+                </xs:element>
+                <xs:element name="places">
+                    <xs:complexType>
+                        <xs:choice minOccurs="0" maxOccurs="unbounded">
+                            <xs:element name="place">
+                                <xs:complexType>
+                                    <xs:sequence minOccurs="0" maxOccurs="1">
+                                        <xs:element name="color-refs">
+                                            <xs:complexType>
+                                                <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                                                    <xs:element name="color-ref">
+                                                        <xs:complexType>
+                                                            <xs:attribute name="id" type="xs:ID"/>
+                                                            <xs:attribute name="color-id" type="xs:IDREF"/>
+                                                            <xs:attribute name="initial-population" type="xs:int"/>
+                                                            <xs:attribute name="max-capacity" type="xs:int"/>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:attribute name="id" type="xs:ID"/>
+                                    <xs:attribute name="name" type="xs:string"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:choice>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="transitions">
+                    <xs:complexType>
+                        <xs:choice minOccurs="0" maxOccurs="unbounded">
+                            <xs:element name="transition">
+                                <xs:complexType>
+                                    <xs:sequence minOccurs="0" maxOccurs="1">
+                                        <xs:element name="modes">
+                                            <xs:complexType>
+                                                <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                                                    <xs:element name="mode">
+                                                        <xs:complexType>
+                                                            <xs:attribute name="id" type="xs:ID"/>
+                                                            <xs:attribute name="name" type="xs:string"/>
+                                                            <xs:attribute name="real-color" type="xs:string"/>
+                                                            <xs:attribute name="weight" type="xs:int"/>
+                                                            <xs:attribute name="mean-firing-delay" type="xs:double"/>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:attribute name="id" type="xs:ID"/>
+                                    <xs:attribute name="name" type="xs:string"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:choice>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="connections">
+                    <xs:complexType>
+                        <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                            <xs:element name="connection">
+                                <xs:complexType>
+                                    <xs:attribute name="id" type="xs:ID"/>
+                                    <xs:attribute name="source-id" type="xs:IDREF"/>
+                                    <xs:attribute name="destination-id" type="xs:IDREF"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

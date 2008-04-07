@@ -1,0 +1,220 @@
+/*
+ * Copyright (c) 2006 Samuel Kounev. All rights reserved.
+ *    
+ * The use, copying, modification or distribution of this software and its documentation for 
+ * any purpose is NOT allowed without the written permission of the author.
+ *  
+ * This source code is provided as is, without any express or implied warranty.
+ *
+ *  History:
+ *  Date        ID                Description
+ *  ----------  ----------------  ------------------------------------------------------------------
+ *  2003/08/??  Samuel Kounev     Created.
+ *  ...
+ *  2004/08/25  Samuel Kounev     Implemented support for FIFO departure discipline.                                 
+ *  2004/08/25  Samuel Kounev     Changed type of modeWeights from int[] to double[], so that 
+ *                                arbitrary values for weights are supported.
+ * 
+ */
+
+package de.tud.cs.simqpn.kernel;
+
+import cern.colt.list.AbstractIntList;
+import cern.colt.list.IntArrayList;
+import cern.jet.random.Empirical;
+import cern.jet.random.EmpiricalWalker;
+
+/**
+ * Class Transition
+ *
+ * @author Samuel Kounev
+ * @version
+ */
+
+public class Transition extends Node {
+
+	public int				numModes;
+	public double			transWeight;
+		
+	public Place[]			inPlaces;
+	public Place[]			outPlaces;	
+
+	public int[][][]		inFunc;			// [mode, inPlace, color]
+	public int[][][]		outFunc;		// [mode, outPlace, color]
+	public double[]			modeWeights;	// [1..numModes] 
+	
+	public AbstractIntList	enModes;		// List of currently enabled modes		   
+	
+	public EmpiricalWalker	randModeGen;	// RN generator for generating modes to fire
+
+	/**
+	 * Constructor
+	 * 
+	 * @param id            - global id of the transition
+	 * @param name          - name of the transition
+	 * @param numModes      - number of modes
+	 * @param numInPlaces   - number of input places
+	 * @param numOutPlaces  - number of output places
+	 * @param transWeight   - transition weight	  
+	 */
+	public Transition(int id, String name, int numModes, int numInPlaces, int numOutPlaces, double transWeight) throws SimQPNException {
+		super(id, name);		
+		this.numModes		   = numModes;
+		this.transWeight	   = transWeight;
+		this.modeWeights	   = new double[numModes];
+		this.inPlaces		   = new Place[numInPlaces];
+		this.outPlaces		   = new Place[numOutPlaces];
+		this.inFunc			   = new int[numModes][numInPlaces][];
+		this.outFunc		   = new int[numModes][numOutPlaces][];
+		this.enModes		   = new IntArrayList(numModes);
+		double[] pdf = new double[numModes];			
+		for (int m = 0; m < numModes; m++) pdf[m] = 1;
+		this.randModeGen = new EmpiricalWalker(pdf, Empirical.NO_INTERPOLATION, Simulator.nextRandNumGen());	 						  				
+	}
+	
+	/**
+	 * Method init  
+	 * 
+	 * @param  	
+	 * @return 
+	 * @exception
+	 */
+	public void init() {		
+		int m, p, c, nM, nP, nC;
+		boolean enabled;
+		Place pl;		
+		nM = numModes;
+		nP = inPlaces.length;
+		enModes.clear();
+		for (m = 0; m < nM; m++) {
+			enabled = true;	
+			for (p = 0; p < nP; p++) {
+				pl = inPlaces[p];
+				nC = pl.numColors;
+				for (c = 0; enabled && (c < nC); c++)
+					if (pl.availTokens[c] < inFunc[m][p][c]) { 
+						enabled = false; break;
+					} 											
+				if (!enabled) break;
+			}
+			if (enabled) enModes.add(m);
+		}				
+	}
+	
+	/**
+	 * Method updateState 
+	 *                   
+	 * @return 
+	 * @exception
+	 */
+	public void updateState(int inPlaceId, int color, int newAvailTkCnt, int delta)  {
+										
+		if (delta > 0) {  
+			if (enModes.size() == numModes) return;
+			 
+			int uInP = 0;
+			while (inPlaces[uInP].id != inPlaceId) uInP++;
+															
+			int m, p, c, nC;
+			Place pl;
+			boolean enabled;
+			int nM = numModes;
+			int nP = inPlaces.length;					
+			for (m = 0; m < nM; m++)  {
+				if ((!enModes.contains(m)) && inFunc[m][uInP][color] > 0)  {					
+					enabled = true;							
+					for (p = 0; p < nP; p++)  {
+						pl = inPlaces[p];
+						nC = pl.numColors;						
+						for (c = 0; enabled && (c < nC); c++)
+							if (pl.availTokens[c] < inFunc[m][p][c])  { 
+								enabled = false; break;
+							}
+						if (!enabled) break;
+					}
+					if (enabled) enModes.add(m);
+				}
+			}
+		} 
+		else  {	
+			int uInP = 0;
+			while (inPlaces[uInP].id != inPlaceId) uInP++;
+			int i, m;			
+			for (i = 0; i < enModes.size(); i++)  {
+				m = enModes.get(i);
+				if (newAvailTkCnt < inFunc[m][uInP][color]) enModes.remove(i--);			
+			}
+		}		
+	}
+	
+	
+	/**
+	 * Method enabled 
+	 */
+	public boolean enabled() {		
+		return (enModes.size() > 0) ? true : false;
+	}
+  
+	/**
+	 * Method checkIfEnabled 
+	 */
+	public boolean checkIfEnabled() {
+		int m, p, c, nM, nP, nC;
+		boolean enabled = false;		
+		nM = numModes;
+		nP = inPlaces.length;
+		Place pl;
+		for (m = 0; (!enabled) && (m < nM); m++) {
+			enabled = true;	
+			for (p = 0; p < nP; p++) {
+				pl = inPlaces[p];
+				nC = pl.numColors;
+				for (c = 0; enabled && (c < nC); c++)
+					if (pl.availTokens[c] < inFunc[m][p][c])  { 
+						enabled = false; break;
+					} 											
+				if (!enabled) break;
+			}
+		}
+		return enabled;
+	}
+
+	/**
+	 * Method fire
+	 * 
+	 * @param	
+	 * @return
+	 * @exception
+	 */
+	public void fire() throws SimQPNException {
+														
+		int enModesCnt = enModes.size();		
+		double[] pdf = new double[enModesCnt];
+		for (int m = 0; m < enModesCnt; m++) pdf[m] = modeWeights[enModes.get(m)]; 				
+		randModeGen.setState2(pdf);
+		int mode = enModes.get(randModeGen.nextInt());
+		
+		int p, c, nP, nC, n;
+		Place pl;		
+		nP = inPlaces.length;						
+		for (p = 0; p < nP; p++) {
+			pl = inPlaces[p];
+			nC = pl.numColors;
+			for (c = 0; c < nC; c++) {
+				n = inFunc[mode][p][c];
+				if (n != 0) pl.removeTokens(c, n); 							
+			}			
+		}				
+		nP = outPlaces.length;								
+		for (p = 0; p < nP; p++) {
+			pl = outPlaces[p];
+			nC = pl.numColors;
+			for (c = 0; c < nC; c++) {
+				n = outFunc[mode][p][c];
+				if (n != 0) pl.addTokens(c, n); 							
+			}			
+		}
+	
+	} 
+	
+}

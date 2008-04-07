@@ -1,0 +1,411 @@
+package de.tud.cs.qpe.editors.net;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.dom4j.XPath;
+import org.dom4j.tree.DefaultElement;
+import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.ColorCellEditor;
+import org.eclipse.jface.viewers.ICellModifier;
+import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TextCellEditor;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Item;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.ui.IEditorInput;
+
+import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.utils.ColorHelper;
+import de.tud.cs.qpe.utils.ITableLabelColorProvider;
+
+public class ColorEditorPage extends Composite implements PropertyChangeListener {
+	protected Table colorTable;
+
+	protected TableViewer colorTableViewer;
+
+	protected String[] columnNames;
+
+	protected Button addColorButton;
+
+	protected Button delColorButton;
+
+	protected Element model;
+
+	public ColorEditorPage(Composite parent, int style) {
+		super(parent, style);
+		setLayout(new GridLayout());
+		columnNames = new String[] { "Name", "Real Color", "Description" };
+		initColorTable();
+	}
+
+	/**
+	 * Uses a ShapesEditorInput to serve as a dummy editor input It is up to the
+	 * editor input to supply the initial shapes diagram
+	 * 
+	 * @see org.eclipse.ui.part.EditorPart#setInput(org.eclipse.ui.IEditorInput)
+	 */
+	protected void setInput(IEditorInput input) {
+		if (model != null) {
+			DocumentManager.removePropertyChangeListener(model, this);
+		}
+		
+		NetEditorInput netInput = (NetEditorInput) input;
+		model = netInput.getNetDiagram();
+
+		// Add the color editor as listener to modifications of the
+		// current document.
+		DocumentManager.addPropertyChangeListener(model, this);
+
+		updatePropertyFields();
+	}
+
+	public void updatePropertyFields() {
+		XPath xpathSelector = DocumentHelper.createXPath("ancestor-or-self::*/colors/color");
+		List colors = xpathSelector.selectNodes(model);
+		colorTableViewer.setInput(colors);
+		delColorButton.setEnabled(colorTable.getSelectionIndex() != -1);
+	}
+
+	private Element createColor() {
+		// Add the colors to indexed hashmaps.
+		// This way fast checks for name and color
+		// duplicates can be performed.
+		HashMap<String, Element> nameIndex = new HashMap<String, Element>();
+		HashMap<String, Element> colorIndex = new HashMap<String, Element>();
+
+		XPath xpathSelector = DocumentHelper.createXPath("ancestor-or-self::*/colors/color");
+		Iterator colorIterator = xpathSelector.selectNodes(model).iterator();
+		while (colorIterator.hasNext()) {
+			Element color = (Element) colorIterator.next();
+			nameIndex.put(color.attributeValue("name"), color);
+			String rgb = color.attributeValue("real-color");
+			colorIndex.put(rgb, color);
+		}
+
+		// Find a new name.
+		Element newColor = new DefaultElement("color");
+		for (int x = 0;; x++) {
+			if ((x == 0) && (!nameIndex.containsKey("new color"))) {
+				newColor.addAttribute("name", "new color");
+				break;
+			} else if ((x > 0) && !nameIndex.containsKey("new color " + Integer.toString(x))) {
+				newColor.addAttribute("name", "new color " + Integer.toString(x));
+				break;
+			}
+		}
+
+		// Find a new color.
+		String newRgbCode = ColorHelper.generateRandomColor();
+		newColor.addAttribute("real-color", newRgbCode);
+
+		return newColor;
+	}
+
+	protected void initColorTable() {
+		Label colorName = new Label(this, SWT.NULL);
+		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.horizontalSpan = 2;
+		colorName.setLayoutData(gd);
+		colorName.setText("Colors");
+		initTable();
+		// Add buttons for ading and deleting colors
+		Composite colorButtonComposite = new Composite(this, SWT.NULL);
+		colorButtonComposite.setLayout(new GridLayout(2, false));
+		gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.horizontalSpan = 2;
+		colorButtonComposite.setLayoutData(gd);
+		addColorButton = new Button(colorButtonComposite, SWT.PUSH);
+		addColorButton.setText("Add color");
+		addColorButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		addColorButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				Element newColor = createColor();
+				DocumentManager.addChild(model.element("colors"), newColor);
+				updatePropertyFields();
+			}
+		});
+
+		delColorButton = new Button(colorButtonComposite, SWT.PUSH);
+		delColorButton.setText("Del color");
+		delColorButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		delColorButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				int selection = colorTable.getSelectionIndex();
+				Element color = (Element) colorTable.getItem(selection).getData();
+				// Check if the color is used. If yes, show a dialog asking the
+				// user if he is sure. If yes then all usages of this collor
+				// have to be removed.
+				XPath xpathSelector = DocumentHelper.createXPath("//color-ref[@color-id = '" + color.attributeValue("id") + "']");
+				if (xpathSelector.selectSingleNode(model.getDocument()) != null) {
+					MessageBox messageBox = new MessageBox(colorTable.getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
+					messageBox
+							.setMessage("The Color you are trying to remove is beeing used in the current net. Are you sure you want it to be removed? Removing this color will couse the removal of all element using it. This process is irreversable.");
+					int buttonId = messageBox.open();
+					if (buttonId == SWT.YES) {
+						// Remove the color.
+						DocumentManager.removeElement(color);
+
+						// Remove all references to that color.
+						xpathSelector = DocumentHelper.createXPath("//color-ref[@color-id = '" + color.attributeValue("id") + "']");
+						Iterator colorRefItarator = xpathSelector.selectNodes(model).iterator();
+						while (colorRefItarator.hasNext()) {
+							Element colorRef = (Element) colorRefItarator.next();
+							DocumentManager.removeElement(colorRef);
+
+							// Remove all usages of the deleted color refs in
+							// any incidence-function.
+							xpathSelector = DocumentHelper.createXPath("//connection[@source-id = '" + colorRef.attributeValue("id") + "' or @target-id = '"
+									+ colorRef.attributeValue("id") + "']");
+							Iterator incidenceFunctionConnectionIterator = xpathSelector.selectNodes(model).iterator();
+							while (incidenceFunctionConnectionIterator.hasNext()) {
+								Element incidenceFunctionConnection = (Element) incidenceFunctionConnectionIterator.next();
+								DocumentManager.removeElement(incidenceFunctionConnection);
+							}
+						}
+
+					}
+				} else {
+					model.element("colors").remove(color);
+				}
+
+				updatePropertyFields();
+			}
+		});
+		colorButtonComposite.layout();
+	}
+
+	protected void initTable() {
+		colorTable = new Table(this, SWT.BORDER | SWT.FULL_SELECTION);
+		GridData gd = new GridData(GridData.FILL_BOTH);
+		gd.horizontalSpan = 2;
+		colorTable.setLayoutData(gd);
+		colorTable.setLinesVisible(true);
+		colorTable.setHeaderVisible(true);
+
+		initTableColumns();
+		initTableViewer();
+		initCellEditors();
+
+		// Add a listener updating the delete-buttons
+		// enabled state when another item is selected.
+		colorTableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+			public void selectionChanged(SelectionChangedEvent e) {
+				delColorButton.setEnabled(colorTable.getSelectionIndex() != -1);
+			}
+		});
+
+		// Add a mouse listener for deselecting all selected items
+		// when the empty table-area without entries is clicked
+		colorTable.addMouseListener(new MouseAdapter() {
+			public void mouseDown(MouseEvent e) {
+				Point mouseClickPoint = new Point(e.x, e.y);
+				if (colorTable.getItem(mouseClickPoint) == null) {
+					colorTable.deselectAll();
+					updatePropertyFields();
+				}
+			}
+		});
+	}
+
+	protected void initTableColumns() {
+		TableColumn col = new TableColumn(colorTable, SWT.LEFT);
+		col.setText("Name");
+		col.setWidth(150);
+		col = new TableColumn(colorTable, SWT.LEFT);
+		col.setText("Real Color");
+		col.setWidth(100);
+		col = new TableColumn(colorTable, SWT.LEFT);
+		col.setText("Description");
+		col.setWidth(500);
+	}
+
+	protected void initTableViewer() {
+		colorTableViewer = new TableViewer(colorTable);
+		colorTableViewer.setColumnProperties(columnNames);
+
+		initContentProvider();
+		initLabelProvider();
+		initCellModifier();
+	}
+
+	protected void initContentProvider() {
+		colorTableViewer.setContentProvider(new IStructuredContentProvider() {
+			public Object[] getElements(Object inputElements) {
+				List l = (List) inputElements;
+				return l.toArray();
+			}
+
+			public void dispose() {
+			}
+
+			public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+			}
+		});
+	}
+
+	protected void initLabelProvider() {
+		colorTableViewer.setLabelProvider(new ITableLabelColorProvider() {
+			public void dispose() {
+			}
+
+			public Image getColumnImage(Object element, int columnIndex) {
+				return null;
+			}
+
+			public String getColumnText(Object element, int columnIndex) {
+				Element color = (Element) element;
+				switch (columnIndex) {
+				case 0:
+					return color.attributeValue("name", "new color");
+				case 1:
+					return "";
+				case 2:
+					return color.attributeValue("description");
+				}
+				return null;
+			}
+
+			public void addListener(ILabelProviderListener listener) {
+			}
+
+			public void removeListener(ILabelProviderListener listener) {
+			}
+
+			public boolean isLabelProperty(Object element, String property) {
+				return false;
+			}
+
+			public org.eclipse.swt.graphics.Color getForeground(Object element, int columnIndex) {
+				return null;
+			}
+
+			public org.eclipse.swt.graphics.Color getBackground(Object element, int columnIndex) {
+				if (columnIndex == 1) {
+					String realColorString = ((Element) element).attributeValue("real-color");
+					RGB realColor = ColorHelper.getRGBFromString(realColorString);
+					return new Color(Display.getDefault(), realColor);
+				}
+				return null;
+			}
+		});
+	}
+
+	protected void initCellModifier() {
+		colorTableViewer.setCellModifier(new ICellModifier() {
+			public boolean canModify(Object element, String property) {
+				return true;
+			}
+
+			public Object getValue(Object element, String property) {
+				// Get the index first.
+				int index = -1;
+				for (int i = 0; i < columnNames.length; i++) {
+					if (columnNames[i].equals(property)) {
+						index = i;
+						break;
+					}
+				}
+				Element color = (Element) element;
+
+				switch (index) {
+				case 0:
+					return color.attributeValue("name", "unnnamed color");
+				case 1:
+					String realColor = color.attributeValue("real-color");
+					return ColorHelper.getRGBFromString(realColor);
+				case 2:
+					return color.attributeValue("description", "");
+				}
+
+				return null;
+			}
+
+			public void modify(Object element, String property, Object value) {
+				// Get the index first.
+				int index = -1;
+				for (int i = 0; i < columnNames.length; i++) {
+					if (columnNames[i].equals(property)) {
+						index = i;
+						break;
+					}
+				}
+
+				Element color = null;
+				if (element instanceof Item) {
+					TableItem item = (TableItem) element;
+					color = (Element) item.getData();
+				} else {
+					color = (Element) element;
+				}
+
+				switch (index) {
+				case 0:
+					// Add the colors to indexed hashmaps.
+					// This way fast checks for name
+					// duplicates can be performed.
+					HashMap<String, Element> nameIndex = new HashMap<String, Element>();
+					XPath xpathSelector = DocumentHelper.createXPath("ancestor-or-self::*/colors/color");
+					Iterator colorIterator = xpathSelector.selectNodes(model).iterator();
+					while (colorIterator.hasNext()) {
+						Element tmpColor = (Element) colorIterator.next();
+						nameIndex.put((String) tmpColor.attributeValue("name"), tmpColor);
+					}
+
+					if (!nameIndex.containsKey(value)) {
+						DocumentManager.setAttribute(color, "name", (String) value);
+					}
+					break;
+				case 1:
+					DocumentManager.setAttribute(color, "real-color", ColorHelper.getStringfromRGB((RGB) value));
+					break;
+				case 2:
+					DocumentManager.setAttribute(color, "description", (String) value);
+					break;
+				}
+
+				colorTableViewer.update(color, null);
+			}
+		});
+	}
+
+	protected void initCellEditors() {
+		CellEditor[] cellEditors = new CellEditor[3];
+		cellEditors[0] = new TextCellEditor(colorTableViewer.getTable());
+		cellEditors[1] = new ColorCellEditor(colorTableViewer.getTable());
+		cellEditors[2] = cellEditors[0];
+
+		colorTableViewer.setCellEditors(cellEditors);
+	}
+
+	public void propertyChange(PropertyChangeEvent arg0) {
+		updatePropertyFields();
+	}
+}
