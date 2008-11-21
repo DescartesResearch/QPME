@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006 Samuel Kounev. All rights reserved.
+ * Copyright (c) 2009 Samuel Kounev. All rights reserved.
  *    
  * The use, copying, modification or distribution of this software and its documentation for 
  * any purpose is NOT allowed without the written permission of the author.
@@ -52,22 +52,30 @@ public class QueueStats extends PlaceStats implements java.io.Serializable {
 	// StatsLevel 1 ---------------------------------------------------------------------------------------
 	
 	// StatsLevel 2 ---------------------------------------------------------------------------------------
-	public double		areaQueUtil;		  
-											 
-																																																																
-	public double		lastTkPopClock;		
-	public int			lastTotTkPop;		
+	public double		areaQueUtil;		// Accumulated area under the curve for computing the expected  
+											// overall queue utilization - fraction of time that there are 
+											// tokens in the queue.		  
+	public double		lastTkPopClock;		// Time of last token population change (over all colors).		
+	public int			lastTotTkPop;		// Last queue total token population (over all colors).		
 
-	public double		queueUtil;			
+	public double		queueUtil;			// Overall queue utilization = (areaQueUtil / msrmPrdLen)
 	
 	// StatsLevel 3 ---------------------------------------------------------------------------------------		
-	public boolean		indrStats;			
-	public double[]		meanDT;				
-	public double[]		stDevDT;			 
-	public double[]		stdStateMeanDT;		
-	public double[]		varStdStateMeanDT;	
-	public double[]		stDevStdStateMeanDT;
-	public double[]		ciHalfLenDT;		 
+	public boolean		indrStats;			// FCFS: Specifies if STs and TkPops should be estimated indirectly
+	/* NOTE:
+	 * if (indrStats == true)
+	 *     the variables minST, maxST, sumST, sumSqST, numST, etc. inherited from PlaceStats
+	 *     refer to delay times in the waiting area of the queue
+	 * otherwise
+	 *     they refer as usual to overall sojourn times in the queue!
+	 * 
+	 */
+	public double[]		meanDT;					// Mean Delay Time = (sumST[c] / numST[c])
+	public double[]		stDevDT;				// Delay Time Standard Deviation = Math.sqrt(Descriptive.sampleVariance(numST[c], sumST[c], sumSqST[c])) 
+	public double[]		stdStateMeanDT;			// Steady State Mean Delay Time = (sumBMeansST[c] / numBatchesST[c])	
+	public double[]		varStdStateMeanDT;		// Steady State Delay Time Variance = Descriptive.sampleVariance(numBatchesST[c], sumBMeansST[c], sumBMeansSqST[c]);	
+	public double[]		stDevStdStateMeanDT;	// Steady State Delay Time Standard Deviation = Math.sqrt(varStdStateMeanDT[c]) 
+	public double[]		ciHalfLenDT;			// Confidence Interval Half Length = Probability.studentTInverse(signLevST[c], numBatchesST[c] - 1) * Math.sqrt(varStdStateMeanDT[c] / numBatchesST[c]);		 
 	
 	// StatsLevel 4 ---------------------------------------------------------------------------------------
 	
@@ -92,8 +100,9 @@ public class QueueStats extends PlaceStats implements java.io.Serializable {
 			
 		//  statsLevel >= 1
 				
-		if (statsLevel >= 3) {			
-			this.indrStats	= (queueDiscip == QueueingPlace.FCFS); 
+		if (statsLevel >= 3) {
+			// Make sure indrStats is false if queueDiscip != QueueingPlace.FCFS
+			this.indrStats	= (queueDiscip == QueueingPlace.FCFS);		// indrStats is by default true for FCFS queues
 			this.meanDT					=	new double[numColors];
 			this.stDevDT				=	new double[numColors];			
 			if (Simulator.analMethod == Simulator.BATCH_MEANS)  {
@@ -142,7 +151,8 @@ public class QueueStats extends PlaceStats implements java.io.Serializable {
 			areaQueUtil	= 0;
 			lastTkPopClock = Simulator.clock;			
 		}		
-		if (statsLevel >= 3)  {			
+		if (statsLevel >= 3)  {
+			// Make sure indrStats is false if queueDiscip != QueueingPlace.FCFS
 			indrStats = indrStats && (queueDiscip == QueueingPlace.FCFS);
 		}																		
 	}
@@ -183,6 +193,9 @@ public class QueueStats extends PlaceStats implements java.io.Serializable {
 	/**
 	 * Method updateDelayTimeStats (FCFS)
 	 *  	 
+	 * @param color		- token color
+	 * @param delayTime	- delay time of token in waiting area of the queue
+	 * 	 
 	 */
 	public void updateDelayTimeStats(int color, double delayTime)  {				
 		if ((!indrStats) || (inRampUp && Simulator.analMethod != Simulator.WELCH)) return;

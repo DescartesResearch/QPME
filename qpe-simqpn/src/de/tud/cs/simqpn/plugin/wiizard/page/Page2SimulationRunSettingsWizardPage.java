@@ -36,7 +36,11 @@ public class Page2SimulationRunSettingsWizardPage extends BaseWizardPage {
 	protected Label timeBtwChkStopsLabel;
 
 	protected Text timeBtwChkStopsText;
+	
+	protected Label secondsBtwChkStopsLabel;
 
+	protected Text secondsBtwChkStopsText;
+	
 	protected Text timeInitHeartBeatText;
 
 	protected Text secondsBtwHeartBeatsText;
@@ -103,6 +107,7 @@ public class Page2SimulationRunSettingsWizardPage extends BaseWizardPage {
 				if(!"Fixed sample size".equals(stoppingRuleCombobox.getText())) {
 					Element metaAttribute = getMetaAttribute();
 					timeBtwChkStopsText.setText(metaAttribute.attributeValue("time-between-stop-checks", "100000"));
+					secondsBtwChkStopsText.setText(metaAttribute.attributeValue("seconds-between-stop-checks", "60"));
 				}
 				updateModel();
 			}
@@ -119,8 +124,20 @@ public class Page2SimulationRunSettingsWizardPage extends BaseWizardPage {
 			public void modifyText(ModifyEvent e) {
 				updateModel();
 			}
-		});
+		});	
 
+		secondsBtwChkStopsLabel = new Label(container, SWT.NULL);
+		secondsBtwChkStopsLabel.setText("Seconds between stop checks");
+		secondsBtwChkStopsText = new Text(container, SWT.BORDER | SWT.SINGLE);
+		gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.horizontalSpan = 2;
+		secondsBtwChkStopsText.setLayoutData(gd);
+		secondsBtwChkStopsText.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				updateModel();
+			}
+		});		
+		
 		Label timeInitHeartBeatLabel = new Label(container, SWT.NULL);
 		timeInitHeartBeatLabel.setText("Time before initial heart beat");
 		timeInitHeartBeatText = new Text(container, SWT.BORDER | SWT.SINGLE);
@@ -222,10 +239,20 @@ public class Page2SimulationRunSettingsWizardPage extends BaseWizardPage {
 				setErrorMessage("Invalid number format. Time between stop checks must be a positive number.");
 				return false;
 			}
-			if (dValue <= 0) {
-				setErrorMessage("Time between stop checks must be a positive number.");
+			if (dValue < 0) {
+				setErrorMessage("Time between stop checks must be a non-negative number.");
 				return false;
 			}
+			try {
+				dValue = Double.parseDouble(secondsBtwChkStopsText.getText());
+			} catch (NumberFormatException nfe) {
+				setErrorMessage("Invalid number format. Seconds between stop checks must be a non-negative number.");
+				return false;
+			}
+			if (dValue < 0) {
+				setErrorMessage("Seconds between stop checks must be a non-negative number.");
+				return false;
+			}			
 		}
 
 		try {
@@ -285,13 +312,20 @@ public class Page2SimulationRunSettingsWizardPage extends BaseWizardPage {
 			if (stoppingRuleCombobox.getSelectionIndex() == 1) {
 				timeBtwChkStopsLabel.setVisible(true);
 				timeBtwChkStopsText.setVisible(true);
+				secondsBtwChkStopsLabel.setVisible(true);
+				secondsBtwChkStopsText.setVisible(true);				
 			} else if (stoppingRuleCombobox.getSelectionIndex() == 2) {
 				timeBtwChkStopsLabel.setVisible(true);
 				timeBtwChkStopsText.setVisible(true);
+				secondsBtwChkStopsLabel.setVisible(true);
+				secondsBtwChkStopsText.setVisible(true);								
 			} else {
 				DocumentManager.removeAttribute(metaAttribute, "time-between-stop-checks");
+				DocumentManager.removeAttribute(metaAttribute, "seconds-between-stop-checks");
 				timeBtwChkStopsLabel.setVisible(false);
 				timeBtwChkStopsText.setVisible(false);
+				secondsBtwChkStopsLabel.setVisible(false);
+				secondsBtwChkStopsText.setVisible(false);												
 			}
 
 			if (validate()) {
@@ -314,6 +348,11 @@ public class Page2SimulationRunSettingsWizardPage extends BaseWizardPage {
 					DocumentManager.setAttribute(metaAttribute, "time-between-stop-checks", timeBtwChkStopsText.getText());
 				} else {
 					DocumentManager.removeAttribute(metaAttribute, "time-between-stop-checks");
+				}				
+				if(secondsBtwChkStopsText.isVisible()) {
+					DocumentManager.setAttribute(metaAttribute, "seconds-between-stop-checks", secondsBtwChkStopsText.getText());
+				} else {
+					DocumentManager.removeAttribute(metaAttribute, "seconds-between-stop-checks");
 				}
 				DocumentManager.setAttribute(metaAttribute, "time-before-initial-heart-beat", timeInitHeartBeatText.getText());
 				DocumentManager.setAttribute(metaAttribute, "seconds-between-heart-beats", secondsBtwHeartBeatsText.getText());
@@ -351,15 +390,23 @@ public class Page2SimulationRunSettingsWizardPage extends BaseWizardPage {
 				timeBtwChkStopsLabel.setVisible(true);
 				timeBtwChkStopsText.setVisible(true);
 				timeBtwChkStopsText.setText(metaAttribute.attributeValue("time-between-stop-checks", ""));
+				secondsBtwChkStopsLabel.setVisible(true);
+				secondsBtwChkStopsText.setVisible(true);
+				secondsBtwChkStopsText.setText(metaAttribute.attributeValue("seconds-between-stop-checks", ""));				
 			} else if ("RELPRC".equals(stoppingRule)) {
 				stoppingRuleCombobox.select(2);
 				timeBtwChkStopsLabel.setVisible(true);
 				timeBtwChkStopsText.setVisible(true);
 				timeBtwChkStopsText.setText(metaAttribute.attributeValue("time-between-stop-checks", ""));
+				secondsBtwChkStopsLabel.setVisible(true);
+				secondsBtwChkStopsText.setVisible(true);
+				secondsBtwChkStopsText.setText(metaAttribute.attributeValue("seconds-between-stop-checks", ""));								
 			} else {
 				stoppingRuleCombobox.select(0);
 				timeBtwChkStopsLabel.setVisible(false);
-				timeBtwChkStopsText.setVisible(false);
+				timeBtwChkStopsText.setVisible(false);				
+				secondsBtwChkStopsLabel.setVisible(false);
+				secondsBtwChkStopsText.setVisible(false);				
 			}
 			timeInitHeartBeatText.setText(metaAttribute.attributeValue("time-before-initial-heart-beat", ""));
 			secondsBtwHeartBeatsText.setText(metaAttribute.attributeValue("seconds-between-heart-beats", ""));

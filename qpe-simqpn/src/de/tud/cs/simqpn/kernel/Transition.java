@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006 Samuel Kounev. All rights reserved.
+ * Copyright (c) 2009 Samuel Kounev. All rights reserved.
  *    
  * The use, copying, modification or distribution of this software and its documentation for 
  * any purpose is NOT allowed without the written permission of the author.
@@ -45,7 +45,7 @@ public class Transition extends Node {
 	
 	public AbstractIntList	enModes;		// List of currently enabled modes		   
 	
-	public EmpiricalWalker	randModeGen;	// RN generator for generating modes to fire
+	public EmpiricalWalker	randModeGen;	// Random number generator for generating modes to fire
 
 	/**
 	 * Constructor
@@ -67,13 +67,15 @@ public class Transition extends Node {
 		this.inFunc			   = new int[numModes][numInPlaces][];
 		this.outFunc		   = new int[numModes][numOutPlaces][];
 		this.enModes		   = new IntArrayList(numModes);
+		// Create randModeGen
 		double[] pdf = new double[numModes];			
 		for (int m = 0; m < numModes; m++) pdf[m] = 1;
-		this.randModeGen = new EmpiricalWalker(pdf, Empirical.NO_INTERPOLATION, Simulator.nextRandNumGen());	 						  				
+		this.randModeGen = new EmpiricalWalker(pdf, Empirical.NO_INTERPOLATION, Simulator.nextRandNumGen());
+		// Note: Here we use a default distribution. The actual distribution is set each time before using randModeGen. 
 	}
 	
 	/**
-	 * Method init  
+	 * Method init - checks for enabled modes and initializes enModes   
 	 * 
 	 * @param  	
 	 * @return 
@@ -102,25 +104,34 @@ public class Transition extends Node {
 	}
 	
 	/**
-	 * Method updateState 
-	 *                   
+	 * Method updateState - updates enModes after a change in the token 
+	 *                      population of an input place.
+	 * Note: Must be called whenever changing token population in any 
+	 *       of the input transitions. 
+	 *       
+	 * @param inPlaceId		- id of updated input place
+	 * @param color			- color of updated token count
+	 * @param newAvailTkCnt	- new available token count
+	 * @param delta			- difference between new and old token count   	
 	 * @return 
 	 * @exception
 	 */
 	public void updateState(int inPlaceId, int color, int newAvailTkCnt, int delta)  {
 										
-		if (delta > 0) {  
+		if (delta > 0) {	// CASE A: TOKENS HAVE BEEN ADDED
 			if (enModes.size() == numModes) return;
-			 
+			// Find index of updated input place
 			int uInP = 0;
 			while (inPlaces[uInP].id != inPlaceId) uInP++;
-															
+			// Check for newly enabled modes
 			int m, p, c, nC;
 			Place pl;
 			boolean enabled;
 			int nM = numModes;
 			int nP = inPlaces.length;					
 			for (m = 0; m < nM; m++)  {
+				// only consider disabled modes that require tokens of 
+				// the respective color
 				if ((!enModes.contains(m)) && inFunc[m][uInP][color] > 0)  {					
 					enabled = true;							
 					for (p = 0; p < nP; p++)  {
@@ -136,9 +147,11 @@ public class Transition extends Node {
 				}
 			}
 		} 
-		else  {	
+		else  {		// CASE B: TOKENS HAVE BEEN REMOVED
+			// Find index of updated input place
 			int uInP = 0;
 			while (inPlaces[uInP].id != inPlaceId) uInP++;
+			// Check for newly disabled modes
 			int i, m;			
 			for (i = 0; i < enModes.size(); i++)  {
 				m = enModes.get(i);
@@ -150,13 +163,22 @@ public class Transition extends Node {
 	
 	/**
 	 * Method enabled 
+	 * 
+	 * @param  	
+	 * @return boolean - true if at least one mode enabled, false otherwise
+	 * @exception 
 	 */
 	public boolean enabled() {		
 		return (enModes.size() > 0) ? true : false;
 	}
   
 	/**
-	 * Method checkIfEnabled 
+	 * Method checkIfEnabled - checks if transition is enabled
+	 * Note: does not rely on enModes
+	 * 
+	 * @param  	
+	 * @return boolean - true if at least one mode enabled, false otherwise
+	 * @exception 
 	 */
 	public boolean checkIfEnabled() {
 		int m, p, c, nM, nP, nC;
@@ -180,14 +202,15 @@ public class Transition extends Node {
 	}
 
 	/**
-	 * Method fire
+	 * Method fire - fires in a mode chosen based on weights
 	 * 
 	 * @param	
 	 * @return
 	 * @exception
 	 */
 	public void fire() throws SimQPNException {
-														
+
+		// Choose mode to fire based on weights
 		int enModesCnt = enModes.size();		
 		double[] pdf = new double[enModesCnt];
 		for (int m = 0; m < enModesCnt; m++) pdf[m] = modeWeights[enModes.get(m)]; 				
@@ -195,7 +218,8 @@ public class Transition extends Node {
 		int mode = enModes.get(randModeGen.nextInt());
 		
 		int p, c, nP, nC, n;
-		Place pl;		
+		Place pl;
+		// Step 1: Remove input tokens
 		nP = inPlaces.length;						
 		for (p = 0; p < nP; p++) {
 			pl = inPlaces[p];
@@ -204,7 +228,8 @@ public class Transition extends Node {
 				n = inFunc[mode][p][c];
 				if (n != 0) pl.removeTokens(c, n); 							
 			}			
-		}				
+		}	
+		// Step 2: Deposit output tokens
 		nP = outPlaces.length;								
 		for (p = 0; p < nP; p++) {
 			pl = outPlaces[p];
@@ -214,7 +239,7 @@ public class Transition extends Node {
 				if (n != 0) pl.addTokens(c, n); 							
 			}			
 		}
-	
-	} 
+		
+	} // end fire() 
 	
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006 Samuel Kounev. All rights reserved.
+ * Copyright (c) 2009 Samuel Kounev. All rights reserved.
  *    
  * The use, copying, modification or distribution of this software and its documentation for 
  * any purpose is NOT allowed without the written permission of the author.
@@ -43,13 +43,14 @@ public class Place extends Node {
 	public int				numColors;
 	public int				statsLevel;		// Determines the amount of statistics to be gathered during the run.
 	public int				depDiscip;		// Departure discipline.
-	public LinkedList		depQueue;			
+	public LinkedList		depQueue;		// Departure queue.	
 	
 	public Transition[]		inTrans;
 	public Transition[]		outTrans;
 	public int[]			tokenPop;	
-	public int[]			availTokens;	
-	public boolean			depReady;		 
+	public int[]			availTokens;	// The token population currently available for output transitions.	
+	public boolean			depReady;		// depDiscip=FIFO: true if a token is currently available for output transitions of the place 
+ 
 	
 	public LinkedList[]		tokens;
 	
@@ -102,7 +103,9 @@ public class Place extends Node {
 	}
 	
 	/**
-	 * Method init 
+	 * Method init - initializes the place
+	 *  
+	 * Note: make sure clock has been initialized before calling Place.init
 	 * 
 	 * @param 
 	 * @return
@@ -189,8 +192,10 @@ public class Place extends Node {
 	}
 
 	/**
-	 * Method addTokens 
+	 * Method addTokens - deposits N tokens of particular color
 	 * 
+	 * @param color - color of tokens
+	 * @param count - number of tokens to deposit
 	 * @return
 	 * @exception
 	 */
@@ -208,7 +213,8 @@ public class Place extends Node {
 				for (int i = 0; i < count; i++) 
 					tokens[color].addLast(new Token(Simulator.clock, color));
 			}
-		}			
+		}
+		// Now add tokens and update affected transitions
 		tokenPop[color] += count;				
 
 		if (depDiscip == NORMAL)  {
@@ -236,8 +242,10 @@ public class Place extends Node {
 	}
 	
 	/**
-	 * Method removeTokens
+	 * Method removeTokens - removes N tokens of particular color
 	 * 
+	 * @param color - color of tokens
+	 * @param count - number of tokens to remove	
 	 * @return
 	 * @exception
 	 */
@@ -262,6 +270,7 @@ public class Place extends Node {
 				}
 			}				
 		}
+		// Now remove tokens and update affected transitions	
 		tokenPop[color] -= count;						
 
 		if (depDiscip == NORMAL)  {
@@ -275,7 +284,7 @@ public class Place extends Node {
 			if (depQueue.size() > 0) {
 				Token tk = (Token) depQueue.removeFirst();
 				availTokens[tk.color]++;
-				depReady = true; 
+				depReady = true; // Left for clarity. Actually redundant since depReady should already be true.
 				for (int i = 0; i < outTrans.length; i++)
 					outTrans[i].updateState(id, tk.color, availTokens[tk.color], 1);										
 			}

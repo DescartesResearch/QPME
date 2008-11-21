@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006 Samuel Kounev. All rights reserved.
+ * Copyright (c) 2009 Samuel Kounev. All rights reserved.
  *    
  * The use, copying, modification or distribution of this software and its documentation for 
  * any purpose is NOT allowed without the written permission of the author.

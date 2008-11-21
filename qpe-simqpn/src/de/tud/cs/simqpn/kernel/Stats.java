@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006 Samuel Kounev. All rights reserved.
+ * Copyright (c) 2009 Samuel Kounev. All rights reserved.
  *    
  * The use, copying, modification or distribution of this software and its documentation for 
  * any purpose is NOT allowed without the written permission of the author.
@@ -30,12 +30,12 @@ public class Stats {
 	public static final int QUEUE		= 1;	 
 	public static final int DEPOSITORY	= 2;
 	
-	public int 			id;				 		
-	public String		name;			
-	public int 			type;			
-	public int			numColors;		
-	public int			statsLevel;		
-	public boolean		completed;		
+	public int 			id;						// ID of target node			 		
+	public String		name;					// Name of target node			
+	public int 			type;					// Type of statistics (QUEUE, PLACE or DEPOSITORY)		
+	public int			numColors;				// Number of colors
+	public int			statsLevel;				// Determines the amount of statistics to be gathered during the run (see below).
+	public boolean		completed;				// Indicates whether statistics collection has been completed and gathered statistics have been processed.
 										
 	
 	public String 		fileSep 	= System.getProperty("file.separator");
@@ -51,7 +51,12 @@ public class Stats {
 	 	 
 	/**
 	 * Constructor
-	 *
+	 * 
+	 * @param id          - global id of the place
+	 * @param name        - name of the place
+	 * @param type		  - type of statistics (PLACE, QUEUE or DEPOSITORY)
+	 * @param numColors   - number of colors
+	 * @param statsLevel  - determines the amount of statistics to be gathered during the run
 	 */
 	public Stats(int id, String name, int type, int numColors, int statsLevel) {		
 		this.id 			= id;

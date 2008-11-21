@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006 Samuel Kounev. All rights reserved.
+ * Copyright (c) 2009 Samuel Kounev. All rights reserved.
  * 
  * The use, copying, modification or distribution of this software and its documentation for 
  * any purpose is NOT allowed without the written permission of the author. 
@@ -33,6 +33,8 @@ import drasys.or.prob.FDistribution;
  * Class AggregateStats 
  * 
  * Aggregates statistics from multiple independent simulation runs. 
+ * Uses the replication/deletion method (see p.525 in Law/Kelton) 
+ * Estimates coverage for sojourn time confidence intervals using the method on p.508 in Law/Kelton.  
  * 
  * @author Samuel Kounev
  * @version %I%, %G%
@@ -41,100 +43,104 @@ import drasys.or.prob.FDistribution;
 public class AggregateStats extends Stats implements java.io.Serializable {	
 	private static final long serialVersionUID = 1L;
 
-	public int 			numRepls;			
-	public int 			numTooShortRepls;	
-											
-											  
+	public int 			numRepls;				// Number of replications used for replication/deletion method or coverage analysis (these are runs actually used in the analysis).			
+	public int 			numTooShortRepls;		// Number of replications that were discarded because of being too short.
+												// In NORMAL:REPL_DEL:FIXEDLEN mode this means replications that were too short and didn't contain steady state data.
+												// In CVRG_EST mode this means replications that were discarded because of being shorter than the required min run length.
 		
-	public double		sumRunLen;			
-	public double		sumSqRunLen;		
-	public double		sumWallClockTime;	
-	public double		sumSqWallClockTime;				
-	public double		minRunLen;			
-	public double		maxRunLen;			
-	public double		avgRunLen;			
-	public double		stDevRunLen;		
-	public double		avgWallClockTime;	
-	public double		stDevWallClockTime;	
+	public double		sumRunLen;				// Sum of run lengths (needed for computing avgRunLen).
+	public double		sumSqRunLen;			// Sum of run length squares (needed for computing stDevRunLen).
+	public double		sumWallClockTime;		// Sum of run wall clock times (needed for computing avgWallClockTime).
+	public double		sumSqWallClockTime;		// Sum of run wall clock time squares (needed for computing stDevWallClockTime).				
+	public double		minRunLen;				// Minimum run length (simulated time).			
+	public double		maxRunLen;				// Maximum run length (simulated time).			
+	public double		avgRunLen;				// Average run length (simulated time).
+	public double		stDevRunLen;			// Std deviation of run length (simulated time).
+	public double		avgWallClockTime;		// Average run wall clock time.
+	public double		stDevWallClockTime;		// St. deviation of run wall clock time.
 			
-	// ----------------------------------------------------------------------------------------------------
+	// -------------------------------------------------------------------------------------------------------------------
 	//  STATISTICS
-	// ----------------------------------------------------------------------------------------------------
+	// -------------------------------------------------------------------------------------------------------------------
 	
-	// StatsLevel 1 ---------------------------------------------------------------------------------------
-	public double[]		sumArrivThrPut;		
-	public double[]		sumDeptThrPut;			
-	public double[]		sumSqArrivThrPut;	
-	public double[]		sumSqDeptThrPut;				 		
-	public double[]		meanArrivThrPut;	 
-	public double[]		meanDeptThrPut;				
-	public double[]		stDevArrivThrPut;	 
-	public double[]		stDevDeptThrPut;		
+	// StatsLevel 1 ------------------------------------------------------------------------------------------------------
+	public double[]		sumArrivThrPut;			// Sum of average arrival throughputs (for meanArrivThrPut).		
+	public double[]		sumDeptThrPut;			// Sum of average departure throughputs (for meanDeptThrPut).			
+	public double[]		sumSqArrivThrPut;		// Sum of squares of average arrival throughputs (for stDevArrivThrPut).	
+	public double[]		sumSqDeptThrPut;		// Sum of squares of average departure throughputs (for stDevDeptThrPut).				 		
+	public double[]		meanArrivThrPut;	 	// Mean average arrival throughput.
+	public double[]		meanDeptThrPut;			// Mean average departure throughput.
+	public double[]		stDevArrivThrPut;	 	// Std. deviation of average arrival throughput.
+	public double[]		stDevDeptThrPut;		// Std. deviation of average departure throughput.
 		
-	// StatsLevel 2 ---------------------------------------------------------------------------------------
-	public double[]		sumAvgTkPop;		
-	public double[]		sumColUtil;				
-	public double[]		sumSqAvgTkPop;		
-	public double[]		sumSqColUtil;		
-	public double[]		minAvgTkPop;		
-	public double[]		maxAvgTkPop;				
-	public double[]		meanAvgTkPop;		
-	public double[]		meanColUtil;			
-	public double[]		stDevAvgTkPop;		
-	public double[]		stDevColUtil;				
-	public double		sumQueueUtil;		
-	public double		sumSqQueueUtil;		
-	public double		meanQueueUtil;		
-	public double		stDevQueueUtil;		
+	// StatsLevel 2 ------------------------------------------------------------------------------------------------------
+	public double[]		sumAvgTkPop;			// Sum of average token populations (for meanAvgTkPop).		
+	public double[]		sumColUtil;				// Sum of average color utilizations (for meanColUtil).
+	public double[]		sumSqAvgTkPop;			// Sum of squares of average token populations (for stDevAvgTkPop).
+	public double[]		sumSqColUtil;			// Sum of squares of average color utilizations (for stDevColUtil).
+	public double[]		minAvgTkPop;			// Minimum average token population (TkPop).
+	public double[]		maxAvgTkPop;			// Maximum average token population.
+	public double[]		meanAvgTkPop;			// Mean average token population.
+	public double[]		meanColUtil;			// Mean average color utilization.
+	public double[]		stDevAvgTkPop;			// Std. deviation of average token population.
+	public double[]		stDevColUtil;			// Std. deviation of average color utilization.
+	public double		sumQueueUtil;			// For Type=QUEUE: Sum of average overall queue utilizations.
+	public double		sumSqQueueUtil;			// For Type=QUEUE: Sum of squares of average overall queue utilizations.
+	public double		meanQueueUtil;			// For Type=QUEUE: Mean overall queue utilization.
+	public double		stDevQueueUtil;			// For Type=QUEUE: Std. deviation of overall queue utilization.
 							
-	// StatsLevel 3 ---------------------------------------------------------------------------------------
-	public double[]		minAvgST;				
-	public double[]		maxAvgST;			
-	public double[]		sumAvgST;			
-	public double[]		sumSqAvgST;						
-	public int[]		numAvgST;			 
+	// StatsLevel 3 ------------------------------------------------------------------------------------------------------
+	public double[]		minAvgST;				// Minimum average token sojourn time.				
+	public double[]		maxAvgST;				// Maxumum average token sojourn time.			
+	public double[]		sumAvgST;				// Sum of average token sojourn times.
+	public double[]		sumSqAvgST;				// Sum of average token sojourn time squares.
+	public int[]		numAvgST;			 	// Number of average sojourn times observed from replications.
+												//	 Note: when using mean soj. times from batch means method, 
+												//   some replications may not have AvgST because of too few batches.
 											   	
-	public double[]		meanAvgST;			
-	public double[]		varAvgST;				
-	public double[]		stDevAvgST;			
-	public double[]		signLevAvgST;													
-	public double[]		ciHalfLenAvgST;		
-	public int[]		confLevelAvgST;		
+	public double[]		meanAvgST;				// Mean average sojourn time = (sumAvgST[c] / numAvgST[c]).			
+	public double[]		varAvgST;				// Average sojourn time variation = Descriptive.sampleVariance(numAvgST[c], sumAvgST[c], sumSqAvgST[c]).
+	public double[]		stDevAvgST;				// Average sojourn time standard deviation = Math.sqrt(varAvgST[c]).			
+	public double[]		signLevAvgST;			// Required significance level, (1 - signLevAvgST) = the confidence level.
+	public double[]		ciHalfLenAvgST;			// Confidence interval half length = Probability.studentTInverse(signLevAvgST[c], numAvgST[c] - 1) * Math.sqrt(varAvgST[c] / numAvgST[c]).		
+	public int[]		confLevelAvgST;			// Confidence Level = (int) (100 * (1 - signLevAvgST[c]))
 
 	// Used only for INIT_TRANS:WELCH (Method of Welch)
 	public AbstractDoubleList[] 
-						sumKthObsrvST;																																															
+						sumKthObsrvST;			// Sum of the k-th observations from the replications (used to compute avgKthObsrvST).																																													
 	public AbstractDoubleList[] 
-						avgKthObsrvST;											
+						avgKthObsrvST;			// Stores the average of the k-th observations from the replications.											
 
 	// Used only when Simulator.analMethod==BATCH_MEANS && useStdStateStats==true
-	public int[]		sumBatchSizesST;	
-	public int[]		avgBatchSizeST;		
-	public int[]		sumNumBatchesST;	
-	public int[]		avgNumBatchesST;	
+	public int[]		sumBatchSizesST;		// Sum of batch sizes used for the batch means method.	
+	public int[]		avgBatchSizeST;			// Average batch size used for the batch means method.
+	public int[]		sumNumBatchesST;		// Sum of number of batches collected in the replications.
+	public int[]		avgNumBatchesST;		// Avgerage number of batches collected.
 
 	// Used only when runMode==CVRG_EST
-	public boolean		useFdistr;			
-											   
-	public double[]		trueAvgST;			 
-											
-	public int			reqMinBadCIs;		
-	public boolean		enghBadCIs;				
-	public double		reqMinRunLen;		
+	public boolean		useFdistr;				// Confidence intervals for the true coverage can be constructed based on the F-distribution or the Normal distribution. See paper of Lee, Pawlikowski, McNickle [1999].
+												// useFdistr specifies which estimates to use when checking if the required precision has been reached (the stopping rule).											   
+	public double[]		trueAvgST;			 	// The true average sojourn time (used to estimate coverage). 
+												// NOTE: Tokens with negative trueAvgST are not considered in the coverage analysis!											
+	public int			reqMinBadCIs;			// Minumum number of 'bad' confidence intervals, i.e. not covering the true average sojourn time.		
+	public boolean		enghBadCIs;				// true if at least reqMinBadCIs bad c.i. have been recorded.				
+	public double		reqMinRunLen;			// Min run length = one st. dev. shorter than avg. run length at the point enough bad c.i. have been detected.
+												// Runs shorter than reqMinRunLen are discarded to improve coverage estimation.
 													 
-	public int[]		numCvrgs;																																		
-	public double[]		estCvrg;			
-	public double		signLevCvrg;		
-	public double		reqCvrgAbsPrc;					
-	public double[]		ciHalfLenTrCvrg;	 
+	public int[]		numCvrgs;				// Number of runs in which the confidence interval covered the true average sojourn time.																																					
+	public double[]		estCvrg;				// Estimated coverage of the confidence intervals for sojourn times.			
+	public double		signLevCvrg;			// Required significance level for coverage confidence interval, (1 - signLevCvrg) = the confidence level.
+	public double		reqCvrgAbsPrc;			// Required absolute precision for estimated coverage (max c.i. half length).					
+	public double[]		ciHalfLenTrCvrg;		// Confidence interval for the true coverage based on the Normal distribution.
+												// See p. 508 in Law/Kelton; p. 215 in Jain; p.385 in "Applied Statistics" from Revine, Ramsey, Smidt.
 											
-	public double[]		trCvrgLowerLimit;	
-	public double[]		trCvrgUpperLimit;	
-	public LinkedList	replStats;			
-	public int 			numSavedRepls;			
+	public double[]		trCvrgLowerLimit;		// Lower limit for the true coverage based on the F distribution.	
+	public double[]		trCvrgUpperLimit;		// Upper limit for the true coverage based on the F distribution.
+	public LinkedList	replStats;				// PlaceStats/QueueStats objects collected from run replications.
+	public int 			numSavedRepls;			// Number of saved replications for coverage analysis.
 										            													
-	// StatsLevel 4 ---------------------------------------------------------------------------------------
-	public PrintStream[] fileST;							
+	// StatsLevel 4 ------------------------------------------------------------------------------------------------------
+	public PrintStream[] fileST;				// Level 4: File output streams for dumping sojourn times.
 				
 	/**
 	 * Constructor
@@ -207,7 +213,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 			// DEFAULT-CONFIG: Default significance level for average sojourn time											
 			for (int c = 0; c < numColors; c++) 
 				this.signLevAvgST[c]	= 0.1; 			// e.g. 0.05 ---> 95% c.i.; 0.1 ---> 90%
-								
+			
 			if (Simulator.analMethod == Simulator.WELCH)  {											
 				this.sumKthObsrvST = new AbstractDoubleList[numColors];				
 				this.avgKthObsrvST = new AbstractDoubleList[numColors];
@@ -267,7 +273,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 	}
 	
 	/**
-	 * Method saveStats  
+	 * Method saveStats - saves the results of a run (replication).   
 	 * 
 	 */
 	@SuppressWarnings("unchecked")
@@ -302,7 +308,8 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 			numRepls++;			
 			return;	
 		}
-		
+
+		// Make sure the run was long enough
 		if (Simulator.useStdStateStats && (!stats.stdStateStatsAv))  {
 			numTooShortRepls++;
 			Simulator.logln("Replication skipped, since it was too short and no steady state data was available.");
@@ -314,7 +321,8 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 			double runLen = stats.endRunClock;			
 			sumRunLen += runLen;
 			sumSqRunLen += runLen * runLen;							 						
-			for (int c = 0; c < numColors; c++)  {		
+			for (int c = 0; c < numColors; c++)  {	
+				// Colors with negative trueAvgST[c] are not considered!
 				if (trueAvgST[c] < 0) continue;											
 				double avgST =  stats.stdStateMeanST[c];									
 				double leftEnd = avgST - stats.ciHalfLenST[c];
@@ -326,8 +334,8 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 	}
 
 	/**
-	 * Method enoughCvrgStats  
-	 *                        
+	 * Method enoughCvrgStats - returns true if enough data is available to provide estimates 
+	 *                          for the coverage with the required precision.
 	 * 
 	 * Used only in mode CVRG_EST. 
 	 */
@@ -341,13 +349,13 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 				if (trueAvgST[c] < 0) continue;											
 				estCvrg[c]  = ((double) numCvrgs[c]) / numRepls;
 				// Check if required precision for the c.i. coverage has been reached				
-				if (useFdistr)  { 
+				if (useFdistr)  {	// Use the F distribution to construct c.i. for the true coverage 
 					if (Math.abs(estCvrg[c] - getTrCvrgLowerLimit(c)) > reqCvrgAbsPrc || 
 					    Math.abs(getTrCvrgUpperLimit(c) - estCvrg[c]) > reqCvrgAbsPrc)  {
 							passed = false; break;
 					    }
 				}
-				else  { 
+				else  { 	// Use the Normal distribution to construct c.i. for the true coverage
 					ciHalfLenTrCvrg[c] = Math.abs(Probability.normalInverse(signLevCvrg / 2)) * Math.sqrt((estCvrg[c] * (1 - estCvrg[c])) / numRepls);				
 					if (ciHalfLenTrCvrg[c] > reqCvrgAbsPrc)  {					 										
 /* DEBUG:
@@ -364,6 +372,11 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 
 	/**
 	 * Method getTrCvrgLowerLimit 
+	 *   
+	 * Used for constructing c.i. for the true coverage based on the F-distribution.
+	 * See paper of Lee, Pawlikowski, McNickle [1999].             
+	 *  
+	 * Note: Assumes that numCvrgs[color] and numRepls are up-to-date!
 	 * 
 	 * Used only in mode CVRG_EST. 
 	 */
@@ -380,7 +393,12 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 
 	/**
 	 * Method getTrCvrgUpperLimit 
-	 *                
+	 *               
+	 * Used for computing c.i. for the true coverage based on the F-distribution.
+	 * See paper of Lee, Pawlikowski, McNickle [1999].             
+	 *  
+	 * Note: Assumes that numCvrgs[color] and numRepls are up-to-date!
+	 * 
 	 * Used only in mode CVRG_EST. 
 	 */
 	public double getTrCvrgUpperLimit(int color)  {
@@ -431,7 +449,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 	/**
 	 * Method addStats - adds the results of a run (replication) to the overall statistics
 	 * 
-	 *  Should be called only for successful runs to be considered in the analysis
+	 * Should be called only for successful runs to be considered in the analysis
 	 * 
 	 */
 	public void addStats(PlaceStats stats)  {
@@ -522,6 +540,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 	/**
 	 * Method dumpMovAvgs() 
 	 *
+	 * INIT_TRANS:WELCH - dumps moving averages for a given window to a file
 	 *                        	 
 	 */	
 	public void dumpMovAvgs(int color, int win) throws SimQPNException {		

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006 Samuel Kounev. All rights reserved.
+ * Copyright (c) 2009 Samuel Kounev. All rights reserved.
  *    
  * The use, copying, modification or distribution of this software and its documentation for 
  * any purpose is NOT allowed without the written permission of the author.
@@ -43,7 +43,7 @@ import cern.jet.random.Exponential;
  * Class QueueingPlace
  *
  * Note: We use the term queue to refer to a queueing station including both the waiting area and the servers.
- * Note: We assume that in the beginning of the run the queue is empty!
+ * Note: We assume that in the beginning of the run, the queue is empty!
  * 
  * @author Samuel Kounev
  * @version %I%, %G%
@@ -56,34 +56,34 @@ public class QueueingPlace extends Place {
 	public static final int FCFS = 1;
 	public static final int PS = 2;	
 		
-	public int			queueDiscip;		
-	public double[]		meanServTimes;		
+	public int			queueDiscip;		// Queueing discipline
+	public double[]		meanServTimes;		// Mean token service times at the queueing station (all times usually in milliseconds)
 	
-	public int[]		queueTokenPop;		 
-											
+	public int[]		queueTokenPop;		// Number of tokens in the queueing station (queue), i.e. token population.
+											// Note that for queueing places Place.tokenPop contains tokens in the depository.										
 	
-	public int			numServers;			
-	public int			numBusyServers;		
-	public LinkedList	waitingLine;			 								
+	public int			numServers;			// FCFS queues: Number of servers in queueing station.
+	public int			numBusyServers;		// FCFS queues: Number of currently busy servers.
+	public LinkedList	waitingLine;		// FCFS queues: List of tokens waiting for service (waiting area of the queue).			 								
 	
-	public boolean		eventsUpToDate;		 
-											
-	public boolean		eventScheduled;		 
-	public LinkedList[]	queueTokens;		
+	public boolean		eventsUpToDate;		// PS queues: True if currently scheduled events for this queue (if any) 
+											// reflect the latest token popolation of the queue.											
+	public boolean		eventScheduled;		// PS queues: True if there is currently a service completion event scheduled for this queue.
+	public LinkedList[]	queueTokens;		// PS queues: Tokens in the queueing station (queue).		
 										
-	public boolean 		expPS;				
-	                                        
+	public boolean 		expPS;				// PS queues: true  = Processor-Sharing with exponential service times.
+											//            false = Processor-Sharing with non-exponential service times.	                                        
 	public AbstractDoubleList[]
-						residServTimes;		
-	public int			tkSchedCol;			   
-	public int			tkSchedPos;			
-	public double		lastEventClock;		
-	public int			lastEventTkCnt;		
+						residServTimes;		// PS queues: expPS==false: Residual service times.
+	public int			tkSchedCol;			// PS queues: expPS==false: Color of the next token scheduled to complete service.
+	public int			tkSchedPos;			// PS queues: expPS==false: Index in queueTokens[tkSchedCol] of the next token scheduled to complete service.
+	public double		lastEventClock;		// PS queues: expPS==false: Time of the last event scheduling, i.e. time of the last event with effect on this queue.		
+	public int			lastEventTkCnt;		// PS queues: expPS==false: Token population at the time of the last event scheduling.		
 	
 	public AbstractContinousDistribution[]
-						randServTimeGen;												
+						randServTimeGen;	// PS queues: expPS==true: Random number generators for generating service times.
 	public EmpiricalWalker					
-						randColorGen;		
+						randColorGen;		// PS queues: expPS==true: Random number generator for generating token colors.
 	
 	public QueueStats	queueStats;	
 	
@@ -145,11 +145,13 @@ public class QueueingPlace extends Place {
 		
 		//SDK-TODO: This check might cause problems for some distributions where meanServTimes is not initialized!
 		for (int c = 0; c < numColors; c++) 
+			// Make sure that all meanServTimes have been initialized
 			if (meanServTimes[c] < 0) {
 				Simulator.logln("Error: meanServTimes[" + c + "] has not been initialized for QueueingPlace " + name);
 				throw new SimQPNException(); 
 			}			
-			
+
+		// PS Queues: final initializations	
 		if (queueDiscip == PS)  {			
 			if (expPS) {
 				randServTimeGen = new Exponential[1];
@@ -161,7 +163,7 @@ public class QueueingPlace extends Place {
 			else {				
 				residServTimes 	= new DoubleArrayList[numColors];
 				for (int c = 0; c < numColors; c++) 
-					residServTimes[c] = new DoubleArrayList(100);
+					residServTimes[c] = new DoubleArrayList(100);  //SDK-TODO: See if 100 is optimal initial capacity. Note: The list is auto-expanding.
 			}
 		}
 	}
@@ -176,6 +178,7 @@ public class QueueingPlace extends Place {
 	 */
 	public void start() {	
 		if (statsLevel > 0)  {		
+			// Start statistics collection
 			queueStats.start(queueTokenPop);
 			super.start();
 		}					
@@ -191,13 +194,15 @@ public class QueueingPlace extends Place {
 	 */
 	public void finish() {
 		if (statsLevel > 0)  {
+			// Complete statistics collection
 			queueStats.finish(queueTokenPop);								
 			super.finish();
 		}
 	}
 	
 	/**
-	 * Method updateEvents 
+	 * Method updateEvents (Used only for PS queues).
+	 * Schedules next service completion event (if any) according to current token population.
 	 * 
 	 * @param 
 	 * @return
@@ -211,7 +216,7 @@ public class QueueingPlace extends Place {
 			totQueTokCnt += queueTokenPop[c];
 		
 		if (totQueTokCnt > 0) {			
-			if (expPS) {
+			if (expPS) {  // Exponential service times
 				double[] meanServRates = new double[numColors];
 				for (int c = 0; c < numColors; c++)
 					meanServRates[c] = (((double) queueTokenPop[c]) / totQueTokCnt) * (1 / meanServTimes[c]);			
@@ -238,11 +243,12 @@ public class QueueingPlace extends Place {
 				Simulator.scheduleEvent(Simulator.clock + servTime, this, new Token(((Token)queueTokens[color].getFirst()).arrivalTS, color));
 				eventScheduled = true;
 			}
-			else { 
+			else {  // Non-exponential service times
+				// Find token with minimal residual service time (RST)
 				double curRST, minRST = -1;				
 				int numTk;
 				for (int c = 0; c < numColors; c++) {
-					numTk = queueTokenPop[c];  
+					numTk = queueTokenPop[c];  // = residServTimes[c].size();
 					if (numTk > 0) 
 						for (int i = 0; i < numTk; i++) {
 							curRST = residServTimes[c].get(i);
@@ -256,8 +262,8 @@ public class QueueingPlace extends Place {
 					Simulator.logln("Error: Illegal state in queue " + name);
 					throw new SimQPNException();
 				}												
-				double servTime = minRST * totQueTokCnt;  								
-				if (numServers > 1 && totQueTokCnt > 1)   					
+				double servTime = minRST * totQueTokCnt;  // Default for "-/G/1-PS" queue 								
+				if (numServers > 1 && totQueTokCnt > 1)   // "-/G/n-PS" queues 					
 					servTime /= ((totQueTokCnt <= numServers) ? totQueTokCnt : numServers);
 				Simulator.scheduleEvent(Simulator.clock + servTime, this, new Token(((Token)queueTokens[tkSchedCol].get(tkSchedPos)).arrivalTS, tkSchedCol));
 				lastEventClock = Simulator.clock;	
@@ -269,18 +275,21 @@ public class QueueingPlace extends Place {
 	}
 	
 	/**
-	 * Method clearEvents 
+	 * Method clearEvents (Used only for PS queues) - clears all scheduled service completion events for this queue.  
 	 * 
 	 * @param 
 	 * @return
 	 * @exception
 	 */
-	public void clearEvents() {		
+	public void clearEvents() {
+		// Remove scheduled event from the event list. 
+		// Note that a maximum of one event can be scheduled per PS QueueingPlace at a time.
 		int i = Simulator.eventList.size() - 1;
 		while (i >= 0) {
 			Event ev = (Event) Simulator.eventList.get(i);
 			if (ev.qPlace == this) {
 				Simulator.eventList.remove(i); 
+//				System.out.println("DEBUG: Removing scheduled event for QueueingPlace"); 
 				break; 
 			}
 			else i--;				
@@ -289,7 +298,9 @@ public class QueueingPlace extends Place {
 	}
 
 	/**
-	 * Method updateResidServTimes 
+	 * Method updateResidServTimes - updates token residual times.
+	 * Used only for PS queues with non-exp service times.
+	 * 
 	 * @param 
 	 * @return
 	 * @exception
@@ -297,23 +308,33 @@ public class QueueingPlace extends Place {
 	public void updateResidServTimes() {		
 		int numTk;
 		double curRST;
+		double timeServed = (Simulator.clock - lastEventClock) / lastEventTkCnt;			// Default for "-/G/1-PS"
+		if (numServers > 1 && lastEventTkCnt > 1) 					
+			timeServed *= ((lastEventTkCnt <= numServers) ? lastEventTkCnt : numServers);	// "-/G/n-PS" queues
+		/* NOTE: Alternative code:
+		double timeServed = Simulator.clock - lastEventClock;								
+		if (numServers < lastEventTkCnt) 			
+			timeServed *= ((double) numServers) / lastEventTkCnt; 
+		*/													
 		for (int c = 0; c < numColors; c++) {
-			numTk = residServTimes[c].size();  
+			numTk = residServTimes[c].size();  // NOTE: don't use queueTokenPop[c] here! If tokens have been added, this would mess things up. 
 			if (numTk > 0) 
 				for (int i = 0; i < numTk; i++) {					
-					curRST = residServTimes[c].get(i);										
-					double timeServed = (Simulator.clock - lastEventClock) / lastEventTkCnt; 
-					if (numServers > 1 && lastEventTkCnt > 1) 					
-						timeServed *= ((lastEventTkCnt <= numServers) ? lastEventTkCnt : numServers);					
-					curRST -= timeServed;					
+					curRST = residServTimes[c].get(i) - timeServed;				
 					residServTimes[c].set(i, curRST);
 				}						
 		}		
 	}
-	
+
+	//TODO: Consider Simulator.scheduleEvent() below for the case statsLevel < 3	
+
 	/**
-	 * Method addTokens
-	 *  
+	 * Method addTokens - deposits N tokens of particular color
+	 * 
+	 * @param color - color of tokens
+	 * @param count - number of tokens to deposit
+	 * @return
+	 * @exception
 	 */
 	@SuppressWarnings("unchecked")
 	public void addTokens(int color, int count) throws SimQPNException {	
@@ -321,13 +342,15 @@ public class QueueingPlace extends Place {
 			Simulator.logln("Error: Attempted to add nonpositive number of tokens to queue " + name);
 			throw new SimQPNException();
 		}
-
+		
+		// Update Stats	(below more...) (Note: watch out the order of this and next statement)
 		if (statsLevel > 0)
 			queueStats.updateTkPopStats(color, queueTokenPop[color], count);																	
 		 				
 		queueTokenPop[color] += count;
 		
-		if (queueDiscip == IS) {					
+		if (queueDiscip == IS) {
+			// Schedule service completion events						
 			for (int i = 0; i < count; i++) {
 				double servTime = randServTimeGen[color].nextDouble();	
 				if (servTime < 0) servTime = 0;
@@ -337,30 +360,33 @@ public class QueueingPlace extends Place {
 		else if (queueDiscip == FCFS) {
 			int n = 0;
 			while (n < count && numBusyServers < numServers) {
+				// Schedule service completion event
 				double servTime = randServTimeGen[color].nextDouble();
 				if (servTime < 0) servTime = 0;
 				Simulator.scheduleEvent(Simulator.clock + servTime, this, new Token(Simulator.clock, color));
 				numBusyServers++; n++;
+				// Update Stats
 				if (statsLevel >= 3)   
 					queueStats.updateDelayTimeStats(color, 0);																 
 			}						
-			while (n < count) {					 
+			while (n < count) {
+				//  Place the rest of the tokens in the waitingLine
 				waitingLine.addLast(new Token(Simulator.clock, color));				
 				n++;					
 			}						
 		}
 		else if (queueDiscip == PS) {
 			if (!expPS) {
-				if (eventScheduled)	updateResidServTimes(); 
+				if (eventScheduled)	updateResidServTimes();	//NOTE: WATCH OUT! Method should be called before the new tokens have been added to residServTimes!  
 				for (int i = 0; i < count; i++)  {
 					double servTime = randServTimeGen[color].nextDouble();
 					if (servTime < 0) servTime = 0;
-					residServTimes[color].add(servTime);  			
+					residServTimes[color].add(servTime);	//SDK-TODO: Consider storing this info in queueTokens inside the Token objects; might be more efficient than using separate ArrayLists  			
 				}				
 			}														 						
 			for (int i = 0; i < count; i++) 
 				queueTokens[color].addLast(new Token(Simulator.clock, color));
-			if (eventScheduled) clearEvents(); 
+			if (eventScheduled) clearEvents();	// NOTE: clearEvents() resets eventScheduled to false; 
 			eventsUpToDate = false;
 		}
 		else {
@@ -370,9 +396,10 @@ public class QueueingPlace extends Place {
 	}
 	
 	/**
-	 * Method completeService  
-	 *                        
-	 * 
+	 * Method completeService - completes service of a token, moves it to the depository 
+	 *                          and schedules next waiting token for service.                      
+	 *
+	 * @param token - token completing service
 	 * @return
 	 * @exception
 	 */
@@ -381,13 +408,15 @@ public class QueueingPlace extends Place {
 			Simulator.logln("Error: Attempted to remove a token from queue " + name + " which is empty!");
 			throw new SimQPNException();
 		}
-		 
+
+		// Update stats (below more...) (Note: watch out the order of this and next statement)
 		if (statsLevel > 0)  {
 			queueStats.updateTkPopStats(token.color, queueTokenPop[token.color], -1);
 			if (statsLevel >= 3) 
 				queueStats.updateSojTimeStats(token.color, Simulator.clock - token.arrivalTS);
 		}
 		
+		// Now remove token from queue and update queue state
 		queueTokenPop[token.color]--;
 				
 		if (queueDiscip == IS) {
@@ -412,7 +441,7 @@ public class QueueingPlace extends Place {
 			else {
 				queueTokens[tkSchedCol].remove(tkSchedPos);
 				residServTimes[tkSchedCol].remove(tkSchedPos);
-				updateResidServTimes();   
+				updateResidServTimes(); //NOTE: WATCH OUT! Method should be called after served token has been removed from residServTimes!   
 			}
 			eventScheduled = false;
 			eventsUpToDate = false;
@@ -421,7 +450,8 @@ public class QueueingPlace extends Place {
 			Simulator.logln("Error: Invalid queueing discipline for QueueingPlace " + name);
 			throw new SimQPNException();
 		}
-		
+
+		// Finally move token to depository
 		super.addTokens(token.color, 1);
 		
 	}

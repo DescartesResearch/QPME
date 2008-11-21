@@ -546,6 +546,7 @@ public class Page1ConfigurationSelectionWizardPage extends BaseWizardPage {
 			metaAttribute.addAttribute("stopping-rule", "FIXEDLEN");
 			metaAttribute.addAttribute("time-before-initial-heart-beat", "100000");
 			metaAttribute.addAttribute("time-between-stop-checks", "100000");
+			metaAttribute.addAttribute("seconds-between-stop-checks", "60");
 			metaAttribute.addAttribute("seconds-between-heart-beats", "60");
 			metaAttribute.addAttribute("verbosity-level", "0");
 			metaAttribute.addAttribute("output-directory", "/");

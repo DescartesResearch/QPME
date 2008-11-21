@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006 Samuel Kounev. All rights reserved.
+ * Copyright (c) 2009 Samuel Kounev. All rights reserved.
  *    
  * The use, copying, modification or distribution of this software and its documentation for 
  * any purpose is NOT allowed without the written permission of the author.
@@ -50,99 +50,83 @@ import de.tud.cs.qpe.model.DocumentManager;
 public class PlaceStats extends Stats implements java.io.Serializable {
 	private static final long serialVersionUID = 1L;
 
-	public boolean inRampUp;
-
-	public double endRampUpClock;
-
-	public double endRunClock;
-
-	public double msrmPrdLen;
-
-	public double runWallClockTime;
+	public boolean inRampUp;				// True if still in RampUp period (no measurements taken).
+	public double endRampUpClock;			// Clock at the end of RampUp, i.e. beginning of the measurement period.
+	public double endRunClock;				// Clock at the end of the run.
+	public double msrmPrdLen;				// Duration of the measurement period in simulation time (endRunClock - endRampUpClock).
+	public double runWallClockTime;			// Total duration of the run in seconds.
 
 	// ----------------------------------------------------------------------------------------------------
 	// STATISTICS
 	// ----------------------------------------------------------------------------------------------------
 
-	public int[] arrivCnt;
+	// StatsLevel 1 ---------------------------------------------------------------------------------------
+	public int[] arrivCnt;					// Total number of tokens arrived to this place during the run.
+	public int[] deptCnt;					// Total number of tokens departed from this place during the run.
+	public double[] arrivThrPut;			// Arrival rate = (arrivCnt[c] / msrmPrdLen).
+	public double[] deptThrPut;				// Departure rate = (deptCnt[c] / msrmPrdLen).
+	
+	// StatsLevel 2 ---------------------------------------------------------------------------------------
+	public int[] minTkPop;					// Minimum observed token population (TkPop).				
+	public int[] maxTkPop;					// Maximum observed token population.
+	public double[] areaTkPop;				// Accumulated area under the curve for computing the expected average token population.
+	public double[] areaColUtil;			// Accumulated area under the curve for computing the expected place color utilization - for each color the fraction of time that there are tokens of this color in the place.
+	public double[] lastColTkPopClock;		// Time of last color token population change.
+	public double[] meanTkPop;				// Mean Token Population = (areaTkPop[c] / msrmPrdLen).
+	public double[] colUtil;				// Color Utilization = (areaColUtil[c] / msrmPrdLen).
 
-	public int[] deptCnt;
+	// StatsLevel 3 ---------------------------------------------------------------------------------------
+	public double[] minST;					// Minimum observed token sojourn time.
+	public double[] maxST;					// Maxumum observed token sojourn time.
+	public double[] sumST;					// Sum of token sojourn times.
+	public double[] sumSqST;				// Sum of token sojourn time squares.
+	public int[] numST;						// Number of sojourn times observed.
+	public double[] meanST;					// Mean Sojourn Time = (sumST[c] / numST[c]).
+	public double[] stDevST;				// Sojourn Time Standard Deviation = Math.sqrt(Descriptive.sampleVariance(numST[c], sumST[c], sumSqST[c])).
 
-	public double[] arrivThrPut;
+	// BATCH_MEANS: Steady state statistics //TODO: Make the stuff below to be used only when method is BATCH_MEANS
+	public double[] signLevST;				// Required significance level, (1 - signLevST) = the confidence level.				
+	public double[] reqAbsPrc;				// Mode ABSPRC: Required absolute precision (max c.i. half length).
+	public double[] reqRelPrc;				// Mode RELPRC: Required relative precision (max ratio of c.i. half length to mean).
+	public int[] batchSizeST;				// Batch size for the batch means algorithm.
+	public int[] minBatches;				// Minimum number of batches required for steady state statistics.
+											// NOTE: If minBatches[c] <= 0, no steady state statistics are collected for this color! 
 
-	public double[] deptThrPut;
+	// For ((NORMAL/MULT_REPL):BATCH_MEANS, statsLevel >= 3): BATCH MEANS AUTOCORRELATION TEST
+	public int[] numBMeansCorlTested;		// If > 0 checks whether the batch size is sufficient - tests for autocorrelation between successive batch means (See paper of Pawlikowski in ACM Computing Surveys, Vol.22, No.2, June 1990).
+											// the first numBMeansCorlTested batch means from the beginning of steady state are tested for autocorrelation.
+	public boolean[] corlTestPassedOnce;	// Indicates that the first batch size which passes the autocorrelation test has been reached.
+	 										// Note that the augorithm uses the second batch size which passes the test (see Pawlikowski).
+	public AbstractDoubleList[]
+	                          batchMeansST;	// Stores sojourn time batch means; used if numBMeansCorlTested > 0.
 
-	public int[] minTkPop;
+	// Assumptions: 
+	//    1. Steady state statistics are collected for color c only when minBatches[c] > 0 !    
+	//    2. The batch means correlation test is performed for color c only if numBMeansCorlTested[c] > 0.
+	//       If (minBatches[c] <= 0), numBMeansCorlTested is ignored!
+	//    3. numBMeansCorlTested must be even!
+	//    4. We should always have (minBatches[c] > numBMeansCorlTested[c]) to ensure that the 
+	//       batch means correlation test has been passed before starting steady state analysis!
+	// These assumptions are enforced in the init() method. 
+	
+	public double[] sumBatchST;				// Sum of means in current batch.
+	public double[] sumBMeansST;			// Sum of sojourn time batch means.
+	public double[] sumBMeansSqST;			// Sum of sojourn time batch mean squares.
+	public int[] numBatchesST;				// Number of batches.
+	public boolean stdStateStatsAv;			// true if there were enough batches to compute all requested steady state statistics.
+	public double[] stdStateMeanST;			// Steady State Mean Sojourn Time = (sumBMeansST[c] / numBatchesST[c]).
+	public double[] varStdStateMeanST;		// Steady State Sojourn Time Variation = Descriptive.sampleVariance(numBatchesST[c], sumBMeansST[c], sumBMeansSqST[c]).
+	public double[] stDevStdStateMeanST;	// Steady State Sojourn Time Standard Deviation = Math.sqrt(varStdStateMeanST[c]).
+	public double[] ciHalfLenST;			// Confidence Interval Half Length = Probability.studentTInverse(signLevST[c], numBatchesST[c] - 1) * Math.sqrt(varStdStateMeanST[c] / numBatchesST[c]).
+	public int[] confLevelST;				// Confidence Level = (int) (100 * (1 - signLevST[c])).
 
-	public int[] maxTkPop;
+	// INIT_TRANS:WELCH (Method of Welch)	
+	public int[] minObsrvST;				// Minumum number of observations required.	
+	public int[] maxObsrvST;				// Maximum number of observations considered (if <= 0 token color is not considered in the analysis).
+	public AbstractDoubleList[] obsrvST;	// Stores sojourn time observations.
 
-	public double[] areaTkPop;
-
-	public double[] areaColUtil;
-
-	public double[] lastColTkPopClock;
-
-	public double[] meanTkPop;
-
-	public double[] colUtil;
-
-	public double[] minST;
-
-	public double[] maxST;
-
-	public double[] sumST;
-
-	public double[] sumSqST;
-
-	public int[] numST;
-
-	public double[] meanST;
-
-	public double[] stDevST;
-
-	public double[] signLevST;
-
-	public double[] reqAbsPrc;
-
-	public double[] reqRelPrc;
-
-	public int[] batchSizeST;
-
-	public int[] minBatches;
-
-	public int[] numBMeansCorlTested;
-
-	public boolean[] corlTestPassedOnce;
-
-	public AbstractDoubleList[] batchMeansST;
-
-	public double[] sumBatchST;
-
-	public double[] sumBMeansST;
-
-	public double[] sumBMeansSqST;
-
-	public int[] numBatchesST;
-
-	public boolean stdStateStatsAv;
-
-	public double[] stdStateMeanST;
-
-	public double[] varStdStateMeanST;
-
-	public double[] stDevStdStateMeanST;
-
-	public double[] ciHalfLenST;
-
-	public int[] confLevelST;
-
-	public int[] minObsrvST;
-
-	public int[] maxObsrvST;
-
-	public AbstractDoubleList[] obsrvST;
-
-	public PrintStream[] fileST;
+	// StatsLevel 4 ---------------------------------------------------------------------------------------
+	public PrintStream[] fileST;			// Level 4: File output streams for dumping sojourn times.
 
 	/**
 	 * Constructor
@@ -156,80 +140,80 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 * @param numColors -
 	 *            number of colors
 	 * @param statsLevel -
-	 *            determines the amount of statistics to be gathered during the
-	 *            run
+	 *            determines the amount of statistics to be gathered during the run
+	 *            
 	 */
 	public PlaceStats(int id, String name, int type, int numColors,
 			int statsLevel) throws SimQPNException {
 		super(id, name, type, numColors, statsLevel);
 
-		this.inRampUp = true;
-		this.endRampUpClock = 0;
-		this.endRunClock = 0;
-		this.msrmPrdLen = 0;
-		this.runWallClockTime = 0;
+		this.inRampUp 			= true;
+		this.endRampUpClock 	= 0;
+		this.endRunClock 		= 0;
+		this.msrmPrdLen 		= 0;
+		this.runWallClockTime 	= 0;
 
 		// statsLevel >= 1
-		this.arrivCnt = new int[numColors];
-		this.deptCnt = new int[numColors];
-		this.arrivThrPut = new double[numColors];
-		this.deptThrPut = new double[numColors];
+		this.arrivCnt 								= new int[numColors];
+		this.deptCnt 								= new int[numColors];
+		this.arrivThrPut 							= new double[numColors];
+		this.deptThrPut 							= new double[numColors];
 		if (statsLevel >= 2) {
-			this.minTkPop = new int[numColors];
-			this.maxTkPop = new int[numColors];
-			this.areaTkPop = new double[numColors];
-			this.areaColUtil = new double[numColors];
-			this.lastColTkPopClock = new double[numColors];
-			this.meanTkPop = new double[numColors];
-			this.colUtil = new double[numColors];
+			this.minTkPop 							= new int[numColors];
+			this.maxTkPop 							= new int[numColors];
+			this.areaTkPop 							= new double[numColors];
+			this.areaColUtil 						= new double[numColors];
+			this.lastColTkPopClock 					= new double[numColors];
+			this.meanTkPop 							= new double[numColors];
+			this.colUtil 							= new double[numColors];
 		}
 		if (statsLevel >= 3) {
-			this.minST = new double[numColors];
-			this.maxST = new double[numColors];
-			this.sumST = new double[numColors];
-			this.sumSqST = new double[numColors];
-			this.numST = new int[numColors];
-			this.meanST = new double[numColors];
-			this.stDevST = new double[numColors];
+			this.minST 								= new double[numColors];
+			this.maxST 								= new double[numColors];
+			this.sumST 								= new double[numColors];
+			this.sumSqST 							= new double[numColors];
+			this.numST 								= new int[numColors];
+			this.meanST 							= new double[numColors];
+			this.stDevST 							= new double[numColors];
 			if (Simulator.analMethod == Simulator.WELCH) {
-				this.minObsrvST = new int[numColors];
-				this.maxObsrvST = new int[numColors];
-				this.obsrvST = new AbstractDoubleList[numColors];
+				this.minObsrvST 					= new int[numColors];
+				this.maxObsrvST 					= new int[numColors];
+				this.obsrvST 						= new AbstractDoubleList[numColors];
 				for (int c = 0; c < numColors; c++) {
 					// DEFAULT-CONFIG
-					this.minObsrvST[c] = 500;
-					this.maxObsrvST[c] = 100000;
-					this.obsrvST[c] = new DoubleArrayList();
+					this.minObsrvST[c] 				= 500;
+					this.maxObsrvST[c] 				= 100000;
+					this.obsrvST[c] 				= new DoubleArrayList();  // Note: Max capacity will be set later so that the user has a chance to modify maxObsrvST.
 				}
 			}
 			if (Simulator.analMethod == Simulator.BATCH_MEANS) {
-				this.signLevST = new double[numColors];
-				this.reqAbsPrc = new double[numColors];
-				this.reqRelPrc = new double[numColors];
-				this.batchSizeST = new int[numColors];
-				this.minBatches = new int[numColors];
-				this.numBMeansCorlTested = new int[numColors];
-				this.corlTestPassedOnce = new boolean[numColors];
-				this.batchMeansST = new AbstractDoubleList[numColors];
+				this.signLevST 						= new double[numColors];
+				this.reqAbsPrc 						= new double[numColors];
+				this.reqRelPrc 						= new double[numColors];
+				this.batchSizeST					= new int[numColors];
+				this.minBatches 					= new int[numColors];
+				this.numBMeansCorlTested 			= new int[numColors];
+				this.corlTestPassedOnce 			= new boolean[numColors];
+				this.batchMeansST 					= new AbstractDoubleList[numColors];
 				// DEFAULT-CONFIG: Default parameters for batch means algorithm
 				for (int c = 0; c < numColors; c++) {
-					this.signLevST[c] = 0.1;
-					this.reqAbsPrc[c] = 20;
-					this.reqRelPrc[c] = 0.1;
-					this.batchSizeST[c] = 500;
-					this.minBatches[c] = 30;
-					this.numBMeansCorlTested[c] = 28;
-					this.corlTestPassedOnce[c] = false;
+					this.signLevST[c] 				= 0.1;		// e.g. 0.05 ---> 95% c.i.; 0.1 ---> 90%
+					this.reqAbsPrc[c] 				= 20;
+					this.reqRelPrc[c] 				= 0.1;		// e.g. 0.1 ---> 10% relative precision
+					this.batchSizeST[c] 			= 500;
+					this.minBatches[c] 				= 30;		// As per Schmeiser [1982]; see Pawlikowski [1990]
+					this.numBMeansCorlTested[c] 	= 28;		// numBMeansCorlTested should be < minBatches and should be even!
+					this.corlTestPassedOnce[c] 		= false;	// Note: this is not a parameter and mustn't be modified! 
 				}
-				this.sumBatchST = new double[numColors];
-				this.sumBMeansST = new double[numColors];
-				this.sumBMeansSqST = new double[numColors];
-				this.numBatchesST = new int[numColors];
-				this.stdStateMeanST = new double[numColors];
-				this.varStdStateMeanST = new double[numColors];
-				this.stDevStdStateMeanST = new double[numColors];
-				this.ciHalfLenST = new double[numColors];
-				this.confLevelST = new int[numColors];
+				this.sumBatchST 					= new double[numColors];
+				this.sumBMeansST 					= new double[numColors];
+				this.sumBMeansSqST 					= new double[numColors];
+				this.numBatchesST 					= new int[numColors];
+				this.stdStateMeanST 				= new double[numColors];
+				this.varStdStateMeanST 				= new double[numColors];
+				this.stDevStdStateMeanST 			= new double[numColors];
+				this.ciHalfLenST 					= new double[numColors];
+				this.confLevelST 					= new int[numColors];
 			}
 		}
 
@@ -257,41 +241,49 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	}
 
 	/**
-	 * Method init
+	 * Method init - should be called at the beginning of the measurement period (ideally the beginning of steady state)	    	 
 	 * 
-	 * @param tokenPop -
-	 *            current token population
+	 * @param tokenPop - current token population 
 	 * @return
 	 * @exception
 	 */
 	public void init(int[] tokenPop) {
 		// statsLevel >= 1
 		for (int c = 0; c < numColors; c++) {
-			arrivCnt[c] = 0;
-			deptCnt[c] = 0;
+			arrivCnt[c]					= 0; //TODO: check if we should instead set arrivCnt to tokenPop[c] here
+			deptCnt[c]					= 0;
 		}
 		if (statsLevel >= 2)
 			for (int c = 0; c < numColors; c++) {
-				minTkPop[c] = tokenPop[c];
-				maxTkPop[c] = tokenPop[c];
-				areaTkPop[c] = 0;
-				areaColUtil[c] = 0;
-				lastColTkPopClock[c] = Simulator.clock;
+				minTkPop[c] 			= tokenPop[c];
+				maxTkPop[c] 			= tokenPop[c];
+				areaTkPop[c] 			= 0;
+				areaColUtil[c] 			= 0;
+				lastColTkPopClock[c]	= Simulator.clock;
 			}
 		if (statsLevel >= 3)
 			for (int c = 0; c < numColors; c++) {
-				minST[c] = 0;
-				maxST[c] = 0;
-				sumST[c] = 0;
-				sumSqST[c] = 0;
-				numST[c] = 0;
+				minST[c] 				= 0;
+				maxST[c] 				= 0;
+				sumST[c] 				= 0;
+				sumSqST[c] 				= 0;
+				numST[c] 				= 0;
 				if (Simulator.analMethod == Simulator.BATCH_MEANS
 						&& minBatches[c] > 0) {
-					sumBatchST[c] = 0;
-					sumBMeansST[c] = 0;
-					sumBMeansSqST[c] = 0;
-					numBatchesST[c] = 0;
+					sumBatchST[c] 		= 0;
+					sumBMeansST[c] 		= 0;
+					sumBMeansSqST[c] 	= 0;
+					numBatchesST[c] 	= 0;
+					// NOTE: Steady state analysis is performed for color c only if minBatches[c] > 0. 
+					//       The following important assumptions must be enforced here:     
+					//       1. The batch means correlation test is performed for color c only if numBMeansCorlTested[c] > 0.
+					//          If (minBatches[c] <= 0), numBMeansCorlTested is ignored!
+					//       2. numBMeansCorlTested must be even!
+					//       3. We should always have (minBatches[c] > numBMeansCorlTested[c]) to ensure that the 
+					//          batch means correlation test has been passed before starting steady state analysis!
+					
 					if (numBMeansCorlTested[c] > 0) {
+						// Ensure that numBMeansCorlTested is even
 						if (numBMeansCorlTested[c] % 2 != 0) {
 							if (type == PLACE)
 								Simulator.log("Warning: In place " + name);
@@ -304,6 +296,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 										+ c + "] + 1) = " + (numBMeansCorlTested[c] + 1));
 							numBMeansCorlTested[c]++;
 						}
+						// Ensure that minBatches[c] > numBMeansCorlTested[c]
 						if (!(minBatches[c] > numBMeansCorlTested[c])) {
 							if (type == PLACE)
 								Simulator.log("Warning: In place " + name);
@@ -317,18 +310,16 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 											+ (numBMeansCorlTested[c] + 1));
 							minBatches[c] = numBMeansCorlTested[c] + 1;
 						}
-						batchMeansST[c] = new DoubleArrayList(
-								numBMeansCorlTested[c]);
+						batchMeansST[c] = new DoubleArrayList(numBMeansCorlTested[c]);
 					}
 				}
 			}
 	}
 
 	/**
-	 * Method start
+	 * Method start - should be called at the end of RampUp to start taking measurements.	    	 
 	 * 
-	 * @param tokenPop -
-	 *            current token population
+	 * @param tokenPop - current token population
 	 * @return
 	 * @exception
 	 */
@@ -339,10 +330,12 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	}
 
 	/**
-	 * Method finish
+	 * Method finish - should be called at the end of the measurement period to
+	 *                 complete statistics collection.
+	 *  
+	 * Note: Completes accumulated areas under the curve.   
 	 * 
-	 * @param tokenPop -
-	 *            current token population
+	 * @param tokenPop - current token population
 	 * @return
 	 * @exception
 	 */
@@ -364,16 +357,12 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	/**
 	 * Method updateTkPopStats
 	 * 
-	 * @param color -
-	 *            token color
-	 * @param oldTkPop -
-	 *            old token population
-	 * @param delta -
-	 *            difference between new and old token population
+	 * @param color     - token color
+	 * @param oldTkPop  - old token population
+	 * @param delta     - difference between new and old token population
 	 */
 	public void updateTkPopStats(int color, int oldTkPop, int delta) {
-		if (inRampUp)
-			return;
+		if (inRampUp) return;
 		if (delta > 0)
 			arrivCnt[color] += delta;
 		else
@@ -396,18 +385,14 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	/**
 	 * Method updateSojTimeStats
 	 * 
-	 * @param color -
-	 *            token color
-	 * @param sojTime -
-	 *            sojourn time of token in place
+	 * @param color   -  token color
+	 * @param sojTime -  sojourn time of token in place
 	 */
 	public void updateSojTimeStats(int color, double sojTime) {
 		if (Simulator.analMethod == Simulator.WELCH) {
-			if (maxObsrvST[color] <= 0)
-				return; // Do not consider colors with nonpositive maxObsrvST
+			if (maxObsrvST[color] <= 0) return;		// Do not consider colors with nonpositive maxObsrvST
 			int numObsrv = obsrvST[color].size();
-			if (numObsrv == maxObsrvST[color])
-				return;
+			if (numObsrv == maxObsrvST[color]) return;
 			if (numObsrv == 0)
 				obsrvST[color].ensureCapacity(maxObsrvST[color]);
 			obsrvST[color].add(sojTime);
@@ -425,20 +410,17 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			return;
 		}
 
-		if (inRampUp)
-			return;
+		if (inRampUp) return;
 
 		if (numST[color] == 0) {
 			minST[color] = sojTime;
 			maxST[color] = sojTime;
 		} else {
-			if (sojTime < minST[color])
-				minST[color] = sojTime;
-			if (sojTime > maxST[color])
-				maxST[color] = sojTime;
+			if (sojTime < minST[color])	minST[color] = sojTime;
+			if (sojTime > maxST[color])	maxST[color] = sojTime;
 		}
-		sumST[color] += sojTime;
-		sumSqST[color] += sojTime * sojTime;
+		sumST[color]	+= sojTime;
+		sumSqST[color]	+= sojTime * sojTime;
 		numST[color]++;
 
 		if (Simulator.analMethod == Simulator.BATCH_MEANS
@@ -473,18 +455,15 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	/**
 	 * Method doubleBatchSizeST
 	 * 
-	 * @param col -
-	 *            token color
+	 * @param col - token color
 	 */
 	public void doubleBatchSizeST(int color) {
-		AbstractDoubleList newBatchMeansST = new DoubleArrayList(
-				numBMeansCorlTested[color]);
+		AbstractDoubleList 
+			newBatchMeansST = new DoubleArrayList(numBMeansCorlTested[color]);
 
 		double[] oldBMs = batchMeansST[color].elements();
 		batchSizeST[color] *= 2;
-		numBatchesST[color] /= 2; // Note: since (numBatchesST ==
-		// numBMeansCorlTested) we know that
-		// numBatchesST is even
+		numBatchesST[color] /= 2; // Note: since (numBatchesST == numBMeansCorlTested) we know that numBatchesST is even
 		sumBMeansST[color] = 0;
 		sumBMeansSqST[color] = 0;
 
@@ -500,7 +479,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 		sumBatchST[color] = 0;
 		// DEBUG:
 		if (numST[color] % batchSizeST[color] != 0)
-			Simulator.logln("PROBLEM !!!!");
+			Simulator.logln("ERROR in doubleBatchSizeST: numST[color] % batchSizeST[color] != 0 ");
 	}
 
 	/**
@@ -512,15 +491,30 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	public boolean testBMeansForCorlST(int color) {
 		int L = (int) (0.1 * numBatchesST[color]);
 		double beta = signLevST[color] / L;
+		// DEBUG:		
+		// beta = ((double) 0.01) / L;
+		
+		/*DEBUG			
+		System.out.println("  Considering lags 1 to " + L + " of " + numBatchesST[color] + " batch means :");
+		
+		for (int k = 1; k <= L; k++) {
+			System.out.println("   Ordinary est. of autocorl. coef. of lag " + k + ": " + 
+								estAutoCorlCoef(batchMeansST[color], 0, numBatchesST[color] - 1, k));
+		}
+		for (int k = 1; k <= L; k++) {
+			System.out.println("   Jackknife est. of autocorl. coef. of lag " + k + ": " +
+								jkEstAutoCorlCoef(batchMeansST[color], 0, numBatchesST[color] - 1, k));			
+		}
+		System.out.println();
+		*/				
 		double corl = 0;
 		for (int k = 1; k <= L; k++) {
-			double jkEstAbs = Math.abs(jkEstAutoCorlCoef(batchMeansST[color],
-					0, numBatchesST[color] - 1, k));
-			double upperBound = Math.abs(Probability.normalInverse(beta / 2))
-					* Math.sqrt(varAutoCorlCoef(batchMeansST[color], 0,
-							numBatchesST[color] - 1, k));
+			double jkEstAbs = Math.abs(jkEstAutoCorlCoef(batchMeansST[color], 0, numBatchesST[color] - 1, k));
+			double upperBound = Math.abs(Probability.normalInverse(beta / 2)) * Math.sqrt(varAutoCorlCoef(batchMeansST[color], 0, numBatchesST[color] - 1, k));			
+			// DEBUG: System.out.println("   Jackknife est. of autocorl. coef. of lag " + k + ": " + jkEst + " UPPERBOUND = " + upperBound);			
 			if (!(jkEstAbs < upperBound)) {
 				corl += jkEstAbs;
+				//DEBUG: System.out.println("  Lag " + k + " autocorr. is NOT statistically negligible at sign. level " + beta);				
 			}
 		}
 		boolean passed = false;
@@ -549,32 +543,44 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 
 	/**
 	 * Method estAutoCorlCoef
+	 *  	 
+	 * @param bMeans		
+	 * @param from				 
+	 * @param to			
+	 * @param k	
 	 * 
-	 * @param bMeans
-	 * @param from
-	 * @param to
-	 * @param k
+	 * Computes an estimator of the autocorrelation coefficients of lag 'k' for 
+	 * the batch means bMeans[from]..bMeans[to].
 	 * 
+	 * Uses formulas in Pawlikowski [1990]: p.132 
+	 * Note: the sequence of batch means can be regarded as nonautocorrelated when all 
+	 * autocorrelation coefficents assume small magnitudes, say, if they are less than 0.05
+	 * Usually it is suggested to consider autocovariances of the lag not greater than 25% 
+	 * of the sample size or even 8-10%.
+	 * 	 
 	 */
-	public double estAutoCorlCoef(AbstractDoubleList bMeans, int from, int to,
-			int k) {
+	public double estAutoCorlCoef(AbstractDoubleList bMeans, int from, int to, int k) {
 		double[] bMs = bMeans.elements();
 		int numBMs = to - from + 1;
 		double sumBMs = 0;
 		double avgBM = 0;
-		double Rk = 0;
-		double R0 = 0;
+		double Rk = 0; // estimator of the autocovariance of lag k
+		double R0 = 0; // estimator of the autocovatiance of lag 0
 
-		for (int i = from; i <= to; i++)
-			sumBMs += bMs[i];
+		// compute avg batch mean
+		for (int i = from; i <= to; i++) sumBMs += bMs[i];
 		avgBM = sumBMs / numBMs;
 
+		// compute estimator Rk of the autocovariance of lag k 		
 		for (int i = k + 1; i <= numBMs; i++) {
+			// Note that the i-th BM is at position (from-1)+i in our array 			
 			Rk += ((bMs[from - 1 + i] - avgBM) * (bMs[from - 1 + i - k] - avgBM));
 		}
 		Rk *= (((double) 1) / (numBMs - k));
 
+		// compute estimator R0 of the autocovatiance of lag 0
 		for (int i = 1; i <= numBMs; i++) {
+			// Note that the ith BM is at position (from-1)+i in our array 			
 			R0 += ((bMs[from - 1 + i] - avgBM) * (bMs[from - 1 + i] - avgBM));
 		}
 		R0 *= (((double) 1) / numBMs);
@@ -584,12 +590,17 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 
 	/**
 	 * Method jkEstAutoCorlCoef
+	 *  	 
+	 * @param bMeans		
+	 * @param from				 
+	 * @param to			
+	 * @param k	
 	 * 
-	 * @param bMeans
-	 * @param from
-	 * @param to
-	 * @param k
+	 * Computes a jackknife estimator of the autocorrelation coefficients of lag 'k' for 
+	 * the batch means bMeans[from]..bMeans[to].
 	 * 
+	 * Uses formulas in Pawlikowski [1990]: p.154
+	 *  
 	 */
 	public double jkEstAutoCorlCoef(AbstractDoubleList bMeans, int from,
 			int to, int k) {
@@ -602,11 +613,15 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	/**
 	 * Method varAutoCorlCoef
 	 * 
-	 * @param bMeans
-	 * @param from
-	 * @param to
-	 * @param k
+	 * @param bMeans		
+	 * @param from				 
+	 * @param to			
+	 * @param k	
+  	 * 
+	 * Computes the variance of the autocorrelation coefficient of lag 'k' [Bartlett 1946] 
 	 * 
+	 * Uses formulas in Pawlikowski [1990]: p.157
+	 *  
 	 */
 	public double varAutoCorlCoef(AbstractDoubleList bMeans, int from, int to,
 			int k) {
@@ -626,13 +641,12 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	}
 
 	/**
-	 * Method enoughStats
-	 * 
-	 * 
+	 * Method enoughStats - returns true if enough data is available to provide estimates 
+	 *                      with the required precision. Applicable only for statLevel >= 3 in 
+	 *                      modes ABSPRC and RELPRC.  
 	 */
 	public boolean enoughStats() throws SimQPNException {
-		if (statsLevel < 3)
-			return true;
+		if (statsLevel < 3) return true;
 
 		if (Simulator.analMethod != Simulator.BATCH_MEANS) {
 			Simulator.logln("Error: PlaceStats.enoughStats should only be called when BATCH_MEANS method is used!");
@@ -654,29 +668,20 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 		}
 
 		for (c = 0; c < numColors; c++) {
-			if (minBatches[c] <= 0)
-				continue;
+			if (minBatches[c] <= 0) continue;
 			if (numBatchesST[c] < minBatches[c]) {
 				if (Simulator.debugLevel >= 3) {
-					Simulator.logln("  FAILED because (numBatchesST="
-							+ numBatchesST[c] + ") < (minBatches="
-							+ minBatches[c] + ") for color " + c);
+					Simulator.logln("  FAILED because (numBatchesST=" + numBatchesST[c] + ") < (minBatches=" + minBatches[c] + ") for color " + c);
 					Simulator.logln();
 				}
 				passed = false;
 				break;
 			}
-			varStdStateMeanST = Descriptive.sampleVariance(numBatchesST[c],
-					sumBMeansST[c], sumBMeansSqST[c]);
-			ciHalfLenST = Probability.studentTInverse(signLevST[c],
-					numBatchesST[c] - 1)
-					* Math.sqrt(varStdStateMeanST / numBatchesST[c]);
-			if ((Simulator.stoppingRule == Simulator.ABSPRC)
-					&& (ciHalfLenST > reqAbsPrc[c])) {
+			varStdStateMeanST = Descriptive.sampleVariance(numBatchesST[c], sumBMeansST[c], sumBMeansSqST[c]);
+			ciHalfLenST = Probability.studentTInverse(signLevST[c], numBatchesST[c] - 1) * Math.sqrt(varStdStateMeanST / numBatchesST[c]);
+			if ((Simulator.stoppingRule == Simulator.ABSPRC) && (ciHalfLenST > reqAbsPrc[c])) {
 				if (Simulator.debugLevel >= 3) {
-					Simulator.logln("  FAILED because (ciHalfLenST="
-							+ ciHalfLenST + ") > (reqAbsPrc=" + reqAbsPrc[c]
-							+ ") for color " + c);
+					Simulator.logln("  FAILED because (ciHalfLenST=" + ciHalfLenST + ") > (reqAbsPrc=" + reqAbsPrc[c] + ") for color " + c);
 					Simulator.logln();
 				}
 				passed = false;
@@ -718,7 +723,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	}
 
 	/**
-	 * Method processStats
+	 * Method processStats - processes gathered statistics (summarizes data)
 	 * 
 	 */
 	public void processStats() {
@@ -734,8 +739,8 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 				meanST[c] = sumST[c] / numST[c];
 				stDevST[c] = Math.sqrt(Descriptive.sampleVariance(numST[c],
 						sumST[c], sumSqST[c]));
-				if (Simulator.analMethod == Simulator.BATCH_MEANS
-						&& minBatches[c] > 0) {
+				if (Simulator.analMethod == Simulator.BATCH_MEANS && minBatches[c] > 0) {
+					// Steady State Statistics
 					if (numBatchesST[c] >= minBatches[c]) {
 						stdStateMeanST[c] = sumBMeansST[c] / numBatchesST[c];
 						varStdStateMeanST[c] = Descriptive.sampleVariance(

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006 Samuel Kounev. All rights reserved.
+ * Copyright (c) 2009 Samuel Kounev. All rights reserved.
  *    
  * The use, copying, modification or distribution of this software and its documentation for 
  * any purpose is NOT allowed without the written permission of the author.
@@ -27,9 +27,9 @@
  *  2006/10/21  Samuel Kounev     Changed to throw SimQPNException if output log file cannot be created.
  *
  *  2007/07/24  Samuel Kounev     Added support for setting timeBtwChkStops to 0 in which case it is
- *                                automatically adjusted to result in roughly 30 sec between checks.
- *  2007/08/22  Samuel Kounev     Added secsBtwChkStops parameter which is set to 30 by default.
- *                                secsBtwChkStops is only used if timeBtwChkStops is set to 0.
+ *                                automatically adjusted to result in roughly 60 sec between checks.
+ *  2007/08/22  Samuel Kounev     Added secondsBtwChkStops parameter which is set to 60 by default.
+ *                                secondsBtwChkStops is only used if timeBtwChkStops is set to 0.
  *                                
  */
 
@@ -89,147 +89,92 @@ import edu.cornell.lassp.houle.RngPack.RandomElement;
  */
 
 public class Simulator {
-
 	// Supported Run Modes
 	// SK-CD: Only consider run modes NORMAL and INIT_TRANS, ignore the rest!
-	public static final int NORMAL = 0; // Normal run mode
-
-	public static final int INIT_TRANS = 1; // Used for determining the length
-											// of the initial transient
-											// (currently only the method Welch
-											// is supported)
-
-	public static final int MULT_REPL = 2;  // Runs multiple replications, used
-											// to study the behavior of analysis
-											// methods when run multiple times
-											// (currently only supported for the
-											// BATCH_MEANS method)
-
-	public static final int CVRG_EST = 3;
+	public static final int NORMAL = 0; 		// Normal run mode.
+	public static final int INIT_TRANS = 1; 	// Used for determining the length of the initial transient
+												//   (currently only the method Welch is supported).
+	public static final int MULT_REPL = 2;  	// Runs multiple replications, used to study the behavior of analysis
+												//   methods when run multiple times (currently only supported for the
+												//   BATCH_MEANS method).
+	public static final int CVRG_EST = 3;		// Coverage estimation (currently only supported for BATCH_MEANS with 
+												//   RELPRC stopping rule).
 
 	// Supported Analysis Methods
-	public static final int WELCH = 0; // Method of Welch for determining the
-										// length of the initial transient
-
-	public static final int REPL_DEL = 1; // Replication/Deletion Approach
-											// (Method of Independent
-											// Replications)
-
-	public static final int BATCH_MEANS = 2; // Method of non-overlapping
-												// batch means
+	public static final int WELCH = 0;			// Method of Welch for determining the length of the initial transient.
+	public static final int REPL_DEL = 1;		// Replication/Deletion Approach (Method of Independent Replications).
+	public static final int BATCH_MEANS = 2;	// Method of non-overlapping batch means.
 
 	// Supported Stopping Rules (Note: don't change these, values are used)
-	public static final int FIXEDLEN = 0; // Fixed run length
+	public static final int FIXEDLEN = 0;		// Fixed run length.
+	public static final int ABSPRC = 1;			// Run until enough data to provide absolute precision for  
+												//   sojourn times (STs) in terms of confidence interval (c.i.) half lengths.
+	public static final int RELPRC = 2;			// Run until enough data to provide relative precision for STs in terms
+												//   of c.i. half lengths / means.
 
-	public static final int ABSPRC = 1; // Run until enough data to provide
-										// absolute precision for STs in terms
-										// of c.i. half lengths
-
-	public static final int RELPRC = 2; // Run until enough data to provide
-										// relative precision for STs in terms
-										// of c.i. half lengths / means
-
-	public static int numRuns; // Maximum number of runs
-
-	public static boolean useStdStateStats; // For (MULT_REPL, statsLevel >= 3):
-											// Specifies whether to use ordinary
-											// or steady state sojourn times
-											// when estimating averages and c.i.
-
+	public static int numRuns;					// Maximum number of runs.
+	public static boolean useStdStateStats; 	// For (MULT_REPL, statsLevel >= 3): Specifies whether to use ordinary
+												//   or steady state sojourn times when estimating averages and c.i.
 	public static String statsDir;
 
 	public static int runMode;
-
-	public static int analMethod; // Output data analysis method
-
-	public static int stoppingRule; // Simulation stopping criterion
-
-	public static int debugLevel; // Debug level currently not used
-									// consistently!
-
-	public static double rampUpLen; // Duration of the ramp up period
-
-	public static double totRunLen; // Maximum total duration of the simulation
-									// run (incl. rampUpLen)
-
-	public static double timeBtwChkStops; // Time between checks if stopping criterion is fulfilled. 
-					//If set to 0, it is automatically adjusted to result in roughtly secsBtwChkStops sec between checks.
-	public static double secsBtwChkStops; // Seconds between checks if stopping criterion is fulfilled. Used only when timeBtwChkStops == 0.
-
-	public static double timeInitHeartBeat; // Time when the first progress
-											// update is made. After this
-											// progress updates are made once
-											// every secsBtwHeartBeats seconds.
-
-	public static double secsBtwHeartBeats; // How often progress updates are
-											// made (heart beats).
-
-	public static double runsBtwCvrgChks; // CVRG_EST: Frequency of checking
-											// if enough data has been gathered
-											// to provide
-	// conf. interval for true coverage with required relative precision
-
-	/*
-	 * NOTE: Stopping Rules Total run duration is always limited to totRunLen.
-	 * 1. If stoppingRule is FIXEDLEN duration is always fixed to totRunLen. 2.
-	 * If stoppingRule is ABSPRC or RELPRC the run ends as soon as enough data
-	 * is available to provide required precision for STs or totRunLen is
-	 * reached. chkStopFreq specifies how often it is checked (time between
-	 * checks) if enough data is available to provide required precision.
-	 */
-
-	public static boolean inRampUp;
-
-	public static boolean simRunning;
+	public static int analMethod;				// Output data analysis method.
+	public static int stoppingRule;				// Simulation stopping criterion.
+	public static int debugLevel;				// Debug level - TODO: currently not used consistently!
+	public static double rampUpLen;				// Duration of the ramp up period.
+	public static double totRunLen;				// Maximum total duration of the simulation run (incl. rampUpLen).
+	public static double timeBtwChkStops;		// Time between checks if stopping criterion is fulfilled. 
+												//   If set to 0, it is automatically adjusted to result in roughtly 
+												//   secondsBtwChkStops sec between checks.
+	public static double secondsBtwChkStops;	// Seconds between checks if stopping criterion is fulfilled. TODO: Add to User's Guide. 
+												//   Used only when timeBtwChkStops == 0.
+	public static double timeInitHeartBeat;		// Time when the first progress update is made. After this
+												//   progress updates are made once every secsBtwHeartBeats seconds.
+	public static double secsBtwHeartBeats;		// How often progress updates are made (heart beats).
 	
-	public static double endRampUpClock;
+	public static double runsBtwCvrgChks;		// CVRG_EST: Frequency of checking if enough data has been gathered
+												//   to provide conf. interval for true coverage with required relative precision.
 
-	public static double endRunClock;
+	/* NOTE: Stopping Rules
+	 * Total run duration is always limited to totRunLen. 
+	 *   1. If stoppingRule is FIXEDLEN duration is always fixed to totRunLen.
+	 *   2. If stoppingRule is ABSPRC or RELPRC the run ends as soon as enough data is 
+	 *      available to provide required precision for STs or totRunLen is reached.
+	 *      chkStopFreq specifies how often it is checked (time between checks) 
+	 *      if enough data is available to provide required precision.
+	 */
+	
+	public static boolean inRampUp;				// True if still in RampUp period (no measurements taken).
+	public static boolean simRunning;			// True if simulation is currently running.
+	public static double endRampUpClock;		// Clock at the end of RampUp, i.e. beginning of the measurement period.
+	public static double endRunClock;			// Clock at the end of the run.
+	public static double msrmPrdLen;			// Duration of the measurement period (endRunClock - endRampUpClock).
+	public static double beginRunWallClock;		// currentTimeMillis at the begin of the run (wall clock time).
+	public static double endRunWallClock;		// currentTimeMillis at the end of the run (wall clock time).
+	public static double runWallClockTime;		// Total duration of the run in seconds.
 
-	public static double msrmPrdLen;
-
-	public static double beginRunWallClock;
-
-	public static double endRunWallClock;
-
-	public static double runWallClockTime;
-
-	// See if using double for time is really needed and if overhead is
-	// tolerable. Consider switching to float.
-	public static double clock;
-
-	public static LinkedList eventList;
+	// Check if using double for time is really needed and if overhead is tolerable. Consider switching to float.
+	public static double clock;					// Global simulation clock. Time is usually measured in milliseconds.
+	public static LinkedList eventList;			// Global simulation event list. Contains events scheduled for processing at specified points in time.
 
 	// Supported Random Number Generators
-	public static final int DRand = 0;
-
-	public static final int MersenneTwister = 1;
-
-	public static int randGenClass;
-
-	public static Uniform randNumGen;
-
-	public static boolean useRandSeedTable;
-
-	public static RandomSeedGenerator randSeedGen;
+	public static final int DRand = 0;				// cern.jet.random.engine.DRand
+	public static final int MersenneTwister = 1;	// cern.jet.random.engine.MersenneTwister
+	public static int randGenClass;					// Defines the type of uniform random number generators used during the simulation.
+	public static Uniform randNumGen;				// Random number generator used for seed generation.
+	public static boolean useRandSeedTable;			// Specifies whether RandomSeedGenerator (and thus RandomSeedTable) is used.
+	public static RandomSeedGenerator randSeedGen;	// Used if useRandSeedTable == true.
 
 	public int numPlaces;
-
 	public int numTrans;
-
 	public Place[] places;
-
 	public Transition[] trans;
 
-	// Xml Configuration.
+	// XML Configuration.
 	protected String configuration;
-
 	protected Element net;
-
 	protected List placeList;
-
 	protected List transitionList;
-	
 	protected static PrintStream logPrintStream;
 
 	public Simulator(Element net, String configuration) {
@@ -245,32 +190,24 @@ public class Simulator {
 		// BEGIN-CONFIG
 		// ------------------------------------------------------------------------------------------------------
 
-		// Run configuration parameters
-
-		/* SK-CD:
-		 * IMPORTANT: The order in which things are done must remain unchanged!!!
-		 * 
-		 * The following global parameters (static variables) should be
-		 * configurable by the user before starting the simulation:
-		 * 
-		 * 1. "Analysis Method" (analMethod) == BATCH_MEANS, REPL_DEL or WELCH
-		 * 2. "Maximum Number of Runs" (numRuns) 
-		 * 3. "Output Directory" (statsDir)
-		 * 
-		 * Use the values assigned below as defaults.
+		/* Global run configuration parameters:  
+		 *   1. "Analysis Method" (analMethod) == BATCH_MEANS, REPL_DEL or WELCH
+		 *   2. "Maximum Number of Runs" (numRuns) 
+		 *   3. "Output Directory" (statsDir)
 		 * 
 		 * numRuns should only be available if analMethod is REPL_DEL or WELCH.
 		 * 
 		 * IMPORTANT: runMode is implied from the chosen analysis method: 
-		 *  - If the user chooses BATCH_MEANS or REPL_DEL, set runMode to NORMAL. 
-		 *  - If the user chooses WELCH, set runMode to INIT_TRANS.
+		 *   - If the user chooses BATCH_MEANS or REPL_DEL, runMode is set to NORMAL. 
+		 *   - If the user chooses WELCH, runMode is set to INIT_TRANS.
 		 * 
-		 * Currently, the QPN to be simulated is defined in the getReady()
-		 * method. You should modify this method to use the input from QPE.
+		 * The QPN to be simulated is defined in the getReady() method.
 		 * 
-		 * Depending on the selected analysis method different parameters should
-		 * be available - see methods getReady and runWelchMtd for detailed
+		 * Depending on the selected analysis method different parameters must be 
+		 * configured - see methods getReady and runWelchMtd for detailed
 		 * information.
+		 * 
+		 * IMPORTANT: The order in which things are done must remain unchanged!!!
 		 * 
 		 */
 
@@ -279,9 +216,8 @@ public class Simulator {
 		Attribute outputDirAttribute = (Attribute) xpathSelector.selectSingleNode(net);
 		String outputDirectory = outputDirAttribute.getStringValue();
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HHmmssS");
-		if(!outputDirectory.endsWith("\\")) {
-			outputDirectory += "\\";
-		}
+		if(!outputDirectory.endsWith("\\"))	outputDirectory += "\\";
+		
 		String logFileName = outputDirectory + "SimQPN_Output_" + configuration + "_" + dateFormat.format(new Date()) + ".log";
 		try {
 			File logFile = new File(logFileName);
@@ -351,7 +287,6 @@ public class Simulator {
 		statsDir = simulatorSettings.attributeValue("output-directory");
 		logln(2, "statsDir = " + statsDir);
 		
-
 		// END-CONFIG
 		// ------------------------------------------------------------------------------------------------------
 	}
@@ -393,15 +328,16 @@ public class Simulator {
 				throw new SimQPNException();
 			}
 		
-			// SDK-DEBUG3: Please check the above four XPath expressions to make sure that they are correct. 
-
 			if (runMode == NORMAL) {
 				if (analMethod == BATCH_MEANS) { // Method of non-overlapping batch means
 					Place[] places = runBatchMeans(net, configuration);
 					for (int p = 0; p < places.length; p++)
 						places[p].report();
-				} else if (analMethod == REPL_DEL) { // Replication/Deletion Approach 				
+				} else if (analMethod == REPL_DEL) { // Replication/Deletion Approach (Method of Independent Replications) 				
 					useStdStateStats = false;
+					// useStdStateStats configurable only in MULT_REPL mode
+					//   - automatically set to true in CVRG_EST mode.
+					//   - automatically set to false in NORMAL:REPL_DEL mode. 					
 					AggregateStats[] aggrStats = runMultRepl(net, configuration);
 					for (int i = 0; i < aggrStats.length; i++)
 						if (aggrStats[i] != null)
@@ -429,9 +365,93 @@ public class Simulator {
 		simRunning = false;		
 	}
 
+	/* 
+	 * Former main method main 
+	 *
+	public static void main(String[] args) {
+
+		// Run configuration parameters
+			
+		runMode				= NORMAL;			
+		analMethod			= BATCH_MEANS;
+
+//		runMode				= NORMAL;			
+//		analMethod			= REPL_DEL;
+
+//		runMode				= MULT_REPL;			
+//		analMethod			= BATCH_MEANS;
+				 				 		 				
+//		runMode				= CVRG_EST;			
+//		analMethod			= BATCH_MEANS;
+		
+//		runMode				= INIT_TRANS;			
+//		analMethod			= WELCH;    
+
+		debugLevel			= 1;		// Should normally be 1 
+		numRuns				= 10000;	// Maximum number of runs		
+		useStdStateStats	= true;		// Configurable only in MULT_REPL mode 
+										//  - automatically set to true in CVRG_EST mode
+										//  - automatically set to false in NORMAL:REPL_DEL mode. 
+		
+		runsBtwCvrgChks		= 10;		// CVRG_EST: Frequency of checking if enough data has been gathered to provide
+										// conf. interval for true coverage with required relative precision												 
+		
+		if (runMode == NORMAL)  {
+			if (analMethod == BATCH_MEANS)  {    // Method of non-overlapping batch means				
+				Place[] places = runBatchMeans(); 					
+				for (int p=0; p < places.length; p++) 
+					places[p].report();		
+			}
+			else if (analMethod == REPL_DEL)  {  // Replication/Deletion Approach (Method of Independent Replications)
+				useStdStateStats = false;
+				AggregateStats[] aggrStats = runMultRepl();									
+				for (int i=0; i < aggrStats.length; i++) 
+					if (aggrStats[i] != null) aggrStats[i].printReport(); 						
+			}			
+			else  {
+				System.out.println("Error: Illegal analysis method specified!");
+				System.exit(-1);
+			}						 
+		}
+		else if (runMode == INIT_TRANS)  {
+			if (analMethod == WELCH)  { 				
+				AggregateStats[] aggrStats = runWelchMtd();			
+			}
+			else  {
+				System.out.println("Error: Analysis method " + analMethod + " not supported in INIT_TRANS mode!");
+				System.exit(-1);
+			}
+		}													
+		else if (runMode == MULT_REPL)  { // Currently only BATCH_MEANS supported in MULT_REPL mode!		
+			if (analMethod == BATCH_MEANS)  { 
+				AggregateStats[] aggrStats = runMultRepl();			
+				for (int i=0; i < aggrStats.length; i++) 
+					if (aggrStats[i] != null) aggrStats[i].printReport(); 						
+			}
+			else  {
+				System.out.println("Error: Analysis method " + analMethod + " not supported in MULT_REPL mode!");
+				System.exit(-1);
+			}						 								
+		}								
+		else if (runMode == CVRG_EST)  {  // Currently only BATCH_MEANS supported for coverage estimation!
+			if (analMethod == BATCH_MEANS)  {  							
+				runCvrgEst();			
+			}
+			else  {
+				System.out.println("Error: Analysis method " + analMethod + " not supported in CVRG_EST mode!");
+				System.exit(-1);
+			}						 								
+		}
+		else  {
+			System.out.println("Error: Invalid run mode specified!");
+			System.exit(-1);
+		}
+		
+	}
+*/
+	
 	/**
-	 * Method runBatchMeans - implements the method of non-overlapping batch
-	 * means
+	 * Method runBatchMeans - implements the method of non-overlapping batch means
 	 * 
 	 * @param
 	 * @return
@@ -445,10 +465,13 @@ public class Simulator {
 	}
 
 	/**
-	 * Method runMultRepl - runs multiple replications
+	 * Method runMultRepl - runs multiple replications 
+	 * Used in MULT_REPL mode as well as for the REPL/DEL method in NORMAL mode
+	 *  
+	 * MULT_REPL mode is used to study the behavior of analysis methods when run multiple times 
 	 * 
-	 * @param
-	 * @return
+	 * @param  	
+	 * @return 
 	 * @exception
 	 */
 	public static AggregateStats[] runMultRepl(Element net, String configuration) throws SimQPNException {
@@ -466,8 +489,7 @@ public class Simulator {
 		List placeList = sim.placeList;
 		
 		AggregateStats[] aggrStats = new AggregateStats[numPlaces * 2]; 
-		// Note: aggrStats should be large enough to accomodate 2 stats per place 
-		// in case all places are queueing places.
+		// Note: aggrStats should be large enough to accomodate 2 stats per place in case all places are queueing places.
 		
 		Place pl;
 
@@ -487,8 +509,7 @@ public class Simulator {
 			}
 		}
 		
-		/*     
-		 *  CONFIG: 
+		/*  CONFIG: 
 		 *  Set signLevAvgST for AggregateStats here:
 		 *  Should be configurable only for places with statsLevel >= 3 !
 		 *
@@ -603,8 +624,7 @@ public class Simulator {
 		List placeList = sim.placeList;
 
 		AggregateStats[] aggrStats = new AggregateStats[numPlaces * 2]; 
-		// Note: aggrStats should be large enough to accomodate 2 stats per place 
-		// in case all places are queueing places.
+		// Note: aggrStats should be large enough to accomodate 2 stats per place in case all places are queueing places.
 
 		Place pl;
 
@@ -630,30 +650,17 @@ public class Simulator {
 
 		// Run replication loop
 		for (int i = 0; i < numRuns; i++) {
-			// BEGIN-CONFIG
-			// ---------------------------------------------------------------------------------------
-			// If needed set minObsrvST/maxObsrvST of PlaceStats/QueueStats here
-			// (otherwise default values used)
-			// Note: Places/QueueingPlaces with (StatsLevel < 3) are not
-			// considered in the analysis!
-			// Note: If (maxObsrvST[c] <= 0) the respective token color is not
-			// considered in the analysis!
-
-			// ... places[p].placeStats.minObsrvST/maxObsrvST
-			// ... ((QueueingPlace) places[p]).queueStats.minObsrvST/maxObsrvST
-
-			/*
-			 * SK-CD: If the WELCH method is chosen the following advanced
-			 * parameters should be available:
+			/* BEGIN-CONFIG
+			 * ----------------------------------------------------------------------------------------------------------------
 			 * 
-			 * For every place/queue/depository the paramters minObsrvST and
-			 * maxObsrvST should be configurable for every color: NOTE: A
-			 * queueing-place consists of a queue and a depository 
 			 * minObsrvST - Minumum number of observations required 
-			 * maxObsrvST - Maximum number of observations considered (if <= 0
-			 * token color is not considered in the analysis).
+			 * maxObsrvST - Maximum number of observations considered (if <= 0 token color is not considered in the analysis).
 			 * 
-			 * Default values are given below.
+			 * ... places[p].placeStats.minObsrvST/maxObsrvST
+			 * ... ((QueueingPlace) places[p]).queueStats.minObsrvST[c]/maxObsrvST[c]
+			 * 
+			 * Note: Places/QueueingPlaces with (StatsLevel < 3) are not considered in the analysis!
+			 * Note: If (maxObsrvST[c] <= 0) the respective token color is not considered in the analysis!
 			 * 
 			 */
 
@@ -661,15 +668,11 @@ public class Simulator {
 			Iterator placeIterator = placeList.iterator();
 			
 			/* SDK-DEBUG: 
-			 *   - Does placeList.iterator() always return places in the same order 
-			 *     (matching the order in the places array)?
-			 * CHRIS: It returns the Elements in the document order. If this is not
-			 * changed, then it always returns them in the same order.
+			 *   - Does placeList.iterator() always return places in the same order (matching the order in the places array)?
+			 * CHRIS: It returns the Elements in the document order. If this is not changed, then it always returns them in the same order.
 			 *   - Note that XML in general does not guarantee any ordering of elements.
-			 * CHRIS: In general there is no guarantee, but the dom implementation
-			 * used does respect the order of elements. The only problems I encountered
-			 * was when merging sets of nodes, but since I don't do that, there should
-			 * be no problems. 
+			 * CHRIS: In general there is no guarantee, but the dom implementation used does respect the order of elements. The only problems I encountered
+			 * was when merging sets of nodes, but since I don't do that, there should be no problems. 
 			 *    
 			 */
 			for (int p = 0; placeIterator.hasNext(); p++) {
@@ -717,8 +720,7 @@ public class Simulator {
 						}
 					}
 				}
-			}
-			
+			}			
 			// END-CONFIG
 			// -----------------------------------------------------------------------------------------
 
@@ -748,6 +750,198 @@ public class Simulator {
 		return aggrStats;
 	}
 
+	
+	/*
+	 * Method runCvrgEst - implements coverage estimation for the batch means method
+	 * 
+	 *
+	public static void runCvrgEst() {
+
+		System.out.println("---------------------------------------------");						
+		System.out.println(" Starting CVRG_EST Method                    ");		
+		System.out.println("---------------------------------------------");
+
+		if (!useStdStateStats)  {
+			System.out.println("Setting useStdStateStats to true");				
+			useStdStateStats = true;
+		}			
+			
+		if (analMethod != BATCH_MEANS)  { 
+			System.out.println("Error: Coverage estimation only supported for the method of batch means!");
+			System.exit(-1);
+		}				
+		
+		if (stoppingRule != FIXEDLEN)  { 
+			System.out.println("Warning: Coverage estimation should be used with RELPRC stopping rule!");			
+		}
+				
+		Simulator sim = new Simulator();		
+		sim.getReady();
+						
+		int numPlaces = sim.numPlaces;
+		Place[]	places = sim.places;
+		AggregateStats[] aggrStats = new AggregateStats[numPlaces*2];  // Should be large enough to accomodate 2 stats per place in case all places are queueing places
+		Place pl;			
+														
+		for (int p=0; p < numPlaces; p++)  {
+			pl = places[p];
+			if (pl.statsLevel > 0)  {					 
+				if (pl instanceof QueueingPlace) {
+					aggrStats[p*2] 		= new AggregateStats(pl.id, pl.name, Stats.QUEUE, pl.numColors, pl.statsLevel);
+					aggrStats[(p*2)+1]	= new AggregateStats(pl.id, pl.name, Stats.DEPOSITORY, pl.numColors, pl.statsLevel);																	
+				}
+				else {
+					aggrStats[p*2] 		= new AggregateStats(pl.id, pl.name, Stats.PLACE, pl.numColors, pl.statsLevel);
+					aggrStats[(p*2)+1]	= null;
+				}					 
+			}
+			else {
+				aggrStats[p*2] 		= null;
+				aggrStats[(p*2)+1] 	= null;
+			}
+		}
+		 
+		// BEGIN-CONFIG
+		
+		// NOTE: Tokens whose trueAvgST is negative are not considered in the coverage analysis!
+		// NOTE: If no steady state statistics are collected for a token color (i.e. minBatches[c] <= 0),
+		//       trueAvgST should be set to -1 (or other negative number)!
+		// NOTE: If the soj. time of a token is deterministic you must set its trueAvgST[0] to -1 (or other negative number)! 
+		//       Otherwise the coverage estimation process would loop forever waiting for reqMinBadCIs to be reached!
+		   
+		// Init trueAvgST for AggregateStats:
+
+		  // Client
+		  aggrStats[0].trueAvgST[0] = 200;
+		  aggrStats[1].trueAvgST[0] = 1199.9709;
+
+		  // WLS-CPU
+		  aggrStats[2].trueAvgST[0] = 3967.2524;
+		  aggrStats[3].trueAvgST[0] = -1;
+		  // DBS-CPU
+		  aggrStats[6].trueAvgST[0] = 218.1469;
+		  aggrStats[7].trueAvgST[0] = -1;
+
+		  // DBS-I/O
+		  aggrStats[8].trueAvgST[0] = 14.4828;
+		  aggrStats[9].trueAvgST[0] = -1;
+
+		
+// PEPSY-EXAMPLE1 
+//		// Terminals
+//		aggrStats[0].trueAvgST[0] = 10000;
+//		aggrStats[0].trueAvgST[1] = 10000;
+//		aggrStats[1].trueAvgST[0] = -1;
+//		aggrStats[1].trueAvgST[1] = -1;
+//		// CPU
+//		aggrStats[2].trueAvgST[0] = 476.73673;
+//		aggrStats[2].trueAvgST[1] = 588.69769;
+//		aggrStats[3].trueAvgST[0] = -1;
+//		aggrStats[3].trueAvgST[1] = -1;
+//		//Disk1
+//		aggrStats[4].trueAvgST[0] = 2055;
+//		aggrStats[4].trueAvgST[1] = 2056;
+//		aggrStats[5].trueAvgST[0] = -1;
+//		aggrStats[5].trueAvgST[1] = -1;
+//		//Disk2
+//		aggrStats[6].trueAvgST[0] = 513.6108;
+//		aggrStats[6].trueAvgST[1] = 513.6098;
+//		aggrStats[7].trueAvgST[0] = -1;
+//		aggrStats[7].trueAvgST[1] = -1;
+//		//Disk3
+//		aggrStats[8].trueAvgST[0] = 40857;
+//		aggrStats[8].trueAvgST[1] = 40941;
+//		aggrStats[9].trueAvgST[0] = -1;
+//		aggrStats[9].trueAvgST[1] = -1; 
+
+// PEPSY-EXAMPLE2-heavy load
+//		// Terminals
+//		aggrStats[0].trueAvgST[0] = 5000;
+//		aggrStats[0].trueAvgST[1] = 5000;
+//		aggrStats[1].trueAvgST[0] = -1;
+//		aggrStats[1].trueAvgST[1] = -1;
+//		// CPU
+//		aggrStats[2].trueAvgST[0] = 590.91;
+//		aggrStats[2].trueAvgST[1] = 725.72;
+//		aggrStats[3].trueAvgST[0] = -1;
+//		aggrStats[3].trueAvgST[1] = -1;
+//		//Disk1
+//		aggrStats[4].trueAvgST[0] = 2403;
+//		aggrStats[4].trueAvgST[1] = 2405;
+//		aggrStats[5].trueAvgST[0] = -1;
+//		aggrStats[5].trueAvgST[1] = -1;
+//		//Disk2
+//		aggrStats[6].trueAvgST[0] = 517.537;
+//		aggrStats[6].trueAvgST[1] = 517.554;
+//		aggrStats[7].trueAvgST[0] = -1;
+//		aggrStats[7].trueAvgST[1] = -1;
+//		//Disk3
+//		aggrStats[8].trueAvgST[0] = 72563;
+//		aggrStats[8].trueAvgST[1] = 72859;
+//		aggrStats[9].trueAvgST[0] = -1;
+//		aggrStats[9].trueAvgST[1] = -1; 
+
+
+		// If needed set signLevAvgST[c] for AggregateStats here (otherwise default values used)
+
+		// If needed set useFdistr, reqMinBadCIs, signLevCvrg and reqCvrgAbsPrc for AggregateStats here (otherwise default values used)				
+		
+		for (int i=0; i < numPlaces*2; i++)  
+			if (aggrStats[i] != null)  { 			
+				aggrStats[i].useFdistr		= true; 
+				aggrStats[i].reqCvrgAbsPrc	= 0.05;
+				aggrStats[i].reqMinBadCIs	= 200; 
+				aggrStats[i].signLevCvrg	= 0.05;			
+			}								
+
+		// END-CONFIG
+		
+		boolean done = false;
+								
+		// Run replication loop			
+		for (int i=1; i <= numRuns && !done; i++) {
+			System.out.println("Starting Run " + i);				
+			sim.run();
+			
+			// Check if enough data to provide c.i. for coverage with required precision				
+			if (i % runsBtwCvrgChks == 0) done = true;
+										
+//			System.out.println("Checking if done");
+			for (int p=0; p < numPlaces; p++) {
+				pl = places[p];
+				if (pl.statsLevel > 0) {	
+					if (pl instanceof QueueingPlace) {
+						QueueingPlace qPl = (QueueingPlace) pl; 
+						aggrStats[p*2].saveStats(qPl.queueStats);
+						aggrStats[(p*2)+1].saveStats(qPl.placeStats);						
+						if (i % runsBtwCvrgChks == 0) {																				
+							if (!aggrStats[p*2].enoughCvrgStats()) done = false; 
+							if (!aggrStats[(p*2)+1].enoughCvrgStats()) done = false;																
+						}											
+					}
+					else {						
+						aggrStats[p*2].saveStats(pl.placeStats);						
+						if (i % runsBtwCvrgChks == 0) {							 
+							if (!aggrStats[p*2].enoughCvrgStats()) done = false;
+						}
+					}									
+				}
+			}								
+			sim = new Simulator();		
+			sim.getReady();
+			places = sim.places;
+		}
+					
+		for (int i=0; i < 2 * numPlaces; i++) 
+			if (aggrStats[i] != null) aggrStats[i].finish();
+			
+		for (int i=0; i < 2 * numPlaces; i++) 
+			if (aggrStats[i] != null) aggrStats[i].printReport(); 					
+		
+	}
+*/	
+		
+	
 	/**
 	 * Method getReady - prepares for the simulation run
 	 * 
@@ -758,17 +952,14 @@ public class Simulator {
 	public void getReady() throws SimQPNException {
 
 		/*
-		 * SK-CD: This is the method where the QPN to be simulated is defined.
-		 * The QPN specification is currently hard-coded. You should change this
-		 * to use your QPN description as input and map it to the structures
-		 * used below.
+		 * This is the method where the QPN to be simulated is defined.
+		 * The QPN specification is currently hard-coded. 
 		 * 
 		 * IMPORTANT: Remember to keep the order of statements unchanged!!!
 		 * 
 		 */
 
-		// Random Number Generation (Note: needs to be initialized before
-		// starting the model definition)
+		// Random Number Generation (Note: needs to be initialized before starting the model definition)
 		randGenClass = MersenneTwister;
 		useRandSeedTable = true;
 
@@ -777,71 +968,54 @@ public class Simulator {
 			randSeedGen = new RandomSeedGenerator(randNumGen.nextIntFromTo(0, Integer.MAX_VALUE), randNumGen.nextIntFromTo(0, RandomSeedTable.COLUMNS - 1));
 
 		// *****************************************************************************************************************
-		// BEGIN-MODEL-DEFINITION (Scenario L1 from 06-TSE-Paper)
+		// BEGIN-MODEL-DEFINITION
 		// *****************************************************************************************************************
 
 		// Initialize the place and transition sizes.
 		numPlaces = placeList.size();
 		numTrans = transitionList.size();
 
-		// -----------------------------------------------------------------------
-		// Create places
-		// -----------------------------------------------------------------------
+		// -----------------------------------------------------------------------------------------------------------
+		// CREATE PLACES
+		// -----------------------------------------------------------------------------------------------------------
 		/*
-		 * SK-CD:
-		 * 
-		 * @param int id - global id of the place - IMPORTANT: must be equal to
-		 *                 the index in the array!!!!!!! 
-		 * @param String name - name of the place
-		 * @param int numColors - number of colors 
-		 * @param int numInTrans - number of input transitions 
+		 * @param int id          - global id of the place - IMPORTANT: must be equal to the index in the array!!!!!!! 
+		 * @param String name     - name of the place
+		 * @param int numColors   - number of colors 
+		 * @param int numInTrans  - number of input transitions 
 		 * @param int numOutTrans - number of output transitions 
-		 * @param int[1..4] statsLevel - determines the amount of statistics to be 
-		 *    gathered during the run 
+		 * @param int[1..4] statsLevel - determines the amount of statistics to be gathered during the run 
 		 *    Level 1: Token Throughput (Arrival/Departure Rates) 
 		 *    Level 2: + Token Population, Utilization
-		 *    Level 3: + Token Sojourn Times (sample mean and variance + steady
-		 *               state point estimates and confidence intervals) 
+		 *    Level 3: + Token Sojourn Times (sample mean and variance + steady state point estimates and confidence intervals) 
 		 *    Level 4: + Record Sojourn Times in a file 
-		 * @param int depDiscip/dDis - determines the departure discipline: 
-		 *                             Place.NORMAL or Place.FIFO
+		 * @param int depDiscip/dDis - determines the departure discipline: Place.NORMAL or Place.FIFO
 		 * 
 		 * For QueueingPlace two extra parameters:
 		 * 
-		 * @param int queueDiscip/qDis - queueing discipline is QueueingPlace.IS, 
-		 *            QueueingPlace.FCFS or QueueingPlace.PS NOTE: if a different 
-		 *            queueing discipline is specified (e.g. RANDOM) print WARNING 
-		 *            and use FCFS instead. 
-		 * @param int numServers - number of servers in queueing station - 
-		 *                         NOTE: for IS set to 0
+		 * @param int queueDiscip/qDis - queueing discipline is QueueingPlace.IS, QueueingPlace.FCFS or QueueingPlace.PS. 
+		 *    NOTE: if a different queueing discipline is specified (e.g. RANDOM) print WARNING and use FCFS instead. 
+		 * @param int numServers - number of servers in queueing station - NOTE: for IS set to 0
 		 * 
-		 * IMPORTANT: Pay attention to variable types!!! Validate input parameters 
-		 * provided by the user to make sure that they make sense!
-		 * For e.g. Number of servers should be an integer >= 0.
+		 * IMPORTANT: Pay attention to variable types!!! Validate input parameters provided by the user to make sure 
+		 *   that they make sense! For e.g. Number of servers should be an integer >= 0.
 		 * 
-		 * IMPORTANT: In general, you should provide a way to add "help
-		 * information" associated with different items in the tool. For
-		 * example, if one wants to know what a configuration option means, one
-		 * should be able to somehow click on it and ask for help. Ballons that
-		 * appear when moving the cursor over the option is one possibility. A
-		 * more general solution would be to have a help page associated with
-		 * each input screen in the QPE. The page could be displayed by pressing
-		 * F1 for example.
+		 * IMPORTANT: In general, you should provide a way to add "help information" associated with different items 
+		 *   in the tool. For example, if one wants to know what a configuration option means, one should be able to 
+		 *   somehow click on it and ask for help. Ballons that appear when moving the cursor over the option is one 
+		 *   possibility. A more general solution would be to have a help page associated with each input screen in 
+		 *   the QPE. The page could be displayed by pressing F1 for example.
 		 * 
 		 */
 
 		/* 
-		 * SDK-DEBUG: A general question: Does your code guarantee that all id's
-		 * assigned to elements (places, transitions, colors, connections, modes)
-		 * are globally unique across all element types?
-		 * CHRIS: Yes it does. The id generator is initialized with the current 
-		 * system time from there on is allways increased by one for every 
-		 * id generated. Id generation is synchronized, so there should be no way
-		 * of creating double ids (ok ... except if the user messes with the system
-		 * time or works during daylightsaving time changes and starts the program
-		 * the same second twice, but I thought the chance for that would be quite
-		 * slim) ;) 
-		 * 
+		 * SDK-DEBUG: A general question: Does your code guarantee that all id's assigned to elements (places, 
+		 *   transitions, colors, connections, modes) are globally unique across all element types?
+		 * CHRIS: Yes it does. The id generator is initialized with the current system time from there on is 
+		 *   allways increased by one for every id generated. Id generation is synchronized, so there should be 
+		 *   no way of creating double ids (ok ... except if the user messes with the system time or works during 
+		 *   daylightsaving time changes and starts the program the same second twice, but I thought the chance for 
+		 *   that would be quite slim) ;)  
 		 */
 		
 		logln(2, "\n/////////////////////////////////////////////");
@@ -850,20 +1024,17 @@ public class Simulator {
 		logln(2, "places = new Place[" + numPlaces + "];");
 		places = new Place[numPlaces];
 
-		// Create the place-objects of every-place. Depending on its
-		// type-attribute create Place or QueueingPlace objects.
+		// Create the place-objects of every-place. Depending on its type-attribute create Place or QueueingPlace objects.
 		Iterator placeIterator = placeList.iterator();
 		
 		for (int i = 0; placeIterator.hasNext(); i++) {
 			Element place = (Element) placeIterator.next();
 			// SDK-DEBUG: Are you sure the XPath expression below selects the right connections? 
-			// <connection> is a child of the <connections> child element of <net>
-			// <connections> inside transitions should not be selected here! 
-			// CHRIS: Since I specify the source-id attribute and specify the 
-			// id of a place, only inter place/tansition connections can be 
-			// selected, the incidence function connections are between color-refs 
-			// and modes and since the ids are concidered unique, the correct 
-			// connection element will be selected.
+			//   <connection> is a child of the <connections> child element of <net> <connections> inside transitions 
+			//   should not be selected here!
+			// CHRIS: Since I specify the source-id attribute and specify the id of a place, only inter place/tansition 
+			//   connections can be selected, the incidence function connections are between color-refs and modes and since 
+			//   the ids are concidered unique, the correct connection element will be selected.
 			XPath xpathSelector = DocumentHelper.createXPath("//connection[@source-id = '" + place.attributeValue("id") + "']");
 			int numOutgoingConnections = xpathSelector.selectNodes(net).size();
 			xpathSelector = DocumentHelper.createXPath("//connection[@target-id = '" + place.attributeValue("id") + "']");
@@ -883,8 +1054,7 @@ public class Simulator {
 			
 			int dDis;
 			
-			// This is a user-defined config-parameter for both ordinary- and
-			// queueing-place.			
+			// This is a user-defined config-parameter for both ordinary- and queueing-place.			
 			if (place.attributeValue("departure-discipline") == null) {
 				logln("ERROR: departure-discipline parameter not set!");
 				logln("Details: ");
@@ -908,16 +1078,13 @@ public class Simulator {
 			}
 			/* 
 			 * IMPORTANT:			
-			 * My understanding was that all attributes should be included in the 
-			 * XML document even if they are set to their default values. 
-			 * Under this assumption, default values are dealt with in QPE and
-			 * here when mapping the model to SimQPN it is assumed that all 
-			 * attributes are set to valid values. So if that's not the case we should 
-			 * print an error message and stop. This would make it easier to 
-			 * shake out potential bugs in the mapping.
+			 * My understanding was that all attributes should be included in the XML document even if they are set to 
+			 * their default values. Under this assumption, default values are dealt with in QPE and here when mapping 
+			 * the model to SimQPN it is assumed that all attributes are set to valid values. So if that's not the case 
+			 * we should print an error message and stop. This would make it easier to shake out potential bugs in the 
+			 * mapping.
 			 * 
-			 * CHRIS: I had changed that in the editor. Unfortunately this only
-			 * applys to newly created nodes. Nodes of old models are left unchanged.
+			 * CHRIS: I had changed that in the editor. Unfortunately this only applys to newly created nodes. 
 			 *
 			 * SDK-DEBUG2: 
 			 * I have noticed that still some parameters (e.g. minObsrv, maxObsrv, queueMinObsrv, queueMaxObsrv, distribution-function) 
@@ -929,13 +1096,13 @@ public class Simulator {
 			
 			if ("ordinary-place".equals(place.attributeValue("type"))) {
 				places[i] = new Place(
-						i, 
-						place.attributeValue("name"), 
-						place.element("color-refs").elements("color-ref").size(), 
-						numIncomingConnections,
-						numOutgoingConnections, 
-						statsLevel, 
-						dDis, 
+						i,																	// id 
+						place.attributeValue("name"), 										// name
+						place.element("color-refs").elements("color-ref").size(), 			// # colors
+						numIncomingConnections,												// # incoming connections 
+						numOutgoingConnections, 											// # outgoing connections
+						statsLevel,															// stats level
+						dDis, 																// departure discipline
 						place);
 				logln(2, "places[" + i + "] = new Place(" 
 						+ i + ", '" 
@@ -949,7 +1116,6 @@ public class Simulator {
 			} else if ("queueing-place".equals(place.attributeValue("type"))) {
 				int qDis = QueueingPlace.FCFS;
 				int numServers;
-				
 				
 				if ("IS".equals(place.attributeValue("strategy"))) {
 					qDis = QueueingPlace.IS; 
@@ -979,15 +1145,15 @@ public class Simulator {
 					numServers = Integer.parseInt(place.attributeValue("number-of-servers"));
 				}				
 				places[i] = new QueueingPlace(
-						i, 
-						place.attributeValue("name"), 
-						place.element("color-refs").elements("color-ref").size(), 
-						numIncomingConnections,
-						numOutgoingConnections, 
-						statsLevel, 
-						dDis, 
-						qDis, 
-						numServers, 
+						i, 																	// id
+						place.attributeValue("name"), 										// name
+						place.element("color-refs").elements("color-ref").size(), 			// # colors
+						numIncomingConnections,												// # incoming connections
+						numOutgoingConnections, 											// # outgoing connections
+						statsLevel, 														// stats level
+						dDis, 																// departure discipline
+						qDis, 																// queueing discipline
+						numServers, 														// # servers
 						place);
 				logln(2, "places[" + i + "] = new QueueingPlace(" 
 						+ i + ", '" 
@@ -1012,29 +1178,23 @@ public class Simulator {
 			}
 		}
 
-		// -----------------------------------------------------------------------
-		// Create transitions
-		// -----------------------------------------------------------------------
+		// -----------------------------------------------------------------------------------------------------------
+		// CREATE TRANSITIONS
+		// -----------------------------------------------------------------------------------------------------------
 		/*
-		 * SK-CD:
+		 * public Transition(int id, String name, int numModes, int numInPlaces, int numOutPlaces, double transWeight) 
 		 * 
-		 * public Transition(int id, String name, int numModes, int numInPlaces,
-		 * int numOutPlaces, double transWeight) {
+		 * @param int id                  - global id of the transition 
+		 * @param String name             - name of the transition 
+		 * @param int numModes            - number of modes 
+		 * @param int numInPlaces         - number of input places 
+		 * @param int numOutPlaces        - number of output places 
+		 * @param double transWeight      - transition weight
 		 * 
-		 * @param int id - global id of the transition 
-		 * @param String name - name of the transition 
-		 * @param int numModes - number of modes 
-		 * @param int numInPlaces - number of input places 
-		 * @param int numOutPlaces - number of output places 
-		 * @param double transWeight - transition weight
+		 * Validate input parameters provided by the user to make sure that they make sense!!! For e.g. transWeight >= 0
 		 * 
-		 * Pay attention for variable types!!! Validate input parameters
-		 * provided by the user to make sure that they make sense!!! For e.g.
-		 * transWeight >= 0
-		 * 
-		 * IMPORTANT: Timed transitions and Subnet places are currently not
-		 * supported!!! If the net uses them, just print an error message and
-		 * exit.
+		 * IMPORTANT: Timed transitions and Subnet places are currently not supported!!! If the net uses them, just 
+		 * print an error message and exit.
 		 * 
 		 * IMPORTANT: trans id must be equal to its index in the trans array!!!
 		 * 
@@ -1078,12 +1238,12 @@ public class Simulator {
 			double transitionWeight = Double.parseDouble(transition.attributeValue("weight"));
 			
 			trans[i] = new Transition(
-					i,
-					transition.attributeValue("name"), 
-					numModes, 
-					numIncomingConnections, 
-					numOutgoingConnections, 
-					transitionWeight);
+					i,																		// id
+					transition.attributeValue("name"), 										// name
+					numModes, 																// # modes
+					numIncomingConnections, 												// # incoming connections
+					numOutgoingConnections, 												// # outgoing connections
+					transitionWeight);														// transition weight
 			logln(2, "trans[" + i + "] = new Transition(" 
 					+ i + ", '" 
 					+ transition.attributeValue("name") + "', " 
@@ -1093,9 +1253,9 @@ public class Simulator {
 					+ transitionWeight + ");       transition-element = " + transition);									
 		}		
 
-		// -----------------------------------------------------------------------
-		// Configure input/output relationships
-		// -----------------------------------------------------------------------
+		// -----------------------------------------------------------------------------------------------------------
+		// CONFIGURE INPUT/OUTPUT RELATIONSHIPS
+		// -----------------------------------------------------------------------------------------------------------
 
 		logln(2, "\n/////////////////////////////////////////////");
 		logln(2, "// Configure input/output relationships");
@@ -1113,16 +1273,13 @@ public class Simulator {
 			xpathSelector = DocumentHelper.createXPath("//*[@id = '" + connection.attributeValue("target-id") + "']");
 			Element targetElement = (Element) xpathSelector.selectSingleNode(net);
 
-			// if the source is a place, then select the
-			// Place object which it is assigned to.
+			// if the source is a place, then select the Place object which it is assigned to.
 			if ("place".equals(sourceElement.getName())) {
 				// Select the source place.
 				for (int p = 0; p < places.length; p++) {
 					if (placeList.get(p).equals(sourceElement)) {
-						// SDK-DEBUG: Does "equals" work correctly here?
-						// Or should you rather compare the id's?
-						// CHRIS: Since references to the DOM elements 
-						// instances are returned the check works and is
+						// SDK-DEBUG: Does "equals" work correctly here? Or should you rather compare the id's?
+						// CHRIS: Since references to the DOM elements instances are returned the check works and is
 						// a lot faster.
 
 						// Select the target transition
@@ -1150,8 +1307,7 @@ public class Simulator {
 					}
 				}
 			}
-			// if the source is a transition, then select the
-			// Transition object which it is assigned to.
+			// if the source is a transition, then select the Transition object which it is assigned to.
 			else if ("transition".equals(sourceElement.getName())) {
 				// Select the source transition.
 				for (int t = 0; t < trans.length; t++) {
@@ -1183,9 +1339,9 @@ public class Simulator {
 			}
 		}
 
-		// -----------------------------------------------------------------------
-		// Configure transition mode weights
-		// -----------------------------------------------------------------------
+		// -----------------------------------------------------------------------------------------------------------
+		// CONFIGURE TRANSITION MODE WEIGHTS
+		// -----------------------------------------------------------------------------------------------------------
 
 		logln(2, "\n/////////////////////////////////////////////");
 		logln(2, "// Configure transition mode weights");
@@ -1212,15 +1368,13 @@ public class Simulator {
 			}
 		}
 
-		// -----------------------------------------------------------------------
-		// Configure transition input/output functions [mode, inPlace, color]
-		// -----------------------------------------------------------------------
+		// -----------------------------------------------------------------------------------------------------------
+		// CONFIGURE TRANSITION INPUT/OUTPUT FUNCTIONS [mode, inPlace, color]
+		// -----------------------------------------------------------------------------------------------------------
 
 		/*
-		 * SK-CD: For each transition for every input/output place must specify
-		 * how many tokens of each color of the respective place are
-		 * destroyed/created
-		 * 
+		 * For each transition for every input/output place must specify how many tokens of  each color of the 
+		 * respective place are destroyed/created.
 		 */
 
 		logln(2, "\n/////////////////////////////////////////////");
@@ -1244,10 +1398,8 @@ public class Simulator {
 					xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
 					List colorRefs = xpathSelector.selectNodes(inputPlace);
 
-					// Allocate an array saving the number of tokens
-					// for each color-ref to the current mode for the
-					// current input place. If there is no connection,
-					// then this value is 0.
+					// Allocate an array saving the number of tokens for each color-ref to the current mode for the
+					// current input place. If there is no connection, then this value is 0.
 					trans[t].inFunc[m][p] = new int[colorRefs.size()];
 					logln(2, "trans[" + t + "].inFunc[" + m + "][" + p + "] = new int[" + colorRefs.size() + "];");					
 
@@ -1278,7 +1430,7 @@ public class Simulator {
 							}
 							int numTokens = Integer.parseInt(connection.attributeValue("count"));
 							//SDK-DEBUG: Attribute "count" is usually missing in the XML file.
-							// CHRIS: fixed that.
+							//CHRIS: fixed that.
 							trans[t].inFunc[m][p][con] = numTokens;							
 							logln(2, "trans[" + t + "].inFunc[" + m + "][" + p + "][" + con +"] = " + numTokens);
 						} else {							
@@ -1295,9 +1447,8 @@ public class Simulator {
 					xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
 					List colorRefs = xpathSelector.selectNodes(outputPlace);
 					
-					// Allocate an array saving the number of tokens
-					// for each color-ref to mode connection. If there
-					// is no connection, then this value is 0.
+					// Allocate an array saving the number of tokens for each color-ref to mode connection. 
+					// If there is no connection, then this value is 0.
 					trans[t].outFunc[m][p] = new int[colorRefs.size()];					
 					logln(2, "trans[" + t + "].outFunc[" + m + "][" + p +"] = new int[" + colorRefs.size() + "];");
 						
@@ -1338,18 +1489,12 @@ public class Simulator {
 			}
 		}
 
-		// -----------------------------------------------------------------------
-		// Configure Queue Service Time Distributions (times in milliseconds)
-		// -----------------------------------------------------------------------
+		// -----------------------------------------------------------------------------------------------------------
+		// CONFIGURE QUEUE SERVICE TIME DISTRIBUTIONS (times normally in milliseconds)
+		// -----------------------------------------------------------------------------------------------------------
 
-		/*
-		 * SK-CD:
-		 * 
-		 * Replace the meanServTime parameter in your data model with parameter
-		 * "Distribution Function" - a drop down list with the following
-		 * possible options:
-		 * 
-		 * Distribution Name Initialization Parameters
+		/* 
+		 * Distribution Name (Initialization Parameters)
 		 * --------------------------------------------------------------------------------------------- 
 		 * - Beta (double alpha, double beta) 
 		 * - BreitWigner (double mean, double gamma, double cut) 
@@ -1366,43 +1511,17 @@ public class Simulator {
 		 * - VonMises (double freedom) 
 		 * - Empirical (String pdf_filename)
 		 * 
-		 * For each distribution, additional initialization parameters needed
-		 * are shown in the brackets. The default distribution should be
-		 * Exponential.
+		 * For each distribution, additional initialization parameters needed are shown in the brackets. 
+		 * The default distribution should be Exponential.
+		 * Note that the last distribution has a String parameter containing a file name.
 		 * 
-		 * All distributions apart from the last one have max 3 double
-		 * parameters. Therefore, you should add 3 parameters p1, p2 and p3 of
-		 * type double in your data model and I will use them here to initialize
+		 * Three parameters p1, p2 and p3 of type double in the data model are used here to initialize
 		 * the distribution function.
-		 * 
-		 * Note that right now, the code below assumes "Exponential" is chosen
-		 * and a single parameter is provided. This parameter is used to
-		 * initialize the meanServTime below. I will later extend this to check
-		 * the chosen distribution and initialize it using the parameters p1, p2
-		 * and p3 from your data model.
-		 * 
-		 * Note that the last distribution has a String parameter containing a
-		 * file name.
-		 * 
-		 * If it is not too much work, make the editor display the real names of
-		 * the expected parameters after the user has chosen the distribution,
-		 * e.g. for Exponential a single field labeled "lambda" should be
-		 * displayed.
+		 *  
+		 * TODO: make the editor display the real names of the expected parameters after the user has chosen 
+		 * the distribution, e.g. for Exponential a single field labeled "lambda" should be displayed.
 		 * 
 		 */
-
-   /*		
-	* SDK-DEBUG2: 
-	* Sorry, I just figured out that the colorRef.attributeValue("meanServTime")) parameter only introduces confusion.
-	* In fact it is derived from the chosen distribution function.
-	* I have changed the code below to initialize the meanServTimes array based on the parameters of the distribution function.
-	* colorRef.attributeValue("meanServTime")) is no longer used.
-	* 
-	* So please remove it from QPE and from the data model if it is not a big hassle. 
-	* I am sorry I asked you to add it earlier! 
-	* 
-	* CHRIS: Removed the parameter.
-	*/	
 				
 		logln(2, "\n/////////////////////////////////////////////");
 		logln(2, "// Configure Queue Service Time Distributions (times in milliseconds)");
@@ -1453,19 +1572,7 @@ public class Simulator {
 							throw new SimQPNException();
 						}						
 					}				
-					
-					/*SDK-TODO: no longer used - will be removed later 
-					 * 
-					 * Initialise the mean service times.
-					 * if(colorRef.attributeValue("meanServTime") == null) {
-					 * 		logln("ERROR: distribution function parameter meanServTime not set");
-					 * 		throw new SimQPNException();
-					 * }
-					 * ((QueueingPlace) places[i]).meanServTimes[j] = Double.parseDouble(colorRef.attributeValue("meanServTime"));
-					 * logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = " + Double.parseDouble(colorRef.attributeValue("meanServTime", "1.0")) + ";");
-					 * 
-					 */					
-					
+									
 					/*
 					 * The code below does the following:
 					 *   - checks the chosen distribution function
@@ -1530,18 +1637,24 @@ public class Simulator {
 						}
 						double mean = Double.parseDouble(colorRef.attributeValue("mean"));
 						double gamma = Double.parseDouble(colorRef.attributeValue("gamma"));
-						double cut = Double.parseDouble(colorRef.attributeValue("cut"));
-						//SDK-TODO: find out the acceptable input parameter ranges and validate the values obtained above
-						
+						double cut = Double.parseDouble(colorRef.attributeValue("cut"));						
+						// Validate input parameters
+						if (gamma <= 0)  {
+							logln("ERROR: Invalid \"gamma\" parameter of BreitWigner distribution!");
+							logln("Details: ");							
+							logln("  gamma              = " + gamma);
+							logln("  place-num          = " + i);
+							logln("  place.id           = " + place.attributeValue("id"));
+							logln("  place.name         = " + place.attributeValue("name"));						
+							logln("  colorRef-num       = " + j);
+							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+							throw new SimQPNException();																												
+						}												
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new BreitWigner(mean, gamma, cut, Simulator.nextRandNumGen());
 						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new BreitWigner(" + mean + ", " + gamma + ", " + cut + ", Simulator.nextRandNumGen())");
-
-						//SDK-TODO: See if distribution could take negative values and if yes print a warning  
-						//          "WARNING: The distribution function is truncated since service times must be non-negative"
-						//SDK-TODO: find out how meanServTimes is computed?						
-						//qPl.meanServTimes[j] = (double) ???;
-						//logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = ??? = " + qPl.meanServTimes[j]);													
+						// NOTE: BreitWigner does not have a mean value! It is undefined. 
 					} else if("BreitWignerMeanSquare".equals(distributionFunction)) {
 						if(colorRef.attributeValue("mean") == null || colorRef.attributeValue("gamma") == null || colorRef.attributeValue("cut") == null) {
 							logln("ERROR: Parameter \"mean\", \"gamma\" or \"cut\" of BreitWignerMeanSquare distribution function not set!");
@@ -1556,18 +1669,24 @@ public class Simulator {
 						}
 						double mean = Double.parseDouble(colorRef.attributeValue("mean"));
 						double gamma = Double.parseDouble(colorRef.attributeValue("gamma"));
-						double cut = Double.parseDouble(colorRef.attributeValue("cut"));
-						//SDK-TODO: find out the acceptable input parameter ranges and validate the values obtained above
-						
+						double cut = Double.parseDouble(colorRef.attributeValue("cut"));						
+						// Validate input parameters
+						if (gamma <= 0)  {
+							logln("ERROR: Invalid \"gamma\" parameter of BreitWignerMeanSquare distribution!");
+							logln("Details: ");							
+							logln("  gamma              = " + gamma);
+							logln("  place-num          = " + i);
+							logln("  place.id           = " + place.attributeValue("id"));
+							logln("  place.name         = " + place.attributeValue("name"));						
+							logln("  colorRef-num       = " + j);
+							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+							throw new SimQPNException();																												
+						}																		
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new BreitWignerMeanSquare(mean, gamma, cut, Simulator.nextRandNumGen());
 						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new BreitWignerMeanSquare(" + mean + ", " + gamma + ", " + cut + ", Simulator.nextRandNumGen())");
-
-						//SDK-TODO: See if distribution could take negative values and if yes print a warning  
-						//          "WARNING: The distribution function is truncated since service times must be non-negative"
-						//SDK-TODO: find out how meanServTimes is computed?						
-						//qPl.meanServTimes[j] = (double) ???;
-						//logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = ??? = " + qPl.meanServTimes[j]);													
+						// NOTE: BreitWigner does not have a mean value! It is undefined.
 					} else if("ChiSquare".equals(distributionFunction)) {
 						if(colorRef.attributeValue("freedom") == null) {
 							logln("ERROR: Parameter \"freedom\" of ChiSquare distribution function not set!");
@@ -1660,13 +1779,19 @@ public class Simulator {
 						}						
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new Hyperbolic(alpha, beta, Simulator.nextRandNumGen());
-						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Hyperbolic(" + alpha + ", " + beta + ", Simulator.nextRandNumGen())");
-						
-						//SDK-TODO: See if distribution could take negative values and if yes print a warning  
-						//          "WARNING: The distribution function is truncated since service times must be non-negative"
+						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Hyperbolic(" + alpha + ", " + beta + ", Simulator.nextRandNumGen())");																		
 						//SDK-TODO: find out how meanServTimes is computed?						
 						//qPl.meanServTimes[j] = (double) ???;
-						//logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = ??? = " + qPl.meanServTimes[j]);													
+						//logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = ??? = " + qPl.meanServTimes[j]);
+						logln("WARNING: meanServTimes for Hyperbolic distribution not initialized!");
+						logln("         Might experience problems if indrStats is set to true!");						
+						logln("Details:");
+						logln("  place-num          = " + i);
+						logln("  place.id           = " + place.attributeValue("id"));
+						logln("  place.name         = " + place.attributeValue("name"));						
+						logln("  colorRef-num       = " + j);
+						logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+						logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
 					} else if("Exponential".equals(distributionFunction)) {
 						if(colorRef.attributeValue("lambda") == null) {						
 							logln("ERROR: Parameter \"lambda\" of Exponential distribution function not set!");
@@ -1727,11 +1852,18 @@ public class Simulator {
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new ExponentialPower(tau, Simulator.nextRandNumGen());
 						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new ExponentialPower(" + tau + ", Simulator.nextRandNumGen())");
-						//SDK-TODO: See if distribution could take negative values and if yes print a warning  
-						//          "WARNING: The distribution function is truncated since service times must be non-negative"
 						//SDK-TODO: find out how meanServTimes is computed?						
 						//qPl.meanServTimes[j] = (double) ???;
 						//logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = ??? = " + qPl.meanServTimes[j]);													
+						logln("WARNING: meanServTimes for ExponentialPower distribution not initialized!");
+						logln("         Might experience problems if indrStats is set to true!");						
+						logln("Details:");
+						logln("  place-num          = " + i);
+						logln("  place.id           = " + place.attributeValue("id"));
+						logln("  place.name         = " + place.attributeValue("name"));						
+						logln("  colorRef-num       = " + j);
+						logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+						logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
 					} else if("Logarithmic".equals(distributionFunction)) {
 						if(colorRef.attributeValue("p") == null) {
 							logln("ERROR: Parameter \"p\" of Logarithmic distribution function not set!");
@@ -1760,13 +1892,9 @@ public class Simulator {
 						}						
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new Logarithmic(p, Simulator.nextRandNumGen());
-						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Logarithmic(" + p + ", Simulator.nextRandNumGen())");
-
-						//SDK-TODO: See if distribution could take negative values and if yes print a warning  
-						//          "WARNING: The distribution function is truncated since service times must be non-negative"
-						//SDK-TODO: find out how meanServTimes is computed?						
-						//qPl.meanServTimes[j] = (double) ???;
-						//logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = ??? = " + qPl.meanServTimes[j]);													
+						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Logarithmic(" + p + ", Simulator.nextRandNumGen())");						 						
+						qPl.meanServTimes[j] = (double) ((-1) * p) / (Math.log(1-p) * (1-p));
+						logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = ((-1) * p) / (Math.log(1-p) * (1-p)) = " + qPl.meanServTimes[j]);													
 					} else if("Normal".equals(distributionFunction)) {
 						if(colorRef.attributeValue("mean") == null || colorRef.attributeValue("stdDev") == null) {
 							logln("ERROR: Parameter \"mean\" or \"stdDev\" of Normal distribution function not set!");
@@ -1828,19 +1956,22 @@ public class Simulator {
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new StudentT(freedom, Simulator.nextRandNumGen());																									
 						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new StudentT(" + freedom + ", Simulator.nextRandNumGen())");
-
-						//SDK-TODO: See if distribution could take negative values and if yes print a warning  
-						//          "WARNING: The distribution function is truncated since service times must be non-negative"
-						//SDK-TODO: find out how meanServTimes is computed?						
-						//qPl.meanServTimes[j] = (double) ???;
-						//logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = ??? = " + qPl.meanServTimes[j]);													
-
-						// Note: The mean of the StudentT distribution is 0 for ν > 1, undefined for ν = 1
-						// SDK-TODO: check this						
+						//NOTE: The mean of the StudentT distribution is 0 for freedom > 1, otherwise it is undefined.												
 						if (freedom > 1) {
 							qPl.meanServTimes[j] = 0;
 							logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = " + qPl.meanServTimes[j]);													
 						}
+						else {
+							logln("WARNING: meanServTimes for StudentT distribution not initialized!");
+							logln("         Might experience problems if indrStats is set to true!");						
+							logln("Details:");
+							logln("  place-num          = " + i);
+							logln("  place.id           = " + place.attributeValue("id"));
+							logln("  place.name         = " + place.attributeValue("name"));						
+							logln("  colorRef-num       = " + j);
+							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+						}							
 					} else if("Uniform".equals(distributionFunction)) {
 						if(colorRef.attributeValue("min") == null || colorRef.attributeValue("max") == null) {
 							logln("ERROR: Parameter \"min\" or \"max\" of Uniform distribution function not set!");
@@ -1872,8 +2003,6 @@ public class Simulator {
 						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Uniform(" + min + ", " + max + ", Simulator.nextRandNumGen())");						
 						qPl.meanServTimes[j] = (double) (min + max) / 2;
 						logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = (min + max) / 2 = " + qPl.meanServTimes[j]);
-						//SDK-TODO: See if distribution could take negative values and if yes print a warning  
-						//          "WARNING: The distribution function is truncated since service times must be non-negative"						
 					} else if("VonMises".equals(distributionFunction)) {
 						if(colorRef.attributeValue("freedom") == null) {
 							logln("ERROR: Parameter \"freedom\" of VonMises distribution function not set!");
@@ -1887,16 +2016,34 @@ public class Simulator {
 							throw new SimQPNException();
 						}
 						double freedom = Double.parseDouble(colorRef.attributeValue("freedom"));
-						//SDK-TODO: find out the acceptable input parameter ranges and validate the values obtained above
-						
+						if (!(freedom > 0))  {
+							logln("ERROR: Invalid \"k\" parameter of VonMises distribution!");
+							logln("Details:");
+							logln("  k                  = " + freedom);
+							logln("  place-num          = " + i);
+							logln("  place.id           = " + place.attributeValue("id"));
+							logln("  place.name         = " + place.attributeValue("name"));						
+							logln("  colorRef-num       = " + j);
+							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+							throw new SimQPNException();																												
+						}
+						//TODO: Check parameters. Rename "freedom" to "k" to avoid confusion.						
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new VonMises(freedom, Simulator.nextRandNumGen());																									
 						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new VonMises(" + freedom + ", Simulator.nextRandNumGen())");
-						//SDK-TODO: See if distribution could take negative values and if yes print a warning  
-						//          "WARNING: The distribution function is truncated since service times must be non-negative"
 						//SDK-TODO: find out how meanServTimes is computed?						
 						//qPl.meanServTimes[j] = (double) ???;
-						//logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = ??? = " + qPl.meanServTimes[j]);													
+						//logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = ??? = " + qPl.meanServTimes[j]);
+						logln("WARNING: meanServTimes for VonMises distribution not initialized!");
+						logln("         Might experience problems if indrStats is set to true!");						
+						logln("Details:");
+						logln("  place-num          = " + i);
+						logln("  place.id           = " + place.attributeValue("id"));
+						logln("  place.name         = " + place.attributeValue("name"));						
+						logln("  colorRef-num       = " + j);
+						logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+						logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
 					} else if("Empirical".equals(distributionFunction)) {
 						if (colorRef.attributeValue("pdf_filename") == null) {
 							logln("ERROR: Parameter \"pdf_filename\" of Empirical distribution function not set!");
@@ -1923,8 +2070,7 @@ public class Simulator {
 							logln("  colorRef.color-id      = " + colorRef.attributeValue("color-id"));
 							logln("  colorRef.pdf_filename  = " + pdf_filename);							
 							throw new SimQPNException();													
-						}
-						
+						}						
 						BufferedReader input = null;
 						try {
 							input = new BufferedReader(new FileReader(pdfFile));
@@ -1976,7 +2122,16 @@ public class Simulator {
 						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Empirical(" + pdf_filename + ", LINEAR_INTERPOLATION, Simulator.nextRandNumGen())");
 						//SDK-TODO: find out how meanServTimes is computed?						
 						//qPl.meanServTimes[j] = (double) ???;
-						//logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = ??? = " + qPl.meanServTimes[j]);													
+						//logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = ??? = " + qPl.meanServTimes[j]);
+						logln("WARNING: meanServTimes for Empirical distribution not initialized!");
+						logln("         Might experience problems if indrStats is set to true!");						
+						logln("Details:");
+						logln("  place-num          = " + i);
+						logln("  place.id           = " + place.attributeValue("id"));
+						logln("  place.name         = " + place.attributeValue("name"));						
+						logln("  colorRef-num       = " + j);
+						logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+						logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
 					} else if("Deterministic".equals(distributionFunction)) {
 						// Parameters p1, p2 and p3 passed from QPE.						
 						//SDK-TODO: implement support for this, use p1 to set service time
@@ -1995,11 +2150,10 @@ public class Simulator {
 			}
 		}
 		
-		// -----------------------------------------------------------------------
-		// Configure Initial Marking
-		// -----------------------------------------------------------------------
-		// Note: All initial tokens should be in ordianary places or
-		// depositories.
+		// --------------------------------------------------------------------------------------------------------
+		// CONFIGURE INITIAL MARKING
+		// --------------------------------------------------------------------------------------------------------
+		// Note: All initial tokens should be in ordianary places or depositories.
 		// No initial tokens are allowed in the queues.
 
 		logln(2, "\n/////////////////////////////////////////////");
@@ -2033,29 +2187,9 @@ public class Simulator {
 		// BEGIN-CONFIG
 		// ------------------------------------------------------------------------------------------------------
 
-		// Stopping Rule (run length)
-
-		/*
-		 * SK-CD:
-		 * 
-		 * The following parameters should be configurable before starting the
-		 * run:
-		 *  - "Warm Up Period" (rampUpLen) 
-		 *  - "Total Run Length" (totRunLen) 
-		 *  - "Stopping Criterion" (stoppingRule) 
-		 *     FIXEDLEN - Fixed run length
-		 *     ABSPRC - Absolute precision (Run until enough data to provide absolute 
-		 *              precision for STs in terms of c.i. half lengths) 
-		 *     RELPRC - Relative precision (Run until enough data to provide relative
-		 *              precision for STs in terms of c.i. half lengths / means)
-		 *  // NOTE: All times are in milliseconds. This should indicated in the forms.
-		 * 
-		 */
-
 		logln(2, "\n/////////////////////////////////////////////");
 		logln(2, "// Misc settings");
 		Element simulatorSettings = getSettings(net, configuration);
-		// Only for scenario 1 this parameter is set. For others it is set to FIXEDLEN.
 						
 		if ("RELPRC".equals(simulatorSettings.attributeValue("stopping-rule"))) {
 			stoppingRule = RELPRC;
@@ -2071,7 +2205,7 @@ public class Simulator {
 			logln("  configuration = " + configuration);
 			throw new SimQPNException();
 		}
-		
+		// Only for scenario 1 stopping-rule is set. For others it is set to FIXEDLEN.		
 		if (Integer.parseInt(simulatorSettings.attributeValue("scenario")) != 1 && stoppingRule != FIXEDLEN)  {
 			logln("Error: Stopping rule \"" + simulatorSettings.attributeValue("stopping-rule") + "\" is not supported for the chosen analysis method!");					
 			logln("  configuration = " + configuration);
@@ -2097,25 +2231,7 @@ public class Simulator {
 		} else { // Method of Welch
 			rampUpLen = totRunLen; // Note: The method of Welch is currently run until rampUpLen is reached.
 		}
-				
-		/*
-		 * SK-CD:
-		 * 
-		 * Advanced configuration options 
-		 * - timeBtwChkStops - How often stopping criterion is checked. 
-		 *   Used only for stoppingRules ABSPRC and RELPRC. 
-		 * - timeInitHeartBeat - Time when the first progress update is made.
-		 *    After this progress updates are made once every secsBtwHeartBeats
-		 *    seconds. - secsBtwHeartBeats - How often progress updates are made
-		 *    (heart beats).
-		 * 
-		 * NOTE: If possible, use ballons to show help info above when the user
-		 * places the mouse pointer on a field.
-		 * 
-		 * Use the values assigned below as defaults.
-		 * 
-		 */
-		
+						
 		if(stoppingRule != FIXEDLEN) {
 			if(simulatorSettings.attributeValue("time-between-stop-checks") == null) {						
 				logln("Error: Configuration parameter \"time-between-stop-checks\" is not configured!");					
@@ -2123,10 +2239,14 @@ public class Simulator {
 				throw new SimQPNException();
 			}		
 			timeBtwChkStops = Double.parseDouble(simulatorSettings.attributeValue("time-between-stop-checks"));
-			logln(2, "timeBtwChkStops = " + timeBtwChkStops + ";");
-			//TODO: Add "secs-between-stop-checks" parameter in the XML file
-			secsBtwChkStops = 30;
-			logln(2, "secsBtwChkStops = " + secsBtwChkStops + ";");
+			logln(2, "timeBtwChkStops = " + timeBtwChkStops + ";");			
+			if(simulatorSettings.attributeValue("seconds-between-stop-checks") == null) {						
+				logln("Error: Configuration parameter \"seconds-between-stop-checks\" is not configured!");					
+				logln("  configuration = " + configuration);			
+				throw new SimQPNException();
+			}		
+			secondsBtwChkStops = Double.parseDouble(simulatorSettings.attributeValue("seconds-between-stop-checks"));
+			logln(2, "secondsBtwChkStops = " + secondsBtwChkStops + ";");
 		}
 		
 		if(simulatorSettings.attributeValue("time-before-initial-heart-beat") == null) {		
@@ -2160,8 +2280,7 @@ public class Simulator {
 		}
 
 		/*
-		 * SK-CD: Below we have some "Advanced Configuration Options" only
-		 * applicable to the BATCH_MEANS method!!!
+		 * "Advanced Configuration Options" only applicable to the BATCH_MEANS method
 		 * 
 		 * These options are configurable for each place/queue/depository that
 		 * has statsLevel >= 3. Options should be displayed only if BATCH_MEANS
@@ -2169,24 +2288,15 @@ public class Simulator {
 		 * to be >= 3.
 		 * 
 		 * double signLevST - Required significance level. 
-		 * double reqAbsPrc - Used if stoppingRule=ABSPRC: 
-		 *   Required absolute precision (max c.i. half length). 
-		 * double reqRelPrc - Used if stoppingRule=RELPRC: 
-		 *   Required relative precision (max ratio of c.i. half length to mean).
-		 * int batchSizeST - Batch size for the batch means algorithm. 
-		 * int minBatches - Minimum number of batches required for steady state
-		 *   statistics. If minBatches[c] <= 0, no steady state statistics are
-		 *   collected for this color!
+		 * double reqAbsPrc - Used if stoppingRule=ABSPRC: Required absolute precision (max c.i. half length). 
+		 * double reqRelPrc - Used if stoppingRule=RELPRC: Required relative precision (max ratio of c.i. half length to mean).
+		 * int batchSizeST - Batch size for the batch means algorithm.
+		 * int minBatches - Minimum number of batches required for steady state statistics. If minBatches[c] <= 0, no steady state statistics are collected for this color!
+		 * int numBMeansCorlTested - If > 0 checks whether the batch size is sufficient - the first numBMeansCorlTested batch means from the beginning of steady state are tested for autocorrelation.
 		 * 
-		 * int numBMeansCorlTested - If > 0 checks whether the batch size is
-		 *   sufficient - the first numBMeansCorlTested batch means from the
-		 *   beginning of steady state are tested for autocorrelation
+		 * NOTE: reqAbsPrc should be available only if stoppingRule=ABSPRC; reqRelPrc should be available only if stoppingRule=RELPRC.
 		 * 
-		 * NOTE: reqAbsPrc should be available only if stoppingRule=ABSPRC
-		 * reqRelPrc should be available only if stoppingRule=RELPRC
-		 * 
-		 * Check and make sure that numBMeansCorlTested is even! Use the values
-		 * given below as defaults!
+		 * Check and make sure that numBMeansCorlTested is even!
 		 */
 
 		// CONFIG: BATCH_MEANS Method Initialization Parameters
@@ -2313,16 +2423,16 @@ public class Simulator {
 							// If (numBMeansCorlTested[c] <= 0) no correlation test is done!
 							// Note that numBMeansCorlTested must be even!
 							if (pl.placeStats.numBMeansCorlTested[cr] % 2 != 0) {
-									logln("Error: Place.placeStats.numBMeansCorlTested[c] must be even!");
-									logln("Details:");
-									logln("  configuration = " + configuration);						
-									logln("  place-num          = " + p);
-									logln("  place.id           = " + place.attributeValue("id"));
-									logln("  place.name         = " + place.attributeValue("name"));						
-									logln("  colorRef-num       = " + cr);
-									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
-									throw new SimQPNException();
+								logln("Error: Place.placeStats.numBMeansCorlTested[c] must be even!");
+								logln("Details:");
+								logln("  configuration = " + configuration);						
+								logln("  place-num          = " + p);
+								logln("  place.id           = " + place.attributeValue("id"));
+								logln("  place.name         = " + place.attributeValue("name"));						
+								logln("  colorRef-num       = " + cr);
+								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
+								throw new SimQPNException();
 							}
 						} else {							
 							logln("Error: SimQPN configuration parameters for Batch Means Method are missing!");
@@ -2335,7 +2445,7 @@ public class Simulator {
 							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
 							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
 							throw new SimQPNException();
-							/*
+							/* ORIGINAL MANUAL CONFIGURATION
 							pl.placeStats.signLevST[cr] = 0.05;     // e.g. 0.05 ---> 95% c.i.; 0.1 ---> 90%
 							logln(2, "-- placeStats.signLevST[" + cr + "] = " + pl.placeStats.signLevST[cr]);							
 							pl.placeStats.reqAbsPrc[cr] = 50;
@@ -2489,7 +2599,7 @@ public class Simulator {
 								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
 								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
 								throw new SimQPNException();
-								/*
+								/* ORIGINAL MANUAL CONFIGURATION
 								qpl.queueStats.signLevST[cr] = 0.05;		// e.g. 0.05 ---> 95% c.i.; 0.1 ---> 90%
 								logln(2, "-- queueStats.signLevST[" + cr + "] = " + qpl.queueStats.signLevST[cr]);								
 								qpl.queueStats.reqAbsPrc[cr] = 50;
@@ -2521,14 +2631,13 @@ public class Simulator {
 		inRampUp = true;
 		endRampUpClock = 0;
 		endRunClock = 0;
-		msrmPrdLen = 0; // Set at the end of the run when the actual length is
-						// known
+		msrmPrdLen = 0; // Set at the end of the run when the actual length is known.
 		beginRunWallClock = 0;
 		endRunWallClock = 0;
 		runWallClockTime = 0;
 
-		clock = 0; // Note that it has been assumed throughout the code that
-					// the simulation starts at virtual time 0.
+		clock = 0;	// Note that it has been assumed throughout the code that
+		   			// the simulation starts at virtual time 0.
 
 		eventList = new LinkedList();
 
@@ -2541,7 +2650,7 @@ public class Simulator {
 	}
 
 	/**
-	 * Method nextRandNumGen
+	 * Method nextRandNumGen - returns a uniform random number generator
 	 * 
 	 * @param
 	 * @return int
@@ -2564,11 +2673,17 @@ public class Simulator {
 		} else if (randGenClass == MersenneTwister) {
 			if (useRandSeedTable) {
 				nextSeed = randSeedGen.nextSeed();
+				// The seed can be any 32-bit integer except 0. 
+				// Shawn J. Cokus commented that perhaps the seed should preferably be odd.
+				// while (nextSeed % 2 == 0) nextSeed = randSeedGen.nextSeed();
 				while (nextSeed == 0)
 					nextSeed = randSeedGen.nextSeed();
 				randomElement = new MersenneTwister(nextSeed);
 			} else {
 				nextSeed = randNumGen.nextIntFromTo(Integer.MIN_VALUE, Integer.MAX_VALUE);
+				// The seed can be any 32-bit integer except 0. 
+				// Shawn J. Cokus commented that perhaps the seed should preferably be odd.
+				// while (nextSeed % 2 == 0) nextSeed = randNumGen.nextIntFromTo(Integer.MIN_VALUE, Integer.MAX_VALUE);				
 				while (nextSeed == 0)
 					nextSeed = randNumGen.nextIntFromTo(Integer.MIN_VALUE, Integer.MAX_VALUE);
 				randomElement = new MersenneTwister(nextSeed);
@@ -2581,9 +2696,12 @@ public class Simulator {
 	}
 
 	/**
-	 * Method scheduleEvent
+	 * Method scheduleEvent - schedules an event 
 	 * 
-	 * @return
+	 * @param time		- time at which the event should be processed
+	 * @param qPlace	- QueueingPlace involved 
+	 * @param token		- token that completes service 	
+	 * @return 
 	 * @exception
 	 */
 	@SuppressWarnings("unchecked")
@@ -2600,7 +2718,7 @@ public class Simulator {
 	}
 
 	/**
-	 * Method run - starts the simulation run
+	 * Method run - starts the simulation run.
 	 * 
 	 * @param
 	 * @return
@@ -2608,8 +2726,8 @@ public class Simulator {
 	 */
 	public void run() throws SimQPNException {
 
-		AbstractIntList enTrans;
-		EmpiricalWalker randTransGen;
+		AbstractIntList enTrans;			// List of currently enabled transitions.
+		EmpiricalWalker randTransGen;		// Random number generator for generating next transition to fire.
 
 		// Initialize enTrans
 		enTrans = new IntArrayList(numTrans);
@@ -2623,7 +2741,9 @@ public class Simulator {
 			pdf[t] = 1;
 
 		randTransGen = new EmpiricalWalker(pdf, Empirical.NO_INTERPOLATION, Simulator.nextRandNumGen());
+		// Note: Here we use a default distribution. The actual distribution is set each time before using randTransGen. 		
 
+		// Note: we store totRunLen and rampUpLen in local variables to improve performance of the while loop below.		
 		double totRunL = totRunLen;
 		double rampUpL = rampUpLen;		
 		double nextChkAfter = timeBtwChkStops > 0 ? timeBtwChkStops : timeInitHeartBeat;
@@ -2633,7 +2753,8 @@ public class Simulator {
 
 		logln("Starting Simulator");	
 		
-		while (clock < totRunL) {
+		// BEGIN MAIN SIMULATION LOOP ---------------------------------------------------------------------------------
+		while (clock < totRunL) { 
 
 			if (inRampUp && clock > rampUpL) {
 				inRampUp = false;
@@ -2644,14 +2765,16 @@ public class Simulator {
 					places[p].start();
 			}
 
+			// Step 1: Fire until no transitions are enabled.			
 			while (enTrans.size() > 0) {
-				Transition nextTrans;
+				Transition nextTrans;		// transition to fire next
 
 				int enTransCnt = enTrans.size();
 
 				if (enTransCnt == 1)
 					nextTrans = trans[enTrans.get(0)];
 				else {
+					// Choose transition to fire based on weights
 					pdf = new double[enTransCnt];
 					for (int t = 0; t < enTransCnt; t++)
 						pdf[t] = trans[enTrans.get(t)].transWeight;
@@ -2659,11 +2782,13 @@ public class Simulator {
 					nextTrans = trans[enTrans.get(randTransGen.nextInt())];
 				}
 
-				nextTrans.fire();
+				nextTrans.fire();		// Fire transition
 
+				// Update enTrans
 				int p, t, nP, nT;
 				Place pl;
 				Transition tr;
+				// Check if some transitions were disabled (newly-disabled transitions)
 				nP = nextTrans.inPlaces.length;
 				for (p = 0; p < nP; p++) {
 					pl = nextTrans.inPlaces[p];
@@ -2674,6 +2799,7 @@ public class Simulator {
 							enTrans.delete(tr.id);
 					}
 				}
+				// Check if some transitions were enabled (newly-enabled transitions)				
 				nP = nextTrans.outPlaces.length;
 				for (p = 0; p < nP; p++) {
 					pl = nextTrans.outPlaces[p];
@@ -2684,8 +2810,9 @@ public class Simulator {
 							enTrans.add(tr.id);
 					}
 				}
-			}
+			} // end firing enabled transitions
 
+			// Step 2: Make sure all service completion events in PS QueueingPlaces have been scheduled
 			for (int p = 0; p < numPlaces; p++)
 				if (places[p] instanceof QueueingPlace) {
 					QueueingPlace qpl = (QueueingPlace) places[p];
@@ -2693,14 +2820,17 @@ public class Simulator {
 						qpl.updateEvents();
 				}
 
+			// Step 3: Process next event in event list
 			if (eventList.size() > 0) {
 				Event ev = (Event) eventList.remove(0);
 
+				// Advance simulation time
 				clock = ev.time;
 
 				QueueingPlace qpl = ev.qPlace;
 				qpl.completeService(ev.token);
 
+				// Check if some transitions were enabled and update enTrans				
 				int t, nT;
 				Transition tr;
 				nT = qpl.outTrans.length;
@@ -2714,17 +2844,20 @@ public class Simulator {
 				throw new SimQPNException();
 			}
 
+			// Step 4: Heart Beat
 			if (runMode == NORMAL && analMethod != REPL_DEL && clock > nextHeartBeat) {
 				double elapsedSecs = (System.currentTimeMillis() - beginRunWallClock) / 1000;
 				double clockTimePerSec = clock / elapsedSecs;
 				log("Info: Simulation time = " + (long) clock + "  Elapsed wall clock time = ");
-				if (nextHeartBeat == timeInitHeartBeat)
+				if (nextHeartBeat == timeInitHeartBeat)		// check if this is the initial heart beat
 					logln((int) elapsedSecs + " sec");
 				else
 					logln((int) (elapsedSecs / 60) + " min");
 				nextHeartBeat = Simulator.clock + clockTimePerSec * (secsBtwHeartBeats + 10);
+				// Make sure at least secsBtwHeartBeats seconds have elapsed at next heart beat
 			}
 
+			// Step 5: Check Stopping Criterion
 			if (stoppingRule != FIXEDLEN && (!inRampUp) && clock > nextChkAfter) {
 				double elapsedSecs = (System.currentTimeMillis() - beginRunWallClock) / 1000;				
 				double clockTimePerSec = clock / elapsedSecs;	
@@ -2748,23 +2881,31 @@ public class Simulator {
 				if (timeBtwChkStops > 0)
 					nextChkAfter = Simulator.clock + timeBtwChkStops;
 				else
-					nextChkAfter = Simulator.clock + clockTimePerSec * secsBtwChkStops;
+					nextChkAfter = Simulator.clock + clockTimePerSec * secondsBtwChkStops;
 			}
 
-		} // end of main simulation loop
+		}
+		// END MAIN SIMULATION LOOP ---------------------------------------------------------------------------------
 		logln("Simulator finished");
 
-		if (clock >= totRunL)
-			logln("Info: STOPPING because max totalRunLen is reached!");
-
+		if (clock >= totRunL)  {
+			if (stoppingRule != FIXEDLEN)  {
+				logln("WARNING: The simulation was stopped because of reaching max totalRunLen!");
+				logln("         The required precision may not have been reached!");
+			}
+			else
+				logln("Info: STOPPING because max totalRunLen is reached!");
+		}
+		
 		endRunClock = clock;
 		msrmPrdLen = endRunClock - endRampUpClock;
 		endRunWallClock = System.currentTimeMillis();
-		runWallClockTime = (endRunWallClock - beginRunWallClock) / 1000;
+		runWallClockTime = (endRunWallClock - beginRunWallClock) / 1000;	// total time elapsed in seconds 
 
 		logln("  msrmPrdLen= " + msrmPrdLen + " totalRunLen= " + endRunClock + " runWallClockTime=" + (int) (runWallClockTime / 60) + " min");
 
-		if (analMethod != WELCH) {
+		// Complete statistics collection (make sure this is done AFTER the above statements)
+		if (analMethod != WELCH) {		
 			for (int p = 0; p < numPlaces; p++)
 				places[p].finish();
 		}
@@ -2822,6 +2963,5 @@ public class Simulator {
 		exception.printStackTrace();
 	}
 
-	
-	
+
 } // end of Class Simulator
