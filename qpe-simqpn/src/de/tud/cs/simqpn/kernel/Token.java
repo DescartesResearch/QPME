@@ -23,11 +23,13 @@ package de.tud.cs.simqpn.kernel;
  * @version
  */
 public class Token {
-	public double arrivalTS;
-	public int color;
+	public Place   place;
+	public double  arrivalTS;
+	public int     color;
 	
-	public Token(double arrivalTS, int color) {
-		this.arrivalTS = arrivalTS;
-		this.color = color;			 
+	public Token(Place place, double arrivalTS, int color) {
+		this.place		= place;
+		this.arrivalTS	= arrivalTS;
+		this.color		= color;			 
 	}
 }

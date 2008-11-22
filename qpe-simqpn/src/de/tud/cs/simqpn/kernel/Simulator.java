@@ -993,7 +993,7 @@ public class Simulator {
 		 * 
 		 * For QueueingPlace two extra parameters:
 		 * 
-		 * @param int queueDiscip/qDis - queueing discipline is QueueingPlace.IS, QueueingPlace.FCFS or QueueingPlace.PS. 
+		 * @param int queueDiscip/qDis - queueing discipline is Queue.IS, Queue.FCFS or Queue.PS. 
 		 *    NOTE: if a different queueing discipline is specified (e.g. RANDOM) print WARNING and use FCFS instead. 
 		 * @param int numServers - number of servers in queueing station - NOTE: for IS set to 0
 		 * 
@@ -1114,17 +1114,17 @@ public class Simulator {
 						+ dDis + ", " 
 						+ place + ")");				
 			} else if ("queueing-place".equals(place.attributeValue("type"))) {
-				int qDis = QueueingPlace.FCFS;
+				int qDis = Queue.FCFS;
 				int numServers;
 				
 				if ("IS".equals(place.attributeValue("strategy"))) {
-					qDis = QueueingPlace.IS; 
+					qDis = Queue.IS; 
 					numServers = 0;
 				} else {
 					if ("FCFS".equals(place.attributeValue("strategy"))) {
-						qDis = QueueingPlace.FCFS; 
+						qDis = Queue.FCFS; 
 					} else if ("PS".equals(place.attributeValue("strategy"))) {
-						qDis = QueueingPlace.PS; 
+						qDis = Queue.PS; 
 					} else {						
 						logln("ERROR: Invalid or missing \"strategy\" (queueing discipline) setting!");
 						logln("Details: ");
@@ -1532,11 +1532,11 @@ public class Simulator {
 				QueueingPlace qPl = (QueueingPlace) places[i];				
 				
 				// BEGIN-CONFIG
-				if (qPl.queueDiscip == QueueingPlace.PS)  
+				if (qPl.queue.queueDiscip == Queue.PS)  
 					qPl.expPS = false; 				
 				// END-CONFIG				
 				
-				if (!(qPl.queueDiscip == QueueingPlace.PS && qPl.expPS)) 
+				if (!(qPl.queue.queueDiscip == Queue.PS && qPl.queue.expPS)) 
 					qPl.randServTimeGen = new AbstractContinousDistribution[qPl.numColors];
 				
 				xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
@@ -1557,7 +1557,7 @@ public class Simulator {
 					}
 					String distributionFunction = colorRef.attributeValue("distribution-function");
 										
-					if (qPl.queueDiscip == QueueingPlace.PS && qPl.expPS) {
+					if (qPl.queue.queueDiscip == Queue.PS && qPl.expPS) {
 						logln("Info: expPS parameter of a queueing place with PS scheduling strategy set to true!");
 						if (!"Exponential".equals(distributionFunction)) {
 							logln("Error: Distribution function is configured as \"" + distributionFunction + "\"");							
@@ -2642,11 +2642,13 @@ public class Simulator {
 		eventList = new LinkedList();
 
 		// Make sure clock has been initialized before calling init below
-		// Call places[i].init() first and then thans[i].init()
+		// Call places[i].init() first and then thans[i].init() and queues[i].init() 
 		for (int i = 0; i < numPlaces; i++)
 			places[i].init();
 		for (int i = 0; i < numTrans; i++)
 			trans[i].init();
+		for (int i = 0; i < numQueues; i++)
+			queues[i].init();
 	}
 
 	/**
@@ -2698,14 +2700,14 @@ public class Simulator {
 	/**
 	 * Method scheduleEvent - schedules an event 
 	 * 
-	 * @param time		- time at which the event should be processed
-	 * @param qPlace	- QueueingPlace involved 
-	 * @param token		- token that completes service 	
+	 * @param time		- Time at which the event should be processed
+	 * @param queue		- Queue involved
+	 * @param token		- Token that is to completes service 	
 	 * @return 
 	 * @exception
 	 */
 	@SuppressWarnings("unchecked")
-	public static void scheduleEvent(double time, QueueingPlace qPlace, Token token) {
+	public static void scheduleEvent(double time, Queue queue, Token token) {
 		int i = eventList.size() - 1;
 		while (i >= 0) {
 			Event ev = (Event) eventList.get(i);
@@ -2714,7 +2716,7 @@ public class Simulator {
 			else
 				i--;
 		}
-		eventList.add(i + 1, new Event(time, qPlace, token));
+		eventList.add(i + 1, new Event(time, queue, token));
 	}
 
 	/**
@@ -2816,7 +2818,7 @@ public class Simulator {
 			for (int p = 0; p < numPlaces; p++)
 				if (places[p] instanceof QueueingPlace) {
 					QueueingPlace qpl = (QueueingPlace) places[p];
-					if ((qpl.queueDiscip == QueueingPlace.PS) && (!qpl.eventsUpToDate))
+					if ((qpl.queue.queueDiscip == Queue.PS) && (!qpl.eventsUpToDate))
 						qpl.updateEvents();
 				}
 

@@ -23,22 +23,20 @@ package de.tud.cs.simqpn.kernel;
  * @version
  */
 public class Event {
-		
 	public double 			time;
-	public QueueingPlace	qPlace;
+	public Queue			queue;
 	public Token			token;
 
 	/**
 	 * Constructor
 	 *
-	 * @param time       - time of occurance
-	 * @param name       - QueueingPlace involved
-	 * @param name       - Token served  	  
+	 * @param time       - Time of occurance
+	 * @param queue      - Queue involved
+	 * @param token      - Token to be served  	  
 	 */
-	public Event(double time, QueueingPlace qPlace, Token token) {
+	public Event(double time, Queue queue, Token token) {
 		this.time	= time;
-		this.qPlace	= qPlace;
+		this.queue	= queue;
 		this.token	= token;		
 	}
-	
 }

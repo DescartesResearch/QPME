@@ -128,7 +128,7 @@ public class Place extends Node {
 				while (totTkPop > 0)  
 					for (int c = 0; c < numColors; c++)   
 						if (tkPop[c] > 0)  {
-							depQueue.addLast(new Token(Simulator.clock, c));
+							depQueue.addLast(new Token(this, Simulator.clock, c));
 							tkPop[c]--; totTkPop--; 
 						}						
 				Token tk = (Token) depQueue.removeFirst();
@@ -145,7 +145,7 @@ public class Place extends Node {
 			if (statsLevel >= 3) {			
 				for (int c = 0; c < numColors; c++)
 					for (int i = 0; i < tokenPop[c]; i++)
-						tokens[c].addLast(new Token(Simulator.clock, c));
+						tokens[c].addLast(new Token(this, Simulator.clock, c));
 			}		 									
 	}
 
@@ -211,7 +211,7 @@ public class Place extends Node {
 			placeStats.updateTkPopStats(color, tokenPop[color], count);						
 			if (statsLevel >= 3) {
 				for (int i = 0; i < count; i++) 
-					tokens[color].addLast(new Token(Simulator.clock, color));
+					tokens[color].addLast(new Token(this, Simulator.clock, color));
 			}
 		}
 		// Now add tokens and update affected transitions
@@ -224,11 +224,11 @@ public class Place extends Node {
 		else if (depDiscip == FIFO)  {			
 			if (depReady) {
 				for (int i=0; i < count; i++)  
-					depQueue.addLast(new Token(Simulator.clock, color));								
+					depQueue.addLast(new Token(this, Simulator.clock, color));								
 			}
 			else {
 				for (int i=0; i < (count-1); i++)
-					depQueue.addLast(new Token(Simulator.clock, color));
+					depQueue.addLast(new Token(this, Simulator.clock, color));
 				availTokens[color]++; 
 				depReady = true;
 				for (int i = 0; i < outTrans.length; i++)

@@ -101,8 +101,8 @@ public class QueueStats extends PlaceStats implements java.io.Serializable {
 		//  statsLevel >= 1
 				
 		if (statsLevel >= 3) {
-			// Make sure indrStats is false if queueDiscip != QueueingPlace.FCFS
-			this.indrStats	= (queueDiscip == QueueingPlace.FCFS);		// indrStats is by default true for FCFS queues
+			// Make sure indrStats is false if queueDiscip != Queue.FCFS
+			this.indrStats	= (queueDiscip == Queue.FCFS);		// indrStats is by default true for FCFS queues
 			this.meanDT					=	new double[numColors];
 			this.stDevDT				=	new double[numColors];			
 			if (Simulator.analMethod == Simulator.BATCH_MEANS)  {
@@ -152,9 +152,9 @@ public class QueueStats extends PlaceStats implements java.io.Serializable {
 			lastTkPopClock = Simulator.clock;			
 		}		
 		if (statsLevel >= 3)  {
-			// Make sure indrStats is false if queueDiscip != QueueingPlace.FCFS
-			indrStats = indrStats && (queueDiscip == QueueingPlace.FCFS);
-		}																		
+			// Make sure indrStats is false if queueDiscip != Queue.FCFS
+			indrStats = indrStats && (queueDiscip == Queue.FCFS);
+		}
 	}
 
 	/**
