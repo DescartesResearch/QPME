@@ -167,8 +167,10 @@ public class Simulator {
 
 	public int numPlaces;
 	public int numTrans;
+	public int numQueues;	
 	public Place[] places;
 	public Transition[] trans;
+	public Queue[] queues;
 
 	// XML Configuration.
 	protected String configuration;
@@ -974,6 +976,7 @@ public class Simulator {
 		// Initialize the place and transition sizes.
 		numPlaces = placeList.size();
 		numTrans = transitionList.size();
+		numQueues = 0; // TODO: Set to actual value defined in QPE.
 
 		// -----------------------------------------------------------------------------------------------------------
 		// CREATE PLACES
@@ -1023,6 +1026,7 @@ public class Simulator {
 		// Allocate an array able to contain the places.
 		logln(2, "places = new Place[" + numPlaces + "];");
 		places = new Place[numPlaces];
+		queues = new Queue[numPlaces]; // TODO: Set to actual value defined in QPE. 
 
 		// Create the place-objects of every-place. Depending on its type-attribute create Place or QueueingPlace objects.
 		Iterator placeIterator = placeList.iterator();
@@ -1144,17 +1148,27 @@ public class Simulator {
 					}
 					numServers = Integer.parseInt(place.attributeValue("number-of-servers"));
 				}				
+				queues[numQueues] = new Queue(
+						numQueues,															// id 
+						place.attributeValue("name"), 										// name
+						qDis, 																// queueing discipline
+						numServers	 														// # servers
+						);
+				logln(2, "queues[" + numQueues + "] = new Queue(" 
+						+ numQueues + ", '" 
+						+ place.attributeValue("name") + "', " 
+						+ qDis + ", " 
+						+ numServers + ")");								
 				places[i] = new QueueingPlace(
 						i, 																	// id
 						place.attributeValue("name"), 										// name
-						place.element("color-refs").elements("color-ref").size(), 			// # colors
+						place.element("color-refs").elements("color-ref").size(), 			// # colors						
 						numIncomingConnections,												// # incoming connections
 						numOutgoingConnections, 											// # outgoing connections
 						statsLevel, 														// stats level
 						dDis, 																// departure discipline
-						qDis, 																// queueing discipline
-						numServers, 														// # servers
-						place);
+						queues[numQueues],												// Queue												
+						place);																// Place
 				logln(2, "places[" + i + "] = new QueueingPlace(" 
 						+ i + ", '" 
 						+ place.attributeValue("name") + "', " 
@@ -1163,9 +1177,10 @@ public class Simulator {
 						+ numOutgoingConnections + ", " 
 						+ statsLevel + ", " 
 						+ dDis + ", " 
-						+ qDis + ", " 
-						+ numServers + ", " 
-						+ place + ")");								
+						+ queues[numQueues] + ", "  
+						+ place + ")");
+				
+				queues[numQueues++].addQueueingPlace((QueueingPlace) places[i]);				
 			} else {
 				logln("ERROR: Invalid or missing place type setting!");
 				logln("       Currently only 'ordinary-place' and 'queueing-place' are supported.");
@@ -1533,7 +1548,7 @@ public class Simulator {
 				
 				// BEGIN-CONFIG
 				if (qPl.queue.queueDiscip == Queue.PS)  
-					qPl.expPS = false; 				
+					qPl.queue.expPS = false; 				
 				// END-CONFIG				
 				
 				if (!(qPl.queue.queueDiscip == Queue.PS && qPl.queue.expPS)) 
@@ -1557,7 +1572,7 @@ public class Simulator {
 					}
 					String distributionFunction = colorRef.attributeValue("distribution-function");
 										
-					if (qPl.queue.queueDiscip == Queue.PS && qPl.expPS) {
+					if (qPl.queue.queueDiscip == Queue.PS && qPl.queue.expPS) {
 						logln("Info: expPS parameter of a queueing place with PS scheduling strategy set to true!");
 						if (!"Exponential".equals(distributionFunction)) {
 							logln("Error: Distribution function is configured as \"" + distributionFunction + "\"");							
@@ -2815,12 +2830,17 @@ public class Simulator {
 			} // end firing enabled transitions
 
 			// Step 2: Make sure all service completion events in PS QueueingPlaces have been scheduled
+			for (int q = 0; q < numQueues; q++)
+				if (queues[q].queueDiscip == Queue.PS && (!queues[q].eventsUpToDate))
+					queues[q].updateEvents();
+			/* Alternative Code
 			for (int p = 0; p < numPlaces; p++)
 				if (places[p] instanceof QueueingPlace) {
 					QueueingPlace qpl = (QueueingPlace) places[p];
-					if ((qpl.queue.queueDiscip == Queue.PS) && (!qpl.eventsUpToDate))
-						qpl.updateEvents();
-				}
+					if ((qpl.queue.queueDiscip == Queue.PS) && (!qpl.queue.eventsUpToDate))
+						qpl.queue.updateEvents();
+				} 
+			*/			
 
 			// Step 3: Process next event in event list
 			if (eventList.size() > 0) {
@@ -2829,7 +2849,7 @@ public class Simulator {
 				// Advance simulation time
 				clock = ev.time;
 
-				QueueingPlace qpl = ev.qPlace;
+				QueueingPlace qpl = (QueueingPlace) ev.token.place;
 				qpl.completeService(ev.token);
 
 				// Check if some transitions were enabled and update enTrans				

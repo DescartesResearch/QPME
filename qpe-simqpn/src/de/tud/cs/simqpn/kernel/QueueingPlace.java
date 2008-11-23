@@ -35,9 +35,6 @@ import org.dom4j.Element;
 import cern.colt.list.AbstractDoubleList;
 import cern.colt.list.DoubleArrayList;
 import cern.jet.random.AbstractContinousDistribution;
-import cern.jet.random.Empirical;
-import cern.jet.random.EmpiricalWalker;
-import cern.jet.random.Exponential;
 
 /**
  * Class QueueingPlace
