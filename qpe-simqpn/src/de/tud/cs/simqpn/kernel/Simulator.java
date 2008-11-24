@@ -584,7 +584,7 @@ public class Simulator {
 				if (pl.statsLevel > 0) {
 					if (pl instanceof QueueingPlace) {
 						QueueingPlace qPl = (QueueingPlace) pl;
-						aggrStats[p * 2].saveStats(qPl.queueStats);
+						aggrStats[p * 2].saveStats(qPl.queueingPlaceStats);
 						aggrStats[(p * 2) + 1].saveStats(qPl.placeStats);
 					} else {
 						aggrStats[p * 2].saveStats(pl.placeStats);
@@ -659,7 +659,7 @@ public class Simulator {
 			 * maxObsrvST - Maximum number of observations considered (if <= 0 token color is not considered in the analysis).
 			 * 
 			 * ... places[p].placeStats.minObsrvST/maxObsrvST
-			 * ... ((QueueingPlace) places[p]).queueStats.minObsrvST[c]/maxObsrvST[c]
+			 * ... ((QueueingPlace) places[p]).queueingPlaceStats.minObsrvST[c]/maxObsrvST[c]
 			 * 
 			 * Note: Places/QueueingPlaces with (StatsLevel < 3) are not considered in the analysis!
 			 * Note: If (maxObsrvST[c] <= 0) the respective token color is not considered in the analysis!
@@ -715,10 +715,10 @@ public class Simulator {
 								logln("   colorRef.color-id  = " + colorRef.attributeValue("color-id"));
 								throw new SimQPNException();							
 							}							
-							qPl.queueStats.minObsrvST[c] = Integer.parseInt(element.attributeValue("queueMinObsrv"));							
-							qPl.queueStats.maxObsrvST[c] = Integer.parseInt(element.attributeValue("queueMaxObsrv"));  
-							logln(2, "qPl.queueStats.minObsrvST[" + c + "] = " + qPl.queueStats.minObsrvST[c]);
-							logln(2, "qPl.queueStats.maxObsrvST[" + c + "] = " + qPl.queueStats.maxObsrvST[c]);
+							qPl.queueingPlaceStats.minObsrvST[c] = Integer.parseInt(element.attributeValue("queueMinObsrv"));							
+							qPl.queueingPlaceStats.maxObsrvST[c] = Integer.parseInt(element.attributeValue("queueMaxObsrv"));  
+							logln(2, "qPl.queueingPlaceStats.minObsrvST[" + c + "] = " + qPl.queueingPlaceStats.minObsrvST[c]);
+							logln(2, "qPl.queueingPlaceStats.maxObsrvST[" + c + "] = " + qPl.queueingPlaceStats.maxObsrvST[c]);
 						}
 					}
 				}
@@ -733,7 +733,7 @@ public class Simulator {
 				if (pl.statsLevel > 0) {
 					if (pl instanceof QueueingPlace) {
 						QueueingPlace qPl = (QueueingPlace) pl;
-						aggrStats[p * 2].saveStats(qPl.queueStats);
+						aggrStats[p * 2].saveStats(qPl.queueingPlaceStats);
 						aggrStats[(p * 2) + 1].saveStats(qPl.placeStats);
 					} else {
 						aggrStats[p * 2].saveStats(pl.placeStats);
@@ -914,7 +914,7 @@ public class Simulator {
 				if (pl.statsLevel > 0) {	
 					if (pl instanceof QueueingPlace) {
 						QueueingPlace qPl = (QueueingPlace) pl; 
-						aggrStats[p*2].saveStats(qPl.queueStats);
+						aggrStats[p*2].saveStats(qPl.queueingPlaceStats);
 						aggrStats[(p*2)+1].saveStats(qPl.placeStats);						
 						if (i % runsBtwCvrgChks == 0) {																				
 							if (!aggrStats[p*2].enoughCvrgStats()) done = false; 
@@ -1123,7 +1123,7 @@ public class Simulator {
 				
 				if ("IS".equals(place.attributeValue("strategy"))) {
 					qDis = Queue.IS; 
-					numServers = 0;
+					numServers = 0; //NOTE: This is assumed in QueueingPlaceStats.updateTkPopStats()! 
 				} else {
 					if ("FCFS".equals(place.attributeValue("strategy"))) {
 						qDis = Queue.FCFS; 
@@ -1598,7 +1598,7 @@ public class Simulator {
 					 * 
 					 * The actual values in the meanServTimes array are currently only used in three cases 
 					 *    1. QueueingPlace.expPS == true (Exponential distribution)     
-					 *    2. QueueingPlace.queueStats.indrStats == true
+					 *    2. QueueingPlace.queueingPlaceStats.indrStats == true
 					 *    3. distribution-function == Deterministic (not implemented yet)
 					 * 
 					 * Note: Service time distributions are truncated at 0 to avoid negative
@@ -2289,8 +2289,8 @@ public class Simulator {
 		for (int p = 0; p < numPlaces; p++) {
 			Place pl = places[p];
 			if (pl.statsLevel >= 3 && pl instanceof QueueingPlace) {
-				((QueueingPlace) pl).queueStats.indrStats = false;
-				logln(2, "places[" + p + "].queueStats.indrStats = false;");				
+				((QueueingPlace) pl).queueingPlaceStats.indrStats = false;
+				logln(2, "places[" + p + "].queueingPlaceStats.indrStats = false;");				
 			}
 		}
 
@@ -2497,8 +2497,8 @@ public class Simulator {
 									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
 									throw new SimQPNException();
 								}								
-								qpl.queueStats.signLevST[cr] = Double.parseDouble(colorRefSettings.attributeValue("queueSignLev"));
-								logln(2, "-- queueStats.signLevST[" + cr + "] = " + qpl.queueStats.signLevST[cr]);
+								qpl.queueingPlaceStats.signLevST[cr] = Double.parseDouble(colorRefSettings.attributeValue("queueSignLev"));
+								logln(2, "-- queueingPlaceStats.signLevST[" + cr + "] = " + qpl.queueingPlaceStats.signLevST[cr]);
 
 								if (colorRefSettings.attributeValue("queueReqAbsPrc") == null) {
 									logln("Error: Configuration parameter \"queueReqAbsPrc\" for Batch Means Method is missing!");
@@ -2512,8 +2512,8 @@ public class Simulator {
 									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
 									throw new SimQPNException();
 								}
-								qpl.queueStats.reqAbsPrc[cr] = Double.parseDouble(colorRefSettings.attributeValue("queueReqAbsPrc"));
-								logln(2, "-- queueStats.reqAbsPrc[" + cr + "] = " + qpl.queueStats.reqAbsPrc[cr]);
+								qpl.queueingPlaceStats.reqAbsPrc[cr] = Double.parseDouble(colorRefSettings.attributeValue("queueReqAbsPrc"));
+								logln(2, "-- queueingPlaceStats.reqAbsPrc[" + cr + "] = " + qpl.queueingPlaceStats.reqAbsPrc[cr]);
 
 								if (colorRefSettings.attributeValue("queueReqRelPrc") == null) {
 									logln("Error: Configuration parameter \"queueReqRelPrc\" for Batch Means Method is missing!");
@@ -2527,8 +2527,8 @@ public class Simulator {
 									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
 									throw new SimQPNException();
 								}
-								qpl.queueStats.reqRelPrc[cr] = Double.parseDouble(colorRefSettings.attributeValue("queueReqRelPrc"));
-								logln(2, "-- queueStats.reqRelPrc[" + cr + "] = " + qpl.queueStats.reqRelPrc[cr]);
+								qpl.queueingPlaceStats.reqRelPrc[cr] = Double.parseDouble(colorRefSettings.attributeValue("queueReqRelPrc"));
+								logln(2, "-- queueingPlaceStats.reqRelPrc[" + cr + "] = " + qpl.queueingPlaceStats.reqRelPrc[cr]);
 								
 								if (colorRefSettings.attributeValue("queueBatchSize") == null) {
 									logln("Error: Configuration parameter \"queueBatchSize\" for Batch Means Method is missing!");
@@ -2542,8 +2542,8 @@ public class Simulator {
 									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
 									throw new SimQPNException();
 								}								
-								qpl.queueStats.batchSizeST[cr] = Integer.parseInt(colorRefSettings.attributeValue("queueBatchSize"));
-								logln(2, "-- queueStats.batchSizeST[" + cr + "] = " + qpl.queueStats.batchSizeST[cr]);
+								qpl.queueingPlaceStats.batchSizeST[cr] = Integer.parseInt(colorRefSettings.attributeValue("queueBatchSize"));
+								logln(2, "-- queueingPlaceStats.batchSizeST[" + cr + "] = " + qpl.queueingPlaceStats.batchSizeST[cr]);
 
 								if(colorRefSettings.attributeValue("queueMinBatches") == null) {
 									logln("Error: Configuration parameter \"queueMinBatches\" for Batch Means Method is missing!");
@@ -2557,8 +2557,8 @@ public class Simulator {
 									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
 									throw new SimQPNException();
 								}
-								qpl.queueStats.minBatches[cr] = Integer.parseInt(colorRefSettings.attributeValue("queueMinBatches"));
-								logln(2, "-- queueStats.minBatches[" + cr + "] = " + qpl.queueStats.minBatches[cr]);								
+								qpl.queueingPlaceStats.minBatches[cr] = Integer.parseInt(colorRefSettings.attributeValue("queueMinBatches"));
+								logln(2, "-- queueingPlaceStats.minBatches[" + cr + "] = " + qpl.queueingPlaceStats.minBatches[cr]);								
 
 								if(colorRefSettings.attributeValue("queueNumBMeansCorlTested") == null) {
 									logln("Error: Configuration parameter \"queueNumBMeansCorlTested\" for Batch Means Method is missing!");
@@ -2572,13 +2572,13 @@ public class Simulator {
 									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
 									throw new SimQPNException();
 								}								
-								qpl.queueStats.numBMeansCorlTested[cr] = Integer.parseInt(colorRefSettings.attributeValue("queueNumBMeansCorlTested"));
-								logln(2, "-- queueStats.numBMeansCorlTested[" + cr + "] = " + qpl.queueStats.numBMeansCorlTested[cr]);								
+								qpl.queueingPlaceStats.numBMeansCorlTested[cr] = Integer.parseInt(colorRefSettings.attributeValue("queueNumBMeansCorlTested"));
+								logln(2, "-- queueingPlaceStats.numBMeansCorlTested[" + cr + "] = " + qpl.queueingPlaceStats.numBMeansCorlTested[cr]);								
 								
-								if (qpl.queueStats.minBatches[cr] > 0 && 
-									qpl.queueStats.numBMeansCorlTested[cr] > 0 && 
-									!(qpl.queueStats.minBatches[cr] > qpl.queueStats.numBMeansCorlTested[cr])) {
-									logln("Error: QueueingPlace.queueStats.minBatches[c] must be greater than QueueingPlace.queueStats.numBMeansCorlTested[c]!");
+								if (qpl.queueingPlaceStats.minBatches[cr] > 0 && 
+									qpl.queueingPlaceStats.numBMeansCorlTested[cr] > 0 && 
+									!(qpl.queueingPlaceStats.minBatches[cr] > qpl.queueingPlaceStats.numBMeansCorlTested[cr])) {
+									logln("Error: QueueingPlace.queueingPlaceStats.minBatches[c] must be greater than QueueingPlace.queueingPlaceStats.numBMeansCorlTested[c]!");
 									logln("Details:");
 									logln("  configuration = " + configuration);						
 									logln("  place-num          = " + p);
@@ -2591,8 +2591,8 @@ public class Simulator {
 								}
 								// If (numBMeansCorlTested[c] <= 0) no correlation test is done!								
 								// Note that numBMeansCorlTested must be even!
-								if (qpl.queueStats.numBMeansCorlTested[cr] % 2 != 0) {
-									logln("Error: QueueingPlace.queueStats.numBMeansCorlTested[c] must be even!");
+								if (qpl.queueingPlaceStats.numBMeansCorlTested[cr] % 2 != 0) {
+									logln("Error: QueueingPlace.queueingPlaceStats.numBMeansCorlTested[c] must be even!");
 									logln("Details:");
 									logln("  configuration = " + configuration);						
 									logln("  place-num          = " + p);
@@ -2615,22 +2615,22 @@ public class Simulator {
 								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
 								throw new SimQPNException();
 								/* ORIGINAL MANUAL CONFIGURATION
-								qpl.queueStats.signLevST[cr] = 0.05;		// e.g. 0.05 ---> 95% c.i.; 0.1 ---> 90%
-								logln(2, "-- queueStats.signLevST[" + cr + "] = " + qpl.queueStats.signLevST[cr]);								
-								qpl.queueStats.reqAbsPrc[cr] = 50;
-								logln(2, "-- queueStats.reqAbsPrc[" + cr + "] = " + qpl.queueStats.reqAbsPrc[cr]);								
-								qpl.queueStats.reqRelPrc[cr] = 0.05;		// e.g. 0.1 ---> 10% relative precision
-								logln(2, "-- queueStats.reqRelPrc[" + cr + "] = " + qpl.queueStats.reqRelPrc[cr]);								
-								qpl.queueStats.batchSizeST[cr] = 200;		// Initial batch size
-								logln(2, "-- queueStats.batchSizeST[" + cr + "] = " + qpl.queueStats.batchSizeST[cr]);								
-								qpl.queueStats.minBatches[cr] = 60; 
+								qpl.queueingPlaceStats.signLevST[cr] = 0.05;		// e.g. 0.05 ---> 95% c.i.; 0.1 ---> 90%
+								logln(2, "-- queueingPlaceStats.signLevST[" + cr + "] = " + qpl.queueingPlaceStats.signLevST[cr]);								
+								qpl.queueingPlaceStats.reqAbsPrc[cr] = 50;
+								logln(2, "-- queueingPlaceStats.reqAbsPrc[" + cr + "] = " + qpl.queueingPlaceStats.reqAbsPrc[cr]);								
+								qpl.queueingPlaceStats.reqRelPrc[cr] = 0.05;		// e.g. 0.1 ---> 10% relative precision
+								logln(2, "-- queueingPlaceStats.reqRelPrc[" + cr + "] = " + qpl.queueingPlaceStats.reqRelPrc[cr]);								
+								qpl.queueingPlaceStats.batchSizeST[cr] = 200;		// Initial batch size
+								logln(2, "-- queueingPlaceStats.batchSizeST[" + cr + "] = " + qpl.queueingPlaceStats.batchSizeST[cr]);								
+								qpl.queueingPlaceStats.minBatches[cr] = 60; 
 									// Note that if (minBatches > 0 && numBMeansCorlTested[c] > 0),
 									// minBatches[c] must be > numBMeansCorlTested[c]!
-								logln(2, "-- queueStats.minBatches[" + cr + "] = " + qpl.queueStats.minBatches[cr]);								
-								qpl.queueStats.numBMeansCorlTested[cr] = 50; 
+								logln(2, "-- queueingPlaceStats.minBatches[" + cr + "] = " + qpl.queueingPlaceStats.minBatches[cr]);								
+								qpl.queueingPlaceStats.numBMeansCorlTested[cr] = 50; 
 									// Note that numBMeansCorlTested must be even!
 									// If (numBMeansCorlTested[c] <= 0) no correlation test is done!
-								logln(2, "-- queueStats.numBMeansCorlTested[" + cr + "] = " + qpl.queueStats.numBMeansCorlTested[cr]);
+								logln(2, "-- queueingPlaceStats.numBMeansCorlTested[" + cr + "] = " + qpl.queueingPlaceStats.numBMeansCorlTested[cr]);
 							    */
 							}
 						}
@@ -2892,7 +2892,7 @@ public class Simulator {
 							done = false;
 							break;
 						}
-						if ((pl instanceof QueueingPlace) && !(((QueueingPlace) pl).queueStats.enoughStats())) {
+						if ((pl instanceof QueueingPlace) && !(((QueueingPlace) pl).queueingPlaceStats.enoughStats())) {
 							done = false;
 							break;
 						}

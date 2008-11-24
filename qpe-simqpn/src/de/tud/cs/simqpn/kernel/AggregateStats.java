@@ -136,7 +136,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 											
 	public double[]		trCvrgLowerLimit;		// Lower limit for the true coverage based on the F distribution.	
 	public double[]		trCvrgUpperLimit;		// Upper limit for the true coverage based on the F distribution.
-	public LinkedList	replStats;				// PlaceStats/QueueStats objects collected from run replications.
+	public LinkedList	replStats;				// PlaceStats/QueueingPlaceStats objects collected from run replications.
 	public int 			numSavedRepls;			// Number of saved replications for coverage analysis.
 										            													
 	// StatsLevel 4 ------------------------------------------------------------------------------------------------------
@@ -494,7 +494,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 				sumSqColUtil[c]		+= stats.colUtil[c] * stats.colUtil[c];
 			}
 			if (type == QUEUE) {	
-				double queueUtil 	= ((QueueStats) stats).queueUtil;
+				double queueUtil 	= ((QueueingPlaceStats) stats).queueUtil;
 				sumQueueUtil		+= queueUtil;
 				sumSqQueueUtil		+= queueUtil * queueUtil;										
 			}											

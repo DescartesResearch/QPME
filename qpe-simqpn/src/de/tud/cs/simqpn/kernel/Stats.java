@@ -17,7 +17,7 @@
 package de.tud.cs.simqpn.kernel;
 
 /**
- * Class QueueStats
+ * Class Stats
  *
  * 
  * @author Samuel Kounev

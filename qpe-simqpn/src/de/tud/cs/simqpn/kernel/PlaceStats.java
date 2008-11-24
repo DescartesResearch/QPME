@@ -217,7 +217,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			}
 		}
 
-		if ((statsLevel >= 4) && !(this instanceof QueueStats)) {
+		if ((statsLevel >= 4) && !(this instanceof QueueingPlaceStats)) {
 			String fileName = "";
 			this.fileST = new PrintStream[numColors];
 			for (int c = 0; c < numColors; c++) {
@@ -688,8 +688,8 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 				break;
 			} else if (Simulator.stoppingRule == Simulator.RELPRC) {
 				stdStateMeanST = sumBMeansST[c] / numBatchesST[c];
-				if (this instanceof QueueStats) {
-					QueueStats qSt = (QueueStats) this;
+				if (this instanceof QueueingPlaceStats) {
+					QueueingPlaceStats qSt = (QueueingPlaceStats) this;
 					if (qSt.indrStats)
 						stdStateMeanST += qSt.meanServTimes[c];
 				}

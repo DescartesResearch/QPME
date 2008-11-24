@@ -60,7 +60,7 @@ public class QueueingPlace extends Place {
 	public AbstractContinousDistribution[]
 						randServTimeGen;	// PS queues: Random number generators for generating service times.
 	
-	public QueueStats	queueStats;	
+	public QueueingPlaceStats	queueingPlaceStats;	
 	
 	public Element element;
 			
@@ -90,7 +90,7 @@ public class QueueingPlace extends Place {
 			this.queueTokenPop[c] 		= 0;
 		
 		if (statsLevel > 0) 
-			queueStats = new QueueStats(id, name, numColors, statsLevel, queue.queueDiscip, queue.numServers, meanServTimes);
+			queueingPlaceStats = new QueueingPlaceStats(id, name, numColors, statsLevel, queue.queueDiscip, queue.numServers, meanServTimes);
 		
 		// PS Queues			
 		if (queue.queueDiscip == Queue.PS) {			 
@@ -137,7 +137,7 @@ public class QueueingPlace extends Place {
 	public void start() {	
 		if (statsLevel > 0)  {		
 			// Start statistics collection
-			queueStats.start(queueTokenPop);
+			queueingPlaceStats.start(queueTokenPop);
 			super.start();
 		}					
 	}
@@ -153,7 +153,7 @@ public class QueueingPlace extends Place {
 	public void finish() {
 		if (statsLevel > 0)  {
 			// Complete statistics collection
-			queueStats.finish(queueTokenPop);								
+			queueingPlaceStats.finish(queueTokenPop);								
 			super.finish();
 		}
 	}
@@ -177,7 +177,7 @@ public class QueueingPlace extends Place {
 		
 		// Update Stats	(below more...) (Note: watch out the order of this and next statement)
 		if (statsLevel > 0)
-			queueStats.updateTkPopStats(color, queueTokenPop[color], count);																	
+			queueingPlaceStats.updateTkPopStats(color, queueTokenPop[color], count);																	
 		 				
 		queueTokenPop[color] += count;
 
@@ -200,9 +200,9 @@ public class QueueingPlace extends Place {
 
 		// Update stats (below more...) (Note: watch out the order of this and next statement)
 		if (statsLevel > 0)  {
-			queueStats.updateTkPopStats(token.color, queueTokenPop[token.color], -1);
+			queueingPlaceStats.updateTkPopStats(token.color, queueTokenPop[token.color], -1);
 			if (statsLevel >= 3) 
-				queueStats.updateSojTimeStats(token.color, Simulator.clock - token.arrivalTS);
+				queueingPlaceStats.updateSojTimeStats(token.color, Simulator.clock - token.arrivalTS);
 		}
 		
 		// Now remove token from queue and update queue state
@@ -216,7 +216,7 @@ public class QueueingPlace extends Place {
 		
 	public void report() throws SimQPNException  {		
 		if (statsLevel > 0) {
-			queueStats.printReport();
+			queueingPlaceStats.printReport();
 			super.report();					
 		}
 	}
