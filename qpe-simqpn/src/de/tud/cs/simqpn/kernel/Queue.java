@@ -316,7 +316,7 @@ public class Queue {
 				numBusyServers++; n++;
 				// Update Stats
 				if (qPl.statsLevel >= 3)   
-					qPl.QueueingPlaceStats.updateDelayTimeStats(color, 0);																 
+					qPl.queueingPlaceStats.updateDelayTimeStats(color, 0);																 
 			}						
 			while (n < count) {
 				//  Place the rest of the tokens in the waitingLine
@@ -365,7 +365,7 @@ public class Queue {
 				Simulator.scheduleEvent(Simulator.clock + servTime, this, tk);
 				// Update stats				
 				if (qPl.statsLevel >= 3)
-					qPl.QueueingPlaceStats.updateDelayTimeStats(tk.color, Simulator.clock - tk.arrivalTS);				
+					qPl.queueingPlaceStats.updateDelayTimeStats(tk.color, Simulator.clock - tk.arrivalTS);				
 			}
 			else numBusyServers--;							
 		}

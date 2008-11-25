@@ -26,13 +26,13 @@ package de.tud.cs.simqpn.kernel;
 
 public class Stats {
 	// Types of statistics
-	public static final int PLACE		= 0;
-	public static final int QUEUE		= 1;	 
-	public static final int DEPOSITORY	= 2;
+	public static final int ORD_PLACE		= 0;
+	public static final int QUE_PLACE_QUEUE	= 1;	 
+	public static final int QUE_PLACE_DEP	= 2;
 	
 	public int 			id;						// ID of target node			 		
 	public String		name;					// Name of target node			
-	public int 			type;					// Type of statistics (QUEUE, PLACE or DEPOSITORY)		
+	public int 			type;					// Type of statistics (QUE_PLACE_QUEUE, ORD_PLACE or QUE_PLACE_DEP)		
 	public int			numColors;				// Number of colors
 	public int			statsLevel;				// Determines the amount of statistics to be gathered during the run (see below).
 	public boolean		completed;				// Indicates whether statistics collection has been completed and gathered statistics have been processed.
@@ -54,7 +54,7 @@ public class Stats {
 	 * 
 	 * @param id          - global id of the place
 	 * @param name        - name of the place
-	 * @param type		  - type of statistics (PLACE, QUEUE or DEPOSITORY)
+	 * @param type		  - type of statistics (ORD_PLACE, QUE_PLACE_QUEUE or QUE_PLACE_DEP)
 	 * @param numColors   - number of colors
 	 * @param statsLevel  - determines the amount of statistics to be gathered during the run
 	 */

@@ -16,5 +16,5 @@
 package de.tud.cs.simqpn.kernel;
 
 public class SimQPNException extends Exception {
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 12347564L;
 }

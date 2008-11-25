@@ -499,10 +499,10 @@ public class Simulator {
 			pl = places[p];
 			if (pl.statsLevel > 0) {
 				if (pl instanceof QueueingPlace) {
-					aggrStats[p * 2] = new AggregateStats(pl.id, pl.name, Stats.QUEUE, pl.numColors, pl.statsLevel);
-					aggrStats[(p * 2) + 1] = new AggregateStats(pl.id, pl.name, Stats.DEPOSITORY, pl.numColors, pl.statsLevel);
+					aggrStats[p * 2] = new AggregateStats(pl.id, pl.name, Stats.QUE_PLACE_QUEUE, pl.numColors, pl.statsLevel);
+					aggrStats[(p * 2) + 1] = new AggregateStats(pl.id, pl.name, Stats.QUE_PLACE_DEP, pl.numColors, pl.statsLevel);
 				} else {
-					aggrStats[p * 2] = new AggregateStats(pl.id, pl.name, Stats.PLACE, pl.numColors, pl.statsLevel);
+					aggrStats[p * 2] = new AggregateStats(pl.id, pl.name, Stats.ORD_PLACE, pl.numColors, pl.statsLevel);
 					aggrStats[(p * 2) + 1] = null;
 				}
 			} else {
@@ -634,10 +634,10 @@ public class Simulator {
 			pl = places[p];
 			if (pl.statsLevel > 0) {
 				if (pl instanceof QueueingPlace) {
-					aggrStats[p * 2] = new AggregateStats(pl.id, pl.name, Stats.QUEUE, pl.numColors, pl.statsLevel);
-					aggrStats[(p * 2) + 1] = new AggregateStats(pl.id, pl.name, Stats.DEPOSITORY, pl.numColors, pl.statsLevel);
+					aggrStats[p * 2] = new AggregateStats(pl.id, pl.name, Stats.QUE_PLACE_QUEUE, pl.numColors, pl.statsLevel);
+					aggrStats[(p * 2) + 1] = new AggregateStats(pl.id, pl.name, Stats.QUE_PLACE_DEP, pl.numColors, pl.statsLevel);
 				} else {
-					aggrStats[p * 2] = new AggregateStats(pl.id, pl.name, Stats.PLACE, pl.numColors, pl.statsLevel);
+					aggrStats[p * 2] = new AggregateStats(pl.id, pl.name, Stats.ORD_PLACE, pl.numColors, pl.statsLevel);
 					aggrStats[(p * 2) + 1] = null;
 				}
 			} else {
@@ -789,11 +789,11 @@ public class Simulator {
 			pl = places[p];
 			if (pl.statsLevel > 0)  {					 
 				if (pl instanceof QueueingPlace) {
-					aggrStats[p*2] 		= new AggregateStats(pl.id, pl.name, Stats.QUEUE, pl.numColors, pl.statsLevel);
-					aggrStats[(p*2)+1]	= new AggregateStats(pl.id, pl.name, Stats.DEPOSITORY, pl.numColors, pl.statsLevel);																	
+					aggrStats[p*2] 		= new AggregateStats(pl.id, pl.name, Stats.QUE_PLACE_QUEUE, pl.numColors, pl.statsLevel);
+					aggrStats[(p*2)+1]	= new AggregateStats(pl.id, pl.name, Stats.QUE_PLACE_DEP, pl.numColors, pl.statsLevel);																	
 				}
 				else {
-					aggrStats[p*2] 		= new AggregateStats(pl.id, pl.name, Stats.PLACE, pl.numColors, pl.statsLevel);
+					aggrStats[p*2] 		= new AggregateStats(pl.id, pl.name, Stats.ORD_PLACE, pl.numColors, pl.statsLevel);
 					aggrStats[(p*2)+1]	= null;
 				}					 
 			}

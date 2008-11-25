@@ -48,7 +48,7 @@ import de.tud.cs.qpe.model.DocumentManager;
  */
 
 public class PlaceStats extends Stats implements java.io.Serializable {
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
 	public boolean inRampUp;				// True if still in RampUp period (no measurements taken).
 	public double endRampUpClock;			// Clock at the end of RampUp, i.e. beginning of the measurement period.
@@ -136,7 +136,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 * @param name -
 	 *            name of the place
 	 * @param type -
-	 *            type of statistics (PLACE, QUEUE or DEPOSITORY)
+	 *            type of statistics (ORD_PLACE, QUE_PLACE_QUEUE or QUE_PLACE_DEP)
 	 * @param numColors -
 	 *            number of colors
 	 * @param statsLevel -
@@ -222,12 +222,15 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			this.fileST = new PrintStream[numColors];
 			for (int c = 0; c < numColors; c++) {
 				try {
-					if (type == PLACE)
-						fileName = statsDir + fileSep + "RunStats-place" + id
-								+ "-col" + c + "-ST.txt";
-					else
-						fileName = statsDir + fileSep + "RunStats-depository"
-								+ id + "-col" + c + "-ST.txt";
+					if (type == ORD_PLACE)
+						fileName = statsDir + fileSep + "RunStats-ord_place" + id + "-col" + c + "-ST.txt";
+					else if (type == QUE_PLACE_DEP)
+						fileName = statsDir + fileSep + "RunStats-que_place_dep" + id + "-col" + c + "-ST.txt";
+					else {
+						Simulator.logln("Error: Unexpected statistics type in place with id : " + id);
+						Simulator.logln();						
+						throw new SimQPNException();						
+					}
 					this.fileST[c] = new PrintStream(new FileOutputStream(
 							fileName));
 				} catch (FileNotFoundException ex) {
@@ -285,26 +288,25 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 					if (numBMeansCorlTested[c] > 0) {
 						// Ensure that numBMeansCorlTested is even
 						if (numBMeansCorlTested[c] % 2 != 0) {
-							if (type == PLACE)
-								Simulator.log("Warning: In place " + name);
-							else if (type == QUEUE)
-								Simulator.log("Warning: In queue " + name);
-							else if (type == DEPOSITORY)
-								Simulator.log("Warning: In depository "	+ name);
-								Simulator.logln(" numBMeansCorlTested for color " + c + " is not even!?");
-								Simulator.logln(" Setting numBMeansCorlTested["	+ c + "] to (numBMeansCorlTested[" 
+							if (type == ORD_PLACE)
+								Simulator.log("Warning: In ordinary place " + name);
+							else if (type == QUE_PLACE_QUEUE)
+								Simulator.log("Warning: In queue of queueing place " + name);
+							else if (type == QUE_PLACE_DEP)
+								Simulator.log("Warning: In depository of queueing place "	+ name);
+							Simulator.logln(" numBMeansCorlTested for color " + c + " is not even!?");
+							Simulator.logln(" Setting numBMeansCorlTested["	+ c + "] to (numBMeansCorlTested[" 
 										+ c + "] + 1) = " + (numBMeansCorlTested[c] + 1));
 							numBMeansCorlTested[c]++;
 						}
 						// Ensure that minBatches[c] > numBMeansCorlTested[c]
 						if (!(minBatches[c] > numBMeansCorlTested[c])) {
-							if (type == PLACE)
-								Simulator.log("Warning: In place " + name);
-							else if (type == QUEUE)
-								Simulator.log("Warning: In queue " + name);
-							else if (type == DEPOSITORY)
-								Simulator.log("Warning: In depository "
-										+ name);
+							if (type == ORD_PLACE)
+								Simulator.log("Warning: In ordinary place " + name);
+							else if (type == QUE_PLACE_QUEUE)
+								Simulator.log("Warning: In queue of queueing place " + name);
+							else if (type == QUE_PLACE_DEP)
+								Simulator.log("Warning: In depository of queueing place " + name);
 								Simulator.logln(" minBatches <= numBMeansCorlTested for color "	+ c + "!?");
 								Simulator.logln("         Setting minBatches[" + c + "] to numBMeansCorlTested[" + c + "] + 1 = "
 											+ (numBMeansCorlTested[c] + 1));
@@ -398,12 +400,12 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			obsrvST[color].add(sojTime);
 			if ((numObsrv + 1) == maxObsrvST[color] && Simulator.debugLevel > 0) {
 				Simulator.log("Warning: Maximum number of observations allowed for ");
-				if (type == PLACE)
-					Simulator.log("place " + name + ", color " + color);
-				else if (type == QUEUE)
-					Simulator.log("queue " + name + ", color " + color);
-				else if (type == DEPOSITORY)
-					Simulator.log("depository " + name + ", color " + color);
+				if (type == ORD_PLACE)
+					Simulator.log("ordinary place " + name + ", color " + color);
+				else if (type == QUE_PLACE_QUEUE)
+					Simulator.log("queue of queueing place " + name + ", color " + color);
+				else if (type == QUE_PLACE_DEP)
+					Simulator.log("depository of queueing place " + name + ", color " + color);
 				Simulator.logln(" reached!");
 				Simulator.logln("         Further observations will be ignored. Consider increasing maxObsrvST[c].");
 			}
@@ -530,12 +532,12 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			else
 				Simulator.log("Info: FAILED ");
 			Simulator.log("Batch means correlation test for ");
-			if (type == PLACE)
-				Simulator.log("place " + name + ", color " + color);
-			else if (type == QUEUE)
-				Simulator.log("queue " + name + ", color " + color);
-			else if (type == DEPOSITORY)
-				Simulator.log("depository " + name + ", color " + color);
+			if (type == ORD_PLACE)
+				Simulator.log("ordinary place " + name + ", color " + color);
+			else if (type == QUE_PLACE_QUEUE)
+				Simulator.log("queue of queueing place " + name + ", color " + color);
+			else if (type == QUE_PLACE_DEP)
+				Simulator.log("depository of queueing place " + name + ", color " + color);
 			Simulator.logln();
 		}
 		return passed;
@@ -659,12 +661,12 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 		int c;
 
 		if (Simulator.debugLevel >= 3) {
-			if (type == PLACE)
-				Simulator.logln("Checking for enough stats in place " + name);
-			else if (type == QUEUE)
-				Simulator.logln("Checking for enough stats in queue " + name);
-			else if (type == DEPOSITORY)
-				Simulator.logln("Checking for enough stats in depository " + name);
+			if (type == ORD_PLACE)
+				Simulator.logln("Checking for enough stats in ordinary place " + name);
+			else if (type == QUE_PLACE_QUEUE)
+				Simulator.logln("Checking for enough stats in queue of queueing place " + name);
+			else if (type == QUE_PLACE_DEP)
+				Simulator.logln("Checking for enough stats in depository of queueing place " + name);
 		}
 
 		for (c = 0; c < numColors; c++) {
@@ -709,14 +711,14 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			}
 		}
 		if (passed && Simulator.debugLevel >= 3) {
-			if (type == PLACE)
-				Simulator.logln("PASSED: Enough stats gathered for place "
+			if (type == ORD_PLACE)
+				Simulator.logln("PASSED: Enough stats gathered for ordinary place "
 						+ name);
-			else if (type == QUEUE)
-				Simulator.logln("PASSED: Enough stats gathered for queue "
+			else if (type == QUE_PLACE_QUEUE)
+				Simulator.logln("PASSED: Enough stats gathered for queue of queueing place "
 						+ name);
-			else if (type == DEPOSITORY)
-				Simulator.logln("PASSED: Enough stats gathered for depository "	+ name);
+			else if (type == QUE_PLACE_DEP)
+				Simulator.logln("PASSED: Enough stats gathered for depository of queueing place "	+ name);
 			Simulator.logln();
 		}
 		return passed;
@@ -776,12 +778,16 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 
 		Simulator.logln();
 		Simulator.logln();
-		if (type == PLACE)
-			Simulator.logln("REPORT for Place : " + name
+		if (type == ORD_PLACE)
+			Simulator.logln("REPORT for Ordinary Place : " + name
 					+ "----------------------------------------");
-		else
-			Simulator.logln("REPORT for Depository : " + name
+		else if (type == QUE_PLACE_DEP)
+			Simulator.logln("REPORT for Depository of Queueing Place : " + name
 					+ "----------------------------------------");
+		else {
+			Simulator.logln("Internal error in PlaceStats " + name);
+			throw new SimQPNException();			
+		}
 
 		Simulator.logln();
 

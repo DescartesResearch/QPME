@@ -41,7 +41,7 @@ import drasys.or.prob.FDistribution;
  */
 
 public class AggregateStats extends Stats implements java.io.Serializable {	
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 166L;
 
 	public int 			numRepls;				// Number of replications used for replication/deletion method or coverage analysis (these are runs actually used in the analysis).			
 	public int 			numTooShortRepls;		// Number of replications that were discarded because of being too short.
@@ -84,10 +84,10 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 	public double[]		meanColUtil;			// Mean average color utilization.
 	public double[]		stDevAvgTkPop;			// Std. deviation of average token population.
 	public double[]		stDevColUtil;			// Std. deviation of average color utilization.
-	public double		sumQueueUtil;			// For Type=QUEUE: Sum of average overall queue utilizations.
-	public double		sumSqQueueUtil;			// For Type=QUEUE: Sum of squares of average overall queue utilizations.
-	public double		meanQueueUtil;			// For Type=QUEUE: Mean overall queue utilization.
-	public double		stDevQueueUtil;			// For Type=QUEUE: Std. deviation of overall queue utilization.
+	public double		sumQueueUtilQPl;		// For Type=QUEUE: Sum of queue utilizations due to the place.
+	public double		sumSqQueueUtilQPl;		// For Type=QUEUE: Sum of squares of queue utilizations due to the place.
+	public double		meanQueueUtilQPl;		// For Type=QUEUE: Mean queue utilization due to the place.
+	public double		stDevQueueUtilQPl;		// For Type=QUEUE: Std. deviation of queue utilization due to the place.
 							
 	// StatsLevel 3 ------------------------------------------------------------------------------------------------------
 	public double[]		minAvgST;				// Minimum average token sojourn time.				
@@ -147,7 +147,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 	 *
 	 * @param id          - global id of the place
 	 * @param name        - name of the node
-	 * @param type		  - type of the statistics (PLACE, QUEUE or DEPOSITORY) 	 
+	 * @param type		  - type of the statistics (ORD_PLACE, QUE_PLACE_QUEUE or QUE_PLACE_DEP) 	 
 	 * @param numColors   - number of colors
 	 * @param statsLevel  - determines the amount of statistics to be gathered during the run
 	 */
@@ -191,7 +191,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 				sumSqAvgTkPop[c] = 0; sumSqColUtil[c] = 0;
 			}
 			if (type == QUEUE) {
-				sumQueueUtil = 0; sumSqQueueUtil = 0;										
+				sumQueueUtilQPl = 0; sumSqQueueUtilQPl = 0;										
 			}
 		}
 		
@@ -254,12 +254,12 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 			this.fileST = new PrintStream[numColors];															
 			for (int c = 0; c < numColors; c++)  {					
 				try {
-					if (type == PLACE)						
-						fileName = statsDir + fileSep + "ReplicationStats-place" + id + "-col" + c + "-ST.txt";
-					else if (type == DEPOSITORY)
-						fileName = statsDir + fileSep + "ReplicationStats-depository" + id + "-col" + c + "-ST.txt";
-					else 
-						fileName = statsDir + fileSep + "ReplicationStats-queue" + id + "-col" + c + "-ST.txt";																			
+					if (type == ORD_PLACE)						
+						fileName = statsDir + fileSep + "ReplicationStats-ord_place" + id + "-col" + c + "-ST.txt";
+					else if (type == QUE_PLACE_DEP)
+						fileName = statsDir + fileSep + "ReplicationStats-que_place_dep" + id + "-col" + c + "-ST.txt";
+					else if (type == QUE_PLACE_QUEUE)
+						fileName = statsDir + fileSep + "ReplicationStats-que_place_queue" + id + "-col" + c + "-ST.txt";																			
 					this.fileST[c] = new PrintStream(new FileOutputStream(fileName));
 				}				
 				catch (FileNotFoundException ex)  {
@@ -284,12 +284,12 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 				if (stats.maxObsrvST[c] <= 0) return;								
 				int numObsrv = stats.obsrvST[c].size();				
 				if (numObsrv < stats.minObsrvST[c])  {					
-					if (type == PLACE) 
-						Simulator.log("Error: In place " + name);
-					else if (type == QUEUE)
-						Simulator.log("Error: In queue " + name);
-					else if (type == DEPOSITORY)
-						Simulator.log("Error: In depository " + name);
+					if (type == ORD_PLACE) 
+						Simulator.log("Error: In ordinary place " + name);
+					else if (type == QUE_PLACE_QUEUE)
+						Simulator.log("Error: In queue of queueing place " + name);
+					else if (type == QUE_PLACE_DEP)
+						Simulator.log("Error: In depository of queueing place " + name);
 					Simulator.logln(" only " + numObsrv + " observations collected for color " + c + "!");
 					Simulator.logln("       Need at least " + stats.minObsrvST[c] + ". Please increase Simulator.rampUpLen or lower minObsrvST[c].");
 					throw new SimQPNException();					
@@ -494,9 +494,9 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 				sumSqColUtil[c]		+= stats.colUtil[c] * stats.colUtil[c];
 			}
 			if (type == QUEUE) {	
-				double queueUtil 	= ((QueueingPlaceStats) stats).queueUtil;
-				sumQueueUtil		+= queueUtil;
-				sumSqQueueUtil		+= queueUtil * queueUtil;										
+				double queueUtilQPl = ((QueueingPlaceStats) stats).queueUtilQPl;
+				sumQueueUtilQPl		+= queueUtilQPl;
+				sumSqQueueUtilQPl	+= queueUtilQPl * queueUtilQPl;										
 			}											
 		}		
 		// StatsLevel 3:
@@ -549,12 +549,12 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 
 		String fileName = "";		
 		try  {					
-			if (type == PLACE)
-				fileName = statsDir + fileSep + "WelchMovAvgST-place" + name + "-col" + color + "-win" + win + ".txt"; 
-			else if (type == QUEUE)
-				fileName = statsDir + fileSep + "WelchMovAvgST-queue" + name + "-col" + color + "-win" + win + ".txt";
-			else if (type == DEPOSITORY)
-				fileName = statsDir + fileSep + "WelchMovAvgST-depository" + name + "-col" + color + "-win" + win + ".txt";
+			if (type == ORD_PLACE)
+				fileName = statsDir + fileSep + "WelchMovAvgST-ord_place" + name + "-col" + color + "-win" + win + ".txt"; 
+			else if (type == QUE_PLACE_QUEUE)
+				fileName = statsDir + fileSep + "WelchMovAvgST-que_place_queue" + name + "-col" + color + "-win" + win + ".txt";
+			else if (type == QUE_PLACE_DEP)
+				fileName = statsDir + fileSep + "WelchMovAvgST-que_place_dep" + name + "-col" + color + "-win" + win + ".txt";
 			PrintStream fileST = new PrintStream(new FileOutputStream(fileName));
 							
 			double movAvg;										
@@ -631,8 +631,8 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 				stDevColUtil[c]		= Math.sqrt(Descriptive.sampleVariance(numRepls, sumColUtil[c], sumSqColUtil[c]));						
 			}
 			if (type == QUEUE) {	
-				meanQueueUtil		= sumQueueUtil / numRepls;  								
-				stDevQueueUtil		= Math.sqrt(Descriptive.sampleVariance(numRepls, sumQueueUtil, sumSqQueueUtil));
+				meanQueueUtilQPl	= sumQueueUtilQPl / numRepls;  								
+				stDevQueueUtilQPl	= Math.sqrt(Descriptive.sampleVariance(numRepls, sumQueueUtilQPl, sumSqQueueUtilQPl));
 			}							
 		}	
 		// StatsLevel 3:
@@ -670,19 +670,19 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 		
 		Simulator.logln();
 		Simulator.logln();
-		if (type == PLACE)						
-			Simulator.logln("REPORT for Place : " + name + "----------------------------------------");			
-		else if (type == DEPOSITORY)
-			Simulator.logln("REPORT for Depository : " + name + "----------------------------------------");
-		else 
-			Simulator.logln("REPORT for Queue : " + name + "----------------------------------------");	
+		if (type == ORD_PLACE)						
+			Simulator.logln("REPORT for Ordinary Place: " + name + "----------------------------------------");			
+		else if (type == QUE_PLACE_DEP)
+			Simulator.logln("REPORT for Depository of Queueing Place: " + name + "----------------------------------------");
+		else if (type == QUE_PLACE_QUEUE)
+			Simulator.logln("REPORT for Queue of Queueing Place: " + name + "----------------------------------------");	
 
 		Simulator.logln("numReplicationsUsed = " + numRepls + " numTooShortRepls = " + numTooShortRepls); 				
 		Simulator.logln("minRunLen=" + minRunLen + " maxRunLen=" + maxRunLen + " avgRunLen=" + avgRunLen + " stDevRunLen=" + stDevRunLen);
 		Simulator.logln("avgWallClockTime=" + avgWallClockTime + " stDevWallClockTime=" + stDevWallClockTime);
 						
 		if (statsLevel >= 2 && type == QUEUE) 
-			Simulator.logln("meanQueueUtil=" + meanQueueUtil + " stDevQueueUtil=" + stDevQueueUtil);					
+			Simulator.logln("meanQueueUtilQPl=" + meanQueueUtilQPl + " stDevQueueUtilQPl=" + stDevQueueUtilQPl);					
 			
 		for (int c = 0; c < numColors; c++) {
 			Simulator.logln();				

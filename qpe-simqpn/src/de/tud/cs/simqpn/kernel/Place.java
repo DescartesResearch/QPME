@@ -91,9 +91,9 @@ public class Place extends Node {
 		}
 		if (statsLevel > 0) {
 			if (this instanceof QueueingPlace)
-				placeStats = new PlaceStats(id, name, Stats.DEPOSITORY, numColors, statsLevel);
+				placeStats = new PlaceStats(id, name, Stats.QUE_PLACE_DEP, numColors, statsLevel);
 			else
-				placeStats = new PlaceStats(id, name, Stats.PLACE, numColors, statsLevel);				 			
+				placeStats = new PlaceStats(id, name, Stats.ORD_PLACE, numColors, statsLevel);				 			
 			if (statsLevel >= 3) {
 				this.tokens = new LinkedList[numColors];
 				for (int c = 0; c < numColors; c++)

@@ -9,15 +9,7 @@
  *  History:
  *  Date        ID                Description
  *  ----------  ----------------  ------------------------------------------------------------------------------
- *  2003/08/??  Samuel Kounev     Created.
- *  ...
- *  2004/08/25  Samuel Kounev     Implemented support for multi-server PS queues (-/M/n-PS).                                 
- *  2005/12/13  Samuel Kounev     Modified to make it possible to switch off steady state statistics collection 
- *                                on a per color basis. Steady state statistics are collected for color c only 
- *                                when minBatches[c] > 0.                                 
- *  2006/10/14  Christofer Dutz   Added @SuppressWarnings("unchecked") and cleaned up 
- *                                imports to avoid warnings!
- *  2006/10/21  Samuel Kounev     Modified to use the Simulator.log() methods for output.                                
+ *  2008/11/25  Samuel Kounev     Created.
  * 
  */
 
@@ -31,15 +23,15 @@ import cern.jet.stat.Descriptive;
 import cern.jet.stat.Probability;
 
 /**
- * Class QueueingPlaceStats
+ * Class QueueStats
  *
  * 
  * @author Samuel Kounev
  * @version %I%, %G%
  */
 
-public class QueueingPlaceStats extends PlaceStats implements java.io.Serializable {
-	private static final long serialVersionUID = 3L;
+public class QueueStats implements java.io.Serializable {
+	private static final long serialVersionUID = 154545454L;
 
 	public int			queueDiscip;	// Queueing discipline
 	public int			numServers;		// FCFS queues: Number of servers in queueing station.			
@@ -70,12 +62,6 @@ public class QueueingPlaceStats extends PlaceStats implements java.io.Serializab
 	 *     they refer as usual to overall sojourn times in the queue!
 	 * 
 	 */
-	public double[]		meanDT;					// Mean Delay Time = (sumST[c] / numST[c])
-	public double[]		stDevDT;				// Delay Time Standard Deviation = Math.sqrt(Descriptive.sampleVariance(numST[c], sumST[c], sumSqST[c])) 
-	public double[]		stdStateMeanDT;			// Steady State Mean Delay Time = (sumBMeansST[c] / numBatchesST[c])	
-	public double[]		varStdStateMeanDT;		// Steady State Delay Time Variance = Descriptive.sampleVariance(numBatchesST[c], sumBMeansST[c], sumBMeansSqST[c]);	
-	public double[]		stDevStdStateMeanDT;	// Steady State Delay Time Standard Deviation = Math.sqrt(varStdStateMeanDT[c]) 
-	public double[]		ciHalfLenDT;			// Confidence Interval Half Length = Probability.studentTInverse(signLevST[c], numBatchesST[c] - 1) * Math.sqrt(varStdStateMeanDT[c] / numBatchesST[c]);		 
 	
 	// StatsLevel 4 ---------------------------------------------------------------------------------------
 	
@@ -84,7 +70,7 @@ public class QueueingPlaceStats extends PlaceStats implements java.io.Serializab
 	/**
 	 * Constructor
 	 *
-	 * @param id            - global id of the place
+	 * @param id            - global id of the queue
 	 * @param name          - name of the place
 	 * @param numColors     - number of colors
 	 * @param statsLevel    - determines the amount of statistics to be gathered during the run 
@@ -92,7 +78,9 @@ public class QueueingPlaceStats extends PlaceStats implements java.io.Serializab
 	 * @param numServers    - FCFS queues: number of servers in queueing station 
 	 * @param meanServTimes - mean service times of tokens
 	 */	
-	public QueueingPlaceStats(int id, String name, int numColors, int statsLevel, int queueDiscip, int numServers, double[] meanServTimes) throws SimQPNException {
+	public QueueStats(int id, String name, int queueDiscip, int numServers) throws SimQPNException {
+		
+		
 		super(id, name, QUEUE, numColors, statsLevel);
 		this.queueDiscip	= queueDiscip;
 		this.numServers		= numServers;			
@@ -240,7 +228,7 @@ public class QueueingPlaceStats extends PlaceStats implements java.io.Serializab
 	public void printReport() throws SimQPNException {
 		
 		if (!completed) {
-			Simulator.logln("QueueingPlaceStats " + name + " Error: Attempting to access statistics before data collection has finished!");
+			Simulator.logln("QueueStats " + name + " Error: Attempting to access statistics before data collection has finished!");
 			throw new SimQPNException();
 		}
 		
