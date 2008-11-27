@@ -31,14 +31,14 @@ import cern.jet.stat.Descriptive;
 import cern.jet.stat.Probability;
 
 /**
- * Class QueueingPlaceStats
+ * Class QPlaceQueueStats
  *
  * 
  * @author Samuel Kounev
  * @version %I%, %G%
  */
 
-public class QueueingPlaceStats extends PlaceStats implements java.io.Serializable {
+public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable {
 	private static final long serialVersionUID = 3L;
 
 	public int			queueDiscip;	// Queueing discipline
@@ -92,8 +92,8 @@ public class QueueingPlaceStats extends PlaceStats implements java.io.Serializab
 	 * @param numServers    - FCFS queues: number of servers in queueing station 
 	 * @param meanServTimes - mean service times of tokens
 	 */	
-	public QueueingPlaceStats(int id, String name, int numColors, int statsLevel, int queueDiscip, int numServers, double[] meanServTimes) throws SimQPNException {
-		super(id, name, QUEUE, numColors, statsLevel);
+	public QPlaceQueueStats(int id, String name, int numColors, int statsLevel, int queueDiscip, int numServers, double[] meanServTimes) throws SimQPNException {
+		super(id, name, QUE_PLACE_QUEUE, numColors, statsLevel);
 		this.queueDiscip	= queueDiscip;
 		this.numServers		= numServers;			
 		this.meanServTimes  = meanServTimes;		
@@ -141,7 +141,7 @@ public class QueueingPlaceStats extends PlaceStats implements java.io.Serializab
 	 * @return
 	 * @exception
 	 */
-	public void init(int[] tokenPop)  {
+	public void init(int[] tokenPop) throws SimQPNException {
 		super.init(tokenPop);
 		
 		if (statsLevel >= 2)  {			
@@ -185,7 +185,7 @@ public class QueueingPlaceStats extends PlaceStats implements java.io.Serializab
 	 * @param color		- token color
 	 * @param sojTime	- sojourn time of token in queue	 
 	 */
-	public void updateSojTimeStats(int color, double sojTime)  {
+	public void updateSojTimeStats(int color, double sojTime) throws SimQPNException {
 		if (indrStats || (inRampUp && Simulator.analMethod != Simulator.WELCH)) return;
 		super.updateSojTimeStats(color, sojTime);
 	}
@@ -197,7 +197,7 @@ public class QueueingPlaceStats extends PlaceStats implements java.io.Serializab
 	 * @param delayTime	- delay time of token in waiting area of the queue
 	 * 	 
 	 */
-	public void updateDelayTimeStats(int color, double delayTime)  {				
+	public void updateDelayTimeStats(int color, double delayTime) throws SimQPNException {				
 		if ((!indrStats) || (inRampUp && Simulator.analMethod != Simulator.WELCH)) return;
 		super.updateSojTimeStats(color, delayTime);		
 	}	
@@ -206,7 +206,7 @@ public class QueueingPlaceStats extends PlaceStats implements java.io.Serializab
 	 * Method processStats - processes gathered statistics (summarizes data)
 	 *                        	 
 	 */	
-	public void processStats()  {		
+	public void processStats() throws SimQPNException {		
 		super.processStats();
 		queueUtilQPl = areaQueUtilQPl / msrmPrdLen;		
 		if (statsLevel >= 3 && indrStats)  {
@@ -240,7 +240,7 @@ public class QueueingPlaceStats extends PlaceStats implements java.io.Serializab
 	public void printReport() throws SimQPNException {
 		
 		if (!completed) {
-			Simulator.logln("QueueingPlaceStats " + name + " Error: Attempting to access statistics before data collection has finished!");
+			Simulator.logln("QPlaceQueueStats " + name + " Error: Attempting to access statistics before data collection has finished!");
 			throw new SimQPNException();
 		}
 		

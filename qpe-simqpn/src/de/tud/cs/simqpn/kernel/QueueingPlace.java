@@ -37,7 +37,7 @@ import cern.colt.list.DoubleArrayList;
 import cern.jet.random.AbstractContinousDistribution;
 
 /**
- * Class QueueingPlace
+ * Class QPlace
  *
  * Note: We use the term queue to refer to a queueing station including both the waiting area and the servers.
  * Note: We assume that in the beginning of the run, the queue is empty!
@@ -46,7 +46,7 @@ import cern.jet.random.AbstractContinousDistribution;
  * @version %I%, %G%
  */
 
-public class QueueingPlace extends Place {	
+public class QPlace extends Place {	
 	public Queue		queue;				// Queue of the queueing place.
 	
 	public double[]		meanServTimes;		// Mean token service times at the queueing station (all times usually in milliseconds)
@@ -60,7 +60,7 @@ public class QueueingPlace extends Place {
 	public AbstractContinousDistribution[]
 						randServTimeGen;	// PS queues: Random number generators for generating service times.
 	
-	public QueueingPlaceStats	queueingPlaceStats;	
+	public QPlaceQueueStats	qPlaceQueueStats;	
 	
 	public Element element;
 			
@@ -77,7 +77,7 @@ public class QueueingPlace extends Place {
 	 * @param statsLevel  - determines the amount of statistics to be gathered during the run
 	 * @param depDiscip   - determines the depository's departure discipline (order): NORMAL or FIFO
 	 */
-	public QueueingPlace(int id, String name, int numColors, int numInTrans, int numOutTrans, int statsLevel, int depDiscip, Queue queue, Element element) throws SimQPNException {		
+	public QPlace(int id, String name, int numColors, int numInTrans, int numOutTrans, int statsLevel, int depDiscip, Queue queue, Element element) throws SimQPNException {		
 		super(id, name, numColors, numInTrans, numOutTrans, statsLevel, depDiscip, element);
 		
 		this.queue						= queue;
@@ -90,7 +90,7 @@ public class QueueingPlace extends Place {
 			this.queueTokenPop[c] 		= 0;
 		
 		if (statsLevel > 0) 
-			queueingPlaceStats = new QueueingPlaceStats(id, name, numColors, statsLevel, queue.queueDiscip, queue.numServers, meanServTimes);
+			qPlaceQueueStats = new QPlaceQueueStats(id, name, numColors, statsLevel, queue.queueDiscip, queue.numServers, meanServTimes);
 		
 		// PS Queues			
 		if (queue.queueDiscip == Queue.PS) {			 
@@ -114,7 +114,7 @@ public class QueueingPlace extends Place {
 		for (int c = 0; c < numColors; c++) 
 			// Make sure that all meanServTimes have been initialized
 			if (meanServTimes[c] < 0) {
-				Simulator.logln("Error: meanServTimes[" + c + "] has not been initialized for QueueingPlace " + name);
+				Simulator.logln("Error: meanServTimes[" + c + "] has not been initialized for QPlace " + name);
 				throw new SimQPNException(); 
 			}			
 
@@ -134,10 +134,10 @@ public class QueueingPlace extends Place {
 	 * @return
 	 * @exception
 	 */
-	public void start() {	
+	public void start() throws SimQPNException {	
 		if (statsLevel > 0)  {		
 			// Start statistics collection
-			queueingPlaceStats.start(queueTokenPop);
+			qPlaceQueueStats.start(queueTokenPop);
 			super.start();
 		}					
 	}
@@ -153,7 +153,7 @@ public class QueueingPlace extends Place {
 	public void finish() {
 		if (statsLevel > 0)  {
 			// Complete statistics collection
-			queueingPlaceStats.finish(queueTokenPop);								
+			qPlaceQueueStats.finish(queueTokenPop);								
 			super.finish();
 		}
 	}
@@ -177,7 +177,7 @@ public class QueueingPlace extends Place {
 		
 		// Update Stats	(below more...) (Note: watch out the order of this and next statement)
 		if (statsLevel > 0)
-			queueingPlaceStats.updateTkPopStats(color, queueTokenPop[color], count);																	
+			qPlaceQueueStats.updateTkPopStats(color, queueTokenPop[color], count);																	
 		 				
 		queueTokenPop[color] += count;
 
@@ -200,9 +200,9 @@ public class QueueingPlace extends Place {
 
 		// Update stats (below more...) (Note: watch out the order of this and next statement)
 		if (statsLevel > 0)  {
-			queueingPlaceStats.updateTkPopStats(token.color, queueTokenPop[token.color], -1);
+			qPlaceQueueStats.updateTkPopStats(token.color, queueTokenPop[token.color], -1);
 			if (statsLevel >= 3) 
-				queueingPlaceStats.updateSojTimeStats(token.color, Simulator.clock - token.arrivalTS);
+				qPlaceQueueStats.updateSojTimeStats(token.color, Simulator.clock - token.arrivalTS);
 		}
 		
 		// Now remove token from queue and update queue state
@@ -216,7 +216,7 @@ public class QueueingPlace extends Place {
 		
 	public void report() throws SimQPNException  {		
 		if (statsLevel > 0) {
-			queueingPlaceStats.printReport();
+			qPlaceQueueStats.printReport();
 			super.report();					
 		}
 	}

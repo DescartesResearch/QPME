@@ -90,7 +90,7 @@ public class Place extends Node {
 			this.depReady = false;		
 		}
 		if (statsLevel > 0) {
-			if (this instanceof QueueingPlace)
+			if (this instanceof QPlace)
 				placeStats = new PlaceStats(id, name, Stats.QUE_PLACE_DEP, numColors, statsLevel);
 			else
 				placeStats = new PlaceStats(id, name, Stats.ORD_PLACE, numColors, statsLevel);				 			
@@ -157,7 +157,7 @@ public class Place extends Node {
 	 * @return
 	 * @exception
 	 */
-	public void start() {	
+	public void start() throws SimQPNException {	
 		if (statsLevel > 0)	
 			placeStats.start(tokenPop);					
 	}

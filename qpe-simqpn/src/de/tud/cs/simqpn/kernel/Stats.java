@@ -32,7 +32,7 @@ public class Stats {
 	
 	public int 			id;						// ID of target node			 		
 	public String		name;					// Name of target node			
-	public int 			type;					// Type of statistics (QUE_PLACE_QUEUE, ORD_PLACE or QUE_PLACE_DEP)		
+	public int 			type;					// Type of statistics (ORD_PLACE, QUE_PLACE_QUEUE or QUE_PLACE_DEP)		
 	public int			numColors;				// Number of colors
 	public int			statsLevel;				// Determines the amount of statistics to be gathered during the run (see below).
 	public boolean		completed;				// Indicates whether statistics collection has been completed and gathered statistics have been processed.

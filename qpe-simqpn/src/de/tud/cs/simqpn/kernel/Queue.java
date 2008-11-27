@@ -43,8 +43,8 @@ public class Queue {
 	public String		name;				// Name of the queue.
 	public int			queueDiscip;		// Queueing discipline.
 		
-	public QueueingPlace[] 
-	                    queueingPlaces;		// Queueing places this queue is part of.
+	public QPlace[] 
+	                    qPlaces;		// Queueing places this queue is part of.
 	public int			totNumColors;		// Total number of token colors over all queueing places the queue is part of. 
 	
 	public int			numServers;			// FCFS queues: Number of servers in queueing station.
@@ -60,7 +60,7 @@ public class Queue {
 
 	public int			tkSchedPl;			// PS queues: expPS==false: Queueing place containing the next token scheduled to complete service.	
 	public int			tkSchedCol;			// PS queues: expPS==false: Color of the next token scheduled to complete service.
-	public int			tkSchedPos;			// PS queues: expPS==false: Index in QueueingPlace.queueTokens[tkSchedCol] of the next token scheduled to complete service.	
+	public int			tkSchedPos;			// PS queues: expPS==false: Index in QPlace.queueTokens[tkSchedCol] of the next token scheduled to complete service.	
 	public double		lastEventClock;		// PS queues: expPS==false: Time of the last event scheduling, i.e. time of the last event with effect on this queue.		
 	public int			lastEventTkCnt;		// PS queues: expPS==false: Token population at the time of the last event scheduling.
 	public AbstractContinousDistribution[]
@@ -82,7 +82,7 @@ public class Queue {
 		this.name						= name;
 		this.queueDiscip				= queueDiscip; 
 		this.numServers 				= numServers; 		
-		this.queueingPlaces				= null;
+		this.qPlaces				= null;
 		
 		// FCFS Queues			
 		if (queueDiscip == FCFS)  {			
@@ -98,7 +98,7 @@ public class Queue {
 	}
 		
 	/**
-	 * Method addQueueingPlace
+	 * Method addQPlace
 	 * 
 	 * NOTE:  
 	 * 
@@ -106,31 +106,31 @@ public class Queue {
 	 * @return
 	 * @exception
 	 */
-	public void addQueueingPlace(QueueingPlace qPl) throws SimQPNException {		
-		if (queueingPlaces == null)  { 
-			queueingPlaces = new QueueingPlace[1];
-			queueingPlaces[0] = qPl;
+	public void addQPlace(QPlace qPl) throws SimQPNException {		
+		if (qPlaces == null)  { 
+			qPlaces = new QPlace[1];
+			qPlaces[0] = qPl;
 		}
 		else  {			
-			QueueingPlace[]	queueingPlacesTMP = queueingPlaces;			
-			queueingPlaces = new QueueingPlace[queueingPlacesTMP.length+1];			
-			System.arraycopy(queueingPlacesTMP, 0, queueingPlaces, 0, queueingPlacesTMP.length);			
-			queueingPlaces[queueingPlaces.length-1] = qPl;
+			QPlace[]	qPlacesTMP = qPlaces;			
+			qPlaces = new QPlace[qPlacesTMP.length+1];			
+			System.arraycopy(qPlacesTMP, 0, qPlaces, 0, qPlacesTMP.length);			
+			qPlaces[qPlaces.length-1] = qPl;
 		}
 	}
 	
 	/**
 	 * Method init
 	 * 
-	 * NOTE: Should be called after the queueingPlaces array has been initialized.
+	 * NOTE: Should be called after the qPlaces array has been initialized.
 	 * 
 	 * @param 
 	 * @return
 	 * @exception
 	 */
 	public void init() throws SimQPNException {
-		for (int p = 0; p < queueingPlaces.length; p++) 
-			totNumColors += queueingPlaces[p].numColors;
+		for (int p = 0; p < qPlaces.length; p++) 
+			totNumColors += qPlaces[p].numColors;
 
 		// PS Queues: final initializations	
 		if (queueDiscip == PS && expPS)  {						
@@ -154,10 +154,10 @@ public class Queue {
 		if (eventsUpToDate) return;
 
 		int totQueTokCnt = 0;
-		for (int p=0, nC=0; p < queueingPlaces.length; p++)  {
-			nC = queueingPlaces[p].numColors; 
+		for (int p=0, nC=0; p < qPlaces.length; p++)  {
+			nC = qPlaces[p].numColors; 
 			for (int c = 0; c < nC; c++)  
-				totQueTokCnt += queueingPlaces[p].queueTokenPop[c];			
+				totQueTokCnt += qPlaces[p].queueTokenPop[c];			
 		}
 		
 		if (totQueTokCnt > 0) {			
@@ -166,11 +166,11 @@ public class Queue {
 				double conc = 1;
 				if (numServers > 1 && totQueTokCnt > 1)     // "-/M/n-PS" queues
 					conc = (totQueTokCnt <= numServers) ? totQueTokCnt : numServers;															
-				for (int p=0, nC=0, i=0; p < queueingPlaces.length; p++)  {
-					nC = queueingPlaces[p].numColors; 
+				for (int p=0, nC=0, i=0; p < qPlaces.length; p++)  {
+					nC = qPlaces[p].numColors; 
 					for (int c=0; c < nC; c++)
-						meanServRates[i++] = (((double) queueingPlaces[p].queueTokenPop[c]) / totQueTokCnt) * 
-												(1 / queueingPlaces[p].meanServTimes[c]) * conc;
+						meanServRates[i++] = (((double) qPlaces[p].queueTokenPop[c]) / totQueTokCnt) * 
+												(1 / qPlaces[p].meanServTimes[c]) * conc;
 				}				
 				double totServRate = 0;
 				for (int i = 0; i < totNumColors; i++)  
@@ -185,11 +185,11 @@ public class Queue {
 				if (servTime < 0) servTime = 0;
 				int color = randColorGen.nextInt();
 			
-				for (int p=0, nC=0, i=0; p < queueingPlaces.length; p++)  {																			
-					nC = queueingPlaces[p].numColors; 
+				for (int p=0, nC=0, i=0; p < qPlaces.length; p++)  {																			
+					nC = qPlaces[p].numColors; 
 					for (int c = 0; c < nC; c++, i++)
 						if (i == color) {
-							Simulator.scheduleEvent(Simulator.clock + servTime, this, (Token) queueingPlaces[p].queueTokens[c].getFirst()); 
+							Simulator.scheduleEvent(Simulator.clock + servTime, this, (Token) qPlaces[p].queueTokens[c].getFirst()); 
 							break;
 						}
 					if (i == color) break;
@@ -200,13 +200,13 @@ public class Queue {
 				// Find token with minimal residual service time (RST)
 				double curRST, minRST = -1;				
 				int numTk;
-				for (int p=0, nC=0; p < queueingPlaces.length; p++)  {
-					nC = queueingPlaces[p].numColors;					
+				for (int p=0, nC=0; p < qPlaces.length; p++)  {
+					nC = qPlaces[p].numColors;					
 					for (int c=0; c < nC; c++)  {
-						numTk = queueingPlaces[p].queueTokenPop[c];  // = residServTimes[c].size();
+						numTk = qPlaces[p].queueTokenPop[c];  // = residServTimes[c].size();
 						if (numTk > 0) 
 							for (int i = 0; i < numTk; i++) {
-								curRST = queueingPlaces[p].residServTimes[c].get(i);
+								curRST = qPlaces[p].residServTimes[c].get(i);
 								if (minRST == -1 || curRST < minRST) { 
 									minRST = curRST;
 									tkSchedPl = p; tkSchedCol = c; tkSchedPos = i;
@@ -221,7 +221,7 @@ public class Queue {
 				double servTime = minRST * totQueTokCnt;  // Default for "-/G/1-PS" queue 								
 				if (numServers > 1 && totQueTokCnt > 1)   // "-/G/n-PS" queues 					
 					servTime /= ((totQueTokCnt <= numServers) ? totQueTokCnt : numServers);
-				Simulator.scheduleEvent(Simulator.clock + servTime, this, (Token) queueingPlaces[tkSchedPl].queueTokens[tkSchedCol].get(tkSchedPos));
+				Simulator.scheduleEvent(Simulator.clock + servTime, this, (Token) qPlaces[tkSchedPl].queueTokens[tkSchedCol].get(tkSchedPos));
 				lastEventClock = Simulator.clock;	
 				lastEventTkCnt = totQueTokCnt;
 				eventScheduled = true;
@@ -239,13 +239,13 @@ public class Queue {
 	 */
 	public void clearEvents() {
 		// Remove scheduled event from the event list. 
-		// Note that a maximum of one event can be scheduled per PS QueueingPlace at a time.
+		// Note that a maximum of one event can be scheduled per PS QPlace at a time.
 		int i = Simulator.eventList.size() - 1;
 		while (i >= 0) {
 			Event ev = (Event) Simulator.eventList.get(i);
 			if (ev.queue == this) {
 				Simulator.eventList.remove(i); 
-//				System.out.println("DEBUG: Removing scheduled event for QueueingPlace"); 
+//				System.out.println("DEBUG: Removing scheduled event for QPlace"); 
 				break; 
 			}
 			else i--;				
@@ -272,14 +272,14 @@ public class Queue {
 		if (numServers < lastEventTkCnt) 			
 			timeServed *= ((double) numServers) / lastEventTkCnt; 
 		*/		
-		for (int p=0, nC=0; p < queueingPlaces.length; p++)  {
-			nC = queueingPlaces[p].numColors; 
+		for (int p=0, nC=0; p < qPlaces.length; p++)  {
+			nC = qPlaces[p].numColors; 
 			for (int c=0; c < nC; c++)  {				
-				numTk = queueingPlaces[p].residServTimes[c].size();  // NOTE: don't use queueTokenPop[c] here! If tokens have been added, this would mess things up. 
+				numTk = qPlaces[p].residServTimes[c].size();  // NOTE: don't use queueTokenPop[c] here! If tokens have been added, this would mess things up. 
 				if (numTk > 0) 
 					for (int i = 0; i < numTk; i++) {					
-						curRST = queueingPlaces[p].residServTimes[c].get(i) - timeServed;				
-						queueingPlaces[p].residServTimes[c].set(i, curRST);
+						curRST = qPlaces[p].residServTimes[c].get(i) - timeServed;				
+						qPlaces[p].residServTimes[c].set(i, curRST);
 					}										
 			}
 		}
@@ -296,7 +296,7 @@ public class Queue {
 	 * @exception
 	 */
 	@SuppressWarnings("unchecked")
-	public void addTokens(QueueingPlace qPl, int color, int count) throws SimQPNException {				 				
+	public void addTokens(QPlace qPl, int color, int count) throws SimQPNException {				 				
 				
 		if (queueDiscip == IS) {
 			// Schedule service completion events						
@@ -316,7 +316,7 @@ public class Queue {
 				numBusyServers++; n++;
 				// Update Stats
 				if (qPl.statsLevel >= 3)   
-					qPl.queueingPlaceStats.updateDelayTimeStats(color, 0);																 
+					qPl.qPlaceQueueStats.updateDelayTimeStats(color, 0);																 
 			}						
 			while (n < count) {
 				//  Place the rest of the tokens in the waitingLine
@@ -339,7 +339,7 @@ public class Queue {
 			eventsUpToDate = false;
 		}
 		else {
-			Simulator.logln("Error: Invalid queueing discipline for QueueingPlace " + name);
+			Simulator.logln("Error: Invalid queueing discipline for QPlace " + name);
 			throw new SimQPNException();
 		}		
 	}
@@ -359,31 +359,31 @@ public class Queue {
 		else if (queueDiscip == FCFS) {
 			if (waitingLine.size() > 0) {
 				Token tk = (Token) waitingLine.removeFirst();				
-				QueueingPlace qPl = (QueueingPlace) tk.place;				
+				QPlace qPl = (QPlace) tk.place;				
 				double servTime = qPl.randServTimeGen[tk.color].nextDouble();	
 				if (servTime < 0) servTime = 0;
 				Simulator.scheduleEvent(Simulator.clock + servTime, this, tk);
 				// Update stats				
 				if (qPl.statsLevel >= 3)
-					qPl.queueingPlaceStats.updateDelayTimeStats(tk.color, Simulator.clock - tk.arrivalTS);				
+					qPl.qPlaceQueueStats.updateDelayTimeStats(tk.color, Simulator.clock - tk.arrivalTS);				
 			}
 			else numBusyServers--;							
 		}
 		else if (queueDiscip == PS) {
-			QueueingPlace qPl = ((QueueingPlace) token.place);
+			QPlace qPl = ((QPlace) token.place);
 			if (expPS) {
 				qPl.queueTokens[token.color].removeFirst();
 			}
 			else {				
-				queueingPlaces[tkSchedPl].queueTokens[tkSchedCol].remove(tkSchedPos); //TODO: Do we need tkSchedXXX?
-				queueingPlaces[tkSchedPl].residServTimes[tkSchedCol].remove(tkSchedPos);
+				qPlaces[tkSchedPl].queueTokens[tkSchedCol].remove(tkSchedPos); //TODO: Do we need tkSchedXXX?
+				qPlaces[tkSchedPl].residServTimes[tkSchedCol].remove(tkSchedPos);
 				updateResidServTimes(); //NOTE: WATCH OUT! Method should be called after served token has been removed from residServTimes!   
 			}
 			eventScheduled = false;
 			eventsUpToDate = false;
 		} 
 		else {
-			Simulator.logln("Error: Invalid queueing discipline for QueueingPlace " + name);
+			Simulator.logln("Error: Invalid queueing discipline for QPlace " + name);
 			throw new SimQPNException();
 		}		
 	}

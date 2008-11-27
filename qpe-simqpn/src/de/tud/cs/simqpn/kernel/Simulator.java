@@ -14,7 +14,7 @@
  *  2004/08/25  Samuel Kounev     Fixed a small bug - value of clock casted to (int) instead of (long)  
  *                                when doing heartbeats. Changed timeInitHeartBeat to 100000.
  *  2005/06/22  Samuel Kounev     Moved initialization of service time distributions from  
- *                                QueueingPlace.init() to Simulator.getReady() as part of the model 
+ *                                QPlace.init() to Simulator.getReady() as part of the model 
  *                                definition.        
  *  2006/10/14  Christofer Dutz   Added @SuppressWarnings("unchecked") and cleaned up imports to avoid warnings!
  *  2006/10/16  Samuel Kounev     Changed method execute to set Simulator.simRunning to true at the 
@@ -498,7 +498,7 @@ public class Simulator {
 		for (int p = 0; p < numPlaces; p++) {
 			pl = places[p];
 			if (pl.statsLevel > 0) {
-				if (pl instanceof QueueingPlace) {
+				if (pl instanceof QPlace) {
 					aggrStats[p * 2] = new AggregateStats(pl.id, pl.name, Stats.QUE_PLACE_QUEUE, pl.numColors, pl.statsLevel);
 					aggrStats[(p * 2) + 1] = new AggregateStats(pl.id, pl.name, Stats.QUE_PLACE_DEP, pl.numColors, pl.statsLevel);
 				} else {
@@ -515,7 +515,7 @@ public class Simulator {
 		 *  Set signLevAvgST for AggregateStats here:
 		 *  Should be configurable only for places with statsLevel >= 3 !
 		 *
-		 *  if (!(places[p] instanceof QueueingPlace)) {								// ORDINARY PLACE
+		 *  if (!(places[p] instanceof QPlace)) {								// ORDINARY PLACE
 		 *     For every color c, set aggrStats[p * 2].signLevAvgST[c]                   
 		 *  }
 		 *  else {																		// QUEUEING PLACE
@@ -535,7 +535,7 @@ public class Simulator {
 				for (int c = 0; colorRefIterator.hasNext(); c++) {
 					Element colorRef = (Element) colorRefIterator.next();
 					Element element = getSettings(colorRef, configuration);						
-					if (pl instanceof QueueingPlace) {													
+					if (pl instanceof QPlace) {													
 						if(element == null || element.attributeValue("queueSignLevAvgST") == null) {								
 							logln("Error: queueSignLevAvgST settings for the Replication/Deletion Method not found!");
 							logln("Details: ");
@@ -559,7 +559,7 @@ public class Simulator {
 						logln("   colorRef.color-id  = " + colorRef.attributeValue("color-id"));
 						throw new SimQPNException();
 					}						
-					if (pl instanceof QueueingPlace) {
+					if (pl instanceof QPlace) {
 						aggrStats[(p * 2) + 1].signLevAvgST[c] = Double.parseDouble(element.attributeValue("signLevAvgST"));
 						logln(2, "aggrStats[" + (p * 2) + 1 + "].signLevAvgST[" + c + "] = " + aggrStats[(p * 2) + 1].signLevAvgST[c] + " (depository)");						
 					}
@@ -582,9 +582,9 @@ public class Simulator {
 			for (int p = 0; p < numPlaces; p++) {
 				pl = places[p];
 				if (pl.statsLevel > 0) {
-					if (pl instanceof QueueingPlace) {
-						QueueingPlace qPl = (QueueingPlace) pl;
-						aggrStats[p * 2].saveStats(qPl.queueingPlaceStats);
+					if (pl instanceof QPlace) {
+						QPlace qPl = (QPlace) pl;
+						aggrStats[p * 2].saveStats(qPl.qPlaceQueueStats);
 						aggrStats[(p * 2) + 1].saveStats(qPl.placeStats);
 					} else {
 						aggrStats[p * 2].saveStats(pl.placeStats);
@@ -633,7 +633,7 @@ public class Simulator {
 		for (int p = 0; p < numPlaces; p++) {
 			pl = places[p];
 			if (pl.statsLevel > 0) {
-				if (pl instanceof QueueingPlace) {
+				if (pl instanceof QPlace) {
 					aggrStats[p * 2] = new AggregateStats(pl.id, pl.name, Stats.QUE_PLACE_QUEUE, pl.numColors, pl.statsLevel);
 					aggrStats[(p * 2) + 1] = new AggregateStats(pl.id, pl.name, Stats.QUE_PLACE_DEP, pl.numColors, pl.statsLevel);
 				} else {
@@ -659,9 +659,9 @@ public class Simulator {
 			 * maxObsrvST - Maximum number of observations considered (if <= 0 token color is not considered in the analysis).
 			 * 
 			 * ... places[p].placeStats.minObsrvST/maxObsrvST
-			 * ... ((QueueingPlace) places[p]).queueingPlaceStats.minObsrvST[c]/maxObsrvST[c]
+			 * ... ((QPlace) places[p]).qPlaceQueueStats[c]/maxObsrvST[c]
 			 * 
-			 * Note: Places/QueueingPlaces with (StatsLevel < 3) are not considered in the analysis!
+			 * Note: Places/QPlaces with (StatsLevel < 3) are not considered in the analysis!
 			 * Note: If (maxObsrvST[c] <= 0) the respective token color is not considered in the analysis!
 			 * 
 			 */
@@ -703,8 +703,8 @@ public class Simulator {
 						pl.placeStats.maxObsrvST[c] = Integer.parseInt(element.attributeValue("maxObsrv")); 
 						logln(2, "pl.placeStats.minObsrvST[" + c + "] = " + pl.placeStats.minObsrvST[c]);
 						logln(2, "pl.placeStats.maxObsrvST[" + c + "] = " + pl.placeStats.maxObsrvST[c]);
-						if (pl instanceof QueueingPlace) {
-							QueueingPlace qPl = (QueueingPlace) pl;							
+						if (pl instanceof QPlace) {
+							QPlace qPl = (QPlace) pl;							
 							if(element.attributeValue("queueMinObsrv") == null || element.attributeValue("queueMaxObsrv") == null) {								
 								logln("Error: queueMinObsrv/queueMaxObsrv settings for the Method of Welch not found!");
 								logln("Details: ");
@@ -715,10 +715,10 @@ public class Simulator {
 								logln("   colorRef.color-id  = " + colorRef.attributeValue("color-id"));
 								throw new SimQPNException();							
 							}							
-							qPl.queueingPlaceStats.minObsrvST[c] = Integer.parseInt(element.attributeValue("queueMinObsrv"));							
-							qPl.queueingPlaceStats.maxObsrvST[c] = Integer.parseInt(element.attributeValue("queueMaxObsrv"));  
-							logln(2, "qPl.queueingPlaceStats.minObsrvST[" + c + "] = " + qPl.queueingPlaceStats.minObsrvST[c]);
-							logln(2, "qPl.queueingPlaceStats.maxObsrvST[" + c + "] = " + qPl.queueingPlaceStats.maxObsrvST[c]);
+							qPl.qPlaceQueueStats.minObsrvST[c] = Integer.parseInt(element.attributeValue("queueMinObsrv"));							
+							qPl.qPlaceQueueStats.maxObsrvST[c] = Integer.parseInt(element.attributeValue("queueMaxObsrv"));  
+							logln(2, "qPl.qPlaceQueueStats.minObsrvST[" + c + "] = " + qPl.qPlaceQueueStats.minObsrvST[c]);
+							logln(2, "qPl.qPlaceQueueStats.maxObsrvST[" + c + "] = " + qPl.qPlaceQueueStats.maxObsrvST[c]);
 						}
 					}
 				}
@@ -731,9 +731,9 @@ public class Simulator {
 			for (int p = 0; p < numPlaces; p++) {
 				pl = places[p];
 				if (pl.statsLevel > 0) {
-					if (pl instanceof QueueingPlace) {
-						QueueingPlace qPl = (QueueingPlace) pl;
-						aggrStats[p * 2].saveStats(qPl.queueingPlaceStats);
+					if (pl instanceof QPlace) {
+						QPlace qPl = (QPlace) pl;
+						aggrStats[p * 2].saveStats(qPl.qPlaceQueueStats);
 						aggrStats[(p * 2) + 1].saveStats(qPl.placeStats);
 					} else {
 						aggrStats[p * 2].saveStats(pl.placeStats);
@@ -788,7 +788,7 @@ public class Simulator {
 		for (int p=0; p < numPlaces; p++)  {
 			pl = places[p];
 			if (pl.statsLevel > 0)  {					 
-				if (pl instanceof QueueingPlace) {
+				if (pl instanceof QPlace) {
 					aggrStats[p*2] 		= new AggregateStats(pl.id, pl.name, Stats.QUE_PLACE_QUEUE, pl.numColors, pl.statsLevel);
 					aggrStats[(p*2)+1]	= new AggregateStats(pl.id, pl.name, Stats.QUE_PLACE_DEP, pl.numColors, pl.statsLevel);																	
 				}
@@ -912,9 +912,9 @@ public class Simulator {
 			for (int p=0; p < numPlaces; p++) {
 				pl = places[p];
 				if (pl.statsLevel > 0) {	
-					if (pl instanceof QueueingPlace) {
-						QueueingPlace qPl = (QueueingPlace) pl; 
-						aggrStats[p*2].saveStats(qPl.queueingPlaceStats);
+					if (pl instanceof QPlace) {
+						QPlace qPl = (QPlace) pl; 
+						aggrStats[p*2].saveStats(qPl.qPlaceQueueStats);
 						aggrStats[(p*2)+1].saveStats(qPl.placeStats);						
 						if (i % runsBtwCvrgChks == 0) {																				
 							if (!aggrStats[p*2].enoughCvrgStats()) done = false; 
@@ -994,7 +994,7 @@ public class Simulator {
 		 *    Level 4: + Record Sojourn Times in a file 
 		 * @param int depDiscip/dDis - determines the departure discipline: Place.NORMAL or Place.FIFO
 		 * 
-		 * For QueueingPlace two extra parameters:
+		 * For QPlace two extra parameters:
 		 * 
 		 * @param int queueDiscip/qDis - queueing discipline is Queue.IS, Queue.FCFS or Queue.PS. 
 		 *    NOTE: if a different queueing discipline is specified (e.g. RANDOM) print WARNING and use FCFS instead. 
@@ -1028,7 +1028,7 @@ public class Simulator {
 		places = new Place[numPlaces];
 		queues = new Queue[numPlaces]; // TODO: Set to actual value defined in QPE. 
 
-		// Create the place-objects of every-place. Depending on its type-attribute create Place or QueueingPlace objects.
+		// Create the place-objects of every-place. Depending on its type-attribute create Place or QPlace objects.
 		Iterator placeIterator = placeList.iterator();
 		
 		for (int i = 0; placeIterator.hasNext(); i++) {
@@ -1123,7 +1123,7 @@ public class Simulator {
 				
 				if ("IS".equals(place.attributeValue("strategy"))) {
 					qDis = Queue.IS; 
-					numServers = 0; //NOTE: This is assumed in QueueingPlaceStats.updateTkPopStats()! 
+					numServers = 0; //NOTE: This is assumed in QPlaceQueueStats.updateTkPopStats()! 
 				} else {
 					if ("FCFS".equals(place.attributeValue("strategy"))) {
 						qDis = Queue.FCFS; 
@@ -1159,7 +1159,7 @@ public class Simulator {
 						+ place.attributeValue("name") + "', " 
 						+ qDis + ", " 
 						+ numServers + ")");								
-				places[i] = new QueueingPlace(
+				places[i] = new QPlace(
 						i, 																	// id
 						place.attributeValue("name"), 										// name
 						place.element("color-refs").elements("color-ref").size(), 			// # colors						
@@ -1169,7 +1169,7 @@ public class Simulator {
 						dDis, 																// departure discipline
 						queues[numQueues],												// Queue												
 						place);																// Place
-				logln(2, "places[" + i + "] = new QueueingPlace(" 
+				logln(2, "places[" + i + "] = new QPlace(" 
 						+ i + ", '" 
 						+ place.attributeValue("name") + "', " 
 						+ place.element("color-refs").elements("color-ref").size() + ", " 
@@ -1180,7 +1180,7 @@ public class Simulator {
 						+ queues[numQueues] + ", "  
 						+ place + ")");
 				
-				queues[numQueues++].addQueueingPlace((QueueingPlace) places[i]);				
+				queues[numQueues++].addQPlace((QPlace) places[i]);				
 			} else {
 				logln("ERROR: Invalid or missing place type setting!");
 				logln("       Currently only 'ordinary-place' and 'queueing-place' are supported.");
@@ -1544,7 +1544,7 @@ public class Simulator {
 		for (int i = 0; placeIterator.hasNext(); i++) {
 			Element place = (Element) placeIterator.next();
 			if ("queueing-place".equals(place.attributeValue("type"))) {
-				QueueingPlace qPl = (QueueingPlace) places[i];				
+				QPlace qPl = (QPlace) places[i];				
 				
 				// BEGIN-CONFIG
 				if (qPl.queue.queueDiscip == Queue.PS)  
@@ -1597,8 +1597,8 @@ public class Simulator {
 					 *   - initializes the meanServTimes array based on the chosen distribution   
 					 * 
 					 * The actual values in the meanServTimes array are currently only used in three cases 
-					 *    1. QueueingPlace.expPS == true (Exponential distribution)     
-					 *    2. QueueingPlace.queueingPlaceStats.indrStats == true
+					 *    1. QPlace.expPS == true (Exponential distribution)     
+					 *    2. QPlace.qPlaceQueueStats.indrStats == true
 					 *    3. distribution-function == Deterministic (not implemented yet)
 					 * 
 					 * Note: Service time distributions are truncated at 0 to avoid negative
@@ -1635,9 +1635,9 @@ public class Simulator {
 						}						
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new Beta(alpha, beta, Simulator.nextRandNumGen());
-						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Beta(" + alpha + ", " + beta + ", Simulator.nextRandNumGen())");						
+						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Beta(" + alpha + ", " + beta + ", Simulator.nextRandNumGen())");						
 						qPl.meanServTimes[j] = (double) alpha / (alpha + beta);
-						logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = alpha / (alpha + beta) = " + qPl.meanServTimes[j]);													
+						logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = alpha / (alpha + beta) = " + qPl.meanServTimes[j]);													
 					} else if("BreitWigner".equals(distributionFunction)) {						
 						if(colorRef.attributeValue("mean") == null || colorRef.attributeValue("gamma") == null || colorRef.attributeValue("cut") == null) {						
 							logln("ERROR: Parameter \"mean\", \"gamma\" or \"cut\" of BreitWigner distribution function not set!");
@@ -1668,7 +1668,7 @@ public class Simulator {
 						}												
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new BreitWigner(mean, gamma, cut, Simulator.nextRandNumGen());
-						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new BreitWigner(" + mean + ", " + gamma + ", " + cut + ", Simulator.nextRandNumGen())");
+						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new BreitWigner(" + mean + ", " + gamma + ", " + cut + ", Simulator.nextRandNumGen())");
 						// NOTE: BreitWigner does not have a mean value! It is undefined. 
 					} else if("BreitWignerMeanSquare".equals(distributionFunction)) {
 						if(colorRef.attributeValue("mean") == null || colorRef.attributeValue("gamma") == null || colorRef.attributeValue("cut") == null) {
@@ -1700,7 +1700,7 @@ public class Simulator {
 						}																		
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new BreitWignerMeanSquare(mean, gamma, cut, Simulator.nextRandNumGen());
-						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new BreitWignerMeanSquare(" + mean + ", " + gamma + ", " + cut + ", Simulator.nextRandNumGen())");
+						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new BreitWignerMeanSquare(" + mean + ", " + gamma + ", " + cut + ", Simulator.nextRandNumGen())");
 						// NOTE: BreitWigner does not have a mean value! It is undefined.
 					} else if("ChiSquare".equals(distributionFunction)) {
 						if(colorRef.attributeValue("freedom") == null) {
@@ -1730,9 +1730,9 @@ public class Simulator {
 						}						
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new ChiSquare(freedom, Simulator.nextRandNumGen());
-						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new ChiSquare(" + freedom + ", Simulator.nextRandNumGen())");
+						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new ChiSquare(" + freedom + ", Simulator.nextRandNumGen())");
 						qPl.meanServTimes[j] = freedom;
-						logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = freedom = " + qPl.meanServTimes[j]);													
+						logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = freedom = " + qPl.meanServTimes[j]);													
 					} else if("Gamma".equals(distributionFunction)) {
 						if(colorRef.attributeValue("alpha") == null || colorRef.attributeValue("lambda") == null) {
 							logln("ERROR: Parameter \"alpha\" or \"lambda\" of Gamma distribution function not set!");
@@ -1762,9 +1762,9 @@ public class Simulator {
 						}						
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new Gamma(alpha, lambda, Simulator.nextRandNumGen());
-						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Gamma(" + alpha + ", " + lambda + ", Simulator.nextRandNumGen())");
+						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Gamma(" + alpha + ", " + lambda + ", Simulator.nextRandNumGen())");
 						qPl.meanServTimes[j] = alpha * lambda;
-						logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = alpha * lambda = " + qPl.meanServTimes[j]);													
+						logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = alpha * lambda = " + qPl.meanServTimes[j]);													
 					} else if("Hyperbolic".equals(distributionFunction)) {
 						if(colorRef.attributeValue("alpha") == null || colorRef.attributeValue("beta") == null) {
 							logln("ERROR: Parameter \"alpha\" or \"beta\" of Hyperbolic distribution function not set!");
@@ -1794,10 +1794,10 @@ public class Simulator {
 						}						
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new Hyperbolic(alpha, beta, Simulator.nextRandNumGen());
-						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Hyperbolic(" + alpha + ", " + beta + ", Simulator.nextRandNumGen())");																		
+						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Hyperbolic(" + alpha + ", " + beta + ", Simulator.nextRandNumGen())");																		
 						//SDK-TODO: find out how meanServTimes is computed?						
 						//qPl.meanServTimes[j] = (double) ???;
-						//logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = ??? = " + qPl.meanServTimes[j]);
+						//logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = ??? = " + qPl.meanServTimes[j]);
 						logln("WARNING: meanServTimes for Hyperbolic distribution not initialized!");
 						logln("         Might experience problems if indrStats is set to true!");						
 						logln("Details:");
@@ -1835,9 +1835,9 @@ public class Simulator {
 						}						
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new Exponential(lambda, Simulator.nextRandNumGen());
-						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Exponential(" + lambda + ", Simulator.nextRandNumGen())");
+						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Exponential(" + lambda + ", Simulator.nextRandNumGen())");
 						qPl.meanServTimes[j] = (double) 1 / lambda;
-						logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = 1 / lambda = " + qPl.meanServTimes[j]);													
+						logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = 1 / lambda = " + qPl.meanServTimes[j]);													
 					} else if("ExponentialPower".equals(distributionFunction)) {
 						if(colorRef.attributeValue("tau") == null) {
 							logln("ERROR: Parameter \"tau\" of ExponentialPower distribution function not set!");
@@ -1866,10 +1866,10 @@ public class Simulator {
 						}						
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new ExponentialPower(tau, Simulator.nextRandNumGen());
-						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new ExponentialPower(" + tau + ", Simulator.nextRandNumGen())");
+						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new ExponentialPower(" + tau + ", Simulator.nextRandNumGen())");
 						//SDK-TODO: find out how meanServTimes is computed?						
 						//qPl.meanServTimes[j] = (double) ???;
-						//logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = ??? = " + qPl.meanServTimes[j]);													
+						//logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = ??? = " + qPl.meanServTimes[j]);													
 						logln("WARNING: meanServTimes for ExponentialPower distribution not initialized!");
 						logln("         Might experience problems if indrStats is set to true!");						
 						logln("Details:");
@@ -1907,9 +1907,9 @@ public class Simulator {
 						}						
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new Logarithmic(p, Simulator.nextRandNumGen());
-						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Logarithmic(" + p + ", Simulator.nextRandNumGen())");						 						
+						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Logarithmic(" + p + ", Simulator.nextRandNumGen())");						 						
 						qPl.meanServTimes[j] = (double) ((-1) * p) / (Math.log(1-p) * (1-p));
-						logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = ((-1) * p) / (Math.log(1-p) * (1-p)) = " + qPl.meanServTimes[j]);													
+						logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = ((-1) * p) / (Math.log(1-p) * (1-p)) = " + qPl.meanServTimes[j]);													
 					} else if("Normal".equals(distributionFunction)) {
 						if(colorRef.attributeValue("mean") == null || colorRef.attributeValue("stdDev") == null) {
 							logln("ERROR: Parameter \"mean\" or \"stdDev\" of Normal distribution function not set!");
@@ -1939,9 +1939,9 @@ public class Simulator {
 						}						
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new Normal(mean, stdDev, Simulator.nextRandNumGen());																									
-						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Normal(" + mean + ", " + stdDev + ", Simulator.nextRandNumGen())");
+						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Normal(" + mean + ", " + stdDev + ", Simulator.nextRandNumGen())");
 						qPl.meanServTimes[j] = mean;
-						logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = mean = " + qPl.meanServTimes[j]);													
+						logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = mean = " + qPl.meanServTimes[j]);													
 					} else if("StudentT".equals(distributionFunction)) {
 						if(colorRef.attributeValue("freedom") == null) {
 							logln("ERROR: Parameter \"freedom\" of StudentT distribution function not set!");
@@ -1970,11 +1970,11 @@ public class Simulator {
 						}						
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new StudentT(freedom, Simulator.nextRandNumGen());																									
-						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new StudentT(" + freedom + ", Simulator.nextRandNumGen())");
+						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new StudentT(" + freedom + ", Simulator.nextRandNumGen())");
 						//NOTE: The mean of the StudentT distribution is 0 for freedom > 1, otherwise it is undefined.												
 						if (freedom > 1) {
 							qPl.meanServTimes[j] = 0;
-							logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = " + qPl.meanServTimes[j]);													
+							logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = " + qPl.meanServTimes[j]);													
 						}
 						else {
 							logln("WARNING: meanServTimes for StudentT distribution not initialized!");
@@ -2015,9 +2015,9 @@ public class Simulator {
 						}						
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new Uniform(min, max, Simulator.nextRandNumGen());																									
-						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Uniform(" + min + ", " + max + ", Simulator.nextRandNumGen())");						
+						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Uniform(" + min + ", " + max + ", Simulator.nextRandNumGen())");						
 						qPl.meanServTimes[j] = (double) (min + max) / 2;
-						logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = (min + max) / 2 = " + qPl.meanServTimes[j]);
+						logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = (min + max) / 2 = " + qPl.meanServTimes[j]);
 					} else if("VonMises".equals(distributionFunction)) {
 						if(colorRef.attributeValue("freedom") == null) {
 							logln("ERROR: Parameter \"freedom\" of VonMises distribution function not set!");
@@ -2046,10 +2046,10 @@ public class Simulator {
 						//TODO: Check parameters. Rename "freedom" to "k" to avoid confusion.						
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new VonMises(freedom, Simulator.nextRandNumGen());																									
-						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new VonMises(" + freedom + ", Simulator.nextRandNumGen())");
+						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new VonMises(" + freedom + ", Simulator.nextRandNumGen())");
 						//SDK-TODO: find out how meanServTimes is computed?						
 						//qPl.meanServTimes[j] = (double) ???;
-						//logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = ??? = " + qPl.meanServTimes[j]);
+						//logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = ??? = " + qPl.meanServTimes[j]);
 						logln("WARNING: meanServTimes for VonMises distribution not initialized!");
 						logln("         Might experience problems if indrStats is set to true!");						
 						logln("Details:");
@@ -2134,10 +2134,10 @@ public class Simulator {
 						}
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new Empirical(pdf, cern.jet.random.Empirical.LINEAR_INTERPOLATION, Simulator.nextRandNumGen());
-						logln(2, "((QueueingPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Empirical(" + pdf_filename + ", LINEAR_INTERPOLATION, Simulator.nextRandNumGen())");
+						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Empirical(" + pdf_filename + ", LINEAR_INTERPOLATION, Simulator.nextRandNumGen())");
 						//SDK-TODO: find out how meanServTimes is computed?						
 						//qPl.meanServTimes[j] = (double) ???;
-						//logln(2, "((QueueingPlace) places[" + i + "]).meanServTimes[" + j + "] = ??? = " + qPl.meanServTimes[j]);
+						//logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = ??? = " + qPl.meanServTimes[j]);
 						logln("WARNING: meanServTimes for Empirical distribution not initialized!");
 						logln("         Might experience problems if indrStats is set to true!");						
 						logln("Details:");
@@ -2288,9 +2288,9 @@ public class Simulator {
 		// CONFIG: Whether to use indirect estimators for FCFS queues
 		for (int p = 0; p < numPlaces; p++) {
 			Place pl = places[p];
-			if (pl.statsLevel >= 3 && pl instanceof QueueingPlace) {
-				((QueueingPlace) pl).queueingPlaceStats.indrStats = false;
-				logln(2, "places[" + p + "].queueingPlaceStats.indrStats = false;");				
+			if (pl.statsLevel >= 3 && pl instanceof QPlace) {
+				((QPlace) pl).qPlaceQueueStats.indrStats = false;
+				logln(2, "places[" + p + "].qPlaceQueueStats.indrStats = false;");				
 			}
 		}
 
@@ -2327,7 +2327,7 @@ public class Simulator {
 					for (int cr = 0; colorRefIterator.hasNext(); cr++) {
 						Element colorRef = (Element) colorRefIterator.next();
 						Element colorRefSettings = getSettings(colorRef, configuration);
-						// Initialize Place (or Depository if pl is QueueingPlace)
+						// Initialize Place (or Depository if pl is QPlace)
 						if (colorRefSettings != null) {
 							if (colorRefSettings.attributeValue("signLev") == null) {
 								logln("Error: Configuration parameter \"signLev\" for Batch Means Method is missing!");
@@ -2481,9 +2481,9 @@ public class Simulator {
 						    */
 						}
 
-						// Initialize Queue if pl is QueueingPlace
-						if (pl instanceof QueueingPlace) {
-							QueueingPlace qpl = (QueueingPlace) pl;
+						// Initialize Queue if pl is QPlace
+						if (pl instanceof QPlace) {
+							QPlace qpl = (QPlace) pl;
 							if (colorRefSettings != null) {
 								if (colorRefSettings.attributeValue("queueSignLev") == null) {
 									logln("Error: Configuration parameter \"queueSignLev\" for Batch Means Method is missing!");
@@ -2497,8 +2497,8 @@ public class Simulator {
 									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
 									throw new SimQPNException();
 								}								
-								qpl.queueingPlaceStats.signLevST[cr] = Double.parseDouble(colorRefSettings.attributeValue("queueSignLev"));
-								logln(2, "-- queueingPlaceStats.signLevST[" + cr + "] = " + qpl.queueingPlaceStats.signLevST[cr]);
+								qpl.qPlaceQueueStats.signLevST[cr] = Double.parseDouble(colorRefSettings.attributeValue("queueSignLev"));
+								logln(2, "-- qPlaceQueueStats.signLevST[" + cr + "] = " + qpl.qPlaceQueueStats.signLevST[cr]);
 
 								if (colorRefSettings.attributeValue("queueReqAbsPrc") == null) {
 									logln("Error: Configuration parameter \"queueReqAbsPrc\" for Batch Means Method is missing!");
@@ -2512,8 +2512,8 @@ public class Simulator {
 									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
 									throw new SimQPNException();
 								}
-								qpl.queueingPlaceStats.reqAbsPrc[cr] = Double.parseDouble(colorRefSettings.attributeValue("queueReqAbsPrc"));
-								logln(2, "-- queueingPlaceStats.reqAbsPrc[" + cr + "] = " + qpl.queueingPlaceStats.reqAbsPrc[cr]);
+								qpl.qPlaceQueueStats.reqAbsPrc[cr] = Double.parseDouble(colorRefSettings.attributeValue("queueReqAbsPrc"));
+								logln(2, "-- qPlaceQueueStats.reqAbsPrc[" + cr + "] = " + qpl.qPlaceQueueStats.reqAbsPrc[cr]);
 
 								if (colorRefSettings.attributeValue("queueReqRelPrc") == null) {
 									logln("Error: Configuration parameter \"queueReqRelPrc\" for Batch Means Method is missing!");
@@ -2527,8 +2527,8 @@ public class Simulator {
 									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
 									throw new SimQPNException();
 								}
-								qpl.queueingPlaceStats.reqRelPrc[cr] = Double.parseDouble(colorRefSettings.attributeValue("queueReqRelPrc"));
-								logln(2, "-- queueingPlaceStats.reqRelPrc[" + cr + "] = " + qpl.queueingPlaceStats.reqRelPrc[cr]);
+								qpl.qPlaceQueueStats.reqRelPrc[cr] = Double.parseDouble(colorRefSettings.attributeValue("queueReqRelPrc"));
+								logln(2, "-- qPlaceQueueStats.reqRelPrc[" + cr + "] = " + qpl.qPlaceQueueStats.reqRelPrc[cr]);
 								
 								if (colorRefSettings.attributeValue("queueBatchSize") == null) {
 									logln("Error: Configuration parameter \"queueBatchSize\" for Batch Means Method is missing!");
@@ -2542,8 +2542,8 @@ public class Simulator {
 									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
 									throw new SimQPNException();
 								}								
-								qpl.queueingPlaceStats.batchSizeST[cr] = Integer.parseInt(colorRefSettings.attributeValue("queueBatchSize"));
-								logln(2, "-- queueingPlaceStats.batchSizeST[" + cr + "] = " + qpl.queueingPlaceStats.batchSizeST[cr]);
+								qpl.qPlaceQueueStats.batchSizeST[cr] = Integer.parseInt(colorRefSettings.attributeValue("queueBatchSize"));
+								logln(2, "-- qPlaceQueueStats.batchSizeST[" + cr + "] = " + qpl.qPlaceQueueStats.batchSizeST[cr]);
 
 								if(colorRefSettings.attributeValue("queueMinBatches") == null) {
 									logln("Error: Configuration parameter \"queueMinBatches\" for Batch Means Method is missing!");
@@ -2557,8 +2557,8 @@ public class Simulator {
 									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
 									throw new SimQPNException();
 								}
-								qpl.queueingPlaceStats.minBatches[cr] = Integer.parseInt(colorRefSettings.attributeValue("queueMinBatches"));
-								logln(2, "-- queueingPlaceStats.minBatches[" + cr + "] = " + qpl.queueingPlaceStats.minBatches[cr]);								
+								qpl.qPlaceQueueStats.minBatches[cr] = Integer.parseInt(colorRefSettings.attributeValue("queueMinBatches"));
+								logln(2, "-- qPlaceQueueStats.minBatches[" + cr + "] = " + qpl.qPlaceQueueStats.minBatches[cr]);								
 
 								if(colorRefSettings.attributeValue("queueNumBMeansCorlTested") == null) {
 									logln("Error: Configuration parameter \"queueNumBMeansCorlTested\" for Batch Means Method is missing!");
@@ -2572,13 +2572,13 @@ public class Simulator {
 									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
 									throw new SimQPNException();
 								}								
-								qpl.queueingPlaceStats.numBMeansCorlTested[cr] = Integer.parseInt(colorRefSettings.attributeValue("queueNumBMeansCorlTested"));
-								logln(2, "-- queueingPlaceStats.numBMeansCorlTested[" + cr + "] = " + qpl.queueingPlaceStats.numBMeansCorlTested[cr]);								
+								qpl.qPlaceQueueStats.numBMeansCorlTested[cr] = Integer.parseInt(colorRefSettings.attributeValue("queueNumBMeansCorlTested"));
+								logln(2, "-- qPlaceQueueStats.numBMeansCorlTested[" + cr + "] = " + qpl.qPlaceQueueStats.numBMeansCorlTested[cr]);								
 								
-								if (qpl.queueingPlaceStats.minBatches[cr] > 0 && 
-									qpl.queueingPlaceStats.numBMeansCorlTested[cr] > 0 && 
-									!(qpl.queueingPlaceStats.minBatches[cr] > qpl.queueingPlaceStats.numBMeansCorlTested[cr])) {
-									logln("Error: QueueingPlace.queueingPlaceStats.minBatches[c] must be greater than QueueingPlace.queueingPlaceStats.numBMeansCorlTested[c]!");
+								if (qpl.qPlaceQueueStats.minBatches[cr] > 0 && 
+									qpl.qPlaceQueueStats.numBMeansCorlTested[cr] > 0 && 
+									!(qpl.qPlaceQueueStats.minBatches[cr] > qpl.qPlaceQueueStats.numBMeansCorlTested[cr])) {
+									logln("Error: QPlace.qPlaceQueueStats.minBatches[c] must be greater than QPlace.qPlaceQueueStats.numBMeansCorlTested[c]!");
 									logln("Details:");
 									logln("  configuration = " + configuration);						
 									logln("  place-num          = " + p);
@@ -2591,8 +2591,8 @@ public class Simulator {
 								}
 								// If (numBMeansCorlTested[c] <= 0) no correlation test is done!								
 								// Note that numBMeansCorlTested must be even!
-								if (qpl.queueingPlaceStats.numBMeansCorlTested[cr] % 2 != 0) {
-									logln("Error: QueueingPlace.queueingPlaceStats.numBMeansCorlTested[c] must be even!");
+								if (qpl.qPlaceQueueStats.numBMeansCorlTested[cr] % 2 != 0) {
+									logln("Error: QPlace.qPlaceQueueStats.numBMeansCorlTested[c] must be even!");
 									logln("Details:");
 									logln("  configuration = " + configuration);						
 									logln("  place-num          = " + p);
@@ -2615,22 +2615,22 @@ public class Simulator {
 								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
 								throw new SimQPNException();
 								/* ORIGINAL MANUAL CONFIGURATION
-								qpl.queueingPlaceStats.signLevST[cr] = 0.05;		// e.g. 0.05 ---> 95% c.i.; 0.1 ---> 90%
-								logln(2, "-- queueingPlaceStats.signLevST[" + cr + "] = " + qpl.queueingPlaceStats.signLevST[cr]);								
-								qpl.queueingPlaceStats.reqAbsPrc[cr] = 50;
-								logln(2, "-- queueingPlaceStats.reqAbsPrc[" + cr + "] = " + qpl.queueingPlaceStats.reqAbsPrc[cr]);								
-								qpl.queueingPlaceStats.reqRelPrc[cr] = 0.05;		// e.g. 0.1 ---> 10% relative precision
-								logln(2, "-- queueingPlaceStats.reqRelPrc[" + cr + "] = " + qpl.queueingPlaceStats.reqRelPrc[cr]);								
-								qpl.queueingPlaceStats.batchSizeST[cr] = 200;		// Initial batch size
-								logln(2, "-- queueingPlaceStats.batchSizeST[" + cr + "] = " + qpl.queueingPlaceStats.batchSizeST[cr]);								
-								qpl.queueingPlaceStats.minBatches[cr] = 60; 
+								qpl.qPlaceQueueStats.signLevST[cr] = 0.05;		// e.g. 0.05 ---> 95% c.i.; 0.1 ---> 90%
+								logln(2, "-- qPlaceQueueStats.signLevST[" + cr + "] = " + qpl.qPlaceQueueStats.signLevST[cr]);								
+								qpl.qPlaceQueueStats.reqAbsPrc[cr] = 50;
+								logln(2, "-- qPlaceQueueStats.reqAbsPrc[" + cr + "] = " + qpl.qPlaceQueueStats.reqAbsPrc[cr]);								
+								qpl.qPlaceQueueStats.reqRelPrc[cr] = 0.05;		// e.g. 0.1 ---> 10% relative precision
+								logln(2, "-- qPlaceQueueStats.reqRelPrc[" + cr + "] = " + qpl.qPlaceQueueStats.reqRelPrc[cr]);								
+								qpl.qPlaceQueueStats.batchSizeST[cr] = 200;		// Initial batch size
+								logln(2, "-- qPlaceQueueStats.batchSizeST[" + cr + "] = " + qpl.qPlaceQueueStats.batchSizeST[cr]);								
+								qpl.qPlaceQueueStats.minBatches[cr] = 60; 
 									// Note that if (minBatches > 0 && numBMeansCorlTested[c] > 0),
 									// minBatches[c] must be > numBMeansCorlTested[c]!
-								logln(2, "-- queueingPlaceStats.minBatches[" + cr + "] = " + qpl.queueingPlaceStats.minBatches[cr]);								
-								qpl.queueingPlaceStats.numBMeansCorlTested[cr] = 50; 
+								logln(2, "-- qPlaceQueueStats.minBatches[" + cr + "] = " + qpl.qPlaceQueueStats.minBatches[cr]);								
+								qpl.qPlaceQueueStats.numBMeansCorlTested[cr] = 50; 
 									// Note that numBMeansCorlTested must be even!
 									// If (numBMeansCorlTested[c] <= 0) no correlation test is done!
-								logln(2, "-- queueingPlaceStats.numBMeansCorlTested[" + cr + "] = " + qpl.queueingPlaceStats.numBMeansCorlTested[cr]);
+								logln(2, "-- qPlaceQueueStats.numBMeansCorlTested[" + cr + "] = " + qpl.qPlaceQueueStats.numBMeansCorlTested[cr]);
 							    */
 							}
 						}
@@ -2829,14 +2829,14 @@ public class Simulator {
 				}
 			} // end firing enabled transitions
 
-			// Step 2: Make sure all service completion events in PS QueueingPlaces have been scheduled
+			// Step 2: Make sure all service completion events in PS QPlaces have been scheduled
 			for (int q = 0; q < numQueues; q++)
 				if (queues[q].queueDiscip == Queue.PS && (!queues[q].eventsUpToDate))
 					queues[q].updateEvents();
 			/* Alternative Code
 			for (int p = 0; p < numPlaces; p++)
-				if (places[p] instanceof QueueingPlace) {
-					QueueingPlace qpl = (QueueingPlace) places[p];
+				if (places[p] instanceof QPlace) {
+					QPlace qpl = (QPlace) places[p];
 					if ((qpl.queue.queueDiscip == Queue.PS) && (!qpl.queue.eventsUpToDate))
 						qpl.queue.updateEvents();
 				} 
@@ -2849,7 +2849,7 @@ public class Simulator {
 				// Advance simulation time
 				clock = ev.time;
 
-				QueueingPlace qpl = (QueueingPlace) ev.token.place;
+				QPlace qpl = (QPlace) ev.token.place;
 				qpl.completeService(ev.token);
 
 				// Check if some transitions were enabled and update enTrans				
@@ -2892,7 +2892,7 @@ public class Simulator {
 							done = false;
 							break;
 						}
-						if ((pl instanceof QueueingPlace) && !(((QueueingPlace) pl).queueingPlaceStats.enoughStats())) {
+						if ((pl instanceof QPlace) && !(((QPlace) pl).qPlaceQueueStats.enoughStats())) {
 							done = false;
 							break;
 						}
