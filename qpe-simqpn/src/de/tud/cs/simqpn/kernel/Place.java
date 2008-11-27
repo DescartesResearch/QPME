@@ -170,7 +170,7 @@ public class Place extends Node {
 	 * @return
 	 * @exception
 	 */
-	public void finish() {
+	public void finish() throws SimQPNException {
 		// Complete statistics collection
 		if (statsLevel > 0)	
 			placeStats.finish(tokenPop);					

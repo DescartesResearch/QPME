@@ -13,7 +13,7 @@
  *  ...                                 
  * 
  */
-
+ 
 package de.tud.cs.simqpn.kernel;
 
 /**

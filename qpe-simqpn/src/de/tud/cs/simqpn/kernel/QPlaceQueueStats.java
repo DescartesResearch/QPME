@@ -41,6 +41,7 @@ import cern.jet.stat.Probability;
 public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable {
 	private static final long serialVersionUID = 3L;
 
+	// NOTE: The following data is duplicated here to make Stats objects self-contained. 
 	public int			queueDiscip;	// Queueing discipline
 	public int			numServers;		// FCFS queues: Number of servers in queueing station.			
 	public double[]		meanServTimes;	// All times usually in milliseconds
@@ -55,8 +56,8 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	public double		areaQueUtilQPl;		// Accumulated area under the curve for computing the expected  
 											// queue utilization due to this place - fraction of time that 
 											// there is a token of this place in the queue.		  
-	public double		lastTkPopClock;		// Time of last token population change (over all colors).		
-	public int			lastTotTkPop;		// Last queue total token population (over all colors).		
+	public double		lastTkPopClock;		// Time of last token population change (over all colors of this place).		
+	public int			lastTotTkPop;		// Last queue total token population (over all colors of this place).		
 
 	public double		queueUtilQPl;		// Utilization of the integrated queue due to this place = (areaQueUtilQPl / msrmPrdLen)
 	

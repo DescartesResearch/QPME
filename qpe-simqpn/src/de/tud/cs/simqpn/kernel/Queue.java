@@ -44,8 +44,9 @@ public class Queue {
 	public int			queueDiscip;		// Queueing discipline.
 		
 	public QPlace[] 
-	                    qPlaces;		// Queueing places this queue is part of.
-	public int			totNumColors;		// Total number of token colors over all queueing places the queue is part of. 
+	                    qPlaces;			// Queueing places this queue is part of.
+	public int			totNumColors;		// Total number of token colors over all queueing places the queue is part of.
+	int					statsLevel;			// The maximum statsLevel of all queueing places this queue is part of.
 	
 	public int			numServers;			// FCFS queues: Number of servers in queueing station.
 	public int			numBusyServers;		// FCFS queues: Number of currently busy servers.
@@ -68,6 +69,7 @@ public class Queue {
 	public EmpiricalWalker					
 						randColorGen;		// PS queues: expPS==true: Random number generator for generating token colors.
 	
+	public QueueStats	queueStats;
 	
 	/**
 	 * Constructor
@@ -82,7 +84,8 @@ public class Queue {
 		this.name						= name;
 		this.queueDiscip				= queueDiscip; 
 		this.numServers 				= numServers; 		
-		this.qPlaces				= null;
+		this.qPlaces					= null;
+		this.statsLevel					= 0;
 		
 		// FCFS Queues			
 		if (queueDiscip == FCFS)  {			
@@ -129,8 +132,11 @@ public class Queue {
 	 * @exception
 	 */
 	public void init() throws SimQPNException {
-		for (int p = 0; p < qPlaces.length; p++) 
-			totNumColors += qPlaces[p].numColors;
+		for (int p = 0; p < qPlaces.length; p++) { //NOTE: The two variables below are intentionally set here and not in addQPlace(), since the user might choose (although that's not recommended) to initialize qPlaces externally bypassing addQPlace().  
+			totNumColors += qPlaces[p].numColors;		
+			if (qPlaces[p].statsLevel > statsLevel) 
+				statsLevel = qPlaces[p].statsLevel;
+		}
 
 		// PS Queues: final initializations	
 		if (queueDiscip == PS && expPS)  {						
@@ -139,8 +145,38 @@ public class Queue {
 			double[] pdf = new double[totNumColors];
 			for (int c = 0; c < totNumColors; c++) pdf[c] = 1;			
 			randColorGen = new EmpiricalWalker(pdf, Empirical.NO_INTERPOLATION, Simulator.nextRandNumGen());							
-		}
+		}		
+		if (statsLevel > 0)  //NOTE: This is intentionally done here after qPlaces has been initialized!
+			queueStats = new QueueStats(id, name, totNumColors, statsLevel, queueDiscip, numServers, this);
 	}
+		
+	/**
+	 * Method start  	    
+	 * 	 
+	 * @param 
+	 * @return
+	 * @exception
+	 */
+	public void start() throws SimQPNException {	
+		if (statsLevel > 0)	
+			queueStats.start();					
+	}
+	
+	/**
+	 * Method finish
+	 *  	    
+	 * 	 
+	 * @param 
+	 * @return
+	 * @exception
+	 */
+	public void finish() throws SimQPNException {
+		// Complete statistics collection
+		if (statsLevel > 0)	
+			queueStats.finish();					
+	}
+	
+	
 	
 	/**
 	 * Method updateEvents (Used only for PS queues).
@@ -297,7 +333,10 @@ public class Queue {
 	 */
 	@SuppressWarnings("unchecked")
 	public void addTokens(QPlace qPl, int color, int count) throws SimQPNException {				 				
-				
+		
+		if (statsLevel >= 2)
+			queueStats.updateTotTkPopStats(count);
+		
 		if (queueDiscip == IS) {
 			// Schedule service completion events						
 			for (int i = 0; i < count; i++) {
@@ -352,7 +391,10 @@ public class Queue {
 	 * @exception
 	 */
 	public void completeService(Token token) throws SimQPNException {
-				
+
+		if (statsLevel >= 2)
+			queueStats.updateTotTkPopStats(-1);
+		
 		if (queueDiscip == IS) {
 			// Nothing to do				 								
 		}

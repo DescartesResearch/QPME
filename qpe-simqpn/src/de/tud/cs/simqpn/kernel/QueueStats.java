@@ -19,6 +19,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
+import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
 import cern.jet.stat.Probability;
 
@@ -30,38 +31,35 @@ import cern.jet.stat.Probability;
  * @version %I%, %G%
  */
 
-public class QueueStats implements java.io.Serializable {
+public class QueueStats extends Stats implements java.io.Serializable {
 	private static final long serialVersionUID = 154545454L;
 
-	public int			queueDiscip;	// Queueing discipline
-	public int			numServers;		// FCFS queues: Number of servers in queueing station.			
-	public double[]		meanServTimes;	// All times usually in milliseconds
+	public int		queueDiscip;	// Queueing discipline.
+	public int		numServers;		// FCFS queues: Number of servers in queueing station.			
+	public Queue	queue;			// Associated Queue object.
 	
 	// ----------------------------------------------------------------------------------------------------
 	//  STATISTICS
 	// ----------------------------------------------------------------------------------------------------
-	
-	// StatsLevel 1 ---------------------------------------------------------------------------------------
-	
-	// StatsLevel 2 ---------------------------------------------------------------------------------------
-	public double		areaQueUtilQPl;		// Accumulated area under the curve for computing the expected  
-											// queue utilization due to this place - fraction of time that 
-											// there is a token of this place in the queue.		  
-	public double		lastTkPopClock;		// Time of last token population change (over all colors).		
-	public int			lastTotTkPop;		// Last queue total token population (over all colors).		
 
-	public double		queueUtilQPl;		// Utilization of the integrated queue due to this place = (areaQueUtilQPl / msrmPrdLen)
+	// StatsLevel 1 ---------------------------------------------------------------------------------------
+	public double	totArrivThrPut;				// Total arrival throughput over all queueing places this queue is part of.
+	public double	totDeptThrPut;				// Total departure throughput over all queueing places this queue is part of.
+		
+	// StatsLevel 2 ---------------------------------------------------------------------------------------
+	public double	meanTotTkPop;				// Mean Total Token Population.
 	
-	// StatsLevel 3 ---------------------------------------------------------------------------------------		
-	public boolean		indrStats;			// FCFS: Specifies if STs and TkPops should be estimated indirectly
-	/* NOTE:
-	 * if (indrStats == true)
-	 *     the variables minST, maxST, sumST, sumSqST, numST, etc. inherited from PlaceStats
-	 *     refer to delay times in the waiting area of the queue
-	 * otherwise
-	 *     they refer as usual to overall sojourn times in the queue!
-	 * 
-	 */
+	public double	areaQueUtil;				// Accumulated area under the curve for computing the expected  
+												// queue utilization - fraction of time that there is a token in the queue. 
+	public double	lastTkPopClock;				// Time of last token population change (over all colors).		
+	public int		lastTotTkPop;				// Last queue total token population (over all colors).		
+	public double	queueUtil;					// Utilization of the queue = (areaQueUtil / msrmPrdLen).
+
+	// StatsLevel 3 ---------------------------------------------------------------------------------------
+//	public double[] minST;						// Minimum observed token sojourn time.
+//	public double[] maxST;						// Maximum observed token sojourn time.
+	
+	public double[] meanST;						// Mean Sojourn Time over all tokens visiting this queue.
 	
 	// StatsLevel 4 ---------------------------------------------------------------------------------------
 	
@@ -71,132 +69,121 @@ public class QueueStats implements java.io.Serializable {
 	 * Constructor
 	 *
 	 * @param id            - global id of the queue
-	 * @param name          - name of the place
-	 * @param numColors     - number of colors
-	 * @param statsLevel    - determines the amount of statistics to be gathered during the run 
-	 * @param queueDiscip   - queueing discipline
-	 * @param numServers    - FCFS queues: number of servers in queueing station 
-	 * @param meanServTimes - mean service times of tokens
+	 * @param name          - name of the queue
+	 * TODO
+	 * @param Queue         - reference to respective Queue Object
+	 * 
 	 */	
-	public QueueStats(int id, String name, int queueDiscip, int numServers) throws SimQPNException {
-		
-		
+	public QueueStats(int id, String name, int numColors, int statsLevel, int queueDiscip, int numServers, Queue queue) throws SimQPNException  {
 		super(id, name, QUEUE, numColors, statsLevel);
 		this.queueDiscip	= queueDiscip;
-		this.numServers		= numServers;			
-		this.meanServTimes  = meanServTimes;		
-			
-		//  statsLevel >= 1
-				
-		if (statsLevel >= 3) {
-			// Make sure indrStats is false if queueDiscip != Queue.FCFS
-			this.indrStats	= (queueDiscip == Queue.FCFS);		// indrStats is by default true for FCFS queues
-			this.meanDT					=	new double[numColors];
-			this.stDevDT				=	new double[numColors];			
-			if (Simulator.analMethod == Simulator.BATCH_MEANS)  {
-				this.stdStateMeanDT			=	new double[numColors];
-				this.varStdStateMeanDT		=	new double[numColors];
-				this.stDevStdStateMeanDT	=	new double[numColors];
-				this.ciHalfLenDT			=	new double[numColors];
-			}
-		}
-		
-		if (statsLevel >= 4)  {
-			String fileName = "";
-			this.fileST = new PrintStream[numColors];
-			for (int c = 0; c < numColors; c++) {					
-				try {
-					if (indrStats) 
-						fileName = statsDir + fileSep + "RunStats-queue" + id + "-col" + c + "-DT.txt"; 
-					else																		
-						fileName = statsDir + fileSep + "RunStats-queue" + id + "-col" + c + "-ST.txt";											
-					this.fileST[c] = new PrintStream(new FileOutputStream(fileName));
-				}				
-				catch (FileNotFoundException ex) {											
-					Simulator.logln("Error - cannot open file: " + fileName);
-					Simulator.logln();
-					Simulator.log(ex);
-					throw new SimQPNException(); 	
-				}
-			}													
-		}										
+		this.numServers		= numServers;	
+		this.queue			= queue;
 	}
 
 	/**
 	 * Method init - should be called at the beginning of the measurement period (ideally the beginning of steady state)	    	 
 	 * 
-	 * @param tokenPop - current queue token population 
+	 * @param 
 	 * @return
 	 * @exception
 	 */
-	public void init(int[] tokenPop)  {
-		super.init(tokenPop);
-		
+	public void init()  {		
+		// statsLevel >= 1		
+		totArrivThrPut				= 0;
+		totDeptThrPut				= 0;
 		if (statsLevel >= 2)  {			
-			lastTotTkPop = 0;
-			for (int c = 0; c < numColors; c++) 
-				lastTotTkPop += tokenPop[c];			
-			areaQueUtilQPl = 0;
-			lastTkPopClock = Simulator.clock;			
-		}		
-		if (statsLevel >= 3)  {
-			// Make sure indrStats is false if queueDiscip != Queue.FCFS
-			indrStats = indrStats && (queueDiscip == Queue.FCFS);
+			meanTotTkPop			= 0;
+			areaQueUtil				= 0;
+			lastTotTkPop 			= 0;		
+			for (int p = 0; p < queue.qPlaces.length; p++)
+				for (int c = 0; c < queue.qPlaces[p].numColors; c++)
+					lastTotTkPop += queue.qPlaces[p].queueTokenPop[c];				
+			lastTkPopClock = Simulator.clock;
 		}
 	}
 
+
 	/**
-	 * Method updateTkPopStats
-	 *  	 
-	 * @param color		- token color
-	 * @param oldTkPop	- old token population
-	 * @param delta		- difference between new and old token population
+	 * Method start - should be called at the end of RampUp to start taking measurements.	    	 
+	 * 
+	 * @param 
+	 * @return
+	 * @exception
 	 */
-	public void updateTkPopStats(int color, int oldTkPop, int delta) {
+	public void start() throws SimQPNException  {	
+		init();
+		inRampUp = false;
+		endRampUpClock = Simulator.clock;		
+/*		if (statsLevel >= 2)  {			TODO
+			lastTotTkPop 			= 0;			
+			for (int c = 0; c < numColors; c++) 
+				lastTotTkPop += tokenPop[c];
+			lastTkPopClock = Simulator.clock;
+			
+		}	
+*/	
+	}
+
+	/**
+	 * Method finish - should be called at the end of the measurement period to
+	 *                 complete statistics collection.
+	 *  
+	 * Note: Completes accumulated areas under the curve.   
+	 * 
+	 * @param
+	 * @return
+	 * @exception
+	 */
+	public void finish() throws SimQPNException {		
+		if (statsLevel >= 2) //NOTE: This makes sure areaQueUtil is complete.
+			updateTotTkPopStats(0);
+		endRunClock = Simulator.clock;
+		msrmPrdLen = endRunClock - endRampUpClock;		
+		runWallClockTime = Simulator.runWallClockTime;
+		processStats(); 
+	}
+		
+	/**
+	 * Method updateTotTkPopStats
+	 * 
+	 * NOTE: Currently called only when statsLevel >= 2
+	 * 
+	 * @param delta     - difference between new and old token population
+	 */
+	public void updateTotTkPopStats(int delta) {
 		if (inRampUp) return;		
-		super.updateTkPopStats(color, oldTkPop, delta);		
-		if (statsLevel >= 2)  {						
-			double elapsedTime = Simulator.clock - lastTkPopClock;
-			if (elapsedTime > 0) {
-				if (numServers > 1)	//NOTE: WATCH OUT with IS queues here! Below we assume that for such queues numServers == 0.				
-					areaQueUtilQPl += elapsedTime * (lastTotTkPop > numServers ? 1 : (((double) lastTotTkPop) / numServers));																						
-				else areaQueUtilQPl += elapsedTime * (lastTotTkPop > 0 ? 1 : 0);  
-				lastTkPopClock = Simulator.clock;				
-			}			
-			lastTotTkPop += delta;									
-		}		
+		double elapsedTime = Simulator.clock - lastTkPopClock;
+		if (elapsedTime > 0) {
+			if (numServers > 1)	//NOTE: WATCH OUT with IS queues here! Below we assume that for such queues numServers == 0.				
+				areaQueUtil += elapsedTime * (lastTotTkPop > numServers ? 1 : (((double) lastTotTkPop) / numServers));																						
+			else areaQueUtil += elapsedTime * (lastTotTkPop > 0 ? 1 : 0);  
+			lastTkPopClock = Simulator.clock;				
+		}			
+		lastTotTkPop += delta;									
 	}
 
-	/**
-	 * Method updateSojTimeStats
-	 *  	 
-	 * @param color		- token color
-	 * @param sojTime	- sojourn time of token in queue	 
-	 */
-	public void updateSojTimeStats(int color, double sojTime)  {
-		if (indrStats || (inRampUp && Simulator.analMethod != Simulator.WELCH)) return;
-		super.updateSojTimeStats(color, sojTime);
-	}
-
-	/**
-	 * Method updateDelayTimeStats (FCFS)
-	 *  	 
-	 * @param color		- token color
-	 * @param delayTime	- delay time of token in waiting area of the queue
-	 * 	 
-	 */
-	public void updateDelayTimeStats(int color, double delayTime)  {				
-		if ((!indrStats) || (inRampUp && Simulator.analMethod != Simulator.WELCH)) return;
-		super.updateSojTimeStats(color, delayTime);		
-	}	
 	
 	/**
 	 * Method processStats - processes gathered statistics (summarizes data)
 	 *                        	 
 	 */	
 	public void processStats()  {		
-		super.processStats();
-		queueUtilQPl = areaQueUtilQPl / msrmPrdLen;		
+		// statsLevel >= 1
+		for (int p = 0; p < queue.qPlaces.length; p++)
+			for (int c = 0; c < queue.qPlaces[p].numColors; c++)  {
+				totArrivThrPut	= queue.qPlaces[p].;
+				totDeptThrPut	= 	
+			}			
+		TODO
+//		statlevel2
+		meanTotTkPop
+		queueUtil = areaQueUtil / msrmPrdLen;
+
+//		statlevel3	
+		meanST		
+		
+		
 		if (statsLevel >= 3 && indrStats)  {
 			for (int c = 0; c < numColors; c++)  {
 				meanDT[c] 	= sumST[c] / numST[c];

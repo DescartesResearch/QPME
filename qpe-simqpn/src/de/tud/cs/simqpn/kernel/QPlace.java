@@ -150,7 +150,7 @@ public class QPlace extends Place {
 	 * @return
 	 * @exception
 	 */
-	public void finish() {
+	public void finish() throws SimQPNException {
 		if (statsLevel > 0)  {
 			// Complete statistics collection
 			qPlaceQueueStats.finish(queueTokenPop);								

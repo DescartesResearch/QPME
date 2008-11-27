@@ -49,13 +49,7 @@ import de.tud.cs.qpe.model.DocumentManager;
 
 public class PlaceStats extends Stats implements java.io.Serializable {
 	private static final long serialVersionUID = 2L;
-
-	public boolean inRampUp;				// True if still in RampUp period (no measurements taken).
-	public double endRampUpClock;			// Clock at the end of RampUp, i.e. beginning of the measurement period.
-	public double endRunClock;				// Clock at the end of the run.
-	public double msrmPrdLen;				// Duration of the measurement period in simulation time (endRunClock - endRampUpClock).
-	public double runWallClockTime;			// Total duration of the run in seconds.
-
+ 	
 	// ----------------------------------------------------------------------------------------------------
 	// STATISTICS
 	// ----------------------------------------------------------------------------------------------------
@@ -77,7 +71,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 
 	// StatsLevel 3 ---------------------------------------------------------------------------------------
 	public double[] minST;					// Minimum observed token sojourn time.
-	public double[] maxST;					// Maxumum observed token sojourn time.
+	public double[] maxST;					// Maximum observed token sojourn time.
 	public double[] sumST;					// Sum of token sojourn times.
 	public double[] sumSqST;				// Sum of token sojourn time squares.
 	public int[] numST;						// Number of sojourn times observed.
@@ -143,15 +137,8 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 *            determines the amount of statistics to be gathered during the run
 	 *            
 	 */
-	public PlaceStats(int id, String name, int type, int numColors,
-			int statsLevel) throws SimQPNException {
+	public PlaceStats(int id, String name, int type, int numColors, int statsLevel) throws SimQPNException {
 		super(id, name, type, numColors, statsLevel);
-
-		this.inRampUp 			= true;
-		this.endRampUpClock 	= 0;
-		this.endRunClock 		= 0;
-		this.msrmPrdLen 		= 0;
-		this.runWallClockTime 	= 0;
 
 		// statsLevel >= 1
 		this.arrivCnt 								= new int[numColors];
@@ -332,7 +319,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 * @return
 	 * @exception
 	 */
-	public void start(int[] tokenPop) throws SimQPNException {
+	public void start(int[] tokenPop) throws SimQPNException {		
 		init(tokenPop);
 		inRampUp = false;
 		endRampUpClock = Simulator.clock;
@@ -353,7 +340,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			for (int c = 0; c < numColors; c++)
 				updateTkPopStats(c, tokenPop[c], 0);
 		endRunClock = Simulator.clock;
-		msrmPrdLen = endRunClock - endRampUpClock;
+		msrmPrdLen = endRunClock - endRampUpClock;		
 		runWallClockTime = Simulator.runWallClockTime;
 
 		if (statsLevel >= 4)
@@ -363,6 +350,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 		processStats();
 	}
 
+	
 	/**
 	 * Method updateTkPopStats
 	 * 

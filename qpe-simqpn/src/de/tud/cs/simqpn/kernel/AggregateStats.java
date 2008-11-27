@@ -32,7 +32,8 @@ import drasys.or.prob.FDistribution;
 /**
  * Class AggregateStats 
  * 
- * Aggregates statistics from multiple independent simulation runs. 
+ * Aggregates statistics from multiple independent simulation runs.
+ * NOTE: Currently QUEUE statisctics are not supported.   
  * Uses the replication/deletion method (see p.525 in Law/Kelton) 
  * Estimates coverage for sojourn time confidence intervals using the method on p.508 in Law/Kelton.  
  * 

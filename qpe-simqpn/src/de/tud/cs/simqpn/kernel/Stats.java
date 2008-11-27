@@ -29,15 +29,23 @@ public class Stats {
 	public static final int ORD_PLACE		= 0;
 	public static final int QUE_PLACE_QUEUE	= 1;	 
 	public static final int QUE_PLACE_DEP	= 2;
-	
-	public int 			id;						// ID of target node			 		
-	public String		name;					// Name of target node			
-	public int 			type;					// Type of statistics (ORD_PLACE, QUE_PLACE_QUEUE or QUE_PLACE_DEP)		
+	public static final int QUEUE			= 3;
+
+	// NOTE: The following data is replicated from the respective data in the target Place or Queue to make Stats objects self-contained!
+	public int 			id;						// ID of target place or queue			 		
+	public String		name;					// Name of target place or queue					
+	public int 			type;					// Type of statistics (ORD_PLACE, QUE_PLACE_QUEUE, QUE_PLACE_DEP, QUEUE)		
 	public int			numColors;				// Number of colors
 	public int			statsLevel;				// Determines the amount of statistics to be gathered during the run (see below).
 	public boolean		completed;				// Indicates whether statistics collection has been completed and gathered statistics have been processed.
-										
-	
+
+	//NOTE: The five variables below are replicated from the respective data in Simulator in order to make the Stats objects self-contained! This data is then used in AggregateStats for example.
+	public boolean		inRampUp;				// True if still in RampUp period (no measurements taken).
+	public double		endRampUpClock;			// Clock at the end of RampUp, i.e. beginning of the measurement period.
+	public double		endRunClock;			// Clock at the end of the run.
+	public double		msrmPrdLen;				// Duration of the measurement period in simulation time.
+	public double		runWallClockTime;		// Total duration of the run in seconds. 
+		
 	public String 		fileSep 	= System.getProperty("file.separator");
 	public String 		statsDir 	= Simulator.statsDir;
 	
@@ -54,17 +62,21 @@ public class Stats {
 	 * 
 	 * @param id          - global id of the place
 	 * @param name        - name of the place
-	 * @param type		  - type of statistics (ORD_PLACE, QUE_PLACE_QUEUE or QUE_PLACE_DEP)
+	 * @param type		  - type of statistics (ORD_PLACE, QUE_PLACE_QUEUE, QUE_PLACE_DEP or QUEUE)
 	 * @param numColors   - number of colors
 	 * @param statsLevel  - determines the amount of statistics to be gathered during the run
 	 */
 	public Stats(int id, String name, int type, int numColors, int statsLevel) {		
-		this.id 			= id;
-		this.name 			= name;		
-		this.type			= type;
-		this.numColors		= numColors;
-		this.statsLevel		= statsLevel;
-		this.completed		= false;
-	}
-	
+		this.id 				= id;
+		this.name 				= name;		
+		this.type				= type;
+		this.numColors			= numColors;
+		this.statsLevel			= statsLevel;
+		this.completed			= false;		
+		this.inRampUp 			= true;
+		this.endRampUpClock 	= 0;
+		this.endRunClock 		= 0;
+		this.msrmPrdLen 		= 0;
+		this.runWallClockTime 	= 0;
+	}	
 }

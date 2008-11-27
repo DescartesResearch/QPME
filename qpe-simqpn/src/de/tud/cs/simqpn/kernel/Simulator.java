@@ -2780,6 +2780,8 @@ public class Simulator {
 					break;
 				for (int p = 0; p < numPlaces; p++)
 					places[p].start();
+				for (int q = 0; q < numQueues; q++)
+					queues[q].start();
 			}
 
 			// Step 1: Fire until no transitions are enabled.			
@@ -2930,6 +2932,8 @@ public class Simulator {
 		if (analMethod != WELCH) {		
 			for (int p = 0; p < numPlaces; p++)
 				places[p].finish();
+			for (int q = 0; q < numQueues; q++)
+				queues[q].finish();
 		}
 		
 		logln();
