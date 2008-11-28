@@ -125,16 +125,11 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	/**
 	 * Constructor
 	 * 
-	 * @param id -
-	 *            global id of the place
-	 * @param name -
-	 *            name of the place
-	 * @param type -
-	 *            type of statistics (ORD_PLACE, QUE_PLACE_QUEUE or QUE_PLACE_DEP)
-	 * @param numColors -
-	 *            number of colors
-	 * @param statsLevel -
-	 *            determines the amount of statistics to be gathered during the run
+	 * @param id 			- global id of the place
+	 * @param name 			- name of the place
+	 * @param type 			- type of statistics (ORD_PLACE, QUE_PLACE_QUEUE or QUE_PLACE_DEP)
+	 * @param numColors 	- number of colors
+	 * @param statsLevel	- determines the amount of statistics to be gathered during the run
 	 *            
 	 */
 	public PlaceStats(int id, String name, int type, int numColors, int statsLevel) throws SimQPNException {

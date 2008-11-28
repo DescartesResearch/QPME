@@ -15,14 +15,6 @@
 
 package de.tud.cs.simqpn.kernel;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
-
-import cern.colt.list.DoubleArrayList;
-import cern.jet.stat.Descriptive;
-import cern.jet.stat.Probability;
-
 /**
  * Class QueueStats
  *
@@ -47,19 +39,15 @@ public class QueueStats extends Stats implements java.io.Serializable {
 	public double	totDeptThrPut;				// Total departure throughput over all queueing places this queue is part of.
 		
 	// StatsLevel 2 ---------------------------------------------------------------------------------------
-	public double	meanTotTkPop;				// Mean Total Token Population.
-	
+	public double	meanTotTkPop;				// Mean queue total token population.	
 	public double	areaQueUtil;				// Accumulated area under the curve for computing the expected  
 												// queue utilization - fraction of time that there is a token in the queue. 
 	public double	lastTkPopClock;				// Time of last token population change (over all colors).		
 	public int		lastTotTkPop;				// Last queue total token population (over all colors).		
 	public double	queueUtil;					// Utilization of the queue = (areaQueUtil / msrmPrdLen).
 
-	// StatsLevel 3 ---------------------------------------------------------------------------------------
-//	public double[] minST;						// Minimum observed token sojourn time.
-//	public double[] maxST;						// Maximum observed token sojourn time.
-	
-	public double[] meanST;						// Mean Sojourn Time over all tokens visiting this queue.
+	// StatsLevel 3 ---------------------------------------------------------------------------------------	
+	public double	meanST;						// Mean Sojourn Time over all tokens visiting this queue.
 	
 	// StatsLevel 4 ---------------------------------------------------------------------------------------
 	
@@ -68,10 +56,13 @@ public class QueueStats extends Stats implements java.io.Serializable {
 	/**
 	 * Constructor
 	 *
-	 * @param id            - global id of the queue
-	 * @param name          - name of the queue
-	 * TODO
-	 * @param Queue         - reference to respective Queue Object
+	 * @param id			- global id of the queue
+	 * @param name			- name of the queue
+	 * @param numColors		- total number of token colors over all queueing places the queue is part of
+	 * @param statsLevel	- determines the amount of statistics to be gathered during the run
+	 * @param queueDiscip	- queueing discipline
+	 * @param numServers	- FCFS queues: number of servers in queueing station
+	 * @param Queue			- reference to respective Queue object
 	 * 
 	 */	
 	public QueueStats(int id, String name, int numColors, int statsLevel, int queueDiscip, int numServers, Queue queue) throws SimQPNException  {
@@ -96,8 +87,8 @@ public class QueueStats extends Stats implements java.io.Serializable {
 			meanTotTkPop			= 0;
 			areaQueUtil				= 0;
 			lastTotTkPop 			= 0;		
-			for (int p = 0; p < queue.qPlaces.length; p++)
-				for (int c = 0; c < queue.qPlaces[p].numColors; c++)
+			for (int p=0; p < queue.qPlaces.length; p++)
+				for (int c=0; c < queue.qPlaces[p].numColors; c++)
 					lastTotTkPop += queue.qPlaces[p].queueTokenPop[c];				
 			lastTkPopClock = Simulator.clock;
 		}
@@ -114,15 +105,7 @@ public class QueueStats extends Stats implements java.io.Serializable {
 	public void start() throws SimQPNException  {	
 		init();
 		inRampUp = false;
-		endRampUpClock = Simulator.clock;		
-/*		if (statsLevel >= 2)  {			TODO
-			lastTotTkPop 			= 0;			
-			for (int c = 0; c < numColors; c++) 
-				lastTotTkPop += tokenPop[c];
-			lastTkPopClock = Simulator.clock;
-			
-		}	
-*/	
+		endRampUpClock = Simulator.clock;	
 	}
 
 	/**
@@ -135,8 +118,8 @@ public class QueueStats extends Stats implements java.io.Serializable {
 	 * @return
 	 * @exception
 	 */
-	public void finish() throws SimQPNException {		
-		if (statsLevel >= 2) //NOTE: This makes sure areaQueUtil is complete.
+	public void finish() throws SimQPNException  {		
+		if (statsLevel >= 2) //NOTE: This makes sure areaQueUtil is complete!
 			updateTotTkPopStats(0);
 		endRunClock = Simulator.clock;
 		msrmPrdLen = endRunClock - endRampUpClock;		
@@ -163,128 +146,54 @@ public class QueueStats extends Stats implements java.io.Serializable {
 		lastTotTkPop += delta;									
 	}
 
-	
 	/**
 	 * Method processStats - processes gathered statistics (summarizes data)
-	 *                        	 
+	 *                        
+	 * NOTE: Here we assume that (statsLevel <= queue.qPlaces[*].startsLevel)
+	 * 
 	 */	
-	public void processStats()  {		
-		// statsLevel >= 1
+	public void processStats()  {
+		int totNumST = 0;
 		for (int p = 0; p < queue.qPlaces.length; p++)
-			for (int c = 0; c < queue.qPlaces[p].numColors; c++)  {
-				totArrivThrPut	= queue.qPlaces[p].;
-				totDeptThrPut	= 	
-			}			
-		TODO
-//		statlevel2
-		meanTotTkPop
-		queueUtil = areaQueUtil / msrmPrdLen;
-
-//		statlevel3	
-		meanST		
-		
-		
-		if (statsLevel >= 3 && indrStats)  {
-			for (int c = 0; c < numColors; c++)  {
-				meanDT[c] 	= sumST[c] / numST[c];
-				stDevDT[c]	= Math.sqrt(Descriptive.sampleVariance(numST[c], sumST[c], sumSqST[c]));
-				meanST[c] 	= meanDT[c] + meanServTimes[c];				
-				if (Simulator.analMethod == Simulator.BATCH_MEANS && minBatches[c] > 0)  {								
-					// Steady State Statistics
-					if (numBatchesST[c] >= minBatches[c])  {					
-						stdStateMeanDT[c] = sumBMeansST[c] / numBatchesST[c];															
-						varStdStateMeanDT[c] = Descriptive.sampleVariance(numBatchesST[c], sumBMeansST[c], sumBMeansSqST[c]);
-						stDevStdStateMeanDT[c] = Math.sqrt(varStdStateMeanDT[c]);
-						ciHalfLenDT[c] = Probability.studentTInverse(signLevST[c], numBatchesST[c] - 1) * Math.sqrt(varStdStateMeanDT[c] / numBatchesST[c]);
-						ciHalfLenST[c] = ciHalfLenDT[c]; 								
-						confLevelST[c] = (int) (100 * (1 - signLevST[c]));
-						stdStateMeanST[c] = stdStateMeanDT[c] + meanServTimes[c];										
-					}
-					else stdStateStatsAv = false;
-				}								
-			}											 			
-		}
+			for (int c = 0; c < queue.qPlaces[p].numColors; c++)  {				
+				totArrivThrPut	+= queue.qPlaces[p].qPlaceQueueStats.arrivThrPut[c];
+				totDeptThrPut	+= queue.qPlaces[p].qPlaceQueueStats.deptThrPut[c];
+				if (statsLevel >= 3)
+					totNumST	+= queue.qPlaces[p].qPlaceQueueStats.numST[c];
+			}		
+		if (statsLevel >= 2)
+			queueUtil = areaQueUtil / msrmPrdLen;			
+		for (int p = 0; p < queue.qPlaces.length; p++)
+			for (int c = 0; c < queue.qPlaces[p].numColors; c++)  {				
+				if (statsLevel >= 2)  
+					meanTotTkPop += queue.qPlaces[p].qPlaceQueueStats.meanTkPop[c];
+				if (statsLevel >= 3)  
+					meanST += ((double) queue.qPlaces[p].qPlaceQueueStats.numST[c] / totNumST) * queue.qPlaces[p].qPlaceQueueStats.meanST[c];  					            	                                             				
+			}	
 		completed = true;					
 	}
 	
 	/**
 	 * Method printReport - prints a summary of the collected statistics 
-	 *                      
 	 *  	 
 	 */	
-	public void printReport() throws SimQPNException {
-		
+	public void printReport() throws SimQPNException {		
 		if (!completed) {
 			Simulator.logln("QueueStats " + name + " Error: Attempting to access statistics before data collection has finished!");
 			throw new SimQPNException();
-		}
-		
+		}		
 		Simulator.logln();
 		Simulator.logln();
 		Simulator.logln("REPORT for Queue : " + name + "----------------------------------------");
-		Simulator.logln();
-		if (statsLevel >= 2) 
-			Simulator.logln("Queue utilization due to this place = " + queueUtilQPl); 
-											
-		for (int c = 0; c < numColors; c++) {
-			Simulator.logln();
-			Simulator.logln("------------------ Color=" + c + " --------------------");				
-			Simulator.logln("arrivCnt=" + arrivCnt[c] + " deptCnt=" + deptCnt[c]);			
-			Simulator.logln("arrivThrPut=" + arrivThrPut[c] + " deptThrPut=" + deptThrPut[c]);											
-			if (statsLevel >= 2) {				
-//				Simulator.logln("minTkPop=" + minTkPop[c] + " maxTkPop=" + maxTkPop[c]);
-				Simulator.logln("meanTkPop=" + meanTkPop[c] + " colUtil=" + colUtil[c]);				
-			}
-			if (statsLevel >= 3) {																			
-				if (!indrStats) {										
-					Simulator.logln("-----");
-//					Simulator.logln("numST=" + numST[c] + " minST=" + minST[c] + " maxST=" + maxST[c]);										
-					Simulator.logln("meanST=" + meanST[c] + " stDevST=" + stDevST[c]);				
-					if (Simulator.analMethod == Simulator.BATCH_MEANS && minBatches[c] > 0)  {	
-						Simulator.logln();
-						Simulator.logln("Steady State Statistics: ");
-						if (numBatchesST[c] >= minBatches[c])  {											 													
-							Simulator.logln("numBatchesST=" + numBatchesST[c] + " batchSizeST=" + batchSizeST[c] + " stDevStdStateMeanST=" + stDevStdStateMeanST[c]);										
-							Simulator.logln(confLevelST[c] + "% c.i. = " + stdStateMeanST[c] + " +/- " + ciHalfLenST[c]);
-						}
-						else {													
-							Simulator.logln("Only " + numBatchesST[c] + " batches collected!");
-							Simulator.logln("Need at least " + minBatches[c] + " for steady state statistics.");
-						} 
-					}
-				}
-				else {
-					Simulator.logln("-----");
-					//Note: DT = delay time in the waiting area of the queue 
-//					Simulator.logln("numDT=" + numST[c] + " minDT=" + minST[c] + " maxDT=" + maxST[c]);															
-					double thrPut = deptThrPut[c];	// We assume steady state					 
-					Simulator.logln("meanDT=" + meanDT[c] + " stDevDT=" + stDevDT[c]);															
-					Simulator.logln("Indirect estimate of meanST=" + meanST[c]);			
-					Simulator.logln("Indirect estimate of meanTkPop=" + thrPut * meanST[c]);					
-					if (Simulator.analMethod == Simulator.BATCH_MEANS && minBatches[c] > 0)  {					
-						Simulator.logln();
-						Simulator.logln("Steady State Statistics: ");
-						if (numBatchesST[c] >= minBatches[c])  {																									
-							Simulator.logln("numBatchesDT=" + numBatchesST[c] + " batchSizeDT=" + batchSizeST[c] + " stDevStdStateMeanDT=" + stDevStdStateMeanDT[c]);																								
-							Simulator.logln(confLevelST[c] + "% c.i.DT = " + stdStateMeanDT[c] + " +/- " + ciHalfLenDT[c]);						
-							Simulator.logln("Indirect Estimates: ");						
-							Simulator.logln(confLevelST[c] + "% c.i.ST = " + stdStateMeanST[c] + " +/- " + ciHalfLenST[c]);
-							Simulator.logln("meanTkPop=" + thrPut * stdStateMeanST[c]);
-						}
-						else {							
-							Simulator.logln("Only " + numBatchesST[c] + " batches collected!");
-							Simulator.logln("Need at least " + minBatches[c] + " for steady state statistics.");
-						}
-					}
-				}												
-			}
-			if (statsLevel >= 4) {
-				if (!indrStats)
-					Simulator.logln("Token sojourn times dumped in " + statsDir);
-				else 
-					Simulator.logln("Token delay times dumped in " + statsDir);
-			}
+		Simulator.logln();		
+		Simulator.logln("  Total arrival throughput          = " + totArrivThrPut);
+		Simulator.logln("  Total departure throughput        = " + totDeptThrPut);					
+		if (statsLevel >= 2)  { 
+			Simulator.logln("  Mean total token population       = " + meanTotTkPop);
+			Simulator.logln("  Queue utilization                 = " + queueUtil);			
 		}
+		if (statsLevel >= 3)  
+			Simulator.logln("  Mean token residence time         = " + meanST);			 	
 	}
 	
 }

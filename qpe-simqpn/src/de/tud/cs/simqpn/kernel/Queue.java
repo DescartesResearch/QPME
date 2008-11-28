@@ -43,10 +43,10 @@ public class Queue {
 	public String		name;				// Name of the queue.
 	public int			queueDiscip;		// Queueing discipline.
 		
-	public QPlace[] 
-	                    qPlaces;			// Queueing places this queue is part of.
+	public QPlace[]		qPlaces;			// Queueing places this queue is part of.
 	public int			totNumColors;		// Total number of token colors over all queueing places the queue is part of.
-	int					statsLevel;			// The maximum statsLevel of all queueing places this queue is part of.
+	int					statsLevel;			// The minimum statsLevel of all queueing places the queue is part of.
+											// NOTE: we set statsLevel to the minimum here because currently some of statistics we compute are based on corresponding statistics from the QPlaces the queue is part of.   
 	
 	public int			numServers;			// FCFS queues: Number of servers in queueing station.
 	public int			numBusyServers;		// FCFS queues: Number of currently busy servers.
@@ -55,10 +55,8 @@ public class Queue {
 	public boolean		eventsUpToDate;		// PS queues: True if currently scheduled events for this queue (if any) 
 											//            reflect the latest token popolation of the queue.											
 	public boolean		eventScheduled;		// PS queues: True if there is currently a service completion event scheduled for this queue.
-
 	public boolean 		expPS;				// PS queues: true  = Processor-Sharing with exponential service times.
 											//            false = Processor-Sharing with non-exponential service times.	                                        
-
 	public int			tkSchedPl;			// PS queues: expPS==false: Queueing place containing the next token scheduled to complete service.	
 	public int			tkSchedCol;			// PS queues: expPS==false: Color of the next token scheduled to complete service.
 	public int			tkSchedPos;			// PS queues: expPS==false: Index in QPlace.queueTokens[tkSchedCol] of the next token scheduled to complete service.	
@@ -69,7 +67,7 @@ public class Queue {
 	public EmpiricalWalker					
 						randColorGen;		// PS queues: expPS==true: Random number generator for generating token colors.
 	
-	public QueueStats	queueStats;
+	public QueueStats	queueStats;			// Object containing statistics for this queue.
 	
 	/**
 	 * Constructor
@@ -82,9 +80,10 @@ public class Queue {
 	public Queue(int id, String name, int queueDiscip, int numServers) throws SimQPNException {
 		this.id							= id;
 		this.name						= name;
-		this.queueDiscip				= queueDiscip; 
+		this.queueDiscip				= queueDiscip; 		
 		this.numServers 				= numServers; 		
 		this.qPlaces					= null;
+		this.totNumColors				= 0;
 		this.statsLevel					= 0;
 		
 		// FCFS Queues			
@@ -101,7 +100,7 @@ public class Queue {
 	}
 		
 	/**
-	 * Method addQPlace
+	 * Method addQPlace - adds a queueing place to the list of queueing places this queue is part of.
 	 * 
 	 * NOTE:  
 	 * 
@@ -115,7 +114,7 @@ public class Queue {
 			qPlaces[0] = qPl;
 		}
 		else  {			
-			QPlace[]	qPlacesTMP = qPlaces;			
+			QPlace[] qPlacesTMP = qPlaces;			
 			qPlaces = new QPlace[qPlacesTMP.length+1];			
 			System.arraycopy(qPlacesTMP, 0, qPlaces, 0, qPlacesTMP.length);			
 			qPlaces[qPlaces.length-1] = qPl;
@@ -125,20 +124,20 @@ public class Queue {
 	/**
 	 * Method init
 	 * 
-	 * NOTE: Should be called after the qPlaces array has been initialized.
+	 * NOTE: Should be called after the qPlaces array has been initialized before the run has started.
 	 * 
 	 * @param 
 	 * @return
 	 * @exception
 	 */
-	public void init() throws SimQPNException {
-		for (int p = 0; p < qPlaces.length; p++) { //NOTE: The two variables below are intentionally set here and not in addQPlace(), since the user might choose (although that's not recommended) to initialize qPlaces externally bypassing addQPlace().  
+	public void init() throws SimQPNException  {
+		statsLevel = 4;
+		for (int p = 0; p < qPlaces.length; p++)  { //NOTE: The two variables below are intentionally set here and not in addQPlace(), since the user might choose (although that's not recommended) to initialize qPlaces externally bypassing addQPlace().  
 			totNumColors += qPlaces[p].numColors;		
-			if (qPlaces[p].statsLevel > statsLevel) 
+			if (qPlaces[p].statsLevel < statsLevel) 
 				statsLevel = qPlaces[p].statsLevel;
 		}
-
-		// PS Queues: final initializations	
+		// PS Queues	
 		if (queueDiscip == PS && expPS)  {						
 			expRandServTimeGen		= new Exponential[1];
 			expRandServTimeGen[0]	= new Exponential(0, Simulator.nextRandNumGen());			
@@ -151,7 +150,7 @@ public class Queue {
 	}
 		
 	/**
-	 * Method start  	    
+	 * Method start - Begin statistics collection 
 	 * 	 
 	 * @param 
 	 * @return
@@ -163,20 +162,16 @@ public class Queue {
 	}
 	
 	/**
-	 * Method finish
-	 *  	    
+	 * Method finish - Complete statistics collection  	    
 	 * 	 
 	 * @param 
 	 * @return
 	 * @exception
 	 */
-	public void finish() throws SimQPNException {
-		// Complete statistics collection
+	public void finish() throws SimQPNException { 
 		if (statsLevel > 0)	
 			queueStats.finish();					
 	}
-	
-	
 	
 	/**
 	 * Method updateEvents (Used only for PS queues).
@@ -192,7 +187,7 @@ public class Queue {
 		int totQueTokCnt = 0;
 		for (int p=0, nC=0; p < qPlaces.length; p++)  {
 			nC = qPlaces[p].numColors; 
-			for (int c = 0; c < nC; c++)  
+			for (int c=0; c < nC; c++)  
 				totQueTokCnt += qPlaces[p].queueTokenPop[c];			
 		}
 		
@@ -209,10 +204,10 @@ public class Queue {
 												(1 / qPlaces[p].meanServTimes[c]) * conc;
 				}				
 				double totServRate = 0;
-				for (int i = 0; i < totNumColors; i++)  
+				for (int i=0; i < totNumColors; i++)  
 					totServRate += meanServRates[i];				
 				double[] pdf = new double[totNumColors];
-				for (int i = 0; i < totNumColors; i++)
+				for (int i=0; i < totNumColors; i++)
 					pdf[i] = meanServRates[i] / totServRate;
 				
 				((Exponential) expRandServTimeGen[0]).setState(totServRate);													
@@ -223,7 +218,7 @@ public class Queue {
 			
 				for (int p=0, nC=0, i=0; p < qPlaces.length; p++)  {																			
 					nC = qPlaces[p].numColors; 
-					for (int c = 0; c < nC; c++, i++)
+					for (int c=0; c < nC; c++, i++)
 						if (i == color) {
 							Simulator.scheduleEvent(Simulator.clock + servTime, this, (Token) qPlaces[p].queueTokens[c].getFirst()); 
 							break;
@@ -334,8 +329,8 @@ public class Queue {
 	@SuppressWarnings("unchecked")
 	public void addTokens(QPlace qPl, int color, int count) throws SimQPNException {				 				
 		
-		if (statsLevel >= 2)
-			queueStats.updateTotTkPopStats(count);
+		if (statsLevel >= 2) // NOTE: For statsLevel=1, we don't need to do anything since throughput data is calculated as sum of the throughputs of all QPlaces the Queue is part of.
+			queueStats.updateTotTkPopStats(count);	 
 		
 		if (queueDiscip == IS) {
 			// Schedule service completion events						
@@ -392,7 +387,7 @@ public class Queue {
 	 */
 	public void completeService(Token token) throws SimQPNException {
 
-		if (statsLevel >= 2)
+		if (statsLevel >= 2) // NOTE: For statsLevel=1, we don't need to do anything since throughput data is calculated as sum of the throughputs of all QPlaces the Queue is part of.
 			queueStats.updateTotTkPopStats(-1);
 		
 		if (queueDiscip == IS) {

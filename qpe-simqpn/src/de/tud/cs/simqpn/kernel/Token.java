@@ -24,7 +24,7 @@ package de.tud.cs.simqpn.kernel;
  */
 public class Token {
 	public Place   place;
-	public double  arrivalTS;
+	public double  arrivalTS; //NOTE: arrivalTS is used only in statLevel 3, otherwise it is set to -1 
 	public int     color;
 	
 	public Token(Place place, double arrivalTS, int color) {
