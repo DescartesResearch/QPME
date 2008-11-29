@@ -18,7 +18,13 @@
  *  2006/10/14  Christofer Dutz   Added @SuppressWarnings("unchecked") and cleaned up 
  *                                imports to avoid warnings!
  *  2006/10/21  Samuel Kounev     Modified to use the Simulator.log() methods for output.                                
- * 
+ *  2008/11/29  Samuel Kounev     Changed LinkedList tokens[c] to store Double objects instead of 
+ *                                Token objects since only the arrival timestamps are needed. 
+ *                                Renamed tokens to tokArrivTS.                                
+ *  2008/11/29  Samuel Kounev     Changed depQueue to store Integer objects containing the colors 
+ *                                of tokens in the order of their arrival since this is the only
+ *                                information actually used in the code. 
+ *                                
  */
 
 package de.tud.cs.simqpn.kernel;
@@ -43,16 +49,15 @@ public class Place extends Node {
 	public int				numColors;
 	public int				statsLevel;		// Determines the amount of statistics to be gathered during the run.
 	public int				depDiscip;		// Departure discipline.
-	public LinkedList		depQueue;		// Departure queue.	
+	public LinkedList		depQueue;		// depDiscip = FIFO: Departure queue - stores the colors of tokens in the order of their arrival.	
 	
 	public Transition[]		inTrans;
 	public Transition[]		outTrans;
 	public int[]			tokenPop;	
 	public int[]			availTokens;	// The token population currently available for output transitions.	
 	public boolean			depReady;		// depDiscip=FIFO: true if a token is currently available for output transitions of the place 
- 
 	
-	public LinkedList[]		tokens;
+	public LinkedList[]		tokArrivTS;		// statsLevel >= 3: Arrival timestamps of tokens in the place/depository.
 	
 	public PlaceStats		placeStats;	 
 	
@@ -95,9 +100,9 @@ public class Place extends Node {
 			else
 				placeStats = new PlaceStats(id, name, Stats.ORD_PLACE, numColors, statsLevel);				 			
 			if (statsLevel >= 3) {
-				this.tokens = new LinkedList[numColors];
+				this.tokArrivTS = new LinkedList[numColors];
 				for (int c = 0; c < numColors; c++)
-					this.tokens[c] = new LinkedList();
+					this.tokArrivTS[c] = new LinkedList();
 			}				
 		}
 	}
@@ -128,11 +133,11 @@ public class Place extends Node {
 				while (totTkPop > 0)  
 					for (int c = 0; c < numColors; c++)   
 						if (tkPop[c] > 0)  {
-							depQueue.addLast(new Token(this, Simulator.clock, c));
+							depQueue.addLast(new Integer(c));
 							tkPop[c]--; totTkPop--; 
 						}						
-				Token tk = (Token) depQueue.removeFirst();
-				availTokens[tk.color]++; 
+				int nextCol = ((Integer) depQueue.removeFirst()).intValue();
+				availTokens[nextCol]++; 
 				depReady = true;
 			}
 		}
@@ -140,13 +145,12 @@ public class Place extends Node {
 			Simulator.logln("Error: Invalid depDiscip specified for place " + name);
 			throw new SimQPNException();
 		}
-
-		if (statsLevel > 0) 			
-			if (statsLevel >= 3) {			
-				for (int c = 0; c < numColors; c++)
-					for (int i = 0; i < tokenPop[c]; i++)
-						tokens[c].addLast(new Token(this, Simulator.clock, c));
-			}		 									
+		 			
+		if (statsLevel >= 3) {			
+			for (int c = 0; c < numColors; c++)
+				for (int i = 0; i < tokenPop[c]; i++)
+					tokArrivTS[c].addLast(new Double(Simulator.clock));
+		}		 									
 	}
 
 	/**
@@ -211,7 +215,7 @@ public class Place extends Node {
 			placeStats.updateTkPopStats(color, tokenPop[color], count);						
 			if (statsLevel >= 3) {
 				for (int i = 0; i < count; i++) 
-					tokens[color].addLast(new Token(this, Simulator.clock, color));
+					tokArrivTS[color].addLast(new Double(Simulator.clock));
 			}
 		}
 		// Now add tokens and update affected transitions
@@ -224,11 +228,11 @@ public class Place extends Node {
 		else if (depDiscip == FIFO)  {			
 			if (depReady) {
 				for (int i=0; i < count; i++)  
-					depQueue.addLast(new Token(this, Simulator.clock, color));								
+					depQueue.addLast(new Integer(color));								
 			}
 			else {
 				for (int i=0; i < (count-1); i++)
-					depQueue.addLast(new Token(this, Simulator.clock, color));
+					depQueue.addLast(new Integer(color));
 				availTokens[color]++; 
 				depReady = true;
 				for (int i = 0; i < outTrans.length; i++)
@@ -263,10 +267,10 @@ public class Place extends Node {
 		if (statsLevel > 0) {
 			placeStats.updateTkPopStats(color, tokenPop[color], (-1)*count);				
 			if (statsLevel >= 3) {
-				Token tk;
+				Double arrivTS;
 				for (int i = 0; i < count; i++) {
-					tk = (Token) tokens[color].removeFirst();
-					placeStats.updateSojTimeStats(color, Simulator.clock - tk.arrivalTS);
+					arrivTS = (Double) tokArrivTS[color].removeFirst();
+					placeStats.updateSojTimeStats(color, Simulator.clock - arrivTS.doubleValue());
 				}
 			}				
 		}
@@ -282,11 +286,11 @@ public class Place extends Node {
 			for (int i = 0; i < outTrans.length; i++)
 				outTrans[i].updateState(id, color, availTokens[color], (-1)*count);			
 			if (depQueue.size() > 0) {
-				Token tk = (Token) depQueue.removeFirst();
-				availTokens[tk.color]++;
+				int nextCol = ((Integer) depQueue.removeFirst()).intValue();
+				availTokens[nextCol]++;
 				depReady = true; // Left for clarity. Actually redundant since depReady should already be true.
 				for (int i = 0; i < outTrans.length; i++)
-					outTrans[i].updateState(id, tk.color, availTokens[tk.color], 1);										
+					outTrans[i].updateState(id, nextCol, availTokens[nextCol], 1);										
 			}
 			else depReady = false;
 		}

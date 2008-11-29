@@ -59,7 +59,7 @@ public class Queue {
 											//            false = Processor-Sharing with non-exponential service times.	                                        
 	public int			tkSchedPl;			// PS queues: expPS==false: Queueing place containing the next token scheduled to complete service.	
 	public int			tkSchedCol;			// PS queues: expPS==false: Color of the next token scheduled to complete service.
-	public int			tkSchedPos;			// PS queues: expPS==false: Index in QPlace.queueTokens[tkSchedCol] of the next token scheduled to complete service.	
+	public int			tkSchedPos;			// PS queues: expPS==false: Index in QPlace.queueTokArrivTS[tkSchedCol] and QPlace.queueTokResidServTimes[tkSchedCol] of the next token scheduled to complete service.	
 	public double		lastEventClock;		// PS queues: expPS==false: Time of the last event scheduling, i.e. time of the last event with effect on this queue.		
 	public int			lastEventTkCnt;		// PS queues: expPS==false: Token population at the time of the last event scheduling.
 	public AbstractContinousDistribution[]
@@ -220,7 +220,12 @@ public class Queue {
 					nC = qPlaces[p].numColors; 
 					for (int c=0; c < nC; c++, i++)
 						if (i == color) {
-							Simulator.scheduleEvent(Simulator.clock + servTime, this, (Token) qPlaces[p].queueTokens[c].getFirst()); 
+							if (qPlaces[p].statsLevel >= 3)
+								Simulator.scheduleEvent(Simulator.clock + servTime, this, 
+										new Token(qPlaces[p], qPlaces[p].queueTokArrivTS[c].get(0), c));
+							else
+								Simulator.scheduleEvent(Simulator.clock + servTime, this, 
+										new Token(qPlaces[p], -1, c));							 
 							break;
 						}
 					if (i == color) break;
@@ -234,10 +239,10 @@ public class Queue {
 				for (int p=0, nC=0; p < qPlaces.length; p++)  {
 					nC = qPlaces[p].numColors;					
 					for (int c=0; c < nC; c++)  {
-						numTk = qPlaces[p].queueTokenPop[c];  // = residServTimes[c].size();
+						numTk = qPlaces[p].queueTokenPop[c];  // = queueTokResidServTimes[c].size();
 						if (numTk > 0) 
 							for (int i = 0; i < numTk; i++) {
-								curRST = qPlaces[p].residServTimes[c].get(i);
+								curRST = qPlaces[p].queueTokResidServTimes[c].get(i);
 								if (minRST == -1 || curRST < minRST) { 
 									minRST = curRST;
 									tkSchedPl = p; tkSchedCol = c; tkSchedPos = i;
@@ -251,8 +256,13 @@ public class Queue {
 				}				
 				double servTime = minRST * totQueTokCnt;  // Default for "-/G/1-PS" queue 								
 				if (numServers > 1 && totQueTokCnt > 1)   // "-/G/n-PS" queues 					
-					servTime /= ((totQueTokCnt <= numServers) ? totQueTokCnt : numServers);
-				Simulator.scheduleEvent(Simulator.clock + servTime, this, (Token) qPlaces[tkSchedPl].queueTokens[tkSchedCol].get(tkSchedPos));
+					servTime /= ((totQueTokCnt <= numServers) ? totQueTokCnt : numServers);				
+				if (qPlaces[tkSchedPl].statsLevel >= 3)
+					Simulator.scheduleEvent(Simulator.clock + servTime, this, 
+						new Token(qPlaces[tkSchedPl], qPlaces[tkSchedPl].queueTokArrivTS[tkSchedCol].get(tkSchedPos), tkSchedCol));				
+				else
+					Simulator.scheduleEvent(Simulator.clock + servTime, this, 
+						new Token(qPlaces[tkSchedPl], -1, tkSchedCol));				
 				lastEventClock = Simulator.clock;	
 				lastEventTkCnt = totQueTokCnt;
 				eventScheduled = true;
@@ -306,11 +316,11 @@ public class Queue {
 		for (int p=0, nC=0; p < qPlaces.length; p++)  {
 			nC = qPlaces[p].numColors; 
 			for (int c=0; c < nC; c++)  {				
-				numTk = qPlaces[p].residServTimes[c].size();  // NOTE: don't use queueTokenPop[c] here! If tokens have been added, this would mess things up. 
+				numTk = qPlaces[p].queueTokResidServTimes[c].size();  // NOTE: don't use queueTokenPop[c] here! If tokens have been added, this would mess things up. 
 				if (numTk > 0) 
 					for (int i = 0; i < numTk; i++) {					
-						curRST = qPlaces[p].residServTimes[c].get(i) - timeServed;				
-						qPlaces[p].residServTimes[c].set(i, curRST);
+						curRST = qPlaces[p].queueTokResidServTimes[c].get(i) - timeServed;				
+						qPlaces[p].queueTokResidServTimes[c].set(i, curRST);
 					}										
 			}
 		}
@@ -360,15 +370,16 @@ public class Queue {
 		}
 		else if (queueDiscip == PS) {
 			if (!expPS) {
-				if (eventScheduled)	updateResidServTimes();	//NOTE: WATCH OUT! Method should be called before the new tokens have been added to residServTimes!  
+				if (eventScheduled)	updateResidServTimes();	//NOTE: WATCH OUT! Method should be called before the new tokens have been added to queueTokResidServTimes!  
 				for (int i = 0; i < count; i++)  {
 					double servTime = qPl.randServTimeGen[color].nextDouble();
 					if (servTime < 0) servTime = 0;
-					qPl.residServTimes[color].add(servTime);	//SDK-TODO: Consider storing this info in queueTokens inside the Token objects; might be more efficient than using separate ArrayLists  			
+					qPl.queueTokResidServTimes[color].add(servTime);  			
 				}				
-			}														 						
-			for (int i = 0; i < count; i++) 
-				qPl.queueTokens[color].addLast(new Token(qPl, Simulator.clock, color));
+			}
+			if (qPl.statsLevel >= 3) 
+				for (int i = 0; i < count; i++) 
+					qPl.queueTokArrivTS[color].add(Simulator.clock);			
 			if (eventScheduled) clearEvents();	// NOTE: clearEvents() resets eventScheduled to false; 
 			eventsUpToDate = false;
 		}
@@ -402,20 +413,20 @@ public class Queue {
 				Simulator.scheduleEvent(Simulator.clock + servTime, this, tk);
 				// Update stats				
 				if (qPl.statsLevel >= 3)
-					qPl.qPlaceQueueStats.updateDelayTimeStats(tk.color, Simulator.clock - tk.arrivalTS);				
+					qPl.qPlaceQueueStats.updateDelayTimeStats(tk.color, Simulator.clock - tk.arrivTS);				
 			}
 			else numBusyServers--;							
 		}
 		else if (queueDiscip == PS) {
 			QPlace qPl = ((QPlace) token.place);
-			if (expPS) {
-				qPl.queueTokens[token.color].removeFirst();
+			if (!expPS) {
+				if (qPl.statsLevel >= 3)
+					qPlaces[tkSchedPl].queueTokArrivTS[tkSchedCol].remove(tkSchedPos);
+				qPlaces[tkSchedPl].queueTokResidServTimes[tkSchedCol].remove(tkSchedPos);
+				updateResidServTimes(); //NOTE: WATCH OUT! Method should be called after served token has been removed from queueTokResidServTimes!   
 			}
-			else {				
-				qPlaces[tkSchedPl].queueTokens[tkSchedCol].remove(tkSchedPos); //TODO: Do we need tkSchedXXX?
-				qPlaces[tkSchedPl].residServTimes[tkSchedCol].remove(tkSchedPos);
-				updateResidServTimes(); //NOTE: WATCH OUT! Method should be called after served token has been removed from residServTimes!   
-			}
+			else if (qPl.statsLevel >= 3)
+				qPl.queueTokArrivTS[token.color].remove(0);			
 			eventScheduled = false;
 			eventsUpToDate = false;
 		} 

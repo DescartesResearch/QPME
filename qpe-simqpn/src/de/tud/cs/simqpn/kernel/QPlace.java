@@ -22,13 +22,14 @@
  *                                values for service times, i.e. "if (servTime < 0) servTime = 0;"
  *  2006/10/14  Christofer Dutz   Added @SuppressWarnings("unchecked") and cleaned up 
  *                                imports to avoid warnings!
- *  2006/10/21  Samuel Kounev     Modified to use the Simulator.log() methods for output.                                
+ *  2006/10/21  Samuel Kounev     Modified to use the Simulator.log() methods for output.                                  
+ *  2008/11/29  Samuel Kounev     Replaced queueTokens LinkedList<Token> array with a DoubleArrayList[] 
+ *                                containing the arrival timestamps since that is the only information 
+ *                                that is actually used. Renamed queueTokens to queueTokArrivTS. 
  *                                
  */
 
 package de.tud.cs.simqpn.kernel;
-
-import java.util.LinkedList;
 
 import org.dom4j.Element;
 
@@ -47,24 +48,23 @@ import cern.jet.random.AbstractContinousDistribution;
  */
 
 public class QPlace extends Place {	
-	public Queue		queue;				// Queue of the queueing place.
+	public Queue		queue;					// Queue of the queueing place.
 	
-	public double[]		meanServTimes;		// Mean token service times at the queueing station (all times usually in milliseconds)
-	public int[]		queueTokenPop;		// Number of tokens in the queueing station (queue), i.e. token population.
-											// Note that for queueing places Place.tokenPop contains tokens in the depository.
+	public double[]		meanServTimes;			// Mean token service times at the queueing station (all times usually in milliseconds)
+	public int[]		queueTokenPop;			// Number of tokens in the queueing station (queue), i.e. token population.
+												// Note that for queueing places Place.tokenPop contains tokens in the depository.
 	
-	public LinkedList[]	queueTokens;		// PS queues: Tokens in the queueing station (queue).												
+	public AbstractDoubleList[]				 
+						queueTokArrivTS;		// PS queues: statsLevel >= 3: Arrival timestamps of tokens in the queueing station (queue).												
 	public AbstractDoubleList[]
-						residServTimes;		// PS queues: expPS==false: Residual service times.
+						queueTokResidServTimes;	// PS queues: expPS==false: Residual service times of the tokens in the queueing station (queue).
 	
 	public AbstractContinousDistribution[]
-						randServTimeGen;	// PS queues: Random number generators for generating service times.
+						randServTimeGen;		// PS queues: Random number generators for generating service times.
 	
 	public QPlaceQueueStats	qPlaceQueueStats;	
 	
-	public Element element;
-			
-	// TODO: queueTokens should only be used for statLevel == 3
+	public Element element;			
 	
 	/**
 	 * Constructor
@@ -93,10 +93,10 @@ public class QPlace extends Place {
 			qPlaceQueueStats = new QPlaceQueueStats(id, name, numColors, statsLevel, queue.queueDiscip, queue.numServers, meanServTimes);
 		
 		// PS Queues			
-		if (queue.queueDiscip == Queue.PS) {			 
-			this.queueTokens = new LinkedList[numColors];
+		if (queue.queueDiscip == Queue.PS && statsLevel >= 3) {			 
+			this.queueTokArrivTS = new DoubleArrayList[numColors];	//TODO: replace with more efficient data structures.
 			for (int c = 0; c < numColors; c++)
-				this.queueTokens[c]	= new LinkedList();							
+				this.queueTokArrivTS[c]	= new DoubleArrayList(100);	//SDK-TODO: See if 100 is optimal initial capacity. Note: The list is auto-expanding.						
 		}	
 	}
 	
@@ -120,9 +120,9 @@ public class QPlace extends Place {
 
 		// PS Queues	
 		if (queue.queueDiscip == Queue.PS && (!queue.expPS))  {							
-			residServTimes 	= new DoubleArrayList[numColors];
+			queueTokResidServTimes 	= new DoubleArrayList[numColors];	//NOTE: Note that given that queueTokResidServTimes is updated frequently, it is more efficient to use an array here than a LinkedList! 
 			for (int c = 0; c < numColors; c++) 
-				residServTimes[c] = new DoubleArrayList(100);  //SDK-TODO: See if 100 is optimal initial capacity. Note: The list is auto-expanding.
+				queueTokResidServTimes[c] = new DoubleArrayList(100);	//SDK-TODO: See if 100 is optimal initial capacity. Note: The list is auto-expanding.
 		}
 	}
 
@@ -202,7 +202,7 @@ public class QPlace extends Place {
 		if (statsLevel > 0)  {
 			qPlaceQueueStats.updateTkPopStats(token.color, queueTokenPop[token.color], -1);
 			if (statsLevel >= 3) 
-				qPlaceQueueStats.updateSojTimeStats(token.color, Simulator.clock - token.arrivalTS);
+				qPlaceQueueStats.updateSojTimeStats(token.color, Simulator.clock - token.arrivTS);
 		}
 		
 		// Now remove token from queue and update queue state
