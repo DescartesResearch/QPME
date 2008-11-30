@@ -17,7 +17,10 @@
  *                                when minBatches[c] > 0.                                 
  *  2006/10/14  Christofer Dutz   Added @SuppressWarnings("unchecked") and cleaned up 
  *                                imports to avoid warnings!
- *  2006/10/21  Samuel Kounev     Modified to use the Simulator.log() methods for output.                                
+ *  2006/10/21  Samuel Kounev     Modified to use the Simulator.log() methods for output.
+ *  2008/11/25  Samuel Kounev     Renamed from QueueStats to QPlaceQueueStats.
+ *  2008/11/25  Samuel Kounev     Moved the queue-related logic into a separate class Queue. Queues can now be 
+ *                                shared among multiple QPlaces.                                
  * 
  */
 

@@ -22,7 +22,8 @@
  *                                values for service times, i.e. "if (servTime < 0) servTime = 0;"
  *  2006/10/14  Christofer Dutz   Added @SuppressWarnings("unchecked") and cleaned up 
  *                                imports to avoid warnings!
- *  2006/10/21  Samuel Kounev     Modified to use the Simulator.log() methods for output.                                  
+ *  2006/10/21  Samuel Kounev     Modified to use the Simulator.log() methods for output.
+ *  2008/11/25  Samuel Kounev     Renamed from QueueingPlace to QPlace.                                  
  *  2008/11/29  Samuel Kounev     Replaced queueTokens LinkedList<Token> array with a DoubleArrayList[] 
  *                                containing the arrival timestamps since that is the only information 
  *                                that is actually used. Renamed queueTokens to queueTokArrivTS. 
@@ -217,7 +218,8 @@ public class QPlace extends Place {
 	public void report() throws SimQPNException  {		
 		if (statsLevel > 0) {
 			qPlaceQueueStats.printReport();
-			super.report();					
+			super.report();
+			queue.report();
 		}
 	}
 	

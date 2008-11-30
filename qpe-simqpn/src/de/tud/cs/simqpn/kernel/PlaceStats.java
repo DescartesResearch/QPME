@@ -234,7 +234,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	public void init(int[] tokenPop) throws SimQPNException {
 		// statsLevel >= 1
 		for (int c = 0; c < numColors; c++) {
-			arrivCnt[c]					= 0; //TODO: check if we should instead set arrivCnt to tokenPop[c] here
+			arrivCnt[c]					= 0; //TODO: Should we instead set arrivCnt to tokenPop[c] here? Currently, we could have deptCnt > arrivCnt if there are tokens in the place in the initial marking.
 			deptCnt[c]					= 0;
 		}
 		if (statsLevel >= 2)

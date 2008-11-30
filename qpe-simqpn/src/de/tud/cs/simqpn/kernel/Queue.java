@@ -174,6 +174,18 @@ public class Queue {
 	}
 	
 	/**
+	 * Method report
+	 *  	    
+	 * @param 
+	 * @return
+	 * @exception
+	 */
+	public void report() throws SimQPNException  {
+		if (statsLevel > 0) 
+			queueStats.printReport();					
+	}
+		
+	/**
 	 * Method updateEvents (Used only for PS queues).
 	 * Schedules next service completion event (if any) according to current token population.
 	 * 

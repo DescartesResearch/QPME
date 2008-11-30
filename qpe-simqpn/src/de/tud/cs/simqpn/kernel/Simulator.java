@@ -30,6 +30,8 @@
  *                                automatically adjusted to result in roughly 60 sec between checks.
  *  2007/08/22  Samuel Kounev     Added secondsBtwChkStops parameter which is set to 60 by default.
  *                                secondsBtwChkStops is only used if timeBtwChkStops is set to 0.
+ *  2008/11/25  Samuel Kounev     Added Queues as first class objects decoupled from QueueingPlaces.
+ *  2008/11/25  Samuel Kounev     Added support for multiple QPlaces sharing the same queue.                               
  *                                
  */
 
@@ -976,7 +978,7 @@ public class Simulator {
 		// Initialize the place and transition sizes.
 		numPlaces = placeList.size();
 		numTrans = transitionList.size();
-		numQueues = 0; // TODO: Set to actual value defined in QPE.
+		numQueues = 0;
 
 		// -----------------------------------------------------------------------------------------------------------
 		// CREATE PLACES
@@ -1167,7 +1169,7 @@ public class Simulator {
 						numOutgoingConnections, 											// # outgoing connections
 						statsLevel, 														// stats level
 						dDis, 																// departure discipline
-						queues[numQueues],												// Queue												
+						queues[numQueues],													// Queue												
 						place);																// Place
 				logln(2, "places[" + i + "] = new QPlace(" 
 						+ i + ", '" 

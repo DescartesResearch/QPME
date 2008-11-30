@@ -10,7 +10,7 @@
  *  Date        ID                Description
  *  ----------  ----------------  ------------------------------------------------------------------
  *  2003/08/??  Samuel Kounev     Created.
- *  ...                                 
+ *  2008/11/29  Samuel Kounev     Added run related parameters.                                   
  * 
  */
 
