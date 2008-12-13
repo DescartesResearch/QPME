@@ -10,6 +10,7 @@
  *  Date        ID                Description
  *  ----------  ----------------  ------------------------------------------------------------------
  *  2008/11/22  Samuel Kounev     Created.
+ *  2008/12/13  Samuel Kounev     Fixed a bug in updateEvents() for expPS==true.
  *                                
  */
 
@@ -131,13 +132,13 @@ public class Queue {
 	 * @exception
 	 */
 	public void init() throws SimQPNException  {
-		statsLevel = 4;
+		statsLevel = 10; 
 		for (int p = 0; p < qPlaces.length; p++)  { //NOTE: The two variables below are intentionally set here and not in addQPlace(), since the user might choose (although that's not recommended) to initialize qPlaces externally bypassing addQPlace().  
 			totNumColors += qPlaces[p].numColors;		
 			if (qPlaces[p].statsLevel < statsLevel) 
 				statsLevel = qPlaces[p].statsLevel;
 		}
-		// PS Queues	
+		// PS Queues
 		if (queueDiscip == PS && expPS)  {						
 			expRandServTimeGen		= new Exponential[1];
 			expRandServTimeGen[0]	= new Exponential(0, Simulator.nextRandNumGen());			
@@ -213,7 +214,7 @@ public class Queue {
 					nC = qPlaces[p].numColors; 
 					for (int c=0; c < nC; c++)
 						meanServRates[i++] = (((double) qPlaces[p].queueTokenPop[c]) / totQueTokCnt) * 
-												(1 / qPlaces[p].meanServTimes[c]) * conc;
+												((double) 1 / qPlaces[p].meanServTimes[c]) * conc;
 				}				
 				double totServRate = 0;
 				for (int i=0; i < totNumColors; i++)  
@@ -228,19 +229,22 @@ public class Queue {
 				if (servTime < 0) servTime = 0;
 				int color = randColorGen.nextInt();
 			
+				boolean done = false;
 				for (int p=0, nC=0, i=0; p < qPlaces.length; p++)  {																			
 					nC = qPlaces[p].numColors; 
-					for (int c=0; c < nC; c++, i++)
+					for (int c=0; c < nC; c++, i++)  {
 						if (i == color) {
 							if (qPlaces[p].statsLevel >= 3)
 								Simulator.scheduleEvent(Simulator.clock + servTime, this, 
 										new Token(qPlaces[p], qPlaces[p].queueTokArrivTS[c].get(0), c));
 							else
 								Simulator.scheduleEvent(Simulator.clock + servTime, this, 
-										new Token(qPlaces[p], -1, c));							 
+										new Token(qPlaces[p], -1, c));							
+							done = true;
 							break;
 						}
-					if (i == color) break;
+					}
+					if (done) break;
 				}				
 				eventScheduled = true;
 			}
@@ -303,7 +307,7 @@ public class Queue {
 			}
 			else i--;				
 		}
-		eventScheduled = false;
+		eventScheduled = false;		
 	}
 
 	/**
@@ -440,7 +444,7 @@ public class Queue {
 			else if (qPl.statsLevel >= 3)
 				qPl.queueTokArrivTS[token.color].remove(0);			
 			eventScheduled = false;
-			eventsUpToDate = false;
+			eventsUpToDate = false;			
 		} 
 		else {
 			Simulator.logln("Error: Invalid queueing discipline for QPlace " + name);
