@@ -18,7 +18,9 @@
  *                                imports to avoid warnings!
  *  2006/10/21  Samuel Kounev     Modified to use the Simulator.log() methods for output.                                
  *  2007/06/11  Samuel Kounev     Fixed a bug in enoughStats related to the use of ABSPRC.
- * 
+ *  2008/12/13  Samuel Kounev     Added code to ignore the result of the batch means correlation test and print  
+ *                                a warning in cases where the standard deviation of the token residence time is 0.
+ *                                    
  */
 
 package de.tud.cs.simqpn.kernel;
@@ -502,7 +504,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 								jkEstAutoCorlCoef(batchMeansST[color], 0, numBatchesST[color] - 1, k));			
 		}
 		System.out.println();
-		*/				
+		*/
 		double corl = 0;
 		for (int k = 1; k <= L; k++) {
 			double jkEstAbs = Math.abs(jkEstAutoCorlCoef(batchMeansST[color], 0, numBatchesST[color] - 1, k));
@@ -520,6 +522,28 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			else
 				corlTestPassedOnce[color] = true;
 		}
+		if (!passed) {
+			double stDevST = Math.sqrt(Descriptive.sampleVariance(numST[color], sumST[color], sumSqST[color]));
+			if (stDevST == 0)  {				
+				Simulator.log("WARNING: Batch means correlation test was run for ");
+				if (type == ORD_PLACE)
+					Simulator.log("place " + name + ", color " + color);
+				else if (type == QUE_PLACE_QUEUE)
+					Simulator.log("queue of place " + name + ", color " + color);
+				else if (type == QUE_PLACE_DEP)
+					Simulator.log("depository of place " + name + ", color " + color);
+				else {
+					Simulator.logln("Error: Internal error in PlaceStats of place " + name);
+					throw new SimQPNException();
+				}
+				Simulator.logln();
+				Simulator.logln("         However, the standard deviation of the token residence time is 0 and therefore");
+				Simulator.logln("         the result of the test is ignored!");
+				Simulator.logln("         In future runs, you should set numBMeansCorlTested to 0 to switch off the correlation test!");
+				Simulator.logln();
+				passed = true;
+			}
+		}		
 		if (Simulator.debugLevel >= 3) {
 			if (passed)
 				Simulator.log("Info: PASSED ");
