@@ -1150,6 +1150,7 @@ public class Simulator {
 					}
 					numServers = Integer.parseInt(place.attributeValue("number-of-servers"));
 				}				
+		
 				queues[numQueues] = new Queue(
 						numQueues,															// id 
 						place.attributeValue("name"), 										// name
@@ -1160,7 +1161,7 @@ public class Simulator {
 						+ numQueues + ", '" 
 						+ place.attributeValue("name") + "', " 
 						+ qDis + ", " 
-						+ numServers + ")");								
+						+ numServers + ")");					
 				places[i] = new QPlace(
 						i, 																	// id
 						place.attributeValue("name"), 										// name
@@ -1180,9 +1181,9 @@ public class Simulator {
 						+ statsLevel + ", " 
 						+ dDis + ", " 
 						+ queues[numQueues] + ", "  
-						+ place + ")");
-				
+						+ place + ")");					
 				queues[numQueues++].addQPlace((QPlace) places[i]);				
+				
 			} else {
 				logln("ERROR: Invalid or missing place type setting!");
 				logln("       Currently only 'ordinary-place' and 'queueing-place' are supported.");
@@ -1835,9 +1836,11 @@ public class Simulator {
 							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
 							throw new SimQPNException();																												
 						}						
-						// Initialize random number generator and meanServTimes
-						qPl.randServTimeGen[j] = new Exponential(lambda, Simulator.nextRandNumGen());
-						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Exponential(" + lambda + ", Simulator.nextRandNumGen())");
+						// Initialize random number generator and meanServTimes						
+						if (!(qPl.queue.queueDiscip == Queue.PS && qPl.queue.expPS))  {
+							qPl.randServTimeGen[j] = new Exponential(lambda, Simulator.nextRandNumGen());
+							logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Exponential(" + lambda + ", Simulator.nextRandNumGen())");							
+						}
 						qPl.meanServTimes[j] = (double) 1 / lambda;
 						logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = 1 / lambda = " + qPl.meanServTimes[j]);													
 					} else if("ExponentialPower".equals(distributionFunction)) {
