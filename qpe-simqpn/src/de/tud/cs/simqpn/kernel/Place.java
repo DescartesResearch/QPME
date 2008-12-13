@@ -205,7 +205,7 @@ public class Place extends Node {
 	 */
 	@SuppressWarnings("unchecked")
 	public void addTokens(int color, int count) throws SimQPNException {
-		if (count <= 0) { // DEBUG: To be removed later
+		if (count <= 0) { // DEBUG
 			Simulator.logln("Error: Attempted to add nonpositive number of tokens to place " + name);
 			throw new SimQPNException();
 		}
@@ -254,7 +254,7 @@ public class Place extends Node {
 	 * @exception
 	 */
 	public void removeTokens(int color, int count) throws SimQPNException {
-		/* //DEBUG: To be removed later...
+		/* //DEBUG
 		if (count <= 0) { 
 			Simulator.logln("Error: Attempted to remove nonpositive number of tokens from place " + name);
 			throw new SimQPNException();

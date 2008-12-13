@@ -171,7 +171,7 @@ public class QPlace extends Place {
 	 */
 	@SuppressWarnings("unchecked")
 	public void addTokens(int color, int count) throws SimQPNException {	
-		if (count <= 0) { // DEBUG: To be removed later
+		if (count <= 0) { // DEBUG
 			Simulator.logln("Error: Attempted to add nonpositive number of tokens to queue " + name);
 			throw new SimQPNException();
 		}

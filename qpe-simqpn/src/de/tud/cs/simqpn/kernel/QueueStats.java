@@ -156,7 +156,7 @@ public class QueueStats extends Stats implements java.io.Serializable {
 		int totNumST = 0;
 		for (int p = 0; p < queue.qPlaces.length; p++)
 			for (int c = 0; c < queue.qPlaces[p].numColors; c++)  {				
-				totArrivThrPut	+= queue.qPlaces[p].qPlaceQueueStats.arrivThrPut[c];
+				totArrivThrPut	+= queue.qPlaces[p].qPlaceQueueStats.arrivThrPut[c];				
 				totDeptThrPut	+= queue.qPlaces[p].qPlaceQueueStats.deptThrPut[c];
 				if (statsLevel >= 3)
 					totNumST	+= queue.qPlaces[p].qPlaceQueueStats.numST[c];
