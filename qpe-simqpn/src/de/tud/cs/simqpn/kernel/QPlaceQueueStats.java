@@ -20,7 +20,8 @@
  *  2006/10/21  Samuel Kounev     Modified to use the Simulator.log() methods for output.
  *  2008/11/25  Samuel Kounev     Renamed from QueueStats to QPlaceQueueStats.
  *  2008/11/25  Samuel Kounev     Moved the queue-related logic into a separate class Queue. Queues can now be 
- *                                shared among multiple QPlaces.                                
+ *                                shared among multiple QPlaces.
+ *  2008/12/13  Samuel Kounev     Changed to store names of token colors that can reside in this place.                                                                
  * 
  */
 
@@ -90,17 +91,17 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	 *
 	 * @param id            - global id of the place
 	 * @param name          - name of the place
-	 * @param numColors     - number of colors
+	 * @param colors 	    - names of the colors that can reside in the respective location
 	 * @param statsLevel    - determines the amount of statistics to be gathered during the run 
 	 * @param queueDiscip   - queueing discipline
 	 * @param numServers    - FCFS queues: number of servers in queueing station 
 	 * @param meanServTimes - mean service times of tokens
 	 */	
-	public QPlaceQueueStats(int id, String name, int numColors, int statsLevel, int queueDiscip, int numServers, double[] meanServTimes) throws SimQPNException {
-		super(id, name, QUE_PLACE_QUEUE, numColors, statsLevel);
+	public QPlaceQueueStats(int id, String name, String[] colors, int statsLevel, int queueDiscip, int numServers, double[] meanServTimes) throws SimQPNException {
+		super(id, name, QUE_PLACE_QUEUE, colors, statsLevel);
 		this.queueDiscip	= queueDiscip;
 		this.numServers		= numServers;			
-		this.meanServTimes  = meanServTimes;		
+		this.meanServTimes  = meanServTimes;
 			
 		//  statsLevel >= 1
 				
@@ -250,14 +251,14 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 		
 		Simulator.logln();
 		Simulator.logln();
-		Simulator.logln("REPORT for Queue : " + name + "----------------------------------------");
+		Simulator.logln("REPORT for Queue of Queueing Place : " + name + "----------------------------------------");
 		Simulator.logln();
 		if (statsLevel >= 2) 
 			Simulator.logln("Queue utilization due to this place = " + queueUtilQPl); 
 											
 		for (int c = 0; c < numColors; c++) {
 			Simulator.logln();
-			Simulator.logln("------------------ Color=" + c + " --------------------");				
+			Simulator.logln("------------------ Color = " + colors[c] + " --------------------");				
 			Simulator.logln("arrivCnt=" + arrivCnt[c] + " deptCnt=" + deptCnt[c]);			
 			Simulator.logln("arrivThrPut=" + arrivThrPut[c] + " deptThrPut=" + deptThrPut[c]);											
 			if (statsLevel >= 2) {				

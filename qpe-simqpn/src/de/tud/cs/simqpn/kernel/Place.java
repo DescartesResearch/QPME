@@ -23,7 +23,8 @@
  *                                Renamed tokens to tokArrivTS.                                
  *  2008/11/29  Samuel Kounev     Changed depQueue to store Integer objects containing the colors 
  *                                of tokens in the order of their arrival since this is the only
- *                                information actually used in the code. 
+ *                                information actually used in the code.
+ *  2008/12/13  Samuel Kounev     Changed to store names of token colors that can reside in this place.                               
  *                                
  */
 
@@ -47,6 +48,7 @@ public class Place extends Node {
 	public static final int FIFO	= 1;	// First-In-First-Out: Arriving tokens become available for output transitions in the order of their arrival.
 	
 	public int				numColors;
+	public String[]			colors;			// Names of the colors that can reside in this Place.
 	public int				statsLevel;		// Determines the amount of statistics to be gathered during the run.
 	public int				depDiscip;		// Departure discipline.
 	public LinkedList		depQueue;		// depDiscip = FIFO: Departure queue - stores the colors of tokens in the order of their arrival.	
@@ -62,6 +64,8 @@ public class Place extends Node {
 	public PlaceStats		placeStats;	 
 	
 	public Element			element;
+	public Simulator		sim;
+	
 
 	/**
 	 * 
@@ -69,15 +73,17 @@ public class Place extends Node {
 	 *
 	 * @param id          - global id of the place
 	 * @param name        - name of the place
-	 * @param numColors   - number of colors
+	 * @param colors      - names of the colors that can reside in this place
 	 * @param numInTrans  - number of input transitions
 	 * @param numOutTrans - number of output transitions
 	 * @param statsLevel  - determines the amount of statistics to be gathered during the run
 	 * @param depDiscip   - determines the departure discipline (order): NORMAL or FIFO
+	 * @param element     - reference to the XML element representing the place
 	 */
-	public Place(int id, String name, int numColors, int numInTrans, int numOutTrans, int statsLevel, int depDiscip, Element element) throws SimQPNException {
+	public Place(int id, String name, String[] colors, int numInTrans, int numOutTrans, int statsLevel, int depDiscip, Element element) throws SimQPNException {
 		super(id, name);		
-		this.numColors		= numColors;		
+		this.colors			= colors;	
+		this.numColors		= colors.length;	
 		this.inTrans		= new Transition[numInTrans];
 		this.outTrans		= new Transition[numOutTrans];
 		this.tokenPop		= new int[numColors];
@@ -96,9 +102,9 @@ public class Place extends Node {
 		}
 		if (statsLevel > 0) {
 			if (this instanceof QPlace)
-				placeStats = new PlaceStats(id, name, Stats.QUE_PLACE_DEP, numColors, statsLevel);
+				placeStats = new PlaceStats(id, name, Stats.QUE_PLACE_DEP, colors, statsLevel);
 			else
-				placeStats = new PlaceStats(id, name, Stats.ORD_PLACE, numColors, statsLevel);				 			
+				placeStats = new PlaceStats(id, name, Stats.ORD_PLACE, colors, statsLevel);				 			
 			if (statsLevel >= 3) {
 				this.tokArrivTS = new LinkedList[numColors];
 				for (int c = 0; c < numColors; c++)

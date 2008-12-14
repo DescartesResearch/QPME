@@ -70,6 +70,7 @@ public class QueueStats extends Stats implements java.io.Serializable {
 		this.queueDiscip	= queueDiscip;
 		this.numServers		= numServers;	
 		this.queue			= queue;
+		this.colors			= null; //NOTE: Currently colors is not used for QueueStats
 	}
 
 	/**

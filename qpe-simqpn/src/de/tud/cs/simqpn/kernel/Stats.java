@@ -8,9 +8,10 @@
  *
  *  History:
  *  Date        ID                Description
- *  ----------  ----------------  ------------------------------------------------------------------
+ *  ----------  ----------------  --------------------------------------------------------------------------------
  *  2003/08/??  Samuel Kounev     Created.
- *  2008/11/29  Samuel Kounev     Added run related parameters.                                   
+ *  2008/11/29  Samuel Kounev     Added run related parameters.   
+ *  2008/12/13  Samuel Kounev     Added a field to store token colors that can reside in the respective location.                                
  * 
  */
 
@@ -34,11 +35,13 @@ public class Stats {
 	// NOTE: The following data is replicated from the respective data in the target Place or Queue to make Stats objects self-contained!
 	public int 			id;						// ID of target place or queue			 		
 	public String		name;					// Name of target place or queue					
-	public int 			type;					// Type of statistics (ORD_PLACE, QUE_PLACE_QUEUE, QUE_PLACE_DEP, QUEUE)		
+	public int 			type;					// Type of statistics (ORD_PLACE, QUE_PLACE_QUEUE, QUE_PLACE_DEP, QUEUE) 
 	public int			numColors;				// Number of colors
 	public int			statsLevel;				// Determines the amount of statistics to be gathered during the run (see below).
-	public boolean		completed;				// Indicates whether statistics collection has been completed and gathered statistics have been processed.
-
+	
+	public String[]		colors;					// type!=QUEUE: Names of the colors that can reside in the respective location (currently not used for type==QUEUE).
+	public boolean		completed;				// Indicates whether statistics collection has been completed and gathered statistics have been processed.	
+	
 	//NOTE: The five variables below are replicated from the respective data in Simulator in order to make the Stats objects self-contained! This data is then used in AggregateStats for example.
 	public boolean		inRampUp;				// True if still in RampUp period (no measurements taken).
 	public double		endRampUpClock;			// Clock at the end of RampUp, i.e. beginning of the measurement period.

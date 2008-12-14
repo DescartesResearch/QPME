@@ -31,7 +31,9 @@
  *  2007/08/22  Samuel Kounev     Added secondsBtwChkStops parameter which is set to 60 by default.
  *                                secondsBtwChkStops is only used if timeBtwChkStops is set to 0.
  *  2008/11/25  Samuel Kounev     Added Queues as first class objects decoupled from QueueingPlaces.
- *  2008/11/25  Samuel Kounev     Added support for multiple QPlaces sharing the same queue.                               
+ *  2008/11/25  Samuel Kounev     Added support for multiple QPlaces sharing the same queue.
+ *  2008/12/13  Samuel Kounev     Changed to extract information about the token colors and store it in 
+ *                                the created Places and QPlaces.                           
  *                                
  */
 
@@ -1100,25 +1102,36 @@ public class Simulator {
 			 * CHRIS: Fixed that now too.
 			 */
 			
+			// Extract the names of the colors that can reside in this place			
+			List colorRefs = place.element("color-refs").elements("color-ref");
+			String[] colors = new String[colorRefs.size()];			
+			Iterator colorRefIterator = colorRefs.iterator();			
+			for (int c = 0; colorRefIterator.hasNext(); c++) {
+			   Element colorRef = (Element) colorRefIterator.next();
+			   xpathSelector = DocumentHelper.createXPath("colors/color[(@id='" + colorRef.attributeValue("color-id") + "')]");
+			   Element color = (Element) xpathSelector.selectSingleNode(net);
+			   colors[c] = color.attributeValue("name");			   
+			}
+			
 			if ("ordinary-place".equals(place.attributeValue("type"))) {
 				places[i] = new Place(
 						i,																	// id 
 						place.attributeValue("name"), 										// name
-						place.element("color-refs").elements("color-ref").size(), 			// # colors
+						colors, 															// color names
 						numIncomingConnections,												// # incoming connections 
 						numOutgoingConnections, 											// # outgoing connections
 						statsLevel,															// stats level
 						dDis, 																// departure discipline
-						place);
+						place);																// Reference to the place' XML element				
 				logln(2, "places[" + i + "] = new Place(" 
 						+ i + ", '" 
 						+ place.attributeValue("name") + "', " 
-						+ place.element("color-refs").elements("color-ref").size() + ", " 
+						+ colors + ", " 
 						+ numIncomingConnections + ", " 
 						+ numOutgoingConnections + ", " 
 						+ statsLevel + ", " 
 						+ dDis + ", " 
-						+ place + ")");				
+						+ place + ")"); 												
 			} else if ("queueing-place".equals(place.attributeValue("type"))) {
 				int qDis = Queue.FCFS;
 				int numServers;
@@ -1165,23 +1178,23 @@ public class Simulator {
 				places[i] = new QPlace(
 						i, 																	// id
 						place.attributeValue("name"), 										// name
-						place.element("color-refs").elements("color-ref").size(), 			// # colors						
+						colors, 															// color names	
 						numIncomingConnections,												// # incoming connections
 						numOutgoingConnections, 											// # outgoing connections
 						statsLevel, 														// stats level
 						dDis, 																// departure discipline
-						queues[numQueues],													// Queue												
-						place);																// Place
+						queues[numQueues],													// Reference to the integrated Queue										
+						place);																// Reference to the place' XML element				
 				logln(2, "places[" + i + "] = new QPlace(" 
 						+ i + ", '" 
 						+ place.attributeValue("name") + "', " 
-						+ place.element("color-refs").elements("color-ref").size() + ", " 
+						+ colors + ", " 
 						+ numIncomingConnections + ", " 
 						+ numOutgoingConnections + ", " 
 						+ statsLevel + ", " 
 						+ dDis + ", " 
 						+ queues[numQueues] + ", "  
-						+ place + ")");					
+						+ place + ")"); 								
 				queues[numQueues++].addQPlace((QPlace) places[i]);				
 				
 			} else {

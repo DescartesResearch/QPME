@@ -26,7 +26,8 @@
  *  2008/11/25  Samuel Kounev     Renamed from QueueingPlace to QPlace.                                  
  *  2008/11/29  Samuel Kounev     Replaced queueTokens LinkedList<Token> array with a DoubleArrayList[] 
  *                                containing the arrival timestamps since that is the only information 
- *                                that is actually used. Renamed queueTokens to queueTokArrivTS. 
+ *                                that is actually used. Renamed queueTokens to queueTokArrivTS.
+ *  2008/12/13  Samuel Kounev     Changed to store names of token colors that can reside in this place.                                 
  *                                
  */
 
@@ -72,14 +73,17 @@ public class QPlace extends Place {
 	 *
 	 * @param id          - global id of the place
 	 * @param name        - name of the place
-	 * @param numColors   - number of colors
+	 * @param colors      - names of the colors that can reside in this place
 	 * @param numInTrans  - number of input transitions
 	 * @param numOutTrans - number of output transitions
 	 * @param statsLevel  - determines the amount of statistics to be gathered during the run
 	 * @param depDiscip   - determines the depository's departure discipline (order): NORMAL or FIFO
+	 * @param queue       - reference to the integrated Queue
+	 * @param element     - reference to the XML element representing the place
+	 * 
 	 */
-	public QPlace(int id, String name, int numColors, int numInTrans, int numOutTrans, int statsLevel, int depDiscip, Queue queue, Element element) throws SimQPNException {		
-		super(id, name, numColors, numInTrans, numOutTrans, statsLevel, depDiscip, element);
+	public QPlace(int id, String name, String[] colors, int numInTrans, int numOutTrans, int statsLevel, int depDiscip, Queue queue, Element element) throws SimQPNException {		
+		super(id, name, colors, numInTrans, numOutTrans, statsLevel, depDiscip, element);
 		
 		this.queue						= queue;
 		this.meanServTimes				= new double[numColors];
@@ -91,7 +95,7 @@ public class QPlace extends Place {
 			this.queueTokenPop[c] 		= 0;
 		
 		if (statsLevel > 0) 
-			qPlaceQueueStats = new QPlaceQueueStats(id, name, numColors, statsLevel, queue.queueDiscip, queue.numServers, meanServTimes);
+			qPlaceQueueStats = new QPlaceQueueStats(id, name, colors, statsLevel, queue.queueDiscip, queue.numServers, meanServTimes);
 		
 		// PS Queues			
 		if (queue.queueDiscip == Queue.PS && statsLevel >= 3) {			 

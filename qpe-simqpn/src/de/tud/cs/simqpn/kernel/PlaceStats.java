@@ -20,6 +20,7 @@
  *  2007/06/11  Samuel Kounev     Fixed a bug in enoughStats related to the use of ABSPRC.
  *  2008/12/13  Samuel Kounev     Added code to ignore the result of the batch means correlation test and print  
  *                                a warning in cases where the standard deviation of the token residence time is 0.
+ *  2008/12/13  Samuel Kounev     Changed to store names of token colors that can reside in this place.                                
  *                                    
  */
 
@@ -130,13 +131,14 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 * @param id 			- global id of the place
 	 * @param name 			- name of the place
 	 * @param type 			- type of statistics (ORD_PLACE, QUE_PLACE_QUEUE or QUE_PLACE_DEP)
-	 * @param numColors 	- number of colors
+	 * @param colors 	    - names of the colors that can reside in the respective location
 	 * @param statsLevel	- determines the amount of statistics to be gathered during the run
 	 *            
 	 */
-	public PlaceStats(int id, String name, int type, int numColors, int statsLevel) throws SimQPNException {
-		super(id, name, type, numColors, statsLevel);
-
+	public PlaceStats(int id, String name, int type, String[] colors, int statsLevel) throws SimQPNException {
+		super(id, name, type, colors.length, statsLevel);
+		this.colors = colors;
+		
 		// statsLevel >= 1
 		this.arrivCnt 								= new int[numColors];
 		this.deptCnt 								= new int[numColors];
@@ -821,7 +823,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 
 		for (int c = 0; c < numColors; c++) {
 			Simulator.logln();
-			Simulator.logln("------------------ Color=" + c
+			Simulator.logln("------------------ Color = " + colors[c]
 					+ " --------------------");
 			Simulator.logln("arrivCnt=" + arrivCnt[c] + " deptCnt="
 					+ deptCnt[c]);
