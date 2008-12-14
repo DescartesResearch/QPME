@@ -118,7 +118,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 			}
 		}
 		
-		if (statsLevel >= 4)  {
+		if (statsLevel >= 5)  {
 			String fileName = "";
 			this.fileST = new PrintStream[numColors];
 			for (int c = 0; c < numColors; c++) {					
@@ -308,7 +308,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 					}
 				}												
 			}
-			if (statsLevel >= 4) {
+			if (statsLevel >= 5) {
 				if (!indrStats)
 					Simulator.logln("Token sojourn times dumped in " + statsDir);
 				else 

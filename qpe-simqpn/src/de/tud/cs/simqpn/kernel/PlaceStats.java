@@ -203,7 +203,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			}
 		}
 
-		if ((statsLevel >= 4) && !(this instanceof QPlaceQueueStats)) {
+		if ((statsLevel >= 5) && !(this instanceof QPlaceQueueStats)) {
 			String fileName = "";
 			this.fileST = new PrintStream[numColors];
 			for (int c = 0; c < numColors; c++) {
@@ -342,7 +342,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 		msrmPrdLen = endRunClock - endRampUpClock;		
 		runWallClockTime = Simulator.runWallClockTime;
 
-		if (statsLevel >= 4)
+		if (statsLevel >= 5)
 			for (int c = 0; c < numColors; c++)
 				fileST[c].close();
 
@@ -448,7 +448,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 				}
 			}
 		}
-		if (statsLevel >= 4)
+		if (statsLevel >= 5)
 			fileST[color].println(sojTime);
 	}
 
@@ -860,7 +860,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 					}
 				}
 			}
-			if (statsLevel >= 4) {
+			if (statsLevel >= 5) {
 				Simulator.logln("Token sojourn times dumped in " + statsDir);
 			}
 		}
@@ -925,7 +925,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 							// minBatches[c] + " for steady state statistics.");
 						}
 					}
-					if (statsLevel >= 4) {
+					if (statsLevel >= 5) {
 						metaAttribute
 								.addAttribute("sojournTimesFile", statsDir);
 					}

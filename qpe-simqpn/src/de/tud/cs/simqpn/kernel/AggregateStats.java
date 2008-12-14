@@ -250,7 +250,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 			}
 		}
 
-		if (statsLevel >= 4)  {	
+		if (statsLevel >= 5)  {	
 			String fileName = "";
 			this.fileST = new PrintStream[numColors];															
 			for (int c = 0; c < numColors; c++)  {					
@@ -527,8 +527,8 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 					if ((trueAvgST[c] >= leftEnd) && (trueAvgST[c] <= rightEnd)) numCvrgs[c]++;
 				}
 			}	
-		// StatsLevel 4:
-		if (statsLevel >= 4) 
+		// StatsLevel 5:
+		if (statsLevel >= 5) 
 			for (int c = 0; c < numColors; c++)  {
 				double avgST =  Simulator.useStdStateStats ? stats.stdStateMeanST[c] : stats.meanST[c];		
 				fileST[c].println(avgST); 
@@ -540,7 +540,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 	 *                    	 
 	 */
 	public void finish() throws SimQPNException {
-		if (statsLevel >= 4) 		
+		if (statsLevel >= 5) 		
 			for (int c = 0; c < numColors; c++)
 				fileST[c].close();				
 		processStats();
@@ -728,7 +728,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 					Simulator.logln();					 																																							
 				}														
 			}
-			if (statsLevel >= 4) {
+			if (statsLevel >= 5) {
 				Simulator.logln("Token sojourn times dumped in " + statsDir);
 			}															
 		}					
