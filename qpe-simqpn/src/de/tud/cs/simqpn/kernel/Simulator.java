@@ -994,8 +994,9 @@ public class Simulator {
 		 * @param int[1..4] statsLevel - determines the amount of statistics to be gathered during the run 
 		 *    Level 1: Token Throughput (Arrival/Departure Rates) 
 		 *    Level 2: + Token Population, Utilization
-		 *    Level 3: + Token Sojourn Times (sample mean and variance + steady state point estimates and confidence intervals) 
-		 *    Level 4: + Record Sojourn Times in a file 
+		 *    Level 3: + Token Sojourn Times (sample mean and variance + steady state point estimates and confidence intervals)
+		 *    Level 4: + Token Sojourn Time Histograms
+		 *    Level 5: + Record Sojourn Times in a file 
 		 * @param int depDiscip/dDis - determines the departure discipline: Place.NORMAL or Place.FIFO
 		 * 
 		 * For QPlace two extra parameters:
@@ -2786,7 +2787,7 @@ public class Simulator {
 		beginRunWallClock = System.currentTimeMillis();
 		double nextHeartBeat = timeInitHeartBeat;
 
-		logln("Starting Simulator");	
+		logln("Starting Simulator");
 		
 		// BEGIN MAIN SIMULATION LOOP ---------------------------------------------------------------------------------
 		while (clock < totRunL) { 
