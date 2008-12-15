@@ -140,8 +140,8 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 	public LinkedList	replStats;				// PlaceStats/QPlaceQueueStats objects collected from run replications.
 	public int 			numSavedRepls;			// Number of saved replications for coverage analysis.
 										            													
-	// StatsLevel 4 ------------------------------------------------------------------------------------------------------
-	public PrintStream[] fileST;				// Level 4: File output streams for dumping sojourn times.
+	// StatsLevel 5 ------------------------------------------------------------------------------------------------------
+	public PrintStream[] fileST;				// Level 5: File output streams for dumping sojourn times.
 				
 	/**
 	 * Constructor
