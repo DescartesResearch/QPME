@@ -21,7 +21,8 @@
  *  2008/11/25  Samuel Kounev     Renamed from QueueStats to QPlaceQueueStats.
  *  2008/11/25  Samuel Kounev     Moved the queue-related logic into a separate class Queue. Queues can now be 
  *                                shared among multiple QPlaces.
- *  2008/12/13  Samuel Kounev     Changed to store names of token colors that can reside in this place.                                                                
+ *  2008/12/13  Samuel Kounev     Changed to store names of token colors that can reside in this place.
+ *  2008/12/15  Samuel Kounev     Added new statLevel 4 storing sojourn time histogram data.                                                                  
  * 
  */
 
@@ -306,6 +307,13 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 					}
 				}												
 			}
+			if (statsLevel >= 4) {
+				Simulator.logln("-----");
+				Simulator.logln("Histogram Data");
+				for (int i = 1; i < 10; i++) 
+					Simulator.logln("   " + i*10 + "% percentile=" +  histST[c].getPercentile((double) i / 10));
+				Simulator.logln("   histogramMean=" + histST[c].getMean());				
+			}			
 			if (statsLevel >= 5) {
 				if (!indrStats)
 					Simulator.logln("Token sojourn times dumped in " + statsDir);

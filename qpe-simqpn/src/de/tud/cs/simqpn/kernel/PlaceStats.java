@@ -20,7 +20,8 @@
  *  2007/06/11  Samuel Kounev     Fixed a bug in enoughStats related to the use of ABSPRC.
  *  2008/12/13  Samuel Kounev     Added code to ignore the result of the batch means correlation test and print  
  *                                a warning in cases where the standard deviation of the token residence time is 0.
- *  2008/12/13  Samuel Kounev     Changed to store names of token colors that can reside in this place.                                
+ *  2008/12/13  Samuel Kounev     Changed to store names of token colors that can reside in this place.
+ *  2008/12/15  Samuel Kounev     Added new statLevel 4 storing sojourn time histogram data.
  *                                    
  */
 
@@ -123,8 +124,11 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	public AbstractDoubleList[] obsrvST;	// Stores sojourn time observations.
 
 	// StatsLevel 4 ---------------------------------------------------------------------------------------
-	public PrintStream[] fileST;			// Level 4: File output streams for dumping sojourn times.
-
+	public TimeHistogram[] histST;			// Token sojourn time histograms.
+	
+	// StatsLevel 5 ---------------------------------------------------------------------------------------
+	public PrintStream[] fileST;			// Level 5: File output streams for dumping sojourn times.
+	
 	/**
 	 * Constructor
 	 * 
@@ -203,6 +207,12 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			}
 		}
 
+		if (statsLevel >= 4) {
+			this.histST = new TimeHistogram[numColors];
+			for (int c = 0; c < numColors; c++) 
+				histST[c] = new TimeHistogram(0, 0); // TODO: Pass values configured by the user. 
+		}
+		
 		if ((statsLevel >= 5) && !(this instanceof QPlaceQueueStats)) {
 			String fileName = "";
 			this.fileST = new PrintStream[numColors];
@@ -448,6 +458,10 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 				}
 			}
 		}
+		
+		if (statsLevel >= 4) 
+			histST[color].addEntry(sojTime); 
+		
 		if (statsLevel >= 5)
 			fileST[color].println(sojTime);
 	}
@@ -839,8 +853,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 				Simulator.logln("-----");
 				// Simulator.logln("numST=" + numST[c] + " minST=" + minST[c]
 				// + " maxST=" + maxST[c]);
-				Simulator.logln("meanST=" + meanST[c] + " stDevST="
-						+ stDevST[c]);
+				Simulator.logln("meanST=" + meanST[c] + " stDevST=" + stDevST[c]);				
 				if (Simulator.analMethod == Simulator.BATCH_MEANS
 						&& minBatches[c] > 0) {
 					Simulator.logln();
@@ -860,6 +873,13 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 					}
 				}
 			}
+			if (statsLevel >= 4) {
+				Simulator.logln("-----");
+				Simulator.logln("Histogram Data");
+				for (int i = 1; i < 10; i++) 
+					Simulator.logln("   " + i*10 + "% percentile=" +  histST[c].getPercentile((double) i / 10));
+				Simulator.logln("   histogramMean=" + histST[c].getMean());				
+			}						
 			if (statsLevel >= 5) {
 				Simulator.logln("Token sojourn times dumped in " + statsDir);
 			}
