@@ -82,8 +82,6 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	public double[]		stDevStdStateMeanDT;	// Steady State Delay Time Standard Deviation = Math.sqrt(varStdStateMeanDT[c]) 
 	public double[]		ciHalfLenDT;			// Confidence Interval Half Length = Probability.studentTInverse(signLevST[c], numBatchesST[c] - 1) * Math.sqrt(varStdStateMeanDT[c] / numBatchesST[c]);		 
 	
-	// StatsLevel 4 ---------------------------------------------------------------------------------------
-	
 	// ----------------------------------------------------------------------------------------------------
 
 	/**
