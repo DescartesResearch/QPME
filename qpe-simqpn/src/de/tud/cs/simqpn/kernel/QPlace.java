@@ -163,8 +163,6 @@ public class QPlace extends Place {
 		}
 	}
 
-	//TODO: Consider Simulator.scheduleEvent() below for the case statsLevel < 3	
-
 	/**
 	 * Method addTokens - deposits N tokens of particular color
 	 * 
