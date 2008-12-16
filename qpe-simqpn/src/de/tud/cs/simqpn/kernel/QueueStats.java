@@ -176,7 +176,7 @@ public class QueueStats extends Stats implements java.io.Serializable {
 	
 	/**
 	 * Method printReport - prints a summary of the collected statistics 
-	 *  	 
+	 * 
 	 */	
 	public void printReport() throws SimQPNException {		
 		if (!completed) {

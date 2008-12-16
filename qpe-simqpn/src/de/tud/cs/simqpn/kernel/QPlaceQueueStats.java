@@ -22,7 +22,9 @@
  *  2008/11/25  Samuel Kounev     Moved the queue-related logic into a separate class Queue. Queues can now be 
  *                                shared among multiple QPlaces.
  *  2008/12/13  Samuel Kounev     Changed to store names of token colors that can reside in this place.
- *  2008/12/15  Samuel Kounev     Added new statLevel 4 storing sojourn time histogram data.                                                                  
+ *  2008/12/15  Samuel Kounev     Added new statLevel 4 storing sojourn time histogram data.
+ *  2008/12/16  Samuel Kounev     Moved lastTkPopClock and lastTotTkPop to PlaceStats where they are now needed
+ *                                for estimating placeUtil. This way we avoid having them duplicated.
  * 
  */
 
@@ -60,10 +62,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	// StatsLevel 2 ---------------------------------------------------------------------------------------
 	public double		areaQueUtilQPl;		// Accumulated area under the curve for computing the expected  
 											// queue utilization due to this place - fraction of time that 
-											// there is a token of this place in the queue.		  
-	public double		lastTkPopClock;		// Time of last token population change (over all colors of this place).		
-	public int			lastTotTkPop;		// Last queue total token population (over all colors of this place).		
-
+											// there is a token of this place in the queue.		  				
 	public double		queueUtilQPl;		// Utilization of the integrated queue due to this place = (areaQueUtilQPl / msrmPrdLen)
 	
 	// StatsLevel 3 ---------------------------------------------------------------------------------------		
@@ -148,13 +147,9 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	public void init(int[] tokenPop) throws SimQPNException {
 		super.init(tokenPop);
 		
-		if (statsLevel >= 2)  {			
-			lastTotTkPop = 0;
-			for (int c = 0; c < numColors; c++) 
-				lastTotTkPop += tokenPop[c];			
-			areaQueUtilQPl = 0;
-			lastTkPopClock = Simulator.clock;			
-		}		
+		if (statsLevel >= 2)  			
+			areaQueUtilQPl = 0;						
+		
 		if (statsLevel >= 3)  {
 			// Make sure indrStats is false if queueDiscip != Queue.FCFS
 			indrStats = indrStats && (queueDiscip == Queue.FCFS);
@@ -168,19 +163,20 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	 * @param oldTkPop	- old token population
 	 * @param delta		- difference between new and old token population
 	 */
-	public void updateTkPopStats(int color, int oldTkPop, int delta) {
-		if (inRampUp) return;		
-		super.updateTkPopStats(color, oldTkPop, delta);		
+	public void updateTkPopStats(int color, int oldTkPop, int delta)  {
+		if (inRampUp) return;						
 		if (statsLevel >= 2)  {						
 			double elapsedTime = Simulator.clock - lastTkPopClock;
 			if (elapsedTime > 0) {
 				if (numServers > 1)	//NOTE: WATCH OUT with IS queues here! Below we assume that for such queues numServers == 0.				
 					areaQueUtilQPl += elapsedTime * (lastTotTkPop > numServers ? 1 : (((double) lastTotTkPop) / numServers));																						
 				else areaQueUtilQPl += elapsedTime * (lastTotTkPop > 0 ? 1 : 0);  
-				lastTkPopClock = Simulator.clock;				
+				//NOTE: lastTkPopClock is updated in super.updateTkPopStats() below.			
 			}			
-			lastTotTkPop += delta;									
-		}		
+			//NOTE: lastTotTkPop is updated in super.updateTkPopStats() below.			
+		} 
+		//NOTE: updateTkPopStats is called after the above since it updates lastTkPopClock and lastTotTkPop!
+		super.updateTkPopStats(color, oldTkPop, delta); 
 	}
 
 	/**
@@ -212,7 +208,8 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	 */	
 	public void processStats() throws SimQPNException {		
 		super.processStats();
-		queueUtilQPl = areaQueUtilQPl / msrmPrdLen;		
+		if (statsLevel >= 2)
+			queueUtilQPl = areaQueUtilQPl / msrmPrdLen;		
 		if (statsLevel >= 3 && indrStats)  {
 			for (int c = 0; c < numColors; c++)  {
 				meanDT[c] 	= sumST[c] / numST[c];

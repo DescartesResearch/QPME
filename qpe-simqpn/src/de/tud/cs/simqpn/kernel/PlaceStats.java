@@ -22,6 +22,7 @@
  *                                a warning in cases where the standard deviation of the token residence time is 0.
  *  2008/12/13  Samuel Kounev     Changed to store names of token colors that can reside in this place.
  *  2008/12/15  Samuel Kounev     Added new statLevel 4 storing sojourn time histogram data.
+ *  2008/12/16  Samuel Kounev     Extended to estimate placeUtil - fraction of time that there is a token in the place.
  *                                    
  */
 
@@ -72,7 +73,12 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	public double[] lastColTkPopClock;		// Time of last color token population change.
 	public double[] meanTkPop;				// Mean Token Population = (areaTkPop[c] / msrmPrdLen).
 	public double[] colUtil;				// Color Utilization = (areaColUtil[c] / msrmPrdLen).
-
+	
+	public double	areaPlaceUtil;			// Accumulated area under the curve for computing the expected place utilization - fraction of time that there is a token in the place.
+	public double	lastTkPopClock;			// Time of last token population change (over all colors of this place).
+	public int		lastTotTkPop;			// Last queue total token population (over all colors of this place).		
+	public double	placeUtil;				// Utilization of the place = (areaPlaceUtil / msrmPrdLen).
+	
 	// StatsLevel 3 ---------------------------------------------------------------------------------------
 	public double[] minST;					// Minimum observed token sojourn time.
 	public double[] maxST;					// Maximum observed token sojourn time.
@@ -247,18 +253,23 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 */
 	public void init(int[] tokenPop) throws SimQPNException {
 		// statsLevel >= 1
-		for (int c = 0; c < numColors; c++) {
+		for (int c = 0; c < numColors; c++)  {
 			arrivCnt[c]					= 0; //TODO: Should we instead set arrivCnt to tokenPop[c] here? Currently, we could have deptCnt > arrivCnt if there are tokens in the place in the initial marking.
 			deptCnt[c]					= 0;
 		}
-		if (statsLevel >= 2)
+		if (statsLevel >= 2)  {
+			areaPlaceUtil				= 0;
+			lastTotTkPop				= 0;
 			for (int c = 0; c < numColors; c++) {
-				minTkPop[c] 			= tokenPop[c];
-				maxTkPop[c] 			= tokenPop[c];
 				areaTkPop[c] 			= 0;
 				areaColUtil[c] 			= 0;
+				lastTotTkPop			+= tokenPop[c];
 				lastColTkPopClock[c]	= Simulator.clock;
+				minTkPop[c] 			= tokenPop[c];
+				maxTkPop[c] 			= tokenPop[c];
 			}
+			lastTkPopClock				= Simulator.clock;			
+		}
 		if (statsLevel >= 3)
 			for (int c = 0; c < numColors; c++) {
 				minST[c] 				= 0;
@@ -344,8 +355,8 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 * @return
 	 * @exception
 	 */
-	public void finish(int[] tokenPop) throws SimQPNException {
-		if (statsLevel >= 2)
+	public void finish(int[] tokenPop) throws SimQPNException  {
+		if (statsLevel >= 2)  //NOTE: This makes sure areaTkPop, areaColUtil and areaPlaceUtil (and areaQueUtilQPl for QPlaceQueueStats) are complete!
 			for (int c = 0; c < numColors; c++)
 				updateTkPopStats(c, tokenPop[c], 0);
 		endRunClock = Simulator.clock;
@@ -384,7 +395,13 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 				areaTkPop[color] += elapsedTime * oldTkPop;
 				areaColUtil[color] += elapsedTime * (oldTkPop > 0 ? 1 : 0);
 				lastColTkPopClock[color] = Simulator.clock;
-			}
+			}														
+			elapsedTime = Simulator.clock - lastTkPopClock;			
+			if (elapsedTime > 0) {																																			
+				areaPlaceUtil += elapsedTime * (lastTotTkPop > 0 ? 1 : 0);  
+				lastTkPopClock = Simulator.clock;			
+			}			
+			lastTotTkPop += delta;			
 		}
 	}
 
@@ -774,6 +791,10 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 */
 	public void processStats() throws SimQPNException {
 		stdStateStatsAv = true;
+		
+		if (statsLevel >= 2)
+			placeUtil = areaPlaceUtil / msrmPrdLen;
+		
 		for (int c = 0; c < numColors; c++) {
 			arrivThrPut[c] = arrivCnt[c] / msrmPrdLen;
 			deptThrPut[c] = deptCnt[c] / msrmPrdLen;
@@ -833,6 +854,9 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 
 		Simulator.logln();
 
+		if (statsLevel >= 2) 
+			Simulator.logln("Place utilization = " + placeUtil); 
+				
 		for (int c = 0; c < numColors; c++) {
 			Simulator.logln();
 			Simulator.logln("------------------ Color = " + colors[c] + " --------------------");
