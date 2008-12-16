@@ -823,11 +823,9 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 		Simulator.logln();
 		Simulator.logln();
 		if (type == ORD_PLACE)
-			Simulator.logln("REPORT for Ordinary Place : " + name
-					+ "----------------------------------------");
+			Simulator.logln("REPORT for Ordinary Place : " + name + "----------------------------------------");
 		else if (type == QUE_PLACE_DEP)
-			Simulator.logln("REPORT for Depository of Queueing Place : " + name
-					+ "----------------------------------------");
+			Simulator.logln("REPORT for Depository of Queueing Place : " + name	+ "----------------------------------------");
 		else {
 			Simulator.logln("Error: Internal error in PlaceStats of place " + name);
 			throw new SimQPNException();			
@@ -837,39 +835,27 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 
 		for (int c = 0; c < numColors; c++) {
 			Simulator.logln();
-			Simulator.logln("------------------ Color = " + colors[c]
-					+ " --------------------");
-			Simulator.logln("arrivCnt=" + arrivCnt[c] + " deptCnt="
-					+ deptCnt[c]);
-			Simulator.logln("arrivThrPut=" + arrivThrPut[c] + " deptThrPut="
-					+ deptThrPut[c]);
+			Simulator.logln("------------------ Color = " + colors[c] + " --------------------");
+			Simulator.logln("arrivCnt=" + arrivCnt[c] + " deptCnt="	+ deptCnt[c]);
+			Simulator.logln("arrivThrPut=" + arrivThrPut[c] + " deptThrPut=" + deptThrPut[c]);
 			if (statsLevel >= 2) {
 				// Simulator.logln("minTkPop=" + minTkPop[c] + " maxTkPop=" +
 				// maxTkPop[c]);
-				Simulator.logln("meanTkPop=" + meanTkPop[c] + " colUtil="
-						+ colUtil[c]);
+				Simulator.logln("meanTkPop=" + meanTkPop[c] + " colUtil=" + colUtil[c]);
 			}
 			if (statsLevel >= 3) {
 				Simulator.logln("-----");
-				// Simulator.logln("numST=" + numST[c] + " minST=" + minST[c]
-				// + " maxST=" + maxST[c]);
+				// Simulator.logln("numST=" + numST[c] + " minST=" + minST[c] + " maxST=" + maxST[c]);
 				Simulator.logln("meanST=" + meanST[c] + " stDevST=" + stDevST[c]);				
-				if (Simulator.analMethod == Simulator.BATCH_MEANS
-						&& minBatches[c] > 0) {
+				if (Simulator.analMethod == Simulator.BATCH_MEANS && minBatches[c] > 0) {
 					Simulator.logln();
 					Simulator.logln("Steady State Statistics: ");
 					if (numBatchesST[c] >= minBatches[c]) {
-						Simulator.logln("numBatchesST=" + numBatchesST[c]
-								+ " batchSizeST=" + batchSizeST[c]
-								+ " stDevStdStateMeanST="
-								+ stDevStdStateMeanST[c]);
-						Simulator.logln(confLevelST[c] + "% c.i. = "
-								+ stdStateMeanST[c] + " +/- " + ciHalfLenST[c]);
+						Simulator.logln("numBatchesST=" + numBatchesST[c] + " batchSizeST=" + batchSizeST[c] + " stDevStdStateMeanST=" + stDevStdStateMeanST[c]);
+						Simulator.logln(confLevelST[c] + "% c.i. = " + stdStateMeanST[c] + " +/- " + ciHalfLenST[c]);
 					} else {
-						Simulator.logln("Only " + numBatchesST[c]
-								+ " batches collected!");
-						Simulator.logln("Need at least " + minBatches[c]
-								+ " for steady state statistics.");
+						Simulator.logln("Only " + numBatchesST[c] + " batches collected!");
+						Simulator.logln("Need at least " + minBatches[c] + " for steady state statistics.");
 					}
 				}
 			}
