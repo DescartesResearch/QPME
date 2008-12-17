@@ -22,7 +22,7 @@
  *                                a warning in cases where the standard deviation of the token residence time is 0.
  *  2008/12/13  Samuel Kounev     Changed to store names of token colors that can reside in this place.
  *  2008/12/15  Samuel Kounev     Added new statLevel 4 storing sojourn time histogram data.
- *  2008/12/16  Samuel Kounev     Extended to estimate placeUtil - fraction of time that there is a token in the place.
+ *  2008/12/16  Samuel Kounev     Extended to estimate tkOcp - fraction of time that there is a token in the place.
  *                                    
  */
 
@@ -69,15 +69,15 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	public int[] minTkPop;					// Minimum observed token population (TkPop).				
 	public int[] maxTkPop;					// Maximum observed token population.
 	public double[] areaTkPop;				// Accumulated area under the curve for computing the expected average token population.
-	public double[] areaColUtil;			// Accumulated area under the curve for computing the expected place color utilization - for each color the fraction of time that there are tokens of this color in the place.
+	public double[] areaTkColOcp;			// Accumulated area under the curve for computing the expected token color occupancy - for each color the fraction of time that there are tokens of this color in the place.
 	public double[] lastColTkPopClock;		// Time of last color token population change.
 	public double[] meanTkPop;				// Mean Token Population = (areaTkPop[c] / msrmPrdLen).
-	public double[] colUtil;				// Color Utilization = (areaColUtil[c] / msrmPrdLen).
+	public double[] tkColOcp;				// Token color occupancy = (areaTkColOcp[c] / msrmPrdLen) - fraction of time that there is a token of a given color in the place.
 	
-	public double	areaPlaceUtil;			// Accumulated area under the curve for computing the expected place utilization - fraction of time that there is a token in the place.
+	public double	areaTkOcp;				// Accumulated area under the curve for computing the expected token occupancy - fraction of time that there is a token in the place.
 	public double	lastTkPopClock;			// Time of last token population change (over all colors of this place).
 	public int		lastTotTkPop;			// Last queue total token population (over all colors of this place).		
-	public double	placeUtil;				// Utilization of the place = (areaPlaceUtil / msrmPrdLen).
+	public double	tkOcp;					// Token occupancy of the place = (areaTkOcp / msrmPrdLen).
 	
 	// StatsLevel 3 ---------------------------------------------------------------------------------------
 	public double[] minST;					// Minimum observed token sojourn time.
@@ -158,10 +158,10 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			this.minTkPop 							= new int[numColors];
 			this.maxTkPop 							= new int[numColors];
 			this.areaTkPop 							= new double[numColors];
-			this.areaColUtil 						= new double[numColors];
+			this.areaTkColOcp 						= new double[numColors];
 			this.lastColTkPopClock 					= new double[numColors];
 			this.meanTkPop 							= new double[numColors];
-			this.colUtil 							= new double[numColors];
+			this.tkColOcp 							= new double[numColors];
 		}
 		if (statsLevel >= 3) {
 			this.minST 								= new double[numColors];
@@ -258,11 +258,11 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			deptCnt[c]					= 0;
 		}
 		if (statsLevel >= 2)  {
-			areaPlaceUtil				= 0;
+			areaTkOcp					= 0;
 			lastTotTkPop				= 0;
 			for (int c = 0; c < numColors; c++) {
 				areaTkPop[c] 			= 0;
-				areaColUtil[c] 			= 0;
+				areaTkColOcp[c] 		= 0;
 				lastTotTkPop			+= tokenPop[c];
 				lastColTkPopClock[c]	= Simulator.clock;
 				minTkPop[c] 			= tokenPop[c];
@@ -356,7 +356,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 * @exception
 	 */
 	public void finish(int[] tokenPop) throws SimQPNException  {
-		if (statsLevel >= 2)  //NOTE: This makes sure areaTkPop, areaColUtil and areaPlaceUtil (and areaQueUtilQPl for QPlaceQueueStats) are complete!
+		if (statsLevel >= 2)  //NOTE: This makes sure areaTkPop, areaTkColOcp and areaTkOcp (and areaQueUtilQPl for QPlaceQueueStats) are complete!
 			for (int c = 0; c < numColors; c++)
 				updateTkPopStats(c, tokenPop[c], 0);
 		endRunClock = Simulator.clock;
@@ -393,12 +393,12 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			double elapsedTime = Simulator.clock - lastColTkPopClock[color];
 			if (elapsedTime > 0) {
 				areaTkPop[color] += elapsedTime * oldTkPop;
-				areaColUtil[color] += elapsedTime * (oldTkPop > 0 ? 1 : 0);
+				areaTkColOcp[color] += elapsedTime * (oldTkPop > 0 ? 1 : 0);
 				lastColTkPopClock[color] = Simulator.clock;
 			}														
 			elapsedTime = Simulator.clock - lastTkPopClock;			
 			if (elapsedTime > 0) {																																			
-				areaPlaceUtil += elapsedTime * (lastTotTkPop > 0 ? 1 : 0);  
+				areaTkOcp += elapsedTime * (lastTotTkPop > 0 ? 1 : 0);  
 				lastTkPopClock = Simulator.clock;			
 			}			
 			lastTotTkPop += delta;			
@@ -793,14 +793,14 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 		stdStateStatsAv = true;
 		
 		if (statsLevel >= 2)
-			placeUtil = areaPlaceUtil / msrmPrdLen;
+			tkOcp = areaTkOcp / msrmPrdLen;
 		
 		for (int c = 0; c < numColors; c++) {
 			arrivThrPut[c] = arrivCnt[c] / msrmPrdLen;
 			deptThrPut[c] = deptCnt[c] / msrmPrdLen;
 			if (statsLevel >= 2) {
 				meanTkPop[c] = areaTkPop[c] / msrmPrdLen;
-				colUtil[c] = areaColUtil[c] / msrmPrdLen;
+				tkColOcp[c] = areaTkColOcp[c] / msrmPrdLen;
 			}
 			if (statsLevel >= 3) {
 				meanST[c] = sumST[c] / numST[c];
@@ -855,7 +855,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 		Simulator.logln();
 
 		if (statsLevel >= 2) 
-			Simulator.logln("Place utilization = " + placeUtil); 
+			Simulator.logln("Token occupancy = " + tkOcp); 
 				
 		for (int c = 0; c < numColors; c++) {
 			Simulator.logln();
@@ -865,7 +865,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			if (statsLevel >= 2) {
 				// Simulator.logln("minTkPop=" + minTkPop[c] + " maxTkPop=" +
 				// maxTkPop[c]);
-				Simulator.logln("meanTkPop=" + meanTkPop[c] + " colUtil=" + colUtil[c]);
+				Simulator.logln("meanTkPop=" + meanTkPop[c] + " tkColOcp=" + tkColOcp[c]);
 			}
 			if (statsLevel >= 3) {
 				Simulator.logln("-----");
@@ -922,8 +922,8 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 						.toString(maxTkPop[c]));
 				metaAttribute.addAttribute("meanTkPop", Double
 						.toString(meanTkPop[c]));
-				metaAttribute.addAttribute("colUtil", Double
-						.toString(colUtil[c]));
+				metaAttribute.addAttribute("tkColOcp", Double
+						.toString(tkColOcp[c]));
 				if (statsLevel >= 3) {
 					metaAttribute.addAttribute("numST", Integer
 							.toString(numST[c]));

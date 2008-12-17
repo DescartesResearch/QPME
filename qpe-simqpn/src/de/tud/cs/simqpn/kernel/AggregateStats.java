@@ -76,15 +76,15 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 		
 	// StatsLevel 2 ------------------------------------------------------------------------------------------------------
 	public double[]		sumAvgTkPop;			// Sum of average token populations (for meanAvgTkPop).		
-	public double[]		sumColUtil;				// Sum of average color utilizations (for meanColUtil).
+	public double[]		sumTkColOcp;			// Sum of average token color occupancies (for meanTkColOcp).
 	public double[]		sumSqAvgTkPop;			// Sum of squares of average token populations (for stDevAvgTkPop).
-	public double[]		sumSqColUtil;			// Sum of squares of average color utilizations (for stDevColUtil).
+	public double[]		sumSqTkColOcp;			// Sum of squares of average token color occupancies (for stDevTkColOcp).
 	public double[]		minAvgTkPop;			// Minimum average token population (TkPop).
 	public double[]		maxAvgTkPop;			// Maximum average token population.
 	public double[]		meanAvgTkPop;			// Mean average token population.
-	public double[]		meanColUtil;			// Mean average color utilization.
+	public double[]		meanTkColOcp;			// Mean average token color occupancy.
 	public double[]		stDevAvgTkPop;			// Std. deviation of average token population.
-	public double[]		stDevColUtil;			// Std. deviation of average color utilization.
+	public double[]		stDevTkColOcp;			// Std. deviation of average token color occupancy.
 	public double		sumQueueUtilQPl;		// For Type=QUE_PLACE_QUEUE: Sum of queue utilizations due to the place.
 	public double		sumSqQueueUtilQPl;		// For Type=QUE_PLACE_QUEUE: Sum of squares of queue utilizations due to the place.
 	public double		meanQueueUtilQPl;		// For Type=QUE_PLACE_QUEUE: Mean queue utilization due to the place.
@@ -178,18 +178,18 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 		
 		if (statsLevel >= 2) {
 			this.sumAvgTkPop	= new double[numColors];
-			this.sumColUtil		= new double[numColors];
+			this.sumTkColOcp	= new double[numColors];
 			this.sumSqAvgTkPop	= new double[numColors];
-			this.sumSqColUtil	= new double[numColors];						
+			this.sumSqTkColOcp	= new double[numColors];						
 			this.minAvgTkPop	= new double[numColors];
 			this.maxAvgTkPop	= new double[numColors];
 			this.meanAvgTkPop	= new double[numColors];			
-			this.meanColUtil	= new double[numColors];
+			this.meanTkColOcp	= new double[numColors];
 			this.stDevAvgTkPop	= new double[numColors];			
-			this.stDevColUtil	= new double[numColors];			
+			this.stDevTkColOcp	= new double[numColors];			
 			for (int c = 0; c < numColors; c++) {						
-				sumAvgTkPop[c]	 = 0; sumColUtil[c]	  = 0;				
-				sumSqAvgTkPop[c] = 0; sumSqColUtil[c] = 0;
+				sumAvgTkPop[c]	 = 0; sumTkColOcp[c]	= 0;				
+				sumSqAvgTkPop[c] = 0; sumSqTkColOcp[c]	= 0;
 			}
 			if (type == QUE_PLACE_QUEUE) {
 				sumQueueUtilQPl = 0; sumSqQueueUtilQPl = 0;										
@@ -498,9 +498,9 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 				if (numRepls == 1 || avgTkPop < minAvgTkPop[c]) minAvgTkPop[c] = avgTkPop;					
 				if (numRepls == 1 || avgTkPop > maxAvgTkPop[c]) maxAvgTkPop[c] = avgTkPop;					
 				sumAvgTkPop[c]		+= avgTkPop;			
-				sumColUtil[c]		+= stats.colUtil[c];						
+				sumTkColOcp[c]		+= stats.tkColOcp[c];						
 				sumSqAvgTkPop[c]	+= avgTkPop * avgTkPop;			
-				sumSqColUtil[c]		+= stats.colUtil[c] * stats.colUtil[c];
+				sumSqTkColOcp[c]	+= stats.tkColOcp[c] * stats.tkColOcp[c];
 			}
 			if (type == QUE_PLACE_QUEUE) {	
 				double queueUtilQPl = ((QPlaceQueueStats) stats).queueUtilQPl;
@@ -639,9 +639,9 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 		if (statsLevel >= 2)  {		
 			for (int c = 0; c < numColors; c++)  {
 				meanAvgTkPop[c]		= sumAvgTkPop[c] / numRepls;
-				meanColUtil[c]		= sumColUtil[c] / numRepls; 			
+				meanTkColOcp[c]		= sumTkColOcp[c] / numRepls; 			
 				stDevAvgTkPop[c]	= Math.sqrt(Descriptive.sampleVariance(numRepls, sumAvgTkPop[c], sumSqAvgTkPop[c]));
-				stDevColUtil[c]		= Math.sqrt(Descriptive.sampleVariance(numRepls, sumColUtil[c], sumSqColUtil[c]));						
+				stDevTkColOcp[c]	= Math.sqrt(Descriptive.sampleVariance(numRepls, sumTkColOcp[c], sumSqTkColOcp[c]));						
 			}
 			if (type == QUE_PLACE_QUEUE) {	
 				meanQueueUtilQPl	= sumQueueUtilQPl / numRepls;  								
@@ -708,8 +708,8 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 											
 			if (statsLevel >= 2) {				
 				Simulator.logln("minAvgTkPop[c]=" + minAvgTkPop[c] + " maxAvgTkPop[c]=" + maxAvgTkPop[c]);
-				Simulator.logln("meanAvgTkPop[c]=" + meanAvgTkPop[c] + " meanColUtil[c]=" + meanColUtil[c]);
-				Simulator.logln("stDevAvgTkPop[c]=" + stDevAvgTkPop[c] + " stDevColUtil[c]=" + stDevColUtil[c]);
+				Simulator.logln("meanAvgTkPop[c]=" + meanAvgTkPop[c] + " meanTkColOcp[c]=" + meanTkColOcp[c]);
+				Simulator.logln("stDevAvgTkPop[c]=" + stDevAvgTkPop[c] + " stDevTkColOcp[c]=" + stDevTkColOcp[c]);
 			}
 			if (statsLevel >= 3) {												
 				Simulator.logln("-----");

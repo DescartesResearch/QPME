@@ -24,7 +24,7 @@
  *  2008/12/13  Samuel Kounev     Changed to store names of token colors that can reside in this place.
  *  2008/12/15  Samuel Kounev     Added new statLevel 4 storing sojourn time histogram data.
  *  2008/12/16  Samuel Kounev     Moved lastTkPopClock and lastTotTkPop to PlaceStats where they are now needed
- *                                for estimating placeUtil. This way we avoid having them duplicated.
+ *                                for estimating tkOcp. This way we avoid having them duplicated.
  * 
  */
 
@@ -63,7 +63,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	public double		areaQueUtilQPl;		// Accumulated area under the curve for computing the expected  
 											// queue utilization due to this place - fraction of time that 
 											// there is a token of this place in the queue.		  				
-	public double		queueUtilQPl;		// Utilization of the integrated queue due to this place = (areaQueUtilQPl / msrmPrdLen)
+	public double		queueUtilQPl;		// Utilization of the integrated queue due to this place = (areaQueUtilQPl / msrmPrdLen) - fraction of the available server resources that would be used if the queue was dedicated to this place.
 	
 	// StatsLevel 3 ---------------------------------------------------------------------------------------		
 	public boolean		indrStats;			// FCFS: Specifies if STs and TkPops should be estimated indirectly
@@ -259,7 +259,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 			Simulator.logln("arrivThrPut=" + arrivThrPut[c] + " deptThrPut=" + deptThrPut[c]);											
 			if (statsLevel >= 2) {				
 //				Simulator.logln("minTkPop=" + minTkPop[c] + " maxTkPop=" + maxTkPop[c]);
-				Simulator.logln("meanTkPop=" + meanTkPop[c] + " colUtil=" + colUtil[c]);				
+				Simulator.logln("meanTkPop=" + meanTkPop[c] + " tkColOcp=" + tkColOcp[c]);				
 			}
 			if (statsLevel >= 3) {																			
 				if (!indrStats) {										

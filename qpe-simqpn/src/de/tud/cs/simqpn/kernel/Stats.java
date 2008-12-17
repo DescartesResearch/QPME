@@ -55,7 +55,7 @@ public class Stats {
 	/* NOTE:
 	 * statsLevel determines the amount of statistics to be gathered during the run:
 	 *   Level 1: Token Throughput (Arrival/Departure Rates)
-	 *   Level 2: + Token Population, Utilization
+	 *   Level 2: + Token Population, Token Occupancy and Queue Utilization
 	 *   Level 3: + Token Sojourn Times (sample mean and variance + steady state point estimates and confidence intervals)
 	 *   Level 4: + Token Sojourn Time Histograms
 	 *   Level 5: + Record Sojourn Times in a file 

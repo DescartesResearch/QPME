@@ -40,11 +40,10 @@ public class QueueStats extends Stats implements java.io.Serializable {
 		
 	// StatsLevel 2 ---------------------------------------------------------------------------------------
 	public double	meanTotTkPop;				// Mean queue total token population.	
-	public double	areaQueUtil;				// Accumulated area under the curve for computing the expected  
-												// queue utilization - fraction of time that there is a token in the queue. 
+	public double	areaQueUtil;				// Accumulated area under the curve for computing the expected queue utilization. 
 	public double	lastTkPopClock;				// Time of last token population change (over all colors).		
 	public int		lastTotTkPop;				// Last queue total token population (over all colors).		
-	public double	queueUtil;					// Utilization of the queue = (areaQueUtil / msrmPrdLen).
+	public double	queueUtil;					// Utilization of the queue = (areaQueUtil / msrmPrdLen) - fraction of the available server resources that are used on average.
 
 	// StatsLevel 3 ---------------------------------------------------------------------------------------	
 	public double	meanST;						// Mean Sojourn Time over all tokens visiting this queue.
