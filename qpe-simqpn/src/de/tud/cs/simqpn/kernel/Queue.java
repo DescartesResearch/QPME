@@ -11,6 +11,8 @@
  *  ----------  ----------------  ------------------------------------------------------------------
  *  2008/11/22  Samuel Kounev     Created.
  *  2008/12/13  Samuel Kounev     Fixed a bug in updateEvents() for expPS==true.
+ *  2009/02/13  Samuel Kounev     Changed eventList to use PriorityQueue instead of LinkedList
+ *                                to speed up searches in the event list.
  *                                
  */
 
@@ -56,6 +58,7 @@ public class Queue {
 	public boolean		eventsUpToDate;		// PS queues: True if currently scheduled events for this queue (if any) 
 											//            reflect the latest token popolation of the queue.											
 	public boolean		eventScheduled;		// PS queues: True if there is currently a service completion event scheduled for this queue.
+	public Event		nextEvent;			// PS queues: Next service completion event scheduled for this queue.
 	public boolean 		expPS;				// PS queues: true  = Processor-Sharing with exponential service times.
 											//            false = Processor-Sharing with non-exponential service times.	                                        
 	public int			tkSchedPl;			// PS queues: expPS==false: Queueing place containing the next token scheduled to complete service.	
@@ -297,17 +300,22 @@ public class Queue {
 	public void clearEvents() {
 		// Remove scheduled event from the event list. 
 		// Note that a maximum of one event can be scheduled per PS QPlace at a time.
+		Simulator.eventList.remove(nextEvent);		
+		eventScheduled = false;
+//		System.out.println("DEBUG: Removing scheduled event for QPlace");
+	
+		/* Old LinkedList implementation of the event list.
 		int i = Simulator.eventList.size() - 1;
 		while (i >= 0) {
 			Event ev = (Event) Simulator.eventList.get(i);
 			if (ev.queue == this) {
 				Simulator.eventList.remove(i); 
-//				System.out.println("DEBUG: Removing scheduled event for QPlace"); 
 				break; 
 			}
 			else i--;				
 		}
 		eventScheduled = false;		
+		*/
 	}
 
 	/**

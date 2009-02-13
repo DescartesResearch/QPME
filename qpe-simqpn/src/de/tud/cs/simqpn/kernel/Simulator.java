@@ -33,8 +33,10 @@
  *  2008/11/25  Samuel Kounev     Added Queues as first class objects decoupled from QueueingPlaces.
  *  2008/11/25  Samuel Kounev     Added support for multiple QPlaces sharing the same queue.
  *  2008/12/13  Samuel Kounev     Changed to extract information about the token colors and store it in 
- *                                the created Places and QPlaces.                           
- *                                
+ *                                the created Places and QPlaces.      
+ *  2009/02/13  Samuel Kounev     Changed eventList to use PriorityQueue instead of LinkedList to speed up 
+ *                                searches in the event list.   
+ *                       
  */
 
 package de.tud.cs.simqpn.kernel;
@@ -54,8 +56,10 @@ import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
+//import java.util.LinkedList; // Old LinkedList implementation of the event list.
+import java.util.PriorityQueue;
+import java.util.Comparator;
 
 import org.dom4j.Attribute;
 import org.dom4j.DocumentHelper;
@@ -159,7 +163,17 @@ public class Simulator {
 
 	// Check if using double for time is really needed and if overhead is tolerable. Consider switching to float.
 	public static double clock;					// Global simulation clock. Time is usually measured in milliseconds.
-	public static LinkedList eventList;			// Global simulation event list. Contains events scheduled for processing at specified points in time.
+	public static 
+		PriorityQueue<Event> eventList =		// Global simulation event list. Contains events scheduled for processing at specified points in time.
+	      new PriorityQueue<Event>(10, 
+	        new Comparator<Event>() {
+	          public int compare(Event a, Event b) {
+	        	  // return (a.time < b.time ? -1 : (a.time == b.time ? 0 : 1));
+	        	 return (a.time < b.time ? -1 : 1);
+	          }
+	        }
+	      );
+	// public static LinkedList eventList;		// Old LinkedList implementation of the event list.	
 
 	// Supported Random Number Generators
 	public static final int DRand = 0;				// cern.jet.random.engine.DRand
@@ -2673,8 +2687,9 @@ public class Simulator {
 		clock = 0;	// Note that it has been assumed throughout the code that
 		   			// the simulation starts at virtual time 0.
 
-		eventList = new LinkedList();
-
+		eventList.clear();
+		// eventList = new LinkedList();  // Old LinkedList implementation of the event list.
+		
 		// Make sure clock has been initialized before calling init below
 		// Call places[i].init() first and then thans[i].init() and queues[i].init() 
 		for (int i = 0; i < numPlaces; i++)
@@ -2742,6 +2757,11 @@ public class Simulator {
 	 */
 	@SuppressWarnings("unchecked")
 	public static void scheduleEvent(double time, Queue queue, Token token) {
+		Event ev = new Event(time, queue, token);
+		eventList.add(ev);
+		queue.nextEvent = ev;
+		
+		/* Old LinkedList implementation of the event list
 		int i = eventList.size() - 1;
 		while (i >= 0) {
 			Event ev = (Event) eventList.get(i);
@@ -2751,6 +2771,7 @@ public class Simulator {
 				i--;
 		}
 		eventList.add(i + 1, new Event(time, queue, token));
+		*/
 	}
 
 	/**
@@ -2865,8 +2886,9 @@ public class Simulator {
 
 			// Step 3: Process next event in event list
 			if (eventList.size() > 0) {
-				Event ev = (Event) eventList.remove(0);
-
+				Event ev = eventList.poll();
+				// Event ev = (Event) eventList.remove(0); // Old LinkedList implementation of the event list.
+								
 				// Advance simulation time
 				clock = ev.time;
 
