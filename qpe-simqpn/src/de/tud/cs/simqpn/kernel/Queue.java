@@ -8,11 +8,12 @@
  *
  *  History:
  *  Date        ID                Description
- *  ----------  ----------------  ------------------------------------------------------------------
+ *  ----------  ----------------  --------------------------------------------------------------------------------------------
  *  2008/11/22  Samuel Kounev     Created.
  *  2008/12/13  Samuel Kounev     Fixed a bug in updateEvents() for expPS==true.
  *  2009/02/13  Samuel Kounev     Changed eventList to use PriorityQueue instead of LinkedList
  *                                to speed up searches in the event list.
+ *  2009/04/08  Samuel Kounev     Added a check in clearEvents() to make sure that events are removed from the event lists.
  *                                
  */
 
@@ -297,12 +298,21 @@ public class Queue {
 	 * @return
 	 * @exception
 	 */
-	public void clearEvents() {
+	public void clearEvents() throws SimQPNException {
 		// Remove scheduled event from the event list. 
 		// Note that a maximum of one event can be scheduled per PS QPlace at a time.
-		Simulator.eventList.remove(nextEvent);		
+		
+		/* WARNING: Potential problems with the use of eventList.remove() below because of the following bug:
+		 * http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6207984
+		 * http://bugs.sun.com/bugdatabase/view_bug.do;jsessionid=859a6e381a7abfffffffff7e644d05a59d93?bug_id=6268068
+		 * 
+		 * On old JVMs that do not have the above bug fixed, if two events have the exact same time, the wrong one might be removed!   
+		 */
+		if (!Simulator.eventList.remove(nextEvent))  {		
+			Simulator.logln("Error: Failed to remove scheduled event from event list!");
+			throw new SimQPNException();
+		}			
 		eventScheduled = false;
-//		System.out.println("DEBUG: Removing scheduled event for QPlace");
 	
 		/* Old LinkedList implementation of the event list.
 		int i = Simulator.eventList.size() - 1;

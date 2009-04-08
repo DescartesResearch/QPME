@@ -36,6 +36,11 @@
  *                                the created Places and QPlaces.      
  *  2009/02/13  Samuel Kounev     Changed eventList to use PriorityQueue instead of LinkedList to speed up 
  *                                searches in the event list.   
+ *  2009/04/08  Samuel Kounev     Changed the definition of eventList.Comparator to treat equality explicitly.
+ *                                Potential problems when using eventList.remove() because of the following bug
+ *                                http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6207984
+ *                                On old JVMs that do not have the above bug fixed, if two events have the 
+ *                                exact same time, the wrong one might be removed!
  *                       
  */
 
@@ -168,13 +173,22 @@ public class Simulator {
 	      new PriorityQueue<Event>(10, 
 	        new Comparator<Event>() {
 	          public int compare(Event a, Event b) {
-	        	  // return (a.time < b.time ? -1 : (a.time == b.time ? 0 : 1));
-	        	 return (a.time < b.time ? -1 : 1);
+	        	 return (a.time < b.time ? -1 : (a.time == b.time ? 0 : 1));	        	 
 	          }
 	        }
 	      );
 	// public static LinkedList eventList;		// Old LinkedList implementation of the event list.	
 
+	/* WARNING: Watch out when defining the Comparator above: Equality should be treated explicitly!
+	 * 
+	 * Potential problems when using eventList.remove() because of the following bug
+	 * http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6207984
+	 * http://bugs.sun.com/bugdatabase/view_bug.do;jsessionid=859a6e381a7abfffffffff7e644d05a59d93?bug_id=6268068
+	 * 
+	 * On old JVMs that do not have the above bug fixed, if two events have the exact same time, the wrong one might be removed! 
+	 *   
+	 */
+	
 	// Supported Random Number Generators
 	public static final int DRand = 0;				// cern.jet.random.engine.DRand
 	public static final int MersenneTwister = 1;	// cern.jet.random.engine.MersenneTwister
