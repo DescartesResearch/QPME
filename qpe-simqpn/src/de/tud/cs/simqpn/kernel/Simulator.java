@@ -41,7 +41,8 @@
  *                                http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6207984
  *                                On old JVMs that do not have the above bug fixed, if two events have the 
  *                                exact same time, the wrong one might be removed!
- *                       
+ *  2009/08/03  Frederik Zipp     Added central queue management (queue editor).
+ *  2009/08/03  Frederik Zipp     Made a change to support storing simulation results in an XML file.
  */
 
 package de.tud.cs.simqpn.kernel;
@@ -59,12 +60,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 //import java.util.LinkedList; // Old LinkedList implementation of the event list.
 import java.util.PriorityQueue;
 import java.util.Comparator;
+import java.util.NoSuchElementException;
 
 import org.dom4j.Attribute;
 import org.dom4j.DocumentHelper;
@@ -209,6 +212,7 @@ public class Simulator {
 	protected Element net;
 	protected List placeList;
 	protected List transitionList;
+	protected List queueList;
 	protected static PrintStream logPrintStream;
 
 	public Simulator(Element net, String configuration) {
@@ -218,6 +222,8 @@ public class Simulator {
 		placeList = xpathSelector.selectNodes(net);
 		xpathSelector = DocumentHelper.createXPath("//transition");
 		transitionList = xpathSelector.selectNodes(net);
+		xpathSelector = DocumentHelper.createXPath("//queue");
+		queueList = xpathSelector.selectNodes(net);
 	}
 
 	public static void configure(Element net, String configuration) throws SimQPNException {
@@ -332,10 +338,12 @@ public class Simulator {
 	 * @return
 	 * @exception
 	 */
-	public static void execute(Element net, String configuration) throws SimQPNException {
+	public static Stats[] execute(Element net, String configuration) throws SimQPNException {
 		
 		// TODO: Make the Stdout output print to $statsDir/Output.txt
 		// CHRIS: Not done yet
+
+		Stats[] result = null;
 
 		simRunning = true;
 		// NOTE: In the following, if the simulation is interrupted, simRunning should be reset. 		  
@@ -364,9 +372,23 @@ public class Simulator {
 		
 			if (runMode == NORMAL) {
 				if (analMethod == BATCH_MEANS) { // Method of non-overlapping batch means
-					Place[] places = runBatchMeans(net, configuration);
-					for (int p = 0; p < places.length; p++)
-						places[p].report();
+					SimulatorResults results = runBatchMeans(net, configuration);
+					List<Stats> stats = new ArrayList<Stats>();
+					for (int p = 0; p < results.getPlaces().length; p++) {
+						stats.add(results.getPlaces()[p].placeStats);
+						if (results.getPlaces()[p] instanceof QPlace) {
+							stats.add(((QPlace) results.getPlaces()[p]).qPlaceQueueStats);
+						}
+						results.getPlaces()[p].report();
+					}
+					if (results.getQueues() != null) {
+						for (Queue queue : results.getQueues()) {
+							if (queue != null && queue.queueStats != null) {
+								stats.add(queue.queueStats);
+							}
+						}
+					}
+					result = (Stats[]) stats.toArray(new Stats[stats.size()]);
 				} else if (analMethod == REPL_DEL) { // Replication/Deletion Approach (Method of Independent Replications) 				
 					useStdStateStats = false;
 					// useStdStateStats configurable only in MULT_REPL mode
@@ -376,6 +398,7 @@ public class Simulator {
 					for (int i = 0; i < aggrStats.length; i++)
 						if (aggrStats[i] != null)
 							aggrStats[i].printReport();
+					result = aggrStats;
 				} else {
 					logln("Error: Illegal analysis method specified!");
 					throw new SimQPNException();				
@@ -396,7 +419,8 @@ public class Simulator {
 			simRunning = false;
 			throw e;			
 		}		
-		simRunning = false;		
+		simRunning = false;	
+		return result;
 	}
 
 	/* 
@@ -491,11 +515,11 @@ public class Simulator {
 	 * @return
 	 * @exception
 	 */
-	public static Place[] runBatchMeans(Element net, String configuration) throws SimQPNException {
+	public static SimulatorResults runBatchMeans(Element net, String configuration) throws SimQPNException {
 		Simulator sim = new Simulator(net, configuration);
 		sim.getReady();
 		sim.run();
-		return sim.places;
+		return new SimulatorResults(sim.places, sim.queues);
 	}
 
 	/**
@@ -1008,7 +1032,7 @@ public class Simulator {
 		// Initialize the place and transition sizes.
 		numPlaces = placeList.size();
 		numTrans = transitionList.size();
-		numQueues = 0;
+		numQueues = queueList.size();
 
 		// -----------------------------------------------------------------------------------------------------------
 		// CREATE PLACES
@@ -1059,7 +1083,56 @@ public class Simulator {
 		// Allocate an array able to contain the places.
 		logln(2, "places = new Place[" + numPlaces + "];");
 		places = new Place[numPlaces];
-		queues = new Queue[numPlaces]; // TODO: Set to actual value defined in QPE. 
+		queues = new Queue[numQueues]; 
+
+		for (int i = 0; i < numQueues; i++) {
+			Element queue = (Element) queueList.get(i);
+
+			int numberOfServers;
+			int queueingStrategy = Queue.FCFS;
+
+			if ("IS".equals(queue.attributeValue("strategy"))) {
+				queueingStrategy = Queue.IS; 
+				numberOfServers = 0; //NOTE: This is assumed in QPlaceQueueStats.updateTkPopStats()! 
+			} else {
+				if ("FCFS".equals(queue.attributeValue("strategy"))) {
+					queueingStrategy = Queue.FCFS; 
+				} else if ("PS".equals(queue.attributeValue("strategy"))) {
+					queueingStrategy = Queue.PS; 
+				} else {						
+					logln("ERROR: Invalid or missing \"strategy\" (queueing discipline) setting!");
+					logln("Details: ");
+					logln("  queue-num      = " + i);
+					logln("  queue.id       = " + queue.attributeValue("id"));
+					logln("  queue.name     = " + queue.attributeValue("name"));
+					logln("  queue.strategy = " + queue.attributeValue("strategy"));
+					throw new SimQPNException();
+				}
+				if (queue.attributeValue("number-of-servers") == null) {
+					logln("ERROR: \"number-of-servers\" parameter not set!");
+					logln("Details: ");
+					logln("  queue-num   = " + i);
+					logln("  queue.id    = " + queue.attributeValue("id"));
+					logln("  queue.name  = " + queue.attributeValue("name"));												
+					throw new SimQPNException();
+				}
+				numberOfServers = Integer.parseInt(queue.attributeValue("number-of-servers"));
+			}				
+	
+			queues[i] = new Queue(
+					i,															// index
+					queue.attributeValue("id"),									// xml-id
+					queue.attributeValue("name"), 								// name
+					queueingStrategy, 											// queueing d
+					numberOfServers	 											// # servers
+					);
+			logln(2, "queues[" + i + "] = new Queue(" 
+					+ i + ", '" 
+					+ queue.attributeValue("name") + "', " 
+					+ queueingStrategy + ", " 
+					+ numberOfServers + ")");					
+		}
+
 
 		// Create the place-objects of every-place. Depending on its type-attribute create Place or QPlace objects.
 		Iterator placeIterator = placeList.iterator();
@@ -1162,48 +1235,8 @@ public class Simulator {
 						+ dDis + ", " 
 						+ place + ")"); 												
 			} else if ("queueing-place".equals(place.attributeValue("type"))) {
-				int qDis = Queue.FCFS;
-				int numServers;
-				
-				if ("IS".equals(place.attributeValue("strategy"))) {
-					qDis = Queue.IS; 
-					numServers = 0; //NOTE: This is assumed in QPlaceQueueStats.updateTkPopStats()! 
-				} else {
-					if ("FCFS".equals(place.attributeValue("strategy"))) {
-						qDis = Queue.FCFS; 
-					} else if ("PS".equals(place.attributeValue("strategy"))) {
-						qDis = Queue.PS; 
-					} else {						
-						logln("ERROR: Invalid or missing \"strategy\" (queueing discipline) setting!");
-						logln("Details: ");
-						logln("  place-num      = " + i);
-						logln("  place.id       = " + place.attributeValue("id"));
-						logln("  place.name     = " + place.attributeValue("name"));
-						logln("  place.strategy = " + place.attributeValue("strategy"));
-						throw new SimQPNException();
-					}
-					if(place.attributeValue("number-of-servers") == null) {
-						logln("ERROR: \"number-of-servers\" parameter not set!");
-						logln("Details: ");
-						logln("  place-num   = " + i);
-						logln("  place.id    = " + place.attributeValue("id"));
-						logln("  place.name  = " + place.attributeValue("name"));												
-						throw new SimQPNException();
-					}
-					numServers = Integer.parseInt(place.attributeValue("number-of-servers"));
-				}				
-		
-				queues[numQueues] = new Queue(
-						numQueues,															// id 
-						place.attributeValue("name"), 										// name
-						qDis, 																// queueing discipline
-						numServers	 														// # servers
-						);
-				logln(2, "queues[" + numQueues + "] = new Queue(" 
-						+ numQueues + ", '" 
-						+ place.attributeValue("name") + "', " 
-						+ qDis + ", " 
-						+ numServers + ")");					
+				String queueRef = place.attributeValue("queue-ref");
+				Queue queue = findQueueByXmlId(queueRef);
 				places[i] = new QPlace(
 						i, 																	// id
 						place.attributeValue("name"), 										// name
@@ -1212,7 +1245,7 @@ public class Simulator {
 						numOutgoingConnections, 											// # outgoing connections
 						statsLevel, 														// stats level
 						dDis, 																// departure discipline
-						queues[numQueues],													// Reference to the integrated Queue										
+						queue,													// Reference to the integrated Queue										
 						place);																// Reference to the place' XML element				
 				logln(2, "places[" + i + "] = new QPlace(" 
 						+ i + ", '" 
@@ -1222,9 +1255,9 @@ public class Simulator {
 						+ numOutgoingConnections + ", " 
 						+ statsLevel + ", " 
 						+ dDis + ", " 
-						+ queues[numQueues] + ", "  
+						+ queue + ", "  
 						+ place + ")"); 								
-				queues[numQueues++].addQPlace((QPlace) places[i]);				
+				queue.addQPlace((QPlace) places[i]);				
 				
 			} else {
 				logln("ERROR: Invalid or missing place type setting!");
@@ -2713,6 +2746,17 @@ public class Simulator {
 		for (int i = 0; i < numQueues; i++)
 			queues[i].init();
 	}
+
+
+	private Queue findQueueByXmlId(String xmlId) {
+		for (Queue queue : queues) {
+			if (xmlId.equals(queue.xmlId)) {
+				return queue;
+			}
+		}
+		throw new NoSuchElementException();
+	}
+
 
 	/**
 	 * Method nextRandNumGen - returns a uniform random number generator

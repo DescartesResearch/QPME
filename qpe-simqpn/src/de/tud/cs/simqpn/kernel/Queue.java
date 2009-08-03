@@ -14,6 +14,7 @@
  *  2009/02/13  Samuel Kounev     Changed eventList to use PriorityQueue instead of LinkedList
  *                                to speed up searches in the event list.
  *  2009/04/08  Samuel Kounev     Added a check in clearEvents() to make sure that events are removed from the event lists.
+ *  2009/08/03  Frederik Zipp     Added xmlId property.
  *                                
  */
 
@@ -44,6 +45,7 @@ public class Queue {
 	public static final int PS = 2;	
 
 	public int 			id;					// Global id of the queue.
+	public String		xmlId;				// XML ID 
 	public String		name;				// Name of the queue.
 	public int			queueDiscip;		// Queueing discipline.
 		
@@ -81,9 +83,11 @@ public class Queue {
 	 * @param name                - name of the queue
 	 * @param queueDiscip         - queueing discipline
 	 * @param numServers          - number of servers in queue
-	 */
-	public Queue(int id, String name, int queueDiscip, int numServers) throws SimQPNException {
+	 */	
+	public Queue(int id, String xmlId, String name, int queueDiscip, int numServers) throws SimQPNException {
+
 		this.id							= id;
+		this.xmlId						= xmlId;
 		this.name						= name;
 		this.queueDiscip				= queueDiscip; 		
 		this.numServers 				= numServers; 		

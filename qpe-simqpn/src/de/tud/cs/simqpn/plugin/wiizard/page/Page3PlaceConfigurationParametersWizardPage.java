@@ -383,7 +383,7 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 					if (treeItemData instanceof Element) {
 						Element place = (Element) treeItemData;
 						Integer iVal = (Integer) value;
-						if ((0 <= iVal) && (iVal <= 4)) {
+						if ((0 <= iVal) && (iVal <= 5)) {
 							DocumentManager.setAttribute(
 									getMetaAttribute(place), property,
 									((Integer) value).toString());

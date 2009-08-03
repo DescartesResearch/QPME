@@ -156,6 +156,16 @@ public class TimeHistogram implements Serializable  {
 		return bucketSize;
 	}
 
+
+	/**
+	 * getData - returns the histogram data.
+	 * 
+	 */	
+	public int[] getData() {
+		return data;
+	}
+
+
 	/**
 	 * getPercentile - returns the approximate value of P(X) for the sample population. 
 	 * The value returned is the upperbound of the bucket in which the X percentile lies.
