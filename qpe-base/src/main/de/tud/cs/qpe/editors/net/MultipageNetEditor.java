@@ -38,6 +38,7 @@ public class MultipageNetEditor extends MultiPageEditorPart implements PropertyC
 	protected NetEditorPage netEditor;
 
 	protected ColorEditorPage colorEditor;
+	protected QueueEditorPage queueEditor;
 
 	public MultipageNetEditor() {
 		super();
@@ -97,9 +98,18 @@ public class MultipageNetEditor extends MultiPageEditorPart implements PropertyC
 		setPageText(index, "Colors");
 	}
 
+	protected void createQueueEditorPage() {
+		// Create the Page for editing a nets queues.
+		queueEditor = new QueueEditorPage(getContainer(), SWT.NONE);
+		queueEditor.setInput(getEditorInput());
+		int index = addPage(queueEditor);
+		setPageText(index, "Queues");
+	}
+
 	protected void createPages() {
 		createGraphicalEditorPage();
 		createColorEditorPage();
+		createQueueEditorPage();
 	}
 
 	public void close(final boolean save) {

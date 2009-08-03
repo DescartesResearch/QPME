@@ -57,6 +57,20 @@
                   contributorClass="de.tud.cs.qpe.editors.incidence.gef.IncidenceFunctionEditorActionBarContributor"
                   default="false" icon="icons/sample.gif" id="de.tud.cs.qpe.editor.incidence"
                   name="Incidence Function Editor"/>
+            <editor class="de.tud.cs.qpe.editors.query.AdvancedQueryEditor"
+                  default="false" icon="icons/sample.gif" id="de.tud.cs.qpe.editor.query.advanced"
+                  name="Advanced Query Editor"/>
+            <editor class="de.tud.cs.qpe.editors.query.SimpleQueryEditor"
+                  default="false" icon="icons/sample.gif" id="de.tud.cs.qpe.editor.query.simple"
+                  name="Simple Query Editor"/>
+            <editor id="de.tud.cs.qpe.editors.visualization"
+                  name="Chart View"
+                  class="de.tud.cs.qpe.editors.visualization.VisualizationEditor"
+                  icon="icons/sample.gif"/>
+            <editor id="de.tud.cs.qpe.editors.r"
+                  name="R Integration"
+                  class="de.tud.cs.qpe.editors.r.REditor"
+                  icon="icons/sample.gif"/>
       </extension>
       <extension point="org.eclipse.ui.popupMenus">
             <objectContribution id="de.tud.cs.qpe.editor.net.popup"
@@ -104,4 +118,10 @@
             </actionSet>
             <actionSet label="Help Actions" visible="true" id="de.tud.cs.qpe.actionset.help"/>
       </extension>
+      <extension point="org.eclipse.ui.preferencePages">
+			<page id="de.tud.cs.qpe.rcp.QpmePreferencePage"
+		 		name="QPME Preferences"
+    			class="de.tud.cs.qpe.rcp.QpmePreferencePage">
+	   		</page>
+	  </extension>
 </plugin>

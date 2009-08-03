@@ -771,6 +771,6 @@
     <connection source-id="1156606473755" target-id="1156606473699" id="1156606473763"/> 
   </connections>  
   <meta-attributes> 
-    <meta-attribute name="sim-qpn" scenario="1" id="1157198811876" time-before-initial-heart-beat="100000" seconds-between-heart-beats="60" configuration-name="L5a" stopping-rule="RELPRC" ramp-up-length="5E6" total-run-length="100E7" time-between-stop-checks="60000" verbosity-level="2" output-directory="C:\Temp"/> 
+    <meta-attribute name="sim-qpn" scenario="1" id="1157198811876" time-before-initial-heart-beat="100000" seconds-between-heart-beats="60" configuration-name="L5a" stopping-rule="RELPRC" time-between-stop-checks="60000" verbosity-level="2" ramp-up-length="5E4" total-run-length="100E4" seconds-between-stop-checks="1" output-directory="C:\Dokumente und Einstellungen\zipp\Desktop"/> 
   </meta-attributes> 
 </net>

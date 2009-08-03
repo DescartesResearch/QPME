@@ -1,0 +1,923 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<simqpn-results model-file="C:\Documents and Settings\Administrator\My Documents\qpme\qpe-base\test-data\SjAS04Model_4AS.qpe" date="2009-04-08_12035310" name="SimQPN_Output_L5a_2009-04-08_12035310" configuration-name="L5a">
+  <observed-element type="queue" name="MQ" id="1432473674" stats-level="2">
+      <metric type="totArrivThrPut" value="0.5"/>
+      <metric type="totDeptThrPut" value="0.3"/>
+      <metric type="meanTotTkPop" value="0.1"/>
+      <metric type="queueUtil" value="0.007540017731183528"/>
+  </observed-element>
+  <observed-element type="qplace:depository" name="C1" id="1156606473674" stats-level="2">
+    <metric type="tkOcp" value="0.0"/>
+    <color name="B" id="1156606473736" real-color="#bf02a9">
+      <metric type="arrivThrPut" value="0.007540017731183528"/>
+      <metric type="deptThrPut" value="0.007540017731183528"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+    </color>
+    <color name="P" id="1156606473737" real-color="#363c46">
+      <metric type="arrivThrPut" value="0.0030768493408138285"/>
+      <metric type="deptThrPut" value="0.0030768493408138285"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+    </color>
+    <color name="M" id="1156606473738" real-color="#05db4c">
+      <metric type="arrivThrPut" value="0.0030652703662161713"/>
+      <metric type="deptThrPut" value="0.0030652703662161713"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+    </color>
+  </observed-element>
+  <observed-element type="qplace:queue" name="C1" id="1156606473674" stats-level="2">
+    <metric type="tkOcp" value="1.0"/>
+    <color name="B" id="1156606473736" real-color="#bf02a9">
+      <metric type="arrivThrPut" value="0.007538965097129196"/>
+      <metric type="deptThrPut" value="0.007540017731183528"/>
+      <metric type="minTkPop" value="27"/>
+      <metric type="maxTkPop" value="40"/>
+      <metric type="meanTkPop" value="37.74305726880072"/>
+      <metric type="tkColOcp" value="1.0"/>
+    </color>
+    <color name="P" id="1156606473737" real-color="#363c46">
+      <metric type="arrivThrPut" value="0.0030768493408138285"/>
+      <metric type="deptThrPut" value="0.0030768493408138285"/>
+      <metric type="minTkPop" value="11"/>
+      <metric type="maxTkPop" value="16"/>
+      <metric type="meanTkPop" value="15.581810159454916"/>
+      <metric type="tkColOcp" value="1.0"/>
+    </color>
+    <color name="M" id="1156606473738" real-color="#05db4c">
+      <metric type="arrivThrPut" value="0.003063165098107506"/>
+      <metric type="deptThrPut" value="0.0030652703662161713"/>
+      <metric type="minTkPop" value="11"/>
+      <metric type="maxTkPop" value="16"/>
+      <metric type="meanTkPop" value="15.562148935486698"/>
+      <metric type="tkColOcp" value="1.0"/>
+    </color>
+  </observed-element>
+  <observed-element type="place" name="G" id="1156606473676" stats-level="2">
+    <metric type="tkOcp" value="0.0"/>
+    <color name="b" id="1156606473741" real-color="#d7b339">
+      <metric type="arrivThrPut" value="0.1279603009127645"/>
+      <metric type="deptThrPut" value="0.1279603009127645"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+    </color>
+    <color name="p" id="1156606473742" real-color="#b9d62d">
+      <metric type="arrivThrPut" value="0.015509510156534706"/>
+      <metric type="deptThrPut" value="0.015509510156534706"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+    </color>
+    <color name="m" id="1156606473743" real-color="#9e512d">
+      <metric type="arrivThrPut" value="0.015292667541342217"/>
+      <metric type="deptThrPut" value="0.015292667541342217"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+    </color>
+  </observed-element>
+  <observed-element type="qplace:depository" name="L" id="1156606473680" stats-level="3">
+    <metric type="tkOcp" value="0.0"/>
+    <color name="b" id="1156606473741" real-color="#d7b339">
+      <metric type="arrivThrPut" value="0.1279603009127645"/>
+      <metric type="deptThrPut" value="0.1279603009127645"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+      <metric type="stdStateMeanST" value="0.0"/>
+      <metric type="ciHalfLenST" value="0.0"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="p" id="1156606473742" real-color="#b9d62d">
+      <metric type="arrivThrPut" value="0.015509510156534706"/>
+      <metric type="deptThrPut" value="0.015509510156534706"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+      <metric type="stdStateMeanST" value="0.0"/>
+      <metric type="ciHalfLenST" value="0.0"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="m" id="1156606473743" real-color="#9e512d">
+      <metric type="arrivThrPut" value="0.015292667541342217"/>
+      <metric type="deptThrPut" value="0.015292667541342217"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+      <metric type="stdStateMeanST" value="0.0"/>
+      <metric type="ciHalfLenST" value="0.0"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+  </observed-element>
+  <observed-element type="qplace:queue" name="L" id="1156606473680" stats-level="3">
+    <metric type="tkOcp" value="0.384219911815605"/>
+    <color name="b" id="1156606473741" real-color="#d7b339">
+      <metric type="arrivThrPut" value="0.1279603009127645"/>
+      <metric type="deptThrPut" value="0.1279603009127645"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="9"/>
+      <metric type="meanTkPop" value="0.518152952458167"/>
+      <metric type="tkColOcp" value="0.3443641879623784"/>
+      <metric type="minST" value="3.512225521262735E-5"/>
+      <metric type="maxST" value="107.7647060228046"/>
+      <metric type="meanST" value="4.049325835920095"/>
+      <metric type="stDevST" value="4.88922571254945"/>
+      <metric type="stdStateMeanST" value="4.049273215852504"/>
+      <metric type="ciHalfLenST" value="0.073488801399692"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="p" id="1156606473742" real-color="#b9d62d">
+      <metric type="arrivThrPut" value="0.015509510156534706"/>
+      <metric type="deptThrPut" value="0.015509510156534706"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="4"/>
+      <metric type="meanTkPop" value="0.05257937897493403"/>
+      <metric type="tkColOcp" value="0.05006588081445971"/>
+      <metric type="minST" value="2.9303308110684156E-5"/>
+      <metric type="maxST" value="47.90482853970025"/>
+      <metric type="meanST" value="3.3901379504742435"/>
+      <metric type="stDevST" value="4.1499888546844845"/>
+      <metric type="stdStateMeanST" value="3.394001985621551"/>
+      <metric type="ciHalfLenST" value="0.09525281728464506"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="m" id="1156606473743" real-color="#9e512d">
+      <metric type="arrivThrPut" value="0.015292667541342217"/>
+      <metric type="deptThrPut" value="0.015292667541342217"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="3"/>
+      <metric type="meanTkPop" value="0.05079420975915139"/>
+      <metric type="tkColOcp" value="0.048460723132810496"/>
+      <metric type="minST" value="3.639064962044358E-4"/>
+      <metric type="maxST" value="63.70869997004047"/>
+      <metric type="meanST" value="3.3214747931866206"/>
+      <metric type="stDevST" value="4.188906718162128"/>
+      <metric type="stdStateMeanST" value="3.325262758539058"/>
+      <metric type="ciHalfLenST" value="0.10275893652751167"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+  </observed-element>
+  <observed-element type="qplace:depository" name="A1" id="1156606473689" stats-level="3">
+    <metric type="tkOcp" value="0.0"/>
+    <color name="b" id="1156606473741" real-color="#d7b339">
+      <metric type="arrivThrPut" value="0.03197902257062063"/>
+      <metric type="deptThrPut" value="0.03197902257062063"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+      <metric type="stdStateMeanST" value="0.0"/>
+      <metric type="ciHalfLenST" value="0.0"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="p" id="1156606473742" real-color="#b9d62d">
+      <metric type="arrivThrPut" value="0.003869482783726183"/>
+      <metric type="deptThrPut" value="0.003869482783726183"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+    </color>
+    <color name="m" id="1156606473743" real-color="#9e512d">
+      <metric type="arrivThrPut" value="0.0038042194723575695"/>
+      <metric type="deptThrPut" value="0.0038042194723575695"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+    </color>
+    <color name="l" id="1156606473745" real-color="#3d5a67">
+      <metric type="arrivThrPut" value="7.473701785760582E-5"/>
+      <metric type="deptThrPut" value="7.473701785760582E-5"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+    </color>
+    <color name="w" id="1156606473744" real-color="#3a4623">
+      <metric type="arrivThrPut" value="0.005221064909489083"/>
+      <metric type="deptThrPut" value="0.005221064909489083"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+    </color>
+  </observed-element>
+  <observed-element type="qplace:queue" name="A1" id="1156606473689" stats-level="3">
+    <metric type="tkOcp" value="0.381516001455657"/>
+    <color name="b" id="1156606473741" real-color="#d7b339">
+      <metric type="arrivThrPut" value="0.03197902257062063"/>
+      <metric type="deptThrPut" value="0.03197902257062063"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="7"/>
+      <metric type="meanTkPop" value="0.38592094865570953"/>
+      <metric type="tkColOcp" value="0.28297925757362946"/>
+      <metric type="minST" value="9.182802168652415E-4"/>
+      <metric type="maxST" value="195.10725586570334"/>
+      <metric type="meanST" value="12.06794071968472"/>
+      <metric type="stDevST" value="14.501759712951008"/>
+      <metric type="stdStateMeanST" value="12.064794173332904"/>
+      <metric type="ciHalfLenST" value="0.29660928940962666"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="p" id="1156606473742" real-color="#b9d62d">
+      <metric type="arrivThrPut" value="0.003869482783726183"/>
+      <metric type="deptThrPut" value="0.003869482783726183"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="3"/>
+      <metric type="meanTkPop" value="0.06549703097014666"/>
+      <metric type="tkColOcp" value="0.06177146859482182"/>
+      <metric type="minST" value="0.0012732495088130236"/>
+      <metric type="maxST" value="229.2078352876706"/>
+      <metric type="meanST" value="16.926559602644154"/>
+      <metric type="stDevST" value="20.022128104633477"/>
+    </color>
+    <color name="m" id="1156606473743" real-color="#9e512d">
+      <metric type="arrivThrPut" value="0.0038063247404662346"/>
+      <metric type="deptThrPut" value="0.0038042194723575695"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="4"/>
+      <metric type="meanTkPop" value="0.07329370887595056"/>
+      <metric type="tkColOcp" value="0.06876096757844041"/>
+      <metric type="minST" value="0.009760546730831265"/>
+      <metric type="maxST" value="285.27095791278407"/>
+      <metric type="meanST" value="19.244380266933764"/>
+      <metric type="stDevST" value="22.400318908489655"/>
+    </color>
+    <color name="l" id="1156606473745" real-color="#3d5a67">
+      <metric type="arrivThrPut" value="7.473701785760582E-5"/>
+      <metric type="deptThrPut" value="7.473701785760582E-5"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.010951082162768817"/>
+      <metric type="tkColOcp" value="0.010951082162768817"/>
+      <metric type="minST" value="0.23796035663690418"/>
+      <metric type="maxST" value="723.0715678232955"/>
+      <metric type="meanST" value="146.52821957163962"/>
+      <metric type="stDevST" value="146.88158931452807"/>
+    </color>
+    <color name="w" id="1156606473744" real-color="#3a4623">
+      <metric type="arrivThrPut" value="0.005221064909489083"/>
+      <metric type="deptThrPut" value="0.005221064909489083"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="4"/>
+      <metric type="meanTkPop" value="0.07051262336389444"/>
+      <metric type="tkColOcp" value="0.06651154907174378"/>
+      <metric type="minST" value="0.0020889819134026766"/>
+      <metric type="maxST" value="211.1415241175564"/>
+      <metric type="meanST" value="13.5054102154027"/>
+      <metric type="stDevST" value="16.007916688817325"/>
+    </color>
+  </observed-element>
+  <observed-element type="qplace:depository" name="B1" id="1156606473702" stats-level="3">
+    <metric type="tkOcp" value="0.0"/>
+    <color name="b" id="1156606473741" real-color="#d7b339">
+      <metric type="arrivThrPut" value="0.06412857185804312"/>
+      <metric type="deptThrPut" value="0.0641275192239888"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+      <metric type="stdStateMeanST" value="0.0"/>
+      <metric type="ciHalfLenST" value="0.0"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="p" id="1156606473742" real-color="#b9d62d">
+      <metric type="arrivThrPut" value="0.007771597223136673"/>
+      <metric type="deptThrPut" value="0.007771597223136673"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+      <metric type="stdStateMeanST" value="0.0"/>
+      <metric type="ciHalfLenST" value="0.0"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="m" id="1156606473743" real-color="#9e512d">
+      <metric type="arrivThrPut" value="0.007642123234453778"/>
+      <metric type="deptThrPut" value="0.007642123234453778"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+      <metric type="stdStateMeanST" value="0.0"/>
+      <metric type="ciHalfLenST" value="0.0"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="l" id="1156606473745" real-color="#3d5a67">
+      <metric type="arrivThrPut" value="1.6421091247586632E-4"/>
+      <metric type="deptThrPut" value="1.6526354653019878E-4"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+    </color>
+    <color name="w" id="1156606473744" real-color="#3a4623">
+      <metric type="arrivThrPut" value="0.010436866648706503"/>
+      <metric type="deptThrPut" value="0.010436866648706503"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+      <metric type="stdStateMeanST" value="0.0"/>
+      <metric type="ciHalfLenST" value="0.0"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+  </observed-element>
+  <observed-element type="qplace:queue" name="B1" id="1156606473702" stats-level="3">
+    <metric type="tkOcp" value="0.1736660890921938"/>
+    <color name="b" id="1156606473741" real-color="#d7b339">
+      <metric type="arrivThrPut" value="0.06412857185804312"/>
+      <metric type="deptThrPut" value="0.06412857185804312"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="4"/>
+      <metric type="meanTkPop" value="0.06306966910203508"/>
+      <metric type="tkColOcp" value="0.059435797028615685"/>
+      <metric type="minST" value="1.878372859209776E-5"/>
+      <metric type="maxST" value="17.66386661073193"/>
+      <metric type="meanST" value="0.983487816345699"/>
+      <metric type="stDevST" value="1.091438044405189"/>
+      <metric type="stdStateMeanST" value="0.9834092349910654"/>
+      <metric type="ciHalfLenST" value="0.01071780529523379"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="p" id="1156606473742" real-color="#b9d62d">
+      <metric type="arrivThrPut" value="0.007771597223136673"/>
+      <metric type="deptThrPut" value="0.007771597223136673"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="2"/>
+      <metric type="meanTkPop" value="0.03024862480388563"/>
+      <metric type="tkColOcp" value="0.029397566431653928"/>
+      <metric type="minST" value="2.878869418054819E-4"/>
+      <metric type="maxST" value="48.608725876081735"/>
+      <metric type="meanST" value="3.892201813268581"/>
+      <metric type="stDevST" value="4.240508475440281"/>
+      <metric type="stdStateMeanST" value="3.8983300716695997"/>
+      <metric type="ciHalfLenST" value="0.10523274317254533"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="m" id="1156606473743" real-color="#9e512d">
+      <metric type="arrivThrPut" value="0.007642123234453778"/>
+      <metric type="deptThrPut" value="0.007642123234453778"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="3"/>
+      <metric type="meanTkPop" value="0.0347284366746272"/>
+      <metric type="tkColOcp" value="0.03357084548449474"/>
+      <metric type="minST" value="8.935218211263418E-4"/>
+      <metric type="maxST" value="45.57379365339875"/>
+      <metric type="meanST" value="4.544343974729089"/>
+      <metric type="stDevST" value="4.814480043914184"/>
+      <metric type="stdStateMeanST" value="4.554152229064866"/>
+      <metric type="ciHalfLenST" value="0.15991618468741936"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="l" id="1156606473745" real-color="#3d5a67">
+      <metric type="arrivThrPut" value="1.6421091247586632E-4"/>
+      <metric type="deptThrPut" value="1.6421091247586632E-4"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="2"/>
+      <metric type="meanTkPop" value="0.005865046674798717"/>
+      <metric type="tkColOcp" value="0.005856302188707356"/>
+      <metric type="minST" value="0.11690094973891973"/>
+      <metric type="maxST" value="237.72791206894908"/>
+      <metric type="meanST" value="35.716546399805736"/>
+      <metric type="stDevST" value="36.91115648273727"/>
+    </color>
+    <color name="w" id="1156606473744" real-color="#3a4623">
+      <metric type="arrivThrPut" value="0.010438971916815167"/>
+      <metric type="deptThrPut" value="0.010436866648706503"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="4"/>
+      <metric type="meanTkPop" value="0.07482308305566289"/>
+      <metric type="tkColOcp" value="0.07019501123321716"/>
+      <metric type="minST" value="5.218173319008201E-4"/>
+      <metric type="maxST" value="77.18790255545173"/>
+      <metric type="meanST" value="7.167695498189844"/>
+      <metric type="stDevST" value="7.6548144436272265"/>
+      <metric type="stdStateMeanST" value="7.161497752801006"/>
+      <metric type="ciHalfLenST" value="0.15352839419185196"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+  </observed-element>
+  <observed-element type="qplace:depository" name="B2" id="1156606473703" stats-level="3">
+    <metric type="tkOcp" value="0.0"/>
+    <color name="b" id="1156606473741" real-color="#d7b339">
+      <metric type="arrivThrPut" value="0.06383172905472137"/>
+      <metric type="deptThrPut" value="0.06383172905472137"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+      <metric type="stdStateMeanST" value="0.0"/>
+      <metric type="ciHalfLenST" value="0.0"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="p" id="1156606473742" real-color="#b9d62d">
+      <metric type="arrivThrPut" value="0.007737912933398034"/>
+      <metric type="deptThrPut" value="0.007737912933398034"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+      <metric type="stdStateMeanST" value="0.0"/>
+      <metric type="ciHalfLenST" value="0.0"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="m" id="1156606473743" real-color="#9e512d">
+      <metric type="arrivThrPut" value="0.007648439038779774"/>
+      <metric type="deptThrPut" value="0.007648439038779774"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+      <metric type="stdStateMeanST" value="0.0"/>
+      <metric type="ciHalfLenST" value="0.0"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="l" id="1156606473745" real-color="#3d5a67">
+      <metric type="arrivThrPut" value="1.515793038238766E-4"/>
+      <metric type="deptThrPut" value="1.515793038238766E-4"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+    </color>
+    <color name="w" id="1156606473744" real-color="#3a4623">
+      <metric type="arrivThrPut" value="0.01031160319624094"/>
+      <metric type="deptThrPut" value="0.01031160319624094"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+      <metric type="stdStateMeanST" value="0.0"/>
+      <metric type="ciHalfLenST" value="0.0"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+  </observed-element>
+  <observed-element type="qplace:queue" name="B2" id="1156606473703" stats-level="3">
+    <metric type="tkOcp" value="0.17299502189268365"/>
+    <color name="b" id="1156606473741" real-color="#d7b339">
+      <metric type="arrivThrPut" value="0.06383172905472137"/>
+      <metric type="deptThrPut" value="0.06383172905472137"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="5"/>
+      <metric type="meanTkPop" value="0.06352282049281939"/>
+      <metric type="tkColOcp" value="0.05993342394356865"/>
+      <metric type="minST" value="8.287810487672687E-6"/>
+      <metric type="maxST" value="22.656124595319852"/>
+      <metric type="meanST" value="0.9951605797543546"/>
+      <metric type="stDevST" value="1.1140623949536665"/>
+      <metric type="stdStateMeanST" value="0.9952904819519858"/>
+      <metric type="ciHalfLenST" value="0.011146265542647303"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="p" id="1156606473742" real-color="#b9d62d">
+      <metric type="arrivThrPut" value="0.007737912933398034"/>
+      <metric type="deptThrPut" value="0.007737912933398034"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="3"/>
+      <metric type="meanTkPop" value="0.0304680848916234"/>
+      <metric type="tkColOcp" value="0.029375062506578276"/>
+      <metric type="minST" value="4.0656968485563993E-4"/>
+      <metric type="maxST" value="51.01940256846137"/>
+      <metric type="meanST" value="3.9375068127373747"/>
+      <metric type="stDevST" value="4.263981319902689"/>
+      <metric type="stdStateMeanST" value="3.937814525277224"/>
+      <metric type="ciHalfLenST" value="0.1069141533103642"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="m" id="1156606473743" real-color="#9e512d">
+      <metric type="arrivThrPut" value="0.007648439038779774"/>
+      <metric type="deptThrPut" value="0.007648439038779774"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="3"/>
+      <metric type="meanTkPop" value="0.03504389914450767"/>
+      <metric type="tkColOcp" value="0.033960721686729374"/>
+      <metric type="minST" value="8.616402046754956E-4"/>
+      <metric type="maxST" value="58.470346230780706"/>
+      <metric type="meanST" value="4.581836760000973"/>
+      <metric type="stDevST" value="4.970014135981564"/>
+      <metric type="stdStateMeanST" value="4.583157889647676"/>
+      <metric type="ciHalfLenST" value="0.13697428724580707"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="l" id="1156606473745" real-color="#3d5a67">
+      <metric type="arrivThrPut" value="1.515793038238766E-4"/>
+      <metric type="deptThrPut" value="1.515793038238766E-4"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.005757353463781975"/>
+      <metric type="tkColOcp" value="0.005757353463781975"/>
+      <metric type="minST" value="0.4693598347948864"/>
+      <metric type="maxST" value="148.35327897634124"/>
+      <metric type="meanST" value="37.9824508923169"/>
+      <metric type="stDevST" value="32.827528873715366"/>
+    </color>
+    <color name="w" id="1156606473744" real-color="#3a4623">
+      <metric type="arrivThrPut" value="0.01031160319624094"/>
+      <metric type="deptThrPut" value="0.01031160319624094"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="4"/>
+      <metric type="meanTkPop" value="0.0747501562667431"/>
+      <metric type="tkColOcp" value="0.06958100708775085"/>
+      <metric type="minST" value="4.4294423423707485E-4"/>
+      <metric type="maxST" value="112.23312315728981"/>
+      <metric type="meanST" value="7.249130406219765"/>
+      <metric type="stDevST" value="7.78154057089622"/>
+      <metric type="stdStateMeanST" value="7.250207256315156"/>
+      <metric type="ciHalfLenST" value="0.15779266553409294"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+  </observed-element>
+  <observed-element type="qplace:depository" name="H" id="1156606473714" stats-level="3">
+    <metric type="tkOcp" value="0.0"/>
+    <color name="b" id="1156606473741" real-color="#d7b339">
+      <metric type="arrivThrPut" value="0.12795924827871016"/>
+      <metric type="deptThrPut" value="0.12795924827871016"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+      <metric type="stdStateMeanST" value="0.0"/>
+      <metric type="ciHalfLenST" value="0.0"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="p" id="1156606473742" real-color="#b9d62d">
+      <metric type="arrivThrPut" value="0.015509510156534706"/>
+      <metric type="deptThrPut" value="0.015509510156534706"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+      <metric type="stdStateMeanST" value="0.0"/>
+      <metric type="ciHalfLenST" value="0.0"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="m" id="1156606473743" real-color="#9e512d">
+      <metric type="arrivThrPut" value="0.015290562273233551"/>
+      <metric type="deptThrPut" value="0.015290562273233551"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+      <metric type="stdStateMeanST" value="0.0"/>
+      <metric type="ciHalfLenST" value="0.0"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="l" id="1156606473745" real-color="#3d5a67">
+      <metric type="arrivThrPut" value="3.1684285035407536E-4"/>
+      <metric type="deptThrPut" value="3.1684285035407536E-4"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+    </color>
+    <color name="w" id="1156606473744" real-color="#3a4623">
+      <metric type="arrivThrPut" value="0.02074846984494744"/>
+      <metric type="deptThrPut" value="0.02074846984494744"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+      <metric type="stdStateMeanST" value="0.0"/>
+      <metric type="ciHalfLenST" value="0.0"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+  </observed-element>
+  <observed-element type="qplace:queue" name="H" id="1156606473714" stats-level="3">
+    <metric type="tkOcp" value="0.09483920933880707"/>
+    <color name="b" id="1156606473741" real-color="#d7b339">
+      <metric type="arrivThrPut" value="0.12795924827871016"/>
+      <metric type="deptThrPut" value="0.12795924827871016"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="5"/>
+      <metric type="meanTkPop" value="0.05005347866190549"/>
+      <metric type="tkColOcp" value="0.04654212009284194"/>
+      <metric type="minST" value="3.237539203837514E-6"/>
+      <metric type="maxST" value="17.79802224843297"/>
+      <metric type="meanST" value="0.3911673390959845"/>
+      <metric type="stDevST" value="0.5894096154707814"/>
+      <metric type="stdStateMeanST" value="0.3911425745631311"/>
+      <metric type="ciHalfLenST" value="0.004781812945314699"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="p" id="1156606473742" real-color="#b9d62d">
+      <metric type="arrivThrPut" value="0.015509510156534706"/>
+      <metric type="deptThrPut" value="0.015509510156534706"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="3"/>
+      <metric type="meanTkPop" value="0.026285170922580897"/>
+      <metric type="tkColOcp" value="0.025652555865260895"/>
+      <metric type="minST" value="4.3245399137958884E-4"/>
+      <metric type="maxST" value="19.70612311246805"/>
+      <metric type="meanST" value="1.6947776336769749"/>
+      <metric type="stDevST" value="1.7184926827238667"/>
+      <metric type="stdStateMeanST" value="1.6934756746492947"/>
+      <metric type="ciHalfLenST" value="0.030067384447003267"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="m" id="1156606473743" real-color="#9e512d">
+      <metric type="arrivThrPut" value="0.015290562273233551"/>
+      <metric type="deptThrPut" value="0.015290562273233551"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="3"/>
+      <metric type="meanTkPop" value="0.022727406713105976"/>
+      <metric type="tkColOcp" value="0.0222289490227115"/>
+      <metric type="minST" value="2.0601169671863317E-4"/>
+      <metric type="maxST" value="15.45698701456422"/>
+      <metric type="meanST" value="1.4863682778291794"/>
+      <metric type="stDevST" value="1.4786287425116678"/>
+      <metric type="stdStateMeanST" value="1.4865417171173647"/>
+      <metric type="ciHalfLenST" value="0.026264905987143327"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="l" id="1156606473745" real-color="#3d5a67">
+      <metric type="arrivThrPut" value="3.1684285035407536E-4"/>
+      <metric type="deptThrPut" value="3.1684285035407536E-4"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="6.477735417820905E-4"/>
+      <metric type="tkColOcp" value="6.477735417820905E-4"/>
+      <metric type="minST" value="0.008980301092378795"/>
+      <metric type="maxST" value="10.17646040103864"/>
+      <metric type="meanST" value="2.0444631812212153"/>
+      <metric type="stDevST" value="1.9050336941658523"/>
+    </color>
+    <color name="w" id="1156606473744" real-color="#3a4623">
+      <metric type="arrivThrPut" value="0.02074846984494744"/>
+      <metric type="deptThrPut" value="0.02074846984494744"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="3"/>
+      <metric type="meanTkPop" value="0.01231315682583819"/>
+      <metric type="tkColOcp" value="0.012137543874996264"/>
+      <metric type="minST" value="4.700501449406147E-5"/>
+      <metric type="maxST" value="15.393371084006503"/>
+      <metric type="meanST" value="0.5934489105873331"/>
+      <metric type="stDevST" value="0.713290695159941"/>
+      <metric type="stdStateMeanST" value="0.5930113333790661"/>
+      <metric type="ciHalfLenST" value="0.011828298678806602"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+  </observed-element>
+  <observed-element type="qplace:depository" name="C2" id="1156606473727" stats-level="2">
+    <metric type="tkOcp" value="0.0"/>
+    <color name="W" id="1156606473739" real-color="#6ae000">
+      <metric type="arrivThrPut" value="0.005106327797566843"/>
+      <metric type="deptThrPut" value="0.005106327797566843"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+    </color>
+  </observed-element>
+  <observed-element type="qplace:queue" name="C2" id="1156606473727" stats-level="2">
+    <metric type="tkOcp" value="1.0"/>
+    <color name="W" id="1156606473739" real-color="#6ae000">
+      <metric type="arrivThrPut" value="0.005104222529458178"/>
+      <metric type="deptThrPut" value="0.005106327797566843"/>
+      <metric type="minTkPop" value="45"/>
+      <metric type="maxTkPop" value="50"/>
+      <metric type="meanTkPop" value="49.539067225928"/>
+      <metric type="tkColOcp" value="1.0"/>
+    </color>
+  </observed-element>
+  <observed-element type="qplace:depository" name="A4" id="1156606473750" stats-level="3">
+    <metric type="tkOcp" value="0.0"/>
+    <color name="b" id="1156606473741" real-color="#d7b339">
+      <metric type="arrivThrPut" value="0.0318516538500464"/>
+      <metric type="deptThrPut" value="0.0318516538500464"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+      <metric type="stdStateMeanST" value="0.0"/>
+      <metric type="ciHalfLenST" value="0.0"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="p" id="1156606473742" real-color="#b9d62d">
+      <metric type="arrivThrPut" value="0.003991588334028751"/>
+      <metric type="deptThrPut" value="0.003991588334028751"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+    </color>
+    <color name="m" id="1156606473743" real-color="#9e512d">
+      <metric type="arrivThrPut" value="0.003932640826986132"/>
+      <metric type="deptThrPut" value="0.003932640826986132"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+    </color>
+    <color name="l" id="1156606473745" real-color="#3d5a67">
+      <metric type="arrivThrPut" value="8.736862650959554E-5"/>
+      <metric type="deptThrPut" value="8.736862650959554E-5"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+    </color>
+    <color name="w" id="1156606473744" real-color="#3a4623">
+      <metric type="arrivThrPut" value="0.005204222764619763"/>
+      <metric type="deptThrPut" value="0.005204222764619763"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.0"/>
+      <metric type="tkColOcp" value="0.0"/>
+      <metric type="minST" value="0.0"/>
+      <metric type="maxST" value="0.0"/>
+      <metric type="meanST" value="0.0"/>
+      <metric type="stDevST" value="0.0"/>
+    </color>
+  </observed-element>
+  <observed-element type="qplace:queue" name="A4" id="1156606473750" stats-level="3">
+    <metric type="tkOcp" value="0.3864466825871106"/>
+    <color name="b" id="1156606473741" real-color="#d7b339">
+      <metric type="arrivThrPut" value="0.0318516538500464"/>
+      <metric type="deptThrPut" value="0.0318516538500464"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="7"/>
+      <metric type="meanTkPop" value="0.3937508411867241"/>
+      <metric type="tkColOcp" value="0.2861435305151078"/>
+      <metric type="minST" value="0.0012358950916677713"/>
+      <metric type="maxST" value="251.2605357839493"/>
+      <metric type="meanST" value="12.362021860480267"/>
+      <metric type="stDevST" value="15.346194288186796"/>
+      <metric type="stdStateMeanST" value="12.348420823482725"/>
+      <metric type="ciHalfLenST" value="0.3154125411624066"/>
+      <metric type="confLevelST" value="95"/>
+    </color>
+    <color name="p" id="1156606473742" real-color="#b9d62d">
+      <metric type="arrivThrPut" value="0.003991588334028751"/>
+      <metric type="deptThrPut" value="0.003991588334028751"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="3"/>
+      <metric type="meanTkPop" value="0.07229727462311285"/>
+      <metric type="tkColOcp" value="0.06637294675464653"/>
+      <metric type="minST" value="0.01756944484077394"/>
+      <metric type="maxST" value="310.7056174238678"/>
+      <metric type="meanST" value="18.112407536310858"/>
+      <metric type="stDevST" value="23.89246233613138"/>
+    </color>
+    <color name="m" id="1156606473743" real-color="#9e512d">
+      <metric type="arrivThrPut" value="0.003932640826986132"/>
+      <metric type="deptThrPut" value="0.003932640826986132"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="3"/>
+      <metric type="meanTkPop" value="0.07420981782051783"/>
+      <metric type="tkColOcp" value="0.06965561378505898"/>
+      <metric type="minST" value="0.0018622189527377486"/>
+      <metric type="maxST" value="355.97331571555696"/>
+      <metric type="meanST" value="18.87022514522136"/>
+      <metric type="stDevST" value="22.696249228353324"/>
+    </color>
+    <color name="l" id="1156606473745" real-color="#3d5a67">
+      <metric type="arrivThrPut" value="8.736862650959554E-5"/>
+      <metric type="deptThrPut" value="8.736862650959554E-5"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="1"/>
+      <metric type="meanTkPop" value="0.014056049042311733"/>
+      <metric type="tkColOcp" value="0.014056049042311733"/>
+      <metric type="minST" value="0.48652669932926074"/>
+      <metric type="maxST" value="638.470972299343"/>
+      <metric type="meanST" value="160.88211070558586"/>
+      <metric type="stDevST" value="144.1615730894602"/>
+    </color>
+    <color name="w" id="1156606473744" real-color="#3a4623">
+      <metric type="arrivThrPut" value="0.005204222764619763"/>
+      <metric type="deptThrPut" value="0.005204222764619763"/>
+      <metric type="minTkPop" value="0"/>
+      <metric type="maxTkPop" value="4"/>
+      <metric type="meanTkPop" value="0.07178058366452586"/>
+      <metric type="tkColOcp" value="0.06677689217887241"/>
+      <metric type="minST" value="0.0032797317253425717"/>
+      <metric type="maxST" value="202.09814324753825"/>
+      <metric type="meanST" value="13.792757710626242"/>
+      <metric type="stDevST" value="17.081108972076443"/>
+    </color>
+  </observed-element>
+</simqpn-results>

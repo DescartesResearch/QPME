@@ -24,12 +24,15 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
+import de.tud.cs.qpe.editors.net.QueueEditorPage;
 import de.tud.cs.qpe.model.DocumentManager;
 import de.tud.cs.qpe.utils.ColorCellEditor;
 import de.tud.cs.qpe.utils.ColorHelper;
@@ -39,6 +42,8 @@ import de.tud.cs.qpe.utils.ITableLabelColorProvider;
 import de.tud.cs.qpe.utils.IntegerCellEditor;
 
 public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
+	protected Combo queue;
+
 	protected Combo strategy;
 
 	protected Spinner numberOfServers;
@@ -61,6 +66,28 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 	protected void initProperties() {
 		super.initProperties();
 
+		new Label(this, SWT.NULL).setText("Queue");
+		queue = new Combo(this, SWT.BORDER);
+		queue.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		queue.addModifyListener(new ModifyListener () {
+			public void modifyText(ModifyEvent evnt) {
+				if ("place".equals(getModel().getName())) {
+					String oldValue = getModel().attributeValue("queue-ref", "");
+					XPath xpathSelector = DocumentHelper.createXPath("//queue[@name = '"
+							+ QueueingPlacePropertyComposite.this.queue.getText() + "']");
+					Element q = (Element) xpathSelector.selectSingleNode(getModel());
+					if (q != null) {
+						String newValue = q.attributeValue("id", "");
+						if (!newValue.equals(oldValue)) {
+							DocumentManager.setAttribute(getModel(), "queue-ref", newValue);
+							strategy.setText(q.attributeValue("strategy", "FCFS"));
+							numberOfServers.setSelection(Integer.parseInt(q.attributeValue("number-of-servers", "1")));
+						}
+					}
+				}
+			}
+		});
+		
 		new Label(this, SWT.NULL).setText("Scheduling Strategy");
 		strategy = new Combo(this, SWT.BORDER);
 		strategy.add("PRIO");
@@ -72,12 +99,13 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 		strategy.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent evnt) {
 				if ("place".equals(getModel().getName())) {
-					String oldValue = getModel().attributeValue("strategy");
-					String newValue = QueueingPlacePropertyComposite.this.strategy
-							.getText();
-					if (!oldValue.equals(newValue)) {
-						DocumentManager.setAttribute(getModel(), "strategy",
-								newValue);
+					Element q = getQueueElement();
+					if (q != null) {
+						String oldValue = q.attributeValue("strategy");
+						String newValue = QueueingPlacePropertyComposite.this.strategy.getText();
+						if (!oldValue.equals(newValue)) {
+							DocumentManager.setAttribute(q, "strategy",	newValue);
+						}
 					}
 				}
 			}
@@ -89,20 +117,46 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 		numberOfServers.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent evnt) {
 				if ("place".equals(getModel().getName())) {
-					String oldValue = getModel().attributeValue(
-							"number-of-servers");
-					String newValue = Integer
-							.toString(QueueingPlacePropertyComposite.this.numberOfServers
-									.getSelection());
-					if (!oldValue.equals(newValue)) {
-						DocumentManager.setAttribute(getModel(),
-								"number-of-servers", newValue);
+					Element q = getQueueElement();
+					if (q != null) {
+						String oldValue = q.attributeValue("number-of-servers");
+						String newValue = Integer.toString(QueueingPlacePropertyComposite.this.numberOfServers.getSelection());
+						if (!oldValue.equals(newValue)) {
+							DocumentManager.setAttribute(q, "number-of-servers", newValue);
+						}
 					}
 				}
 			}
 		});
 		numberOfServers.setMinimum(1);
 		numberOfServers.setMaximum(1000000);
+		
+		Button newQueueButton = new Button(this, SWT.NULL);
+		newQueueButton.setText("New Queue");
+		newQueueButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		newQueueButton.addListener(SWT.Selection, new Listener() {
+			@Override
+			public void handleEvent(Event event) {
+				Element newQueue = QueueEditorPage.createQueue(getModel());
+				XPath xpathSelector = DocumentHelper.createXPath("//queues");
+				Element queues = (Element) xpathSelector.selectSingleNode(getModel());
+				DocumentManager.addChild(queues, newQueue);
+				updateQueueList();
+				selectQueue(newQueue.attributeValue("name", ""));
+				updatePropertyFields();
+			}
+		});
+	}
+
+	private Element getQueueElement() {
+		String id = getModel().attributeValue("queue-ref", "");
+		XPath xpathSelector = DocumentHelper.createXPath("//queue[@id = '" + id + "']");
+		Element q = (Element) xpathSelector.selectSingleNode(getModel());
+		return q;
+	}
+	
+	private void selectQueue(String name) {
+		queue.select(queue.indexOf(name));
 	}
 
 	/*
@@ -582,10 +636,24 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 	protected void updatePropertyFields() {
 		super.updatePropertyFields();
 		if (getModel() != null) {
-			strategy.setText((String) getModel().attributeValue("strategy",
-					"FCFS"));
-			numberOfServers.setSelection(Integer.parseInt(getModel()
-					.attributeValue("number-of-servers", "0")));
+			updateQueueList();
+			String id = getModel().attributeValue("queue-ref", "");
+			XPath xpathSelector = DocumentHelper.createXPath("//queue[@id = '" + id + "']");
+			Element q = (Element) xpathSelector.selectSingleNode(getModel());
+			if (q != null) {
+				queue.select(queue.indexOf(q.attributeValue("name", "")));
+				strategy.select(strategy.indexOf(q.attributeValue("strategy", "")));
+				numberOfServers.setSelection(Integer.parseInt(q.attributeValue("number-of-servers", "1")));
+			}
+		}
+	}
+
+	private void updateQueueList() {
+		queue.removeAll();
+		XPath xpathSelector = DocumentHelper.createXPath("//queues/queue");
+		List queues = xpathSelector.selectNodes(getModel());
+		for (Object queueElement : queues) {
+			queue.add(((Element) queueElement).attributeValue("name"));
 		}
 	}
 

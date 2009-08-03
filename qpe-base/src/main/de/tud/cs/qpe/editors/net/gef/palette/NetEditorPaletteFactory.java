@@ -2,18 +2,19 @@
  * Copyright (c) 2004 Elias Volanakis.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
-  * which accompanies this distribution, and is available at
-  * http://www.eclipse.org/legal/epl-v10.html
-  *
-  * Contributors:
-  *    Elias Volanakis - initial API and implementation
+ ï¿½* which accompanies this distribution, and is available at
+ ï¿½* http://www.eclipse.org/legal/epl-v10.html
+ ï¿½*
+ ï¿½* Contributors:
+ ï¿½*ï¿½ï¿½ï¿½ï¿½Elias Volanakis - initial API and implementation
  *    IBM Corporation
-  *******************************************************************************/
+ ï¿½*******************************************************************************/
 package de.tud.cs.qpe.editors.net.gef.palette;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.draw2d.Graphics;
@@ -201,7 +202,7 @@ public final class NetEditorPaletteFactory {
 
 	public static ImageDescriptor getImageDescriptor(final String fileName) {
 		Bundle bundle = Platform.getBundle(QPEBasePlugin.PLUGIN_ID);
-		final URL installURL = Platform.find(bundle, new Path("/"));
+		final URL installURL = FileLocator.find(bundle, new Path("/"), null);
 
 		try {
 			final URL url = new URL(installURL, fileName);

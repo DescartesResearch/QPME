@@ -6,7 +6,6 @@ public class QueueingPlace extends Place {
 	public QueueingPlace() {
 		super();
 		addAttribute("type", "queueing-place");
-		addAttribute("strategy", "FCFS");
-		addAttribute("number-of-servers", "1");
+		addAttribute("queue-ref", "");
 	}
 }

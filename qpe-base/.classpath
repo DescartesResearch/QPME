@@ -1,7 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry path="src/main" kind="src"/>
-	<classpathentry path="org.eclipse.pde.core.requiredPlugins" kind="con"/>
-	<classpathentry path="org.eclipse.jdt.launching.JRE_CONTAINER" kind="con"/>
-	<classpathentry path="bin/classes" kind="output"/>
+	<classpathentry kind="src" path="src/main"/>
+	<classpathentry kind="src" path="src/test"/>
+	<classpathentry exported="true" kind="lib" path="lib/jcommon-1.0.15.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jfreechart-1.0.12-experimental.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jfreechart-1.0.12-swt.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jfreechart-1.0.12.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/swtgraphics2d.jar"/>
+	<classpathentry kind="lib" path="lib/JRI.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:/Programme/R/R-2.6.1/library/rJava/jri"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/junit-4.5.jar"/>
+	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

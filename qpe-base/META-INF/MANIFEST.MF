@@ -14,7 +14,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.gef,
  org.eclipse.ui.views,
  org.eclipse.ui.console
-Eclipse-AutoStart: true
+Eclipse-LazyStart: true
 Export-Package: de.tud.cs.qpe,
  de.tud.cs.qpe.editors.incidence,
  de.tud.cs.qpe.editors.incidence.controller.command,
@@ -91,4 +91,10 @@ Export-Package: de.tud.cs.qpe,
  org.jaxen.xom
 Bundle-ClassPath: lib/dom4j-1.6.1.jar,
  lib/jaxen-1.1-beta-6.jar,
- QPE_Base.jar
+ QPE_Base.jar,
+ lib/jcommon-1.0.15.jar,
+ lib/jfreechart-1.0.12-experimental.jar,
+ lib/jfreechart-1.0.12-swt.jar,
+ lib/jfreechart-1.0.12.jar,
+ lib/swtgraphics2d.jar,
+ lib/JRI.jar

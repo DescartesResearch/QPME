@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?pde version="3.1"?>
+<?pde version="3.4"?>
 
 <product name="QPME - Queueing Petri net Modeling Environment" id="QPE_Base.QPE" application="QPE_Base.qpe.application" useFeatures="false">
 
@@ -10,21 +10,25 @@
       </text>
    </aboutInfo>
 
-   <configIni use="default" path="/QPE-Base/config.ini"/>
+   <configIni use="default" path="/QPE-Base/config.ini">
+   </configIni>
 
    <launcherArgs>
    </launcherArgs>
 
-   <windowImages small="images/QPME-Icon16.gif" large="images/QPME-Icon32.gif"/>
+   <windowImages i16="images/QPME-Icon16.gif" i32="images/QPME-Icon32.gif"/>
 
-   <splash location="QPE_Base"/>
-
+   <splash
+      location="QPE_Base" />
    <launcher name="QPME">
       <solaris/>
       <win useIco="false">
          <bmp/>
       </win>
    </launcher>
+
+   <vm>
+   </vm>
 
    <plugins>
       <plugin id="QPE_Base"/>
@@ -33,7 +37,7 @@
       <plugin id="org.eclipse.core.commands"/>
       <plugin id="org.eclipse.core.expressions"/>
       <plugin id="org.eclipse.core.resources"/>
-      <plugin id="org.eclipse.core.resources.compatibility"/>
+      <plugin id="org.eclipse.core.resources.compatibility" fragment="true"/>
       <plugin id="org.eclipse.core.resources.win32"/>
       <plugin id="org.eclipse.core.runtime"/>
       <plugin id="org.eclipse.core.runtime.compatibility"/>
@@ -45,7 +49,7 @@
       <plugin id="org.eclipse.jface.text"/>
       <plugin id="org.eclipse.osgi"/>
       <plugin id="org.eclipse.swt"/>
-      <plugin id="org.eclipse.swt.win32.win32.x86"/>
+      <plugin id="org.eclipse.swt.win32.win32.x86" fragment="true"/>
       <plugin id="org.eclipse.text"/>
       <plugin id="org.eclipse.ui"/>
       <plugin id="org.eclipse.ui.console"/>
@@ -53,12 +57,12 @@
       <plugin id="org.eclipse.ui.ide"/>
       <plugin id="org.eclipse.ui.intro"/>
       <plugin id="org.eclipse.ui.views"/>
-      <plugin id="org.eclipse.ui.win32"/>
+      <plugin id="org.eclipse.ui.win32" fragment="true"/>
       <plugin id="org.eclipse.ui.workbench"/>
       <plugin id="org.eclipse.ui.workbench.texteditor"/>
       <plugin id="org.eclipse.update.configurator"/>
       <plugin id="org.eclipse.update.core"/>
-      <plugin id="org.eclipse.update.core.win32"/>
+      <plugin id="org.eclipse.update.core.win32" fragment="true"/>
       <plugin id="org.eclipse.update.ui"/>
    </plugins>
 

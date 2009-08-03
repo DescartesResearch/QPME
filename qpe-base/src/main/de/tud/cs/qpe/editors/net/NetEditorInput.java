@@ -22,6 +22,7 @@ public class NetEditorInput implements IPathEditorInput {
 			Document netDiagram = DocumentFactory.getInstance().createDocument();
 			content = netDiagram.addElement("net");
 			content.addElement("colors");
+			content.addElement("queues");
 			content.addElement("places");
 			content.addElement("transitions");
 			content.addElement("connections");
@@ -31,7 +32,7 @@ public class NetEditorInput implements IPathEditorInput {
 			this.path = path;
 			try {
 				SAXReader xmlReader = new SAXReader();
-				Document netDiagram = xmlReader.read(path.toOSString());
+				Document netDiagram = xmlReader.read(path.toFile());
 				content = netDiagram.getRootElement();
 
 				// Save the path so it can be used when saving.

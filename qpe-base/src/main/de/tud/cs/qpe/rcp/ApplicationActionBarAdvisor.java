@@ -19,6 +19,7 @@ import de.tud.cs.qpe.rcp.actions.file.CloseAllAction;
 import de.tud.cs.qpe.rcp.actions.file.ExitAction;
 import de.tud.cs.qpe.rcp.actions.file.NewAction;
 import de.tud.cs.qpe.rcp.actions.file.OpenAction;
+import de.tud.cs.qpe.rcp.actions.file.PreferencesAction;
 import de.tud.cs.qpe.rcp.actions.file.SaveAction;
 import de.tud.cs.qpe.rcp.actions.file.SaveAllAction;
 import de.tud.cs.qpe.rcp.actions.file.SaveAsAction;
@@ -43,6 +44,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	private IWorkbenchAction exitAction;
 
+	private IWorkbenchAction preferencesAction;
+
 	private IWorkbenchAction introAction;
 
 	public ApplicationActionBarAdvisor(IActionBarConfigurer configurer) {
@@ -64,6 +67,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		register(saveAsAction);
 		saveAllAction = new SaveAllAction();
 		register(saveAllAction);
+		preferencesAction = new PreferencesAction();
+		register(preferencesAction);
 		exitAction = new ExitAction();
 		register(exitAction);
 		introAction = ActionFactory.INTRO.create(window);
@@ -97,6 +102,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		fileMenu.add(saveAction);
 		fileMenu.add(saveAsAction);
 		fileMenu.add(saveAllAction);
+		fileMenu.add(new Separator("preferences"));
+		fileMenu.add(preferencesAction);
 		fileMenu.add(new Separator("quit"));
 		fileMenu.add(exitAction);
 
