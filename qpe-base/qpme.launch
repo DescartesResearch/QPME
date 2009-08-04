@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.pde.ui.RuntimeWorkbench">
+<booleanAttribute key="append.args" value="true"/>
+<booleanAttribute key="askclear" value="true"/>
+<booleanAttribute key="automaticAdd" value="false"/>
+<booleanAttribute key="automaticValidate" value="false"/>
+<stringAttribute key="bad_container_name" value="\qpe-base\s"/>
+<stringAttribute key="bootstrap" value=""/>
+<stringAttribute key="checked" value="[NONE]"/>
+<booleanAttribute key="clearConfig" value="false"/>
+<booleanAttribute key="clearws" value="false"/>
+<booleanAttribute key="clearwslog" value="false"/>
+<stringAttribute key="configLocation" value="${workspace_loc}/.metadata/.plugins/org.eclipse.pde.core/QPE_Base.QPE_Base.qpe.application"/>
+<booleanAttribute key="default" value="false"/>
+<booleanAttribute key="includeOptional" value="true"/>
+<stringAttribute key="location" value="${workspace_loc}/../runtime-QPE_Base.QPE_Base.qpe.application"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-os ${target.os} -ws ${target.ws} -arch ${target.arch} -nl ${target.nl}"/>
+<stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.pde.ui.workbenchClasspathProvider"/>
+<booleanAttribute key="pde.generated.config" value="false"/>
+<stringAttribute key="pde.version" value="3.3"/>
+<stringAttribute key="product" value="QPE_Base.QPE"/>
+<stringAttribute key="selected_target_plugins" value="com.ibm.icu,javax.servlet,org.apache.commons.logging,org.apache.lucene,org.apache.lucene.analysis,org.eclipse.ant.core,org.eclipse.core.commands,org.eclipse.core.contenttype,org.eclipse.core.databinding,org.eclipse.core.expressions,org.eclipse.core.filesystem,org.eclipse.core.filesystem.win32.x86,org.eclipse.core.jobs,org.eclipse.core.net,org.eclipse.core.net.win32.x86,org.eclipse.core.resources,org.eclipse.core.resources.compatibility,org.eclipse.core.resources.win32.x86,org.eclipse.core.runtime,org.eclipse.core.runtime.compatibility.auth,org.eclipse.core.runtime.compatibility.registry,org.eclipse.core.variables,org.eclipse.draw2d,org.eclipse.equinox.app,org.eclipse.equinox.common,org.eclipse.equinox.http.jetty,org.eclipse.equinox.http.servlet,org.eclipse.equinox.preferences,org.eclipse.equinox.registry,org.eclipse.equinox.security,org.eclipse.equinox.security.win32.x86,org.eclipse.gef,org.eclipse.help,org.eclipse.help.base,org.eclipse.jface,org.eclipse.jface.databinding,org.eclipse.jface.text,org.eclipse.osgi,org.eclipse.osgi.services,org.eclipse.swt,org.eclipse.swt.win32.win32.x86,org.eclipse.text,org.eclipse.ui,org.eclipse.ui.console,org.eclipse.ui.forms,org.eclipse.ui.ide,org.eclipse.ui.intro,org.eclipse.ui.views,org.eclipse.ui.win32,org.eclipse.ui.workbench,org.eclipse.ui.workbench.texteditor,org.eclipse.update.configurator,org.eclipse.update.core,org.eclipse.update.core.win32,org.eclipse.update.ui,org.mortbay.jetty"/>
+<stringAttribute key="selected_workspace_plugins" value="QPE_Base,QPE_SimQPN"/>
+<booleanAttribute key="show_selected_only" value="false"/>
+<booleanAttribute key="tracing" value="false"/>
+<booleanAttribute key="useDefaultConfig" value="true"/>
+<booleanAttribute key="useDefaultConfigArea" value="true"/>
+<booleanAttribute key="useProduct" value="true"/>
+<booleanAttribute key="usefeatures" value="false"/>
+</launchConfiguration>
