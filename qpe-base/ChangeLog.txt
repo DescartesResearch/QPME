@@ -1,0 +1,18 @@
+QPME ChangeLog
+
+---------------------------------------------------------------------------------------------------------------------
+NEXT RELEASE
+  
+  --Add new entries here--
+
+  2009/08/04 Samuel Kounev 
+    - Added qpme.launch file and README.txt in qpe-base main directory.
+
+---------------------------------------------------------------------------------------------------------------------
+RELEASE 1.5 2009/08/05
+
+  2009/08/03 Samuel Kounev and Frederik Zipp
+    - Merged main QPME code-base with Frederik's latest code (from Studienarbeit).
+
+---------------------------------------------------------------------------------------------------------------------
+ 
