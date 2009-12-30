@@ -250,7 +250,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 		Simulator.logln("REPORT for Queue of Queueing Place : " + name + "----------------------------------------");
 		Simulator.logln();
 		if (statsLevel >= 2) 
-			Simulator.logln("Queue utilization due to this place = " + queueUtilQPl); 
+			Simulator.logln("queueUtilQPl=" + queueUtilQPl); 
 											
 		for (int c = 0; c < numColors; c++) {
 			Simulator.logln();

@@ -855,7 +855,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 		Simulator.logln();
 
 		if (statsLevel >= 2) 
-			Simulator.logln("Token occupancy = " + tkOcp); 
+			Simulator.logln("tkOcp=" + tkOcp); 
 				
 		for (int c = 0; c < numColors; c++) {
 			Simulator.logln();
