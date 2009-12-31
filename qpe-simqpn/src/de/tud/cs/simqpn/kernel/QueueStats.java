@@ -186,14 +186,11 @@ public class QueueStats extends Stats implements java.io.Serializable {
 		Simulator.logln();
 		Simulator.logln("REPORT for Queue : " + name + "----------------------------------------");
 		Simulator.logln();		
-		Simulator.logln("  Total arrival throughput          = " + totArrivThrPut);
-		Simulator.logln("  Total departure throughput        = " + totDeptThrPut);					
-		if (statsLevel >= 2)  { 
-			Simulator.logln("  Mean total token population       = " + meanTotTkPop);
-			Simulator.logln("  Queue utilization                 = " + queueUtil);			
-		}
+		Simulator.logln("totArrivThrPut=" + totArrivThrPut + " totDeptThrPut=" + totDeptThrPut);					
+		if (statsLevel >= 2) 
+			Simulator.logln("meanTotTkPop=" + meanTotTkPop + " queueUtil=" + queueUtil);			
 		if (statsLevel >= 3)  
-			Simulator.logln("  Mean token residence time         = " + meanST);			 	
+			Simulator.logln("meanST=" + meanST);			 	
 	}
 	
 }
