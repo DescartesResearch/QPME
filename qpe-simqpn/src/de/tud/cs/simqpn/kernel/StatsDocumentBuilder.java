@@ -140,7 +140,8 @@ public class StatsDocumentBuilder {
 	}
 
 	private void addQPlaceQueueMetrics(QPlaceQueueStats stats, Element place) {
-		addOrdinaryPlaceMetrics(stats, place);
+		if (stats.statsLevel >= 2)
+			addMetric(place, "queueUtilQPl", stats.queueUtilQPl);
 	}
 	
 	private void addQPlaceQueueMetrics(QPlaceQueueStats stats, Element color, int colorIndex) {
