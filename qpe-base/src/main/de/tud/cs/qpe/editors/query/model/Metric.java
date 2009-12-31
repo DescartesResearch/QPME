@@ -9,7 +9,7 @@ package de.tud.cs.qpe.editors.query.model;
  *  @author Frederik Zipp
  */
 public enum Metric {
-	QUEUE_UTIL_QP1("Queue utilization due to this place", "queueUtilQPl"),
+	QUEUE_UTIL_QP1("Queue utilization due to this place", "queueUtilQPl", true),
 	TK_OCP("Token Occupancy", "tkOcp", true),
 	ARRIV_THR_PUT("Arrival Throughput", "arrivThrPut"),
 	DEPT_THR_PUT("Departure Throughput", "deptThrPut"),
