@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: SimQPN Plug-in for QPE
 Bundle-SymbolicName: QPE_SimQPN; singleton:=true
-Bundle-Version: 1.0.0
+Bundle-Version: 1.5.1
 Bundle-Activator: de.tud.cs.simqpn.plugin.QPESimQPNPlugin
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.ui,
@@ -122,4 +122,4 @@ Bundle-ClassPath: lib/colt.jar,
  lib/jaxen-1.1-beta-6.jar,
  lib/or124.jar,
  QPE_SimQPN.jar
-Bundle-Vendor: Christofer Dutz
+Bundle-Vendor: Descartes Research Group

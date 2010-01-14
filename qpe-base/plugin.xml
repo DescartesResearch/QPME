@@ -15,7 +15,7 @@
       <extension id="QPE" point="org.eclipse.core.runtime.products">
             <product
                   application="QPE_Base.qpe.application"
-                  name="QPME - Queueing Petri net Modeling Environment">
+                  name="QPME">
                <property
                      name="windowImages"
                      value="images/QPME-Icon16.gif,images/QPME-Icon32.gif"/>
