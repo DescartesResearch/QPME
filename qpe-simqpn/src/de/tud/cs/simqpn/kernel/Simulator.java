@@ -71,6 +71,7 @@
  *  2009/02/27  Frederik Zipp     Changed to return Stats as array.
  *  2009/03/08  Frederik Zipp     Added central queue management (queue editor).
  *  2009/03/08  Frederik Zipp     Made a change to support storing simulation results in an XML file.
+ *  2009/16/12  Simon Spinner     Optimized run() avoiding usage of AbstractIntList for managing enabled transitions. 
  * 
  */
 package de.tud.cs.simqpn.kernel;
@@ -2868,16 +2869,32 @@ public class Simulator {
 	 * @exception
 	 */
 	public void run() throws SimQPNException {
-
-		AbstractIntList enTrans;			// List of currently enabled transitions.
+			
+		// SimonSpinner: TEMP CHANGE
+		//		try {
+		//			System.in.read();
+		//		} catch (IOException e) {
+		//			e.printStackTrace();
+		//		}
+		// SimonSpinner: TEMP CHANGE
+				
+		boolean[] transStatus;					// Transition status: true = enabled, false = disabled
+		int enTransCnt = 0;
+		int[] enTransIndexes = new int[numTrans];
+		
 		EmpiricalWalker randTransGen;		// Random number generator for generating next transition to fire.
 
-		// Initialize enTrans
-		enTrans = new IntArrayList(numTrans);
-		for (int i = 0; i < numTrans; i++)
-			if (trans[i].enabled())
-				enTrans.add(i);
-
+		// Initialize transStatus and enTransCnt 		
+		transStatus = new boolean[numTrans];
+		for (int i = 0; i < numTrans; i++) {
+			if (trans[i].enabled()) {
+				transStatus[i] = true;
+				enTransCnt++;
+			} else {
+				transStatus[i] = false;
+			}
+		}
+		
 		// Create randTransGen
 		double[] pdf = new double[numTrans];
 		for (int t = 0; t < numTrans; t++)
@@ -2911,25 +2928,34 @@ public class Simulator {
 			}
 
 			// Step 1: Fire until no transitions are enabled.			
-			while (enTrans.size() > 0) {
+			while (enTransCnt > 0) {				
 				Transition nextTrans;		// transition to fire next
 
-				int enTransCnt = enTrans.size();
-
-				if (enTransCnt == 1)
-					nextTrans = trans[enTrans.get(0)];
-				else {
+				if (enTransCnt == 1) {				
+					nextTrans = null;
+					for (int t = 0; t < numTrans; t++) {
+						if (transStatus[t]) {
+							nextTrans = trans[t];
+							break;
+						}
+					}
+				} else {
 					// Choose transition to fire based on weights
-					pdf = new double[enTransCnt];
-					for (int t = 0; t < enTransCnt; t++)
-						pdf[t] = trans[enTrans.get(t)].transWeight;
-					randTransGen.setState2(pdf);
-					nextTrans = trans[enTrans.get(randTransGen.nextInt())];
+					pdf = new double[enTransCnt];					
+					for (int t = 0, e = 0; t < numTrans; t++) {
+						if (transStatus[t]) {
+							pdf[e] = trans[t].transWeight;
+							enTransIndexes[e] = t;
+							e++;
+						}
+					}
+					randTransGen.setState2(pdf);					
+					nextTrans = trans[enTransIndexes[randTransGen.nextInt()]];
 				}
 
 				nextTrans.fire();		// Fire transition
 
-				// Update enTrans
+				// Update transStatus
 				int p, t, nP, nT;
 				Place pl;
 				Transition tr;
@@ -2939,9 +2965,11 @@ public class Simulator {
 					pl = nextTrans.inPlaces[p];
 					nT = pl.outTrans.length;
 					for (t = 0; t < nT; t++) {
-						tr = pl.outTrans[t];
-						if ((!tr.enabled()) && enTrans.contains(tr.id))
-							enTrans.delete(tr.id);
+						tr = pl.outTrans[t];						
+						if ((!tr.enabled()) && transStatus[tr.id])	{
+							transStatus[tr.id] = false;
+							enTransCnt--;
+						}
 					}
 				}
 				// Check if some transitions were enabled (newly-enabled transitions)				
@@ -2950,9 +2978,11 @@ public class Simulator {
 					pl = nextTrans.outPlaces[p];
 					nT = pl.outTrans.length;
 					for (t = 0; t < nT; t++) {
-						tr = pl.outTrans[t];
-						if ((tr.enabled()) && (!enTrans.contains(tr.id)))
-							enTrans.add(tr.id);
+						tr = pl.outTrans[t];						
+						if (tr.enabled() && (!transStatus[tr.id])) {
+							transStatus[tr.id] = true;
+							enTransCnt++;
+						}						
 					}
 				}
 			} // end firing enabled transitions
@@ -2981,14 +3011,16 @@ public class Simulator {
 				QPlace qpl = (QPlace) ev.token.place;
 				qpl.completeService(ev.token);
 
-				// Check if some transitions were enabled and update enTrans				
+				// Check if some transitions were enabled and update transStatus				
 				int t, nT;
 				Transition tr;
 				nT = qpl.outTrans.length;
 				for (t = 0; t < nT; t++) {
-					tr = qpl.outTrans[t];
-					if ((tr.enabled()) && (!enTrans.contains(tr.id)))
-						enTrans.add(tr.id);
+					tr = qpl.outTrans[t];					
+					if (tr.enabled() && (!transStatus[tr.id])) {
+						transStatus[tr.id] = true;
+						enTransCnt++;
+					}
 				}
 			} else {
 				logln("Error: QPN is not live.");
@@ -3052,9 +3084,10 @@ public class Simulator {
 		msrmPrdLen = endRunClock - endRampUpClock;
 		endRunWallClock = System.currentTimeMillis();
 		runWallClockTime = (endRunWallClock - beginRunWallClock) / 1000;	// total time elapsed in seconds 
+		
+		logln("  msrmPrdLen= " + msrmPrdLen + " totalRunLen= " + endRunClock + " runWallClockTime=" + (int) (runWallClockTime / 60) + " min (=" + runWallClockTime + " sec)");
 
-		logln("  msrmPrdLen= " + msrmPrdLen + " totalRunLen= " + endRunClock + " runWallClockTime=" + (int) (runWallClockTime / 60) + " min");
-
+		
 		// Complete statistics collection (make sure this is done AFTER the above statements)
 		if (analMethod != WELCH) {		
 			for (int p = 0; p < numPlaces; p++)
