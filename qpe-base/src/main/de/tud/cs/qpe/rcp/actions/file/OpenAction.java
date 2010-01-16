@@ -37,6 +37,7 @@
  *  Date        ID                Description
  *  ----------  ----------------  ------------------------------------------------------------------  
  *  2006        Christofer Dutz   Created.
+ *  2010/15/01  Philipp Meier     Show both *.qpn and *.simqpn files in dialog for File->Open File.
  * 
  */
 package de.tud.cs.qpe.rcp.actions.file;
@@ -90,8 +91,8 @@ public class OpenAction extends Action implements ActionFactory.IWorkbenchAction
 
 	private String openFileDialog() {
 		FileDialog dialog = new FileDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.OPEN);
-		dialog.setText("Open QPE document");
-		dialog.setFilterExtensions(new String[] { "*.qpe", "*.simqpn" });
+		dialog.setText("Open QPE document");		
+		dialog.setFilterExtensions(new String[] { "*.qpe;*.simqpn", "*.qpe", "*.simqpn"});
 		return dialog.open();
 	}
 
