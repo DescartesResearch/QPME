@@ -103,8 +103,6 @@ import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.XPath;
 
-import cern.colt.list.AbstractIntList;
-import cern.colt.list.IntArrayList;
 import cern.jet.random.AbstractContinousDistribution;
 import cern.jet.random.Beta;
 import cern.jet.random.BreitWigner;
