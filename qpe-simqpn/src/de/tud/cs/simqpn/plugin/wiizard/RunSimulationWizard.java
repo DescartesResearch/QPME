@@ -45,7 +45,6 @@ package de.tud.cs.simqpn.plugin.wiizard;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 
 import org.dom4j.Document;
@@ -54,20 +53,23 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWizard;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import de.tud.cs.qpe.editors.net.NetEditorInput;
+import de.tud.cs.qpe.editors.query.QueryEditorInput;
+import de.tud.cs.qpe.editors.query.SimpleQueryEditor;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.Simulator;
 import de.tud.cs.simqpn.kernel.Stats;
@@ -167,7 +169,8 @@ public class RunSimulationWizard extends Wizard {
 					NetEditorInput qpeInput = (NetEditorInput) input;
 					try {
 						Simulation simulation = new Simulation(qpeInput
-								.getDocument().getRootElement());
+								.getDocument().getRootElement(), getShell()
+								.getDisplay());
 						simulation.configure();
 						simulation.start();
 					} catch (SimQPNException e) {
@@ -191,9 +194,37 @@ public class RunSimulationWizard extends Wizard {
 
 	class Simulation extends Thread {
 		protected Element net;
+		protected Display display;
 
-		public Simulation(Element net) {
+		public Simulation(Element net, Display display) {
 			this.net = net;
+			this.display = display;
+		}
+
+		class EditorOpener implements Runnable {
+
+			private IEditorInput input;
+			private String editorId;
+			private Boolean activate;
+
+			public EditorOpener(IEditorInput input, String editorId,
+					Boolean activate) {
+				this.input = input;
+				this.editorId = editorId;
+				this.activate = activate;
+			}
+
+			@Override
+			public void run() {
+				try {
+					PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+							.getActivePage().openEditor(input, editorId,
+									activate);
+				} catch (PartInitException e) {
+					e.printStackTrace();
+				}
+			}
+
 		}
 
 		public void configure() throws SimQPNException {
@@ -203,12 +234,22 @@ public class RunSimulationWizard extends Wizard {
 
 		public void run() {
 			try {
-				String configuration = Page1ConfigurationSelectionWizardPage.activeConfiguration; 
+				String configuration = Page1ConfigurationSelectionWizardPage.activeConfiguration;
 				Stats[] result = Simulator.execute(net, configuration);
-				StatsDocumentBuilder builder = new StatsDocumentBuilder(result, net, configuration);
+				StatsDocumentBuilder builder = new StatsDocumentBuilder(result,
+						net, configuration);
 				Document statsDocument = builder.buildDocument();
-				File resultsFile = new File(Simulator.statsDir, builder.getResultFileBaseName() + ".simqpn");
+				File resultsFile = new File(Simulator.statsDir, builder
+						.getResultFileBaseName()
+						+ ".simqpn");
 				saveXmlToFile(statsDocument, resultsFile);
+
+				IEditorInput simulationOutput = new QueryEditorInput(new Path(
+						resultsFile.getAbsolutePath()));
+
+				display.asyncExec(new EditorOpener(simulationOutput,
+						SimpleQueryEditor.ID, true));
+
 			} catch (SimQPNException e) {
 				e.printStackTrace();
 			}
@@ -217,7 +258,8 @@ public class RunSimulationWizard extends Wizard {
 		private void saveXmlToFile(Document doc, File file) {
 			XMLWriter writer = null;
 			try {
-				writer = new XMLWriter(new FileWriter(file), OutputFormat.createPrettyPrint());
+				writer = new XMLWriter(new FileWriter(file), OutputFormat
+						.createPrettyPrint());
 				writer.write(doc);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -229,13 +271,6 @@ public class RunSimulationWizard extends Wizard {
 					}
 				}
 			}
-		}
-
-		private String openFileDialog() {
-			FileDialog dialog = new FileDialog(getShell(), SWT.SAVE);
-			dialog.setText("Save Simulation Results As");
-			dialog.setFilterExtensions(new String[] { "*.simqpn" });
-			return dialog.open();
 		}
 	}
 }
