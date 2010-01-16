@@ -1,6 +1,0 @@
-* Copyright (c) 2006 Samuel Kounev. All rights reserved.
-*
-* The use, copying, modification or distribution of this software and its documentation for
-* any purpose is NOT allowed without the written permission of the author.
-*
-* This software is provided as is, without any express or implied warranty.
