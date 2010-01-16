@@ -27,7 +27,7 @@
                      value="QPME-AboutImage.gif"/>
                <property
                      name="aboutText"
-                     value="Copyright 2007 Samuel Kounev and Christofer Dutz"/>
+                     value="Copyright 2010"/>
             </product>
       </extension>
       <extension point="org.eclipse.ui.intro">
