@@ -118,10 +118,4 @@
             </actionSet>
             <actionSet label="Help Actions" visible="true" id="de.tud.cs.qpe.actionset.help"/>
       </extension>
-      <extension point="org.eclipse.ui.preferencePages">
-			<page id="de.tud.cs.qpe.rcp.QpmePreferencePage"
-		 		name="QPME Preferences"
-    			class="de.tud.cs.qpe.rcp.QpmePreferencePage">
-	   		</page>
-	  </extension>
 </plugin>
