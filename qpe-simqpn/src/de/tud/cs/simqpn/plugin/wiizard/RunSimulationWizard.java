@@ -38,6 +38,7 @@
  *  ----------  ----------------  ------------------------------------------------------------------  
  *  2006        Christofer Dutz   Created.
  *  2008/02/27  Frederik Zipp     Use StatsDocumentBuilder. Write XML document to file.  
+ *  2010/15/01  Philipp Meier     Automatically open .simqpn file in query edtior after completion.
  * 
  */
 package de.tud.cs.simqpn.plugin.wiizard;
