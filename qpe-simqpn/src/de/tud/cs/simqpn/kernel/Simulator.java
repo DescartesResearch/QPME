@@ -71,7 +71,7 @@
  *  2009/02/27  Frederik Zipp     Changed to return Stats as array.
  *  2009/03/08  Frederik Zipp     Added central queue management (queue editor).
  *  2009/03/08  Frederik Zipp     Made a change to support storing simulation results in an XML file.
- *  2009/16/12  Simon Spinner     Optimized run() avoiding usage of AbstractIntList for managing enabled transitions. 
+ *  2009/16/12  Simon Spinner     Optimized run() avoiding usage of IntArrayList for managing enabled transitions. 
  * 
  */
 package de.tud.cs.simqpn.kernel;
@@ -2878,7 +2878,7 @@ public class Simulator {
 				
 		boolean[] transStatus;					// Transition status: true = enabled, false = disabled
 		int enTransCnt = 0;
-		int[] enTransIndexes = new int[numTrans];
+		int[] enTransIDs = new int[numTrans];
 		
 		EmpiricalWalker randTransGen;		// Random number generator for generating next transition to fire.
 
@@ -2943,12 +2943,12 @@ public class Simulator {
 					for (int t = 0, e = 0; t < numTrans; t++) {
 						if (transStatus[t]) {
 							pdf[e] = trans[t].transWeight;
-							enTransIndexes[e] = t;
+							enTransIDs[e] = t;
 							e++;
 						}
 					}
 					randTransGen.setState2(pdf);					
-					nextTrans = trans[enTransIndexes[randTransGen.nextInt()]];
+					nextTrans = trans[enTransIDs[randTransGen.nextInt()]];
 				}
 
 				nextTrans.fire();		// Fire transition
