@@ -37,6 +37,7 @@
  *  Date        ID                Description
  *  ----------  ----------------  ------------------------------------------------------------------  
  *  2009/02/27  Frederik Zipp     Created.
+ *  2010/16/01  Philipp Meier     Added SHOW_OPEN_R_EDITOR_BUTTON flag set to false by default.
  * 
  */
 package de.tud.cs.qpe.editors.query;
@@ -78,6 +79,7 @@ public class SimpleQueryEditor extends AbstractQueryEditor {
 
 	/** Editor ID */
 	public static final String ID = "de.tud.cs.qpe.editor.query.simple";
+	public static final Boolean SHOW_OPEN_R_EDITOR_BUTTON = false;
 
 	private static final Dimension DEFAULT_SIZE = new Dimension(640, 480);
 	
@@ -114,14 +116,16 @@ public class SimpleQueryEditor extends AbstractQueryEditor {
 				enterAdvancedQueryEditor();
 			}
 		});
-		Button rButton = new Button(buttons, SWT.NONE);
-		rButton.setText("Open R Editor");
-		rButton.addListener(SWT.Selection, new Listener() {
-			@Override
-			public void handleEvent(Event event) {
-				enterREditor();
-			}
-		});
+		if (SHOW_OPEN_R_EDITOR_BUTTON) {
+			Button rButton = new Button(buttons, SWT.NONE);
+			rButton.setText("Open R Editor");
+			rButton.addListener(SWT.Selection, new Listener() {
+				@Override
+				public void handleEvent(Event event) {
+					enterREditor();
+				}
+			});
+		}
 		RowLayout layout = new RowLayout();
 		layout.type = SWT.VERTICAL;
 		layout.spacing = 20;
