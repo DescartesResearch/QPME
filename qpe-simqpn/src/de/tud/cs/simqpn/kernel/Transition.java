@@ -41,12 +41,12 @@
  *  2004/08/25  Samuel Kounev     Implemented support for FIFO departure discipline.                                 
  *  2004/08/25  Samuel Kounev     Changed type of modeWeights from int[] to double[], so that 
  *                                arbitrary values for weights are supported.
+ *  2009/16/12  Simon Spinner     Optimized avoiding usage of IntArrayList for managing enabled modes.                                
  * 
  */
 package de.tud.cs.simqpn.kernel;
 
-import cern.colt.list.AbstractIntList;
-import cern.colt.list.IntArrayList;
+import java.util.Arrays;
 import cern.jet.random.Empirical;
 import cern.jet.random.EmpiricalWalker;
 
@@ -68,9 +68,10 @@ public class Transition extends Node {
 	public int[][][]		inFunc;			// [mode, inPlace, color]
 	public int[][][]		outFunc;		// [mode, outPlace, color]
 	public double[]			modeWeights;	// [1..numModes] 
-	
-	public AbstractIntList	enModes;		// List of currently enabled modes		   
-	
+				   
+	public boolean[]		modeStatus;		// [1..numModes] Specifying the current status (enabled/disabled) of a mode
+	public int				enModesCnt;		// Number of currently enabled modes
+
 	public EmpiricalWalker	randModeGen;	// Random number generator for generating modes to fire
 
 	/**
@@ -91,8 +92,10 @@ public class Transition extends Node {
 		this.inPlaces		   = new Place[numInPlaces];
 		this.outPlaces		   = new Place[numOutPlaces];
 		this.inFunc			   = new int[numModes][numInPlaces][];
-		this.outFunc		   = new int[numModes][numOutPlaces][];
-		this.enModes		   = new IntArrayList(numModes);
+		this.outFunc		   = new int[numModes][numOutPlaces][];		
+		this.modeStatus		   = new boolean[numModes];
+		this.enModesCnt		   = 0;		
+		
 		// Create randModeGen
 		double[] pdf = new double[numModes];			
 		for (int m = 0; m < numModes; m++) pdf[m] = 1;
@@ -101,7 +104,7 @@ public class Transition extends Node {
 	}
 	
 	/**
-	 * Method init - checks for enabled modes and initializes enModes   
+	 * Method init - checks for enabled modes and initializes modeStatus and enModesCnt  
 	 * 
 	 * @param  	
 	 * @return 
@@ -112,8 +115,10 @@ public class Transition extends Node {
 		boolean enabled;
 		Place pl;		
 		nM = numModes;
-		nP = inPlaces.length;
-		enModes.clear();
+		nP = inPlaces.length;		
+		Arrays.fill(modeStatus, false);
+		enModesCnt = 0;
+		
 		for (m = 0; m < nM; m++) {
 			enabled = true;	
 			for (p = 0; p < nP; p++) {
@@ -124,14 +129,17 @@ public class Transition extends Node {
 						enabled = false; break;
 					} 											
 				if (!enabled) break;
+			}			
+			if (enabled) {
+				modeStatus[m] = true;
+				enModesCnt++;
 			}
-			if (enabled) enModes.add(m);
 		}				
 	}
 	
 	/**
-	 * Method updateState - updates enModes after a change in the token 
-	 *                      population of an input place.
+	 * Method updateState - updates modeStatus and enModesCnt after a change  
+	 *                      in the token population of an input place.
 	 * Note: Must be called whenever changing token population in any 
 	 *       of the input transitions. 
 	 *       
@@ -145,7 +153,7 @@ public class Transition extends Node {
 	public void updateState(int inPlaceId, int color, int newAvailTkCnt, int delta)  {
 										
 		if (delta > 0) {	// CASE A: TOKENS HAVE BEEN ADDED
-			if (enModes.size() == numModes) return;
+			if (enModesCnt == numModes) return;			
 			// Find index of updated input place
 			int uInP = 0;
 			while (inPlaces[uInP].id != inPlaceId) uInP++;
@@ -157,8 +165,8 @@ public class Transition extends Node {
 			int nP = inPlaces.length;					
 			for (m = 0; m < nM; m++)  {
 				// only consider disabled modes that require tokens of 
-				// the respective color
-				if ((!enModes.contains(m)) && inFunc[m][uInP][color] > 0)  {					
+				// the respective color					
+				if ((!modeStatus[m]) && inFunc[m][uInP][color] > 0)  {										
 					enabled = true;							
 					for (p = 0; p < nP; p++)  {
 						pl = inPlaces[p];
@@ -169,7 +177,10 @@ public class Transition extends Node {
 							}
 						if (!enabled) break;
 					}
-					if (enabled) enModes.add(m);
+					if (enabled) {
+						modeStatus[m] = true;
+						enModesCnt++;
+					}
 				}
 			}
 		} 
@@ -178,12 +189,14 @@ public class Transition extends Node {
 			int uInP = 0;
 			while (inPlaces[uInP].id != inPlaceId) uInP++;
 			// Check for newly disabled modes
-			int i, m;			
-			for (i = 0; i < enModes.size(); i++)  {
-				m = enModes.get(i);
-				if (newAvailTkCnt < inFunc[m][uInP][color]) enModes.remove(i--);			
+			int nM = numModes;
+			for (int m = 0; m < nM; m++) {
+				if ((modeStatus[m]) && (newAvailTkCnt < inFunc[m][uInP][color])) {
+					modeStatus[m] = false;
+					enModesCnt--;
+				}
 			}
-		}		
+		}
 	}
 	
 	
@@ -194,13 +207,13 @@ public class Transition extends Node {
 	 * @return boolean - true if at least one mode enabled, false otherwise
 	 * @exception 
 	 */
-	public boolean enabled() {		
-		return (enModes.size() > 0) ? true : false;
+	public boolean enabled() {				
+		return (enModesCnt > 0);
 	}
   
 	/**
 	 * Method checkIfEnabled - checks if transition is enabled
-	 * Note: does not rely on enModes
+	 * Note: does not rely on modeStatus/enModesCnt
 	 * 
 	 * @param  	
 	 * @return boolean - true if at least one mode enabled, false otherwise
@@ -236,13 +249,30 @@ public class Transition extends Node {
 	 */
 	public void fire() throws SimQPNException {
 
-		// Choose mode to fire based on weights
-		int enModesCnt = enModes.size();		
-		double[] pdf = new double[enModesCnt];
-		for (int m = 0; m < enModesCnt; m++) pdf[m] = modeWeights[enModes.get(m)]; 				
-		randModeGen.setState2(pdf);
-		int mode = enModes.get(randModeGen.nextInt());
-		
+		int nM = numModes;
+		// Choose mode to fire based on weights		
+		int mode;
+		if (enModesCnt == 1) {
+			mode = -1;			
+			for (int m = 0; m < nM; m++) {
+				if (modeStatus[m]) {
+					mode = m;
+					break;
+				}
+			}
+		} else {
+			double[] pdf = new double[enModesCnt];
+			int[] enModesIDs = new int[enModesCnt];
+			for (int m = 0, e = 0; m < nM; m++) {
+				if(modeStatus[m])	{
+					pdf[e] = modeWeights[m];
+					enModesIDs[e] = m;
+					e++;
+				}
+			}
+			randModeGen.setState2(pdf);
+			mode = enModesIDs[randModeGen.nextInt()];
+		}
 		int p, c, nP, nC, n;
 		Place pl;
 		// Step 1: Remove input tokens
