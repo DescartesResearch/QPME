@@ -1552,6 +1552,7 @@ public class Simulator {
 					logln(2, "trans[" + t + "].inFunc[" + m + "][" + p + "] = new int[" + colorRefs.size() + "];");					
 
 					Iterator colorRefIterator = colorRefs.iterator();
+					int numInputTokens = 0;
 					for (int con = 0; colorRefIterator.hasNext(); con++) {
 						Element colorRef = (Element) colorRefIterator.next();
 
@@ -1581,10 +1582,22 @@ public class Simulator {
 							//CHRIS: fixed that.
 							trans[t].inFunc[m][p][con] = numTokens;							
 							logln(2, "trans[" + t + "].inFunc[" + m + "][" + p + "][" + con +"] = " + numTokens);
+							numInputTokens += numTokens;
 						} else {							
 							trans[t].inFunc[m][p][con] = 0;
 							logln(2, "trans[" + t + "].inFunc[" + m + "][" + p + "][" + con +"] = 0");
 						}
+					}
+					if(numInputTokens == 0) {
+						logln("ERROR: an immediate transition with a mode that requires no input tokens found! This would cause a simulation deadlock.");
+						logln("Details: ");
+						logln("  transition-num    = " + t);
+						logln("  transition.id     = " + transition.attributeValue("id"));
+						logln("  transition.name   = " + transition.attributeValue("name"));
+						logln("  mode-num          = " + m);
+						logln("  mode.id           = " + ((Element) modes.get(m)).attributeValue("id"));
+						logln("  mode.name         = " + ((Element) modes.get(m)).attributeValue("name"));																
+						throw new SimQPNException();
 					}
 				}
 
