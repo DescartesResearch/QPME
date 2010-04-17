@@ -136,6 +136,7 @@ public class Page1ConfigurationSelectionWizardPage extends BaseWizardPage {
 
 		initConfigurationTable(container);
 
+		updateTableContents();
 		updateDialog();
 		updateMessages();
 		setControl(container);
@@ -178,6 +179,7 @@ public class Page1ConfigurationSelectionWizardPage extends BaseWizardPage {
 					}
 
 					// Update the tables contents.
+					updateTableContents();
 					updateDialog();
 
 					// Update error-messages.
@@ -220,6 +222,7 @@ public class Page1ConfigurationSelectionWizardPage extends BaseWizardPage {
 					}
 
 					// Update the tables contents.
+					updateTableContents();
 					updateDialog();
 
 					// Update error-messages.
@@ -519,16 +522,18 @@ public class Page1ConfigurationSelectionWizardPage extends BaseWizardPage {
 		newConfiguration.addAttribute("scenario", "1");
 		return newConfiguration;
 	}
+	
+	private void updateTableContents() {
+		XPath xpathSelector = DocumentHelper.createXPath("/net/meta-attributes/meta-attribute[@name='sim-qpn']");
+		List configurations = xpathSelector.selectNodes(net);
+		configurationTableViewer.setInput(configurations);
+	}
 
 	private void updateMessages() {
 		setPageComplete(configurationTable.getSelectionIndex() != -1);
 	}
 
 	public void updateDialog() {
-		XPath xpathSelector = DocumentHelper
-				.createXPath("/net/meta-attributes/meta-attribute[@name='sim-qpn']");
-		List configurations = xpathSelector.selectNodes(net);
-		configurationTableViewer.setInput(configurations);
 		delConfigurationButton.setEnabled(configurationTable
 				.getSelectionIndex() != -1);
 	}
