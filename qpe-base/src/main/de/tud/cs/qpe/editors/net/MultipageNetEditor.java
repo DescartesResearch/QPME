@@ -68,6 +68,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
+import de.tud.cs.qpe.QPEBasePlugin;
 import de.tud.cs.qpe.editors.incidence.IncidenceFunctionEditorInput;
 import de.tud.cs.qpe.editors.subnet.SubnetEditorInput;
 import de.tud.cs.qpe.model.DocumentManager;
@@ -233,6 +234,10 @@ public class MultipageNetEditor extends MultiPageEditorPart implements PropertyC
 		// are neded for further operations.
 		Document doc = (Document) input.getNetDiagram().getDocument().clone();
 		Element root = doc.getRootElement();
+
+		// Add version number of qpme
+		String ver = QPEBasePlugin.getDefault().getBundle().getVersion().toString();
+		root.addAttribute("qpme-version", ver);
 
 		// If this document is new, then ask for a destination file first.
 		String path = root.attributeValue("path");

@@ -132,6 +132,15 @@ import edu.cornell.lassp.houle.RngPack.RandomElement;
  */
 
 public class Simulator {
+	
+	//
+	//ATTENTION: Update this constant every time a new
+	//			 release of qpme is delivered so that
+	//			 the version attribute in .simqpn files
+	//			 is correct
+	//
+	public static final String QPME_VERSION = "1.5.2";	
+	
 	// Supported Run Modes
 	// SK-CD: Only consider run modes NORMAL and INIT_TRANS, ignore the rest!
 	public static final int NORMAL = 0; 		// Normal run mode.

@@ -51,7 +51,7 @@ import org.dom4j.Element;
 import org.dom4j.XPath;
 
 public class StatsDocumentBuilder {
-	
+
 	private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HHmmssS");
 	private final Stats[] data;
 	private Document doc;
@@ -68,6 +68,7 @@ public class StatsDocumentBuilder {
 		this.doc = DocumentFactory.getInstance().createDocument();
 		Element root = this.doc.addElement("simqpn-results");
 		this.doc.setRootElement(root);
+		root.addAttribute("qpme-version", Simulator.QPME_VERSION);
 		root.addAttribute("model-file", net.attributeValue("path"));
 		String timestamp = TIMESTAMP_FORMAT.format(new Date());
 		root.addAttribute("date", timestamp);

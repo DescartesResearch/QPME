@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: QPE-Base Plug-in
 Bundle-SymbolicName: QPE_Base; singleton:=true
-Bundle-Version: 1.5.0
+Bundle-Version: 1.5.2
 Bundle-Activator: de.tud.cs.qpe.QPEBasePlugin
 Bundle-Vendor: Samuel Kounev
 Bundle-Localization: plugin
