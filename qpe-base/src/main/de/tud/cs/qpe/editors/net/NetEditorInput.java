@@ -49,6 +49,7 @@ import org.dom4j.DocumentFactory;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.IPersistableElement;
@@ -93,7 +94,8 @@ public class NetEditorInput implements IPathEditorInput {
 	}
 
 	public boolean exists() {
-		return path.toFile().exists();
+		IPath p = getPath();
+		return (p == null) ? false : p.toFile().exists();
 	}
 
 	public ImageDescriptor getImageDescriptor() {
@@ -109,8 +111,9 @@ public class NetEditorInput implements IPathEditorInput {
 	}
 
 	public String getToolTipText() {
-		if (path != null) {
-			return path.toString();
+		IPath p = getPath();
+		if (p != null) {
+			return p.toString();
 		}
 		return "";
 	}
@@ -128,6 +131,12 @@ public class NetEditorInput implements IPathEditorInput {
 	}
 
 	public IPath getPath() {
+		if(path == null) {
+			String pathValue = content.attributeValue("path");
+			if(pathValue != null) {
+				path = new Path(pathValue);
+			}
+		}
 		return path;
 	}
 
