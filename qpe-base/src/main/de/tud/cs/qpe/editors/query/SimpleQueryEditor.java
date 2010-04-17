@@ -92,7 +92,7 @@ public class SimpleQueryEditor extends AbstractQueryEditor {
 	@Override
 	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
 		super.init(site, input);
-		setPartName("Simple Query Editor");
+		setPartName(input.getName());
 	}
 	
 	@Override

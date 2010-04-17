@@ -175,7 +175,10 @@ public class StartSimulatorAction extends Action implements
 
 				// TODO: Maximize the Console view
 			} else {
-				// TODO: Do something to complain !!!
+				MessageBox messageBox = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
+				messageBox.setMessage("No queueing petri net model found.\nPlease choose one in the editor area.");
+				messageBox.setText("Missing model error");
+				messageBox.open();
 			}
 		}
 	}

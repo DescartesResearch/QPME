@@ -89,7 +89,8 @@ public class QueryEditorInput implements IPathEditorInput {
 
 	@Override
 	public String getName() {
-		return "Input name";
+		return simulationResults.getModelFile().getName().replace(".qpe", "")
+			+ "-" + simulationResults.getConfigurationName() + "-Analysis";
 	}
 
 	@Override
