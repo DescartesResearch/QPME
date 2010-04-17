@@ -448,7 +448,7 @@ public class StartSimulatorAction extends Action implements
 				if (Simulator.stoppingRule == Simulator.FIXEDLEN) {
 					status.append("Remaining Time: ");
 				} else {
-					status.append("Maximum Remaining Time:");
+					status.append("Maximum Remaining Time: ");
 				}
 				if(remainingTime >= 3600) {
 					long hours = remainingTime / 3600;
