@@ -112,7 +112,7 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 		placeTableLabel.setLayoutData(gd);
 		placeTableLabel.setText("Place Settings");
 
-		placeTree = new Tree(container, SWT.BORDER | SWT.H_SCROLL
+		placeTree = new Tree(container, SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL
 				| SWT.V_SCROLL);
 		gd = new GridData(GridData.FILL_BOTH);
 		gd.horizontalSpan = 3;
