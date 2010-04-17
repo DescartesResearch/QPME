@@ -52,6 +52,8 @@ import java.util.Set;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.ITreeSelection;
+import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
@@ -77,6 +79,7 @@ public class PlacesColorsTable extends Composite {
 	private final List<Metric> metrics;
 	private final List<Place> places;
 	private final Tree tree;
+	private final TreeViewer treeViewer;
 	private final String[] types;
 	private final String title;
 
@@ -118,7 +121,7 @@ public class PlacesColorsTable extends Composite {
 		
 		createColumns();
 
-		TreeViewer treeViewer = new TreeViewer(this.tree);
+		treeViewer = new TreeViewer(this.tree);
 		treeViewer.setContentProvider(new ContentProvider());
 		treeViewer.setLabelProvider(new LabelProvider());
 		treeViewer.setInput(this.simulationResults);
@@ -169,6 +172,21 @@ public class PlacesColorsTable extends Composite {
 		return places;
 	}
 	
+	public Set<Place> getPlacesInSelectionPaths() {
+		Set<Place> places = new HashSet<Place>();
+		ITreeSelection selection = (ITreeSelection) this.treeViewer.getSelection();
+		
+		for (TreePath path : selection.getPaths()) {
+			if(path.getSegmentCount() > 0) {
+				Object data = path.getSegment(0);
+				if (data instanceof Place) {
+					places.add((Place) data);
+				}
+			}
+		}
+		return places;
+	}
+	
 	public Set<Color> getSelectedColors() {
 		Set<Color> colors = new HashSet<Color>();
 		TreeItem[] selection = this.tree.getSelection();
@@ -176,6 +194,23 @@ public class PlacesColorsTable extends Composite {
 			Object data = treeItem.getData();
 			if (data instanceof PlaceColor) {
 				colors.add(((PlaceColor) data).getColor());
+			}
+		}
+		return colors;
+	}
+	
+	public Set<Color> getSelectedColorsIncludingHidden() {
+		Set<Color> colors = new HashSet<Color>();
+		TreeItem[] selection = this.tree.getSelection();
+		for (TreeItem treeItem : selection) {
+			Object data = treeItem.getData();
+			if (data instanceof PlaceColor) {
+				colors.add(((PlaceColor) data).getColor());
+			}
+			if (data instanceof Place) {
+				if(!treeItem.getExpanded()) {
+					colors.addAll(((Place) data).getColors());
+				}
 			}
 		}
 		return colors;

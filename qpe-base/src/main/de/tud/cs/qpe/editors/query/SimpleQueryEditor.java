@@ -167,7 +167,7 @@ public class SimpleQueryEditor extends AbstractQueryEditor {
 			subMenuItem.addListener(SWT.Selection, new Listener() {
 				@Override
 				public void handleEvent(Event event) {
-					showCharts(getQueryVisualizer().visualizeHistograms(histogramType, table.getSelectedPlaces(), table.getSelectedColors(), DEFAULT_SIZE));
+					showCharts(getQueryVisualizer().visualizeHistograms(histogramType, table.getPlacesInSelectionPaths(), table.getSelectedColorsIncludingHidden(), DEFAULT_SIZE));
 				}
 			});
 		}
