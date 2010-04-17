@@ -90,13 +90,12 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-//import java.util.LinkedList; // Old LinkedList implementation of the event list.
-import java.util.PriorityQueue;
-import java.util.Comparator;
 import java.util.NoSuchElementException;
+import java.util.PriorityQueue;
 
 import org.dom4j.Attribute;
 import org.dom4j.DocumentHelper;
@@ -163,7 +162,11 @@ public class Simulator {
 												//   sojourn times (STs) in terms of confidence interval (c.i.) half lengths.
 	public static final int RELPRC = 2;			// Run until enough data to provide relative precision for STs in terms
 												//   of c.i. half lengths / means.
-
+	
+	public static final long MAX_INITIAL_HEARTBEAT = 2 * 60 * 1000;
+												// Maximum time until initial heartbeat. Important for long running
+												//   simulations with slow simulation clock progress.
+	
 	public static int numRuns;					// Maximum number of runs.
 	public static boolean useStdStateStats; 	// For (MULT_REPL, statsLevel >= 3): Specifies whether to use ordinary
 												//   or steady state sojourn times when estimating averages and c.i.
@@ -238,7 +241,7 @@ public class Simulator {
 
 	public int numPlaces;
 	public int numTrans;
-	public int numQueues;	
+	public int numQueues;
 	public Place[] places;
 	public Transition[] trans;
 	public Queue[] queues;
@@ -374,7 +377,7 @@ public class Simulator {
 	 * @return
 	 * @exception
 	 */
-	public static Stats[] execute(Element net, String configuration) throws SimQPNException {
+	public static Stats[] execute(Element net, String configuration, SimulatorProgress monitor) throws SimQPNException {
 		
 		// TODO: Make the Stdout output print to $statsDir/Output.txt
 		// CHRIS: Not done yet
@@ -408,7 +411,7 @@ public class Simulator {
 		
 			if (runMode == NORMAL) {
 				if (analMethod == BATCH_MEANS) { // Method of non-overlapping batch means
-					SimulatorResults results = runBatchMeans(net, configuration);
+					SimulatorResults results = runBatchMeans(net, configuration, monitor);
 					List<Stats> stats = new ArrayList<Stats>();
 					for (int p = 0; p < results.getPlaces().length; p++) {
 						stats.add(results.getPlaces()[p].placeStats);
@@ -430,7 +433,7 @@ public class Simulator {
 					// useStdStateStats configurable only in MULT_REPL mode
 					//   - automatically set to true in CVRG_EST mode.
 					//   - automatically set to false in NORMAL:REPL_DEL mode. 					
-					AggregateStats[] aggrStats = runMultRepl(net, configuration);
+					AggregateStats[] aggrStats = runMultRepl(net, configuration, monitor);
 					for (int i = 0; i < aggrStats.length; i++)
 						if (aggrStats[i] != null)
 							aggrStats[i].printReport();
@@ -441,7 +444,7 @@ public class Simulator {
 				}
 			} else if (runMode == INIT_TRANS) {
 				if (analMethod == WELCH) {
-					runWelchMtd(net, configuration);
+					runWelchMtd(net, configuration, monitor);
 				} else {
 					logln("Error: Analysis method " + analMethod + " not supported in INIT_TRANS mode!");
 					throw new SimQPNException();
@@ -551,10 +554,14 @@ public class Simulator {
 	 * @return
 	 * @exception
 	 */
-	public static SimulatorResults runBatchMeans(Element net, String configuration) throws SimQPNException {
+	public static SimulatorResults runBatchMeans(Element net, String configuration, SimulatorProgress monitor) throws SimQPNException {
+		monitor.startSimulation();
 		Simulator sim = new Simulator(net, configuration);
 		sim.getReady();
-		sim.run();
+		monitor.startSimulationRun(1);
+		sim.run(monitor);
+		monitor.finishSimulationRun();
+		monitor.finishSimulation();
 		return new SimulatorResults(sim.places, sim.queues);
 	}
 
@@ -568,7 +575,7 @@ public class Simulator {
 	 * @return 
 	 * @exception
 	 */
-	public static AggregateStats[] runMultRepl(Element net, String configuration) throws SimQPNException {
+	public static AggregateStats[] runMultRepl(Element net, String configuration, SimulatorProgress monitor) throws SimQPNException {
 
 		if (numRuns <= 1) {
 			logln("Error: numRuns should be > 1!");
@@ -662,15 +669,15 @@ public class Simulator {
 				}
 			}
 		}
-		
-		logln("---------------------------------------------");
-		logln(" Starting MULT_REPL (numRuns = " + numRuns + ")");
-		logln("---------------------------------------------");
+
+		monitor.startSimulation();
 
 		// Run replication loop
 		for (int i = 0; i < numRuns; i++) {
-			logln("Starting Run " + (i + 1));
-			sim.run();
+			monitor.startSimulationRun(i + 1);
+			sim.run(monitor);
+			monitor.finishSimulationRun();
+
 			for (int p = 0; p < numPlaces; p++) {
 				pl = places[p];
 				if (pl.statsLevel > 0) {
@@ -683,10 +690,16 @@ public class Simulator {
 					}
 				}
 			}
+
+			if (monitor.isCanceled())
+				break;
+
 			sim = new Simulator(net, configuration);
 			sim.getReady();
 			places = sim.places;
 		}
+
+		monitor.finishSimulation();
 
 		for (int i = 0; i < 2 * numPlaces; i++)
 			if (aggrStats[i] != null)
@@ -702,7 +715,7 @@ public class Simulator {
 	 * @return
 	 * @exception
 	 */
-	public static AggregateStats[] runWelchMtd(Element net, String configuration) throws SimQPNException {
+	public static AggregateStats[] runWelchMtd(Element net, String configuration, SimulatorProgress monitor) throws SimQPNException {
 
 		if (numRuns < 5) {
 			logln("Warning: Number of runs for the method of Welch should be at least 5!");
@@ -738,9 +751,7 @@ public class Simulator {
 			}
 		}
 
-		logln("---------------------------------------------");
-		logln(" Starting Method of Welch (numRuns = " + numRuns + ")");
-		logln("---------------------------------------------");
+		monitor.startSimulation();
 
 		// Run replication loop
 		for (int i = 0; i < numRuns; i++) {
@@ -818,8 +829,10 @@ public class Simulator {
 			// END-CONFIG
 			// -----------------------------------------------------------------------------------------
 
-			logln("Starting Run " + (i + 1));
-			sim.run();
+			monitor.startSimulationRun(i + 1);
+			sim.run(monitor);
+			monitor.finishSimulationRun();
+
 			for (int p = 0; p < numPlaces; p++) {
 				pl = places[p];
 				if (pl.statsLevel > 0) {
@@ -832,10 +845,16 @@ public class Simulator {
 					}
 				}
 			}
+
+			if (monitor.isCanceled())
+				break;
+
 			sim = new Simulator(net, configuration);
 			sim.getReady();
 			places = sim.places;
 		}
+
+		monitor.finishSimulation();
 
 		for (int i = 0; i < 2 * numPlaces; i++)
 			if (aggrStats[i] != null)
@@ -2939,7 +2958,7 @@ public class Simulator {
 	 * @return
 	 * @exception
 	 */
-	public void run() throws SimQPNException {
+	public void run(SimulatorProgress monitor) throws SimQPNException {
 			
 		// SimonSpinner: TEMP CHANGE
 		//		try {
@@ -2980,9 +2999,15 @@ public class Simulator {
 		double nextChkAfter = timeBtwChkStops > 0 ? timeBtwChkStops : timeInitHeartBeat;
 
 		beginRunWallClock = System.currentTimeMillis();
-		double nextHeartBeat = timeInitHeartBeat;
 
-		logln("Starting Simulator");
+
+		boolean beforeInitHeartBeat = true;		// Flag indicating when we are still before the first heart beat (progress update).
+												//   If true, the value of timeBtwHeartBeats is still measured, and set to 0.
+		double nextHeartBeat = 0.0;				// Simulation run time of the last heart beat.
+		double timeBtwHeartBeats = 0.0;			// How often progress updates are made (in logical simulation time units).
+		long lastTimeMsrm = System.currentTimeMillis();		// The value of the last wall clock time measurement. Used for progress updates.
+		double maxProgressInterval = monitor.getMaxUpdateLogicalTimeInterval();
+		long progressUpdateRate = monitor.getMaxUpdateRealTimeInterval();
 		
 		// BEGIN MAIN SIMULATION LOOP ---------------------------------------------------------------------------------
 		while (clock < totRunL) { 
@@ -2996,6 +3021,8 @@ public class Simulator {
 					places[p].start();
 				for (int q = 0; q < numQueues; q++)
 					queues[q].start();
+
+				monitor.finishWarmUp();
 			}
 
 			// Step 1: Fire until no transitions are enabled.			
@@ -3099,24 +3126,54 @@ public class Simulator {
 			}
 
 			// Step 4: Heart Beat
-			if (runMode == NORMAL && analMethod != REPL_DEL && clock > nextHeartBeat) {
-				double elapsedSecs = (System.currentTimeMillis() - beginRunWallClock) / 1000;
-				double clockTimePerSec = clock / elapsedSecs;
-				log("Info: Simulation time = " + (long) clock + "  Elapsed wall clock time = ");
-				if (nextHeartBeat == timeInitHeartBeat)		// check if this is the initial heart beat
-					logln((int) elapsedSecs + " sec");
-				else
-					logln((int) (elapsedSecs / 60) + " min");
-				nextHeartBeat = Simulator.clock + clockTimePerSec * (secsBtwHeartBeats + 10);
-				// Make sure at least secsBtwHeartBeats seconds have elapsed at next heart beat
+			if(beforeInitHeartBeat) {
+				long curTimeMsrm = System.currentTimeMillis();
+				if(((curTimeMsrm - lastTimeMsrm) >= MAX_INITIAL_HEARTBEAT)
+						|| (Simulator.clock >= maxProgressInterval)) {
+					
+					if(Simulator.clock >= maxProgressInterval) {
+						timeBtwHeartBeats = maxProgressInterval;
+					} else {
+						timeBtwHeartBeats = (Simulator.clock / (curTimeMsrm - lastTimeMsrm)) * progressUpdateRate;
+					}
+					beforeInitHeartBeat = false;
+				}
+				
+				if (monitor.isCanceled()) {
+					clock = totRunL;
+				}
+			} else {
+				if(Simulator.clock >= nextHeartBeat) {
+					long curTimeMsrm = System.currentTimeMillis();
+					monitor.updateSimulationProgress(clock / (totRunL - 1) * 100, (curTimeMsrm - lastTimeMsrm));					
+					lastTimeMsrm = curTimeMsrm;
+					nextHeartBeat = Simulator.clock + timeBtwHeartBeats;
+					
+					if (monitor.isCanceled()) {
+						clock = totRunL;
+					}
+				}
 			}
+
+//			if (runMode == NORMAL && analMethod != REPL_DEL && clock > nextHeartBeat) {
+//				double elapsedSecs = (System.currentTimeMillis() - beginRunWallClock) / 1000;
+//				double clockTimePerSec = clock / elapsedSecs;
+//				log("Info: Simulation time = " + (long) clock + "  Elapsed wall clock time = ");
+//				if (nextHeartBeat == timeInitHeartBeat)		// check if this is the initial heart beat
+//					logln((int) elapsedSecs + " sec");
+//				else
+//					logln((int) (elapsedSecs / 60) + " min");
+//				nextHeartBeat = Simulator.clock + clockTimePerSec * (secsBtwHeartBeats + 10);
+//				// Make sure at least secsBtwHeartBeats seconds have elapsed at next heart beat
+//			}
 
 			// Step 5: Check Stopping Criterion
 			if (stoppingRule != FIXEDLEN && (!inRampUp) && clock > nextChkAfter) {
 				double elapsedSecs = (System.currentTimeMillis() - beginRunWallClock) / 1000;				
 				double clockTimePerSec = clock / elapsedSecs;	
 				boolean done = true;
-				Place pl;
+				Place pl = null;
+
 				for (int p = 0; p < numPlaces; p++) {
 					pl = places[p];
 					if (pl.statsLevel >= 3) {
@@ -3130,8 +3187,13 @@ public class Simulator {
 						}
 					}
 				}
-				if (done)
+				if (done) {
+					monitor.precisionCheck(done, null);
 					break; // exit while loop
+				} else {
+					monitor.precisionCheck(done, pl.name);
+				}
+
 				if (timeBtwChkStops > 0)
 					nextChkAfter = Simulator.clock + timeBtwChkStops;
 				else
@@ -3139,17 +3201,9 @@ public class Simulator {
 			}
 
 		}
-		// END MAIN SIMULATION LOOP ---------------------------------------------------------------------------------
-		logln("Simulator finished");
 
-		if (clock >= totRunL)  {
-			if (stoppingRule != FIXEDLEN)  {
-				logln("WARNING: The simulation was stopped because of reaching max totalRunLen!");
-				logln("         The required precision may not have been reached!");
-			}
-			else
-				logln("Info: STOPPING because max totalRunLen is reached!");
-		}
+		// END MAIN SIMULATION LOOP ---------------------------------------------------------------------------------
+		monitor.updateSimulationProgress(100, 0);
 		
 		endRunClock = clock;
 		msrmPrdLen = endRunClock - endRampUpClock;
@@ -3166,10 +3220,7 @@ public class Simulator {
 			for (int q = 0; q < numQueues; q++)  //NOTE: queues[*].finish() should be called after places[*].finish()! 
 				queues[q].finish();
 		}
-		
-		logln();
-		logln();
-		logln("Simulation finished.");
+
 		
 	} // end of run() method
 
@@ -3179,19 +3230,19 @@ public class Simulator {
 		return elementSettings;
 	}
 
-	protected static void logln() {
+	public static void logln() {
 		if(logPrintStream != null)
 			logPrintStream.println();
 		System.out.println();
 	}
 
-	protected static void logln(String msg) {
+	public static void logln(String msg) {
 		if(logPrintStream != null)
 			logPrintStream.println(msg);
 		System.out.println(msg);
 	}
 	
-	protected static void logln(int debugLev, String msg) {
+	public static void logln(int debugLev, String msg) {
 		if(debugLevel >= debugLev) {
 			if(logPrintStream != null) 
 				logPrintStream.println(msg);
@@ -3199,13 +3250,13 @@ public class Simulator {
 		}
 	}
 	
-	protected static void log(String msg) {
+	public static void log(String msg) {
 		if(logPrintStream != null)
 			logPrintStream.print(msg);
 		System.out.print(msg);
 	}
 		
-	protected static void log(int debugLev, String msg) {
+	public static void log(int debugLev, String msg) {
 		if(debugLevel >= debugLev) {
 			if(logPrintStream != null)
 				logPrintStream.print(msg);
@@ -3213,7 +3264,7 @@ public class Simulator {
 		}
 	}
 
-	protected static void log(Throwable exception) {
+	public static void log(Throwable exception) {
 		if(logPrintStream != null)
 			exception.printStackTrace(logPrintStream);
 		System.out.print(exception.getMessage());

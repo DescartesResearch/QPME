@@ -127,7 +127,7 @@ public class SimQPN {
 						try {
 							net = netDocument.getRootElement();
 							Simulator.configure(net, configuration);							
-							Stats[] result = Simulator.execute(net, configuration);
+							Stats[] result = Simulator.execute(net, configuration, new ConsoleSimulatorProgress());
 							StatsDocumentBuilder builder = new StatsDocumentBuilder(result, net, configuration);
 							Document statsDocument = builder.buildDocument();
 							File resultsFile = new File(Simulator.statsDir, builder.getResultFileBaseName() + ".simqpn");

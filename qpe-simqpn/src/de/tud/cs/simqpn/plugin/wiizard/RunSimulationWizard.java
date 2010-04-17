@@ -123,65 +123,73 @@ public class RunSimulationWizard extends Wizard {
 
 	}
 
+	public String getActiveConfiguration() {
+		return Page1ConfigurationSelectionWizardPage.activeConfiguration;
+	}
+
 	/**
 	 * This method is called when 'Finish' button is pressed in the wizard. We
 	 * will create an operation and run it using wizard as execution context.
 	 */
 	public boolean performFinish() {
-		IRunnableWithProgress op = new IRunnableWithProgress() {
-			public void run(IProgressMonitor monitor)
-					throws InvocationTargetException {
-				try {
-					doFinish(monitor);
-				} catch (CoreException e) {
-					throw new InvocationTargetException(e);
-				} finally {
-					monitor.done();
-				}
-			}
-		};
-		try {
-			getContainer().run(true, false, op);
-		} catch (InterruptedException e) {
-			return false;
-		} catch (InvocationTargetException e) {
-			Throwable realException = e.getTargetException();
-			MessageDialog.openError(getShell(), "Error", realException
-					.getMessage());
-			return false;
-		}
+//		IRunnableWithProgress op = new IRunnableWithProgress() {
+//			public void run(IProgressMonitor monitor)
+//					throws InvocationTargetException {
+//				try {
+//					doFinish(monitor);
+//				} catch (CoreException e) {
+//					throw new InvocationTargetException(e);
+//				} finally {
+//					monitor.done();
+//				}
+//			}
+//		};
+//		try {
+//			getContainer().run(true, false, op);
+//		} catch (InterruptedException e) {
+//			return false;
+//		} catch (InvocationTargetException e) {
+//			Throwable realException = e.getTargetException();
+//			MessageDialog.openError(getShell(), "Error", realException
+//					.getMessage());
+//			return false;
+//		}
 		return true;
 	}
 
-	/**
-	 * The worker method. It will find the container, create the file if missing
-	 * or just replace its contents, and open the editor on the newly created
-	 * file.
-	 */
-	private void doFinish(IProgressMonitor monitor) throws CoreException {
-		monitor.setTaskName("Simulating...");
-		getShell().getDisplay().asyncExec(new Runnable() {
-			public void run() {
-				IWorkbenchPage page = PlatformUI.getWorkbench()
-						.getActiveWorkbenchWindow().getActivePage();
-
-				IEditorInput input = page.getActiveEditor().getEditorInput();
-				if (input instanceof NetEditorInput) {
-					NetEditorInput qpeInput = (NetEditorInput) input;
-					try {
-						Simulation simulation = new Simulation(qpeInput
-								.getDocument().getRootElement(), getShell()
-								.getDisplay());
-						simulation.configure();
-						simulation.start();
-					} catch (SimQPNException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		});
-		monitor.worked(1);
-	}
+//	/**
+//	 * The worker method. It will find the container, create the file if missing
+//	 * or just replace its contents, and open the editor on the newly created
+//	 * file.
+//	 */
+//	private void doFinish(IProgressMonitor monitor) throws CoreException {
+//		monitor.setTaskName("Simulating...");
+//		PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+//			public void run() {
+//				IWorkbenchPage page = PlatformUI.getWorkbench()
+//						.getActiveWorkbenchWindow().getActivePage();
+//
+//				IEditorInput input = page.getActiveEditor().getEditorInput();
+//				if (input instanceof NetEditorInput) {
+//					NetEditorInput qpeInput = (NetEditorInput) input;
+//					try {
+//						Simulation simulation = new Simulation(qpeInput
+//								.getDocument().getRootElement(), PlatformUI.getWorkbench()
+//								.getDisplay());
+//
+//						ProgressMonitorDialog dialog = new ProgressMonitorDialog(null);
+//						dialog.run(true, true, simulation);
+//
+//					} catch (InvocationTargetException e) {
+//						e.printStackTrace();
+//					} catch (InterruptedException e) {
+//						e.printStackTrace();
+//					}
+//				}
+//			}
+//		});
+//		monitor.worked(1);
+//	}
 
 	/**
 	 * We will accept the selection in the workbench to see if we can initialize
@@ -191,87 +199,5 @@ public class RunSimulationWizard extends Wizard {
 	 */
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
 		this.selection = selection;
-	}
-
-	class Simulation extends Thread {
-		protected Element net;
-		protected Display display;
-
-		public Simulation(Element net, Display display) {
-			this.net = net;
-			this.display = display;
-		}
-
-		class EditorOpener implements Runnable {
-
-			private IEditorInput input;
-			private String editorId;
-			private Boolean activate;
-
-			public EditorOpener(IEditorInput input, String editorId,
-					Boolean activate) {
-				this.input = input;
-				this.editorId = editorId;
-				this.activate = activate;
-			}
-
-			@Override
-			public void run() {
-				try {
-					PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-							.getActivePage().openEditor(input, editorId,
-									activate);
-				} catch (PartInitException e) {
-					e.printStackTrace();
-				}
-			}
-
-		}
-
-		public void configure() throws SimQPNException {
-			Simulator.configure(net,
-					Page1ConfigurationSelectionWizardPage.activeConfiguration);
-		}
-
-		public void run() {
-			try {
-				String configuration = Page1ConfigurationSelectionWizardPage.activeConfiguration;
-				Stats[] result = Simulator.execute(net, configuration);
-				StatsDocumentBuilder builder = new StatsDocumentBuilder(result,
-						net, configuration);
-				Document statsDocument = builder.buildDocument();
-				File resultsFile = new File(Simulator.statsDir, builder
-						.getResultFileBaseName()
-						+ ".simqpn");
-				saveXmlToFile(statsDocument, resultsFile);
-
-				IEditorInput simulationOutput = new QueryEditorInput(new Path(
-						resultsFile.getAbsolutePath()));
-
-				display.asyncExec(new EditorOpener(simulationOutput,
-						SimpleQueryEditor.ID, true));
-
-			} catch (SimQPNException e) {
-				e.printStackTrace();
-			}
-		}
-
-		private void saveXmlToFile(Document doc, File file) {
-			XMLWriter writer = null;
-			try {
-				writer = new XMLWriter(new FileWriter(file), OutputFormat
-						.createPrettyPrint());
-				writer.write(doc);
-			} catch (IOException e) {
-				e.printStackTrace();
-			} finally {
-				if (writer != null) {
-					try {
-						writer.close();
-					} catch (IOException e) {
-					}
-				}
-			}
-		}
 	}
 }

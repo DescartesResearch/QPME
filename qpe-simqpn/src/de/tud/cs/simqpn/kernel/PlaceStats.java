@@ -754,6 +754,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			}	
 		}
 
+		int passedColors = 0;
 		for (c = 0; c < numColors; c++) {
 			if (minBatches[c] <= 0) continue;
 			if (numBatchesST[c] < minBatches[c]) {
@@ -794,7 +795,9 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 					break;
 				}
 			}
+			passedColors++;
 		}
+
 		if (passed && Simulator.debugLevel >= 3) {
 			if (type == ORD_PLACE)
 				Simulator.logln("PASSED: Enough stats gathered for place " + name);
