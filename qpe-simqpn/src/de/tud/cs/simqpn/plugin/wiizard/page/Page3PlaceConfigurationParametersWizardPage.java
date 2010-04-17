@@ -121,17 +121,17 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 		placeTree.setHeaderVisible(true);
 
 		// Define the tables clumns.
-		for (int i = 0; i < 8; i++) {
+		for (int i = 0; i < 10; i++) {
 			TreeColumn column = new TreeColumn(placeTree, SWT.LEFT, i);
 			// TIP: Don't forget to set the width. If not set it is set to
 			// 0 and it will look as if the column didn't exist.
 			if (i == 0) {
 				column.setWidth(130);
 			} else if (i == 7) {
-				column.setWidth(180);
+				column.setWidth(150);
 			} 
 			else {
-				column.setWidth(115);
+				column.setWidth(85);
 			}			
 		}
 
@@ -595,7 +595,7 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 		configs[0] = new EditorConfiguration();
 		configs[0].attributeNames = new String[] { "Name", "statsLevel",
 				"signLev", "reqAbsPrc", "reqRelPrc", "batchSize", "minBatches",
-				"numBMeansCorlTested" };
+				"numBMeansCorlTested" , "bucketSize", "maxBuckets"};
 		configs[0].cellEditors = new CellEditor[] { null,
 				new IntegerCellEditor(placeTreeViewer.getTree()),
 				new DoubleCellEditor(placeTreeViewer.getTree()),
@@ -603,28 +603,32 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 				new DoubleCellEditor(placeTreeViewer.getTree()),
 				new IntegerCellEditor(placeTreeViewer.getTree()),
 				new IntegerCellEditor(placeTreeViewer.getTree()),
-				new IntegerCellEditor(placeTreeViewer.getTree()) };
+				new IntegerCellEditor(placeTreeViewer.getTree()),
+				new DoubleCellEditor(placeTreeViewer.getTree()),
+				new IntegerCellEditor(placeTreeViewer.getTree())
+		};
 
 		configs[1] = new EditorConfiguration();
 		configs[1].attributeNames = new String[] { "Name", "statsLevel",
-				"signLevAvgST", "", "", "", "", "" };
+				"signLevAvgST", "", "", "", "", "", "", "" };
 		configs[1].cellEditors = new CellEditor[] { null,
 				new IntegerCellEditor(placeTreeViewer.getTree()),
 				new DoubleCellEditor(placeTreeViewer.getTree()), null, null,
-				null, null, null };
+				null, null, null, null, null };
 
 		configs[2] = new EditorConfiguration();
 		configs[2].attributeNames = new String[] { "Name", "statsLevel",
-				"minObsrv", "maxObsrv", "", "", "", "" };
+				"minObsrv", "maxObsrv", "", "", "", "", "", "" };
 		configs[2].cellEditors = new CellEditor[] { null,
 				new IntegerCellEditor(placeTreeViewer.getTree()),
 				new IntegerCellEditor(placeTreeViewer.getTree()),
 				new IntegerCellEditor(placeTreeViewer.getTree()), null, null,
-				null, null };
+				null, null, null, null };
 
 		placeTreeViewer
 				.setColumnProperties(configs[activeConfig].attributeNames);
 
+		migrateMetaData(net);
 		placeTreeViewer.setInput(net);
 
 		updateDialog();
@@ -677,6 +681,39 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 		return -1;
 	}
 
+	// If a file from an older version of QPE is opened, this methods checks that all required metadata attributes
+	// are present. If attributes are missing, they are added with default values.
+	private void migrateMetaData(Element net) {
+		XPath selector = DocumentHelper.createXPath("//color-ref/meta-attributes/meta-attribute");
+		List places = selector.selectNodes(net);
+
+		for(int i = 0; i < places.size(); i++) {
+			Element metaAttribute = (Element)places.get(i);
+			if(metaAttribute.attribute("bucketSize") == null) {
+				DocumentManager.setAttribute(
+						metaAttribute, "bucketSize", "100.0");
+			}
+			if(metaAttribute.attribute("maxBuckets") == null) {
+				DocumentManager.setAttribute(
+						metaAttribute, "maxBuckets", "1000");
+			}
+		}
+
+		selector = DocumentHelper.createXPath("//place[@type=\"queueing-place\"]/color-refs/color-ref/meta-attributes/meta-attribute");
+		List queueingPlaces = selector.selectNodes(net);
+		for(int i = 0; i < queueingPlaces.size(); i++) {
+			Element metaAttribute = (Element)queueingPlaces.get(i);
+			if(metaAttribute.attribute("queueBucketSize") == null) {
+				DocumentManager.setAttribute(
+						metaAttribute, "queueBucketSize", "100.0");
+			}
+			if(metaAttribute.attribute("queueMaxBuckets") == null) {
+				DocumentManager.setAttribute(
+						metaAttribute, "queueMaxBuckets", "1000");
+			}
+		}
+	}
+
 	// ///////////////////////////////////////////////////
 	// Utility Classes
 
@@ -700,7 +737,7 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 		public String[] getAttributeNames() {
 			String[] attributeNames = null;
 			if (Page3PlaceConfigurationParametersWizardPage.this.activeConfig == 0) {
-				attributeNames = new String[8];
+				attributeNames = new String[10];
 				attributeNames[0] = null;
 				attributeNames[1] = null;
 				attributeNames[2] = "signLev";
@@ -709,8 +746,10 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 				attributeNames[5] = "batchSize";
 				attributeNames[6] = "minBatches";
 				attributeNames[7] = "numBMeansCorlTested";
+				attributeNames[8] = "bucketSize";
+				attributeNames[9] = "maxBuckets";
 			} else if (Page3PlaceConfigurationParametersWizardPage.this.activeConfig == 1) {
-				attributeNames = new String[8];
+				attributeNames = new String[10];
 				attributeNames[0] = null;
 				attributeNames[1] = null;
 				attributeNames[2] = "signLevAvgST";
@@ -719,8 +758,10 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 				attributeNames[5] = null;
 				attributeNames[6] = null;
 				attributeNames[7] = null;
+				attributeNames[8] = null;
+				attributeNames[9] = null;
 			} else {
-				attributeNames = new String[8];
+				attributeNames = new String[10];
 				attributeNames[0] = null;
 				attributeNames[1] = null;
 				attributeNames[2] = "minObsrv";
@@ -729,6 +770,8 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 				attributeNames[5] = null;
 				attributeNames[6] = null;
 				attributeNames[7] = null;
+				attributeNames[8] = null;
+				attributeNames[9] = null;
 			}
 			return attributeNames;
 		}
@@ -736,7 +779,7 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 		public String[] getAttributeValues() {
 			String[] attributeValues = null;
 			if (Page3PlaceConfigurationParametersWizardPage.this.activeConfig == 0) {
-				attributeValues = new String[8];
+				attributeValues = new String[10];
 				attributeValues[0] = null;
 				attributeValues[1] = null;
 				attributeValues[2] = parent.attributeValue("signLev");
@@ -746,8 +789,10 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 				attributeValues[6] = parent.attributeValue("minBatches");
 				attributeValues[7] = parent
 						.attributeValue("numBMeansCorlTested");
+				attributeValues[8] = parent.attributeValue("bucketSize");
+				attributeValues[9] = parent.attributeValue("maxBuckets");
 			} else if (Page3PlaceConfigurationParametersWizardPage.this.activeConfig == 1) {
-				attributeValues = new String[8];
+				attributeValues = new String[10];
 				attributeValues[0] = null;
 				attributeValues[1] = null;
 				attributeValues[2] = parent.attributeValue("signLevAvgST");
@@ -756,8 +801,10 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 				attributeValues[5] = null;
 				attributeValues[6] = null;
 				attributeValues[7] = null;
+				attributeValues[8] = null;
+				attributeValues[9] = null;
 			} else {
-				attributeValues = new String[8];
+				attributeValues = new String[10];
 				attributeValues[0] = null;
 				attributeValues[1] = null;
 				attributeValues[2] = parent.attributeValue("minObsrv");
@@ -766,6 +813,8 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 				attributeValues[5] = null;
 				attributeValues[6] = null;
 				attributeValues[7] = null;
+				attributeValues[8] = null;
+				attributeValues[9] = null;
 			}
 			return attributeValues;
 		}
@@ -809,6 +858,18 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 					iVal = (Integer) obj;
 					if ((iVal.intValue() < 0) || (iVal.intValue() % 2 == 1)) {
 						return "numBMeansCorlTested must be a non-negative even number";
+					}
+					break;
+				case 8:
+					dVal = (Double) obj;
+					if (dVal.doubleValue() < 0) {
+						return "bucketSize must be a non-negative number";
+					}
+					break;
+				case 9:
+					iVal = (Integer) obj;
+					if (iVal.intValue() < 0) {
+						return "maxBuckets must be a non-negative integer";
 					}
 					break;
 				}
@@ -853,7 +914,7 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 		public String[] getAttributeNames() {
 			String[] attributeNames = null;
 			if (Page3PlaceConfigurationParametersWizardPage.this.activeConfig == 0) {
-				attributeNames = new String[8];
+				attributeNames = new String[10];
 				attributeNames[0] = null;
 				attributeNames[1] = null;
 				attributeNames[2] = "queueSignLev";
@@ -862,8 +923,10 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 				attributeNames[5] = "queueBatchSize";
 				attributeNames[6] = "queueMinBatches";
 				attributeNames[7] = "queueNumBMeansCorlTested";
+				attributeNames[8] = "queueBucketSize";
+				attributeNames[9] = "queueMaxBuckets";
 			} else if (Page3PlaceConfigurationParametersWizardPage.this.activeConfig == 1) {
-				attributeNames = new String[8];
+				attributeNames = new String[10];
 				attributeNames[0] = null;
 				attributeNames[1] = null;
 				attributeNames[2] = "queueSignLevAvgST";
@@ -872,8 +935,10 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 				attributeNames[5] = null;
 				attributeNames[6] = null;
 				attributeNames[7] = null;
+				attributeNames[8] = null;
+				attributeNames[9] = null;
 			} else {
-				attributeNames = new String[8];
+				attributeNames = new String[10];
 				attributeNames[0] = null;
 				attributeNames[1] = null;
 				attributeNames[2] = "queueMinObsrv";
@@ -882,6 +947,8 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 				attributeNames[5] = null;
 				attributeNames[6] = null;
 				attributeNames[7] = null;
+				attributeNames[8] = null;
+				attributeNames[9] = null;
 			}
 			return attributeNames;
 		}
@@ -889,7 +956,7 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 		public String[] getAttributeValues() {
 			String[] attributeValues = null;
 			if (Page3PlaceConfigurationParametersWizardPage.this.activeConfig == 0) {
-				attributeValues = new String[8];
+				attributeValues = new String[10];
 				attributeValues[0] = null;
 				attributeValues[1] = null;
 				attributeValues[2] = parent.attributeValue("queueSignLev");
@@ -899,8 +966,10 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 				attributeValues[6] = parent.attributeValue("queueMinBatches");
 				attributeValues[7] = parent
 						.attributeValue("queueNumBMeansCorlTested");
+				attributeValues[8] = parent.attributeValue("queueBucketSize");
+				attributeValues[9] = parent.attributeValue("queueMaxBuckets");
 			} else if (Page3PlaceConfigurationParametersWizardPage.this.activeConfig == 1) {
-				attributeValues = new String[8];
+				attributeValues = new String[10];
 				attributeValues[0] = null;
 				attributeValues[1] = null;
 				attributeValues[2] = parent.attributeValue("queueSignLevAvgST");
@@ -909,8 +978,10 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 				attributeValues[5] = null;
 				attributeValues[6] = null;
 				attributeValues[7] = null;
+				attributeValues[8] = null;
+				attributeValues[9] = null;
 			} else {
-				attributeValues = new String[8];
+				attributeValues = new String[10];
 				attributeValues[0] = null;
 				attributeValues[1] = null;
 				attributeValues[2] = parent.attributeValue("queueMinObsrv");
@@ -919,6 +990,8 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 				attributeValues[5] = null;
 				attributeValues[6] = null;
 				attributeValues[7] = null;
+				attributeValues[8] = null;
+				attributeValues[9] = null;
 			}
 			return attributeValues;
 		}
@@ -962,6 +1035,18 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 					iVal = (Integer) obj;
 					if ((iVal.intValue() < 0) || (iVal.intValue() % 2 == 1)) {
 						return "numBMeansCorlTested must be a non-negative even number";
+					}
+					break;
+				case 8:
+					dVal = (Double) obj;
+					if (dVal.doubleValue() < 0) {
+						return "bucketSize must be a non-negative number";
+					}
+					break;
+				case 9:
+					iVal = (Integer) obj;
+					if (iVal.intValue() < 0) {
+						return "maxBuckets must be a non-negative integer";
 					}
 					break;
 				}
@@ -1011,6 +1096,10 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 					.addAttribute(
 							"numBMeansCorlTested",
 							"50");
+			metaAttribute.addAttribute(
+					"bucketSize", "100.0");
+			metaAttribute.addAttribute(
+					"maxBuckets", "1000");
 			if ("queueing-place".equals(metaAttribute.getParent().getParent().getParent().getParent()
 					.attributeValue("type"))) {
 				metaAttribute.addAttribute(
@@ -1032,6 +1121,10 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 						.addAttribute(
 								"queueNumBMeansCorlTested",
 								"50");
+				metaAttribute.addAttribute(
+						"queueBucketSize", "100.0");
+				metaAttribute.addAttribute(
+						"queueMaxBuckets", "1000");
 			}
 			break;
 		case 2:

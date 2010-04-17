@@ -50,39 +50,53 @@ public class TimeHistogram implements Serializable  {
 
 	private double			bucketSize;					// Size of buckets (granularity) 
 	private int				numBuckets;					// Total number of buckets
+	private int				maxNumBuckets;				// Maximum number of buckets
 	private int[]			data;						// Histogram data
 	
-	private final int       MIN_NUM_BUCKETS = 10;
+	private final int       MIN_NUM_BUCKETS = 2;
 	private final int       MAX_NUM_BUCKETS = 1000;
 	private final double    DEFAULT_BUCKET_SIZE = 100;
-	
-	int count = 0;
 	
 	/**
 	 * Constructor 
 	 *
-	 * @param bSize      - bucketSize in simulation time units. 
-	 * @param upperBound - upper bound for time values in simulation time units. If set to 0, infinite upper bound 
-	 *                     is assumed, i.e., the number of buckets automatically expands to accomodate observed values.  
-	 * 
 	 */	
-	public TimeHistogram(double bSize, double upperBound)  {
-		if (bSize > 0)
-			this.bucketSize = bSize;
-		else 
-			this.bucketSize = DEFAULT_BUCKET_SIZE;
-		
-		if (upperBound > 0)  {
-			if (upperBound < this.bucketSize) 
-				Simulator.logln("WARNING: upperBound < bucketSize for a histogram! The number of buckets will be zero!");
-			this.numBuckets = (int) Math.ceil(upperBound / this.bucketSize);			
-		}
-		else this.numBuckets = MIN_NUM_BUCKETS;
+	public TimeHistogram()  {
+		this.numBuckets = MIN_NUM_BUCKETS;
+		this.maxNumBuckets = MAX_NUM_BUCKETS;
 		
 		this.data = new int[numBuckets];
 		for (int i = 0; i < numBuckets; i++) this.data[i] = 0;
 	}
 	
+	/**
+	 * Sets the bucket size of the time histogram. This method should only be called before
+	 * entries are added to the histogram.
+	 *
+	 * @param bucketSize - bucketSize in simulation time units. If set to 0, the default bucket
+	 * 					   size is used.
+	 */
+	public void setBucketSize(double  bucketSize) {
+		if (bucketSize > 0)
+			this.bucketSize = bucketSize;
+		else
+			this.bucketSize = DEFAULT_BUCKET_SIZE;
+	}
+
+	/**
+	 * Specifies the maximum number of buckets. This method should only be called before
+	 * entries are added to the histogram.
+	 *
+	 * @param maxNumBuckets - number of buckets. If set to 0, a default value is used.
+	 */
+	public void setMaximumNumberOfBuckets(int maxNumBuckets) {
+		if(maxNumBuckets > 0) {
+			this.maxNumBuckets = maxNumBuckets;
+		} else {
+			this.maxNumBuckets = MAX_NUM_BUCKETS;
+		}
+	}
+
 	//TODO: See how to deal with updateDelayTimeStats - print a WARNING
 	
 	/**
@@ -95,8 +109,8 @@ public class TimeHistogram implements Serializable  {
 		if (bucket < 0)
 			bucket = 0; 
 		else if (bucket >= numBuckets)  {			
-			bucket = (bucket < MAX_NUM_BUCKETS ? bucket : MAX_NUM_BUCKETS - 1);
-			if (numBuckets < MAX_NUM_BUCKETS) 
+			bucket = (bucket < maxNumBuckets ? bucket : maxNumBuckets - 1);
+			if (numBuckets < maxNumBuckets)
 				expandHistogram(bucket + 1);
 		}			
 		data[bucket]++;		
@@ -177,6 +191,13 @@ public class TimeHistogram implements Serializable  {
 		return bucketSize;
 	}
 
+	/**
+	 * getMaximumNumberOfBuckets - returns the maximum number of buckets.
+	 *
+	 */
+	public int getMaximumNumberOfBuckets() {
+		return maxNumBuckets;
+	}
 
 	/**
 	 * getData - returns the histogram data.

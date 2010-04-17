@@ -2565,6 +2565,38 @@ public class Simulator {
 								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
 								throw new SimQPNException();
 							}
+
+							if (pl.statsLevel >= 4) {
+								if (colorRefSettings.attributeValue("bucketSize") == null) {
+									logln("Error: Configuration parameter \"bucketSize\" for Batch Means Method is missing!");
+									logln("Details:");
+									logln("  configuration = " + configuration);
+									logln("  place-num          = " + p);
+									logln("  place.id           = " + place.attributeValue("id"));
+									logln("  place.name         = " + place.attributeValue("name"));
+									logln("  colorRef-num       = " + cr);
+									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+									throw new SimQPNException();
+								}
+								pl.placeStats.histST[cr].setBucketSize(Double.parseDouble(colorRefSettings.attributeValue("bucketSize")));
+								logln(2, "-- placeStats.histST[" + cr + "].bucketSize = " + pl.placeStats.histST[cr].getBucketSize());
+
+								if(colorRefSettings.attributeValue("maxBuckets") == null) {
+									logln("Error: Configuration parameter \"maxBuckets\" for Batch Means Method is missing!");
+									logln("Details:");
+									logln("  configuration = " + configuration);
+									logln("  place-num          = " + p);
+									logln("  place.id           = " + place.attributeValue("id"));
+									logln("  place.name         = " + place.attributeValue("name"));
+									logln("  colorRef-num       = " + cr);
+									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+									throw new SimQPNException();
+								}
+								pl.placeStats.histST[cr].setMaximumNumberOfBuckets(Integer.parseInt(colorRefSettings.attributeValue("maxBuckets")));
+								logln(2, "-- placeStats.histST[" + cr + "].maxBuckets = " + pl.placeStats.histST[cr].getMaximumNumberOfBuckets());
+							}
 						} else {							
 							logln("Error: SimQPN configuration parameters for Batch Means Method are missing!");
 							logln("Details:");
@@ -2718,6 +2750,38 @@ public class Simulator {
 									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
 									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
 									throw new SimQPNException();
+								}
+
+								if (pl.statsLevel >= 4) {
+									if (colorRefSettings.attributeValue("queueBucketSize") == null) {
+										logln("Error: Configuration parameter \"queueBucketSize\" for Batch Means Method is missing!");
+										logln("Details:");
+										logln("  configuration = " + configuration);
+										logln("  place-num          = " + p);
+										logln("  place.id           = " + place.attributeValue("id"));
+										logln("  place.name         = " + place.attributeValue("name"));
+										logln("  colorRef-num       = " + cr);
+										logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+										logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+										throw new SimQPNException();
+									}
+									qpl.qPlaceQueueStats.histST[cr].setBucketSize(Double.parseDouble(colorRefSettings.attributeValue("queueBucketSize")));
+									logln(2, "-- qPlaceQueueStats.histST[" + cr + "].bucketSize = " + qpl.qPlaceQueueStats.histST[cr].getBucketSize());
+
+									if(colorRefSettings.attributeValue("queueMaxBuckets") == null) {
+										logln("Error: Configuration parameter \"queueMaxBuckets\" for Batch Means Method is missing!");
+										logln("Details:");
+										logln("  configuration = " + configuration);
+										logln("  place-num          = " + p);
+										logln("  place.id           = " + place.attributeValue("id"));
+										logln("  place.name         = " + place.attributeValue("name"));
+										logln("  colorRef-num       = " + cr);
+										logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+										logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+										throw new SimQPNException();
+									}
+									qpl.qPlaceQueueStats.histST[cr].setMaximumNumberOfBuckets(Integer.parseInt(colorRefSettings.attributeValue("queueMaxBuckets")));
+									logln(2, "-- qPlaceQueueStats.histST[" + cr + "].maxBuckets = " + qpl.qPlaceQueueStats.histST[cr].getMaximumNumberOfBuckets());
 								}
 							} else {
 								logln("Error: SimQPN configuration parameters for Batch Means Method are missing!");

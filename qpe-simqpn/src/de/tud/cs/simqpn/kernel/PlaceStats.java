@@ -242,7 +242,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 		if (statsLevel >= 4) {
 			this.histST = new TimeHistogram[numColors];
 			for (int c = 0; c < numColors; c++) 
-				histST[c] = new TimeHistogram(0, 0); // TODO: Pass values configured by the user. 
+				histST[c] = new TimeHistogram();
 		}
 		
 		if ((statsLevel >= 5) && !(this instanceof QPlaceQueueStats)) {
