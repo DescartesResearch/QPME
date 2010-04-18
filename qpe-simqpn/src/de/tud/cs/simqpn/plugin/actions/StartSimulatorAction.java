@@ -27,7 +27,7 @@
  * =============================================
  *
  * Original Author(s):  Samuel Kounev and Christofer Dutz
- * Contributor(s):   
+ * Contributor(s):  Simon Spinner 
  * 
  * NOTE: The above list of contributors lists only the people that have
  * contributed to this source file - for a list of ALL contributors to 
@@ -37,7 +37,7 @@
  *  Date        ID                Description
  *  ----------  ----------------  ------------------------------------------------------------------  
  *  2006        Christofer Dutz   Created.
- * 
+ *  2010/04/17	Simon Spinner	  Progress dialog added.
  */
 package de.tud.cs.simqpn.plugin.actions;
 

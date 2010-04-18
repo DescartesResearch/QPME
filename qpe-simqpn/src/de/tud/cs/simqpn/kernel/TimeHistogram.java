@@ -38,6 +38,7 @@
  *  ----------  ----------------  ------------------------------------------------------------------
  *  2008/12/14  Samuel Kounev     Created.
  *  2009/03/13  Frederik Zipp     Made data accessible from outside.
+ *  2010/04/17	Simon Spinner	  Make bucketSize and numBuckets configurable.
  * 
  */
 

@@ -27,7 +27,7 @@
  * =============================================
  *
  * Original Author(s):  Samuel Kounev and Christofer Dutz
- * Contributor(s):   
+ * Contributor(s):  Simon Spinner 
  * 
  * NOTE: The above list of contributors lists only the people that have
  * contributed to this source file - for a list of ALL contributors to 
@@ -38,7 +38,7 @@
  *  ----------  ----------------  ------------------------------------------------------------------  
  *  2006        Christofer Dutz   Created.
  *  2008/05/05  Frederik Zipp     Set max statsLevel to 5.
- * 
+ *  2010/04/17	Simon Spinner     Make numBuckets and bucketSize configurable. 
  */
 package de.tud.cs.simqpn.plugin.wiizard.page;
 

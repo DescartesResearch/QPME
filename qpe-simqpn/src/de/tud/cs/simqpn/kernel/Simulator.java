@@ -27,7 +27,7 @@
  * =============================================
  *
  * Original Author(s):  Samuel Kounev
- * Contributor(s):      Frederik Zipp
+ * Contributor(s):      Frederik Zipp, Simon Spinner
  * 
  * NOTE: The above list of contributors lists only the people that have
  * contributed to this source file - for a list of ALL contributors to 
@@ -72,6 +72,8 @@
  *  2009/03/08  Frederik Zipp     Added central queue management (queue editor).
  *  2009/03/08  Frederik Zipp     Made a change to support storing simulation results in an XML file.
  *  2009/16/12  Simon Spinner     Optimized run() avoiding usage of IntArrayList for managing enabled transitions. 
+ *  2010/04/17	Simon Spinner     Add support for monitoring simulation progress and for cancelling.
+ *  2010/04/17	Simon Spinner     Add warning for incidence functions with no input tokens.
  * 
  */
 package de.tud.cs.simqpn.kernel;
