@@ -42,28 +42,78 @@
 
 package de.tud.cs.simqpn.kernel;
 
+/**
+ * Simulation front-ends need to implement this interface, in order to
+ * monitor the progress of a simulation.
+ */
 public interface SimulatorProgress {
 
+	/**
+	 * If the user has requested to cancel the simulation, this flag is set.
+	 * The simulation continuously queries this flag in order to get informed
+	 * of a cancel operation.
+	 * @return a boolean indicating whether the user has requested to cancel
+	 * 				the currently running simulation.
+	 */
 	public boolean isCanceled();
 
-	public double getCheckInterval(double totRunLength);
+	/**
+	 * The maximum progress update interval defines (logical time) how many 
+	 * logical simulation time units  are allowed at maximum between two updates.
+	 * @return a double specifying the interval in simulation time
+	 */
+	public double getMaxUpdateLogicalTimeInterval();
+	
+	/**
+	 * The maximum progress update interval (real time) defines how many
+	 * wallclock time units are allowed at maximum between two updates.
+	 * @return a long specifying the interval in milliseconds
+	 */
+	public long getMaxUpdateRealTimeInterval();
 
-	public void startSimulation(int analysisMethod, int stoppingCriteria, int numRuns);
+	/**
+	 * Called when a simulation is started.
+	 */
+	public void startSimulation();
 
+	/**
+	 * Called at the beginning of each simulation run.
+	 * @param number - a counter for the simulation run in the current simulation
+	 * 					(0 < number <= numRuns).
+	 */
 	public void startSimulationRun(int number);
 
+	/**
+	 * Called after the warm up period finished.
+	 */
 	public void finishWarmUp();
 
-	public void updateSimulationProgress(int progress);
+	/**
+	 * Called in regular intervals to update the progress interval. The update
+	 * is triggered at least every l simulation time units and every r real time
+	 * units. l and r are specified by the value returned by the methods 
+	 * getMaxUpdateLogicalTimeInterval and getMaxUpdateRealTimeInterval.
+	 * @param progress - the current simulation run progress as percentage (0.0 <= progress <= 100.0).
+	 * @param elapsedTime - the time elapsed since the last progress update in milliseconds.
+	 */
+	public void updateSimulationProgress(double progress, long elapsedTime);
 
+	/**
+	 * Called for each finished simulation run.
+	 */
 	public void finishSimulationRun();
 
+	/**
+	 * Called after the completion of a simulation.
+	 */
 	public void finishSimulation();
 
-	public void startPrecisionCheck(int numTotalColors);
-
-	public void updatePrecisionCheckProgress(boolean passed, int passedColors);
-
-	public void finishPrecisionCheck(boolean done, String failedPlaceName);
+	/**
+	 * Called after every precision check, if Simulator.stoppingRule != Simulator.FIXEDLEN.
+	 * @param done - indicates whether the precision check succeeded.
+	 * @param failedPlaceName - if not done, the name of the place that has not enough stats yet.
+	 * 							Otherwise null.
+	 */
+	public void precisionCheck(boolean done, String failedPlaceName);
 
 }

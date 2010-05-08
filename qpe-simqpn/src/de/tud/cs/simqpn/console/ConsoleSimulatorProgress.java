@@ -47,62 +47,82 @@ import de.tud.cs.simqpn.kernel.SimulatorProgress;
 
 import static de.tud.cs.simqpn.kernel.Simulator.*;
 
+/**
+ * Prints the simulation progress on the console. Used in standalone simulation mode.
+ */
 public class ConsoleSimulatorProgress implements SimulatorProgress {
 
-	private double run = 0;
 	private int numRuns;
-	private int analysisMethod;
-
+	
+	/* (non-Javadoc)
+	 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#startSimulation()
+	 */
 	@Override
-	public void startSimulation(int analysisMethod, int stoppingCriteria, int numRuns) {
-		this.numRuns = numRuns;
-		this.analysisMethod = analysisMethod;
+	public void startSimulation() {
+		this.numRuns = (Simulator.analMethod == Simulator.BATCH_MEANS) ? 1 :Simulator.numRuns;
 
-		switch(analysisMethod) {
+		logln("---------------------------------------------");
+		switch(Simulator.analMethod) {
 		case Simulator.BATCH_MEANS:
-			logln("---------------------------------------------");
 			logln(" Starting Batch Means Method");
-			logln("---------------------------------------------");
 			break;
 		case Simulator.REPL_DEL:
-			logln("---------------------------------------------");
 			logln(" Starting Multiple Replications (numRuns = " + numRuns + ")");
-			logln("---------------------------------------------");
 			break;
 		case Simulator.WELCH:
-			logln("---------------------------------------------");
 			logln(" Starting Method of Welch (numRuns = " + numRuns + ")");
-			logln("---------------------------------------------");
 			break;
 		}
+		logln("---------------------------------------------");
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#startSimulationRun(int)
+	 */
 	@Override
 	public void startSimulationRun(int number) {
-		logln("Simulation run " + (number + 1) + "/" + numRuns + " started.");
-		run = ((double)number) / numRuns;
+		logln("Simulation run " + number + "/" + numRuns + " started.");
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#updateSimulationProgress(double, long)
+	 */
 	@Override
-	public void updateSimulationProgress(int progress) {
-		if(analysisMethod != REPL_DEL) {
-			logln("Progress: " + progress + "%");
-		}
+	public void updateSimulationProgress(double progress, long elapsedTime) {
+		logln("Progress: " + Math.round(progress) + "%");
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#finishWarmUp()
+	 */
 	@Override
 	public void finishWarmUp() {
-		if(analysisMethod != WELCH) {
+		if(Simulator.analMethod != WELCH) {
 			logln("Warm up finished. Starting steady state analysis...");
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#finishSimulationRun()
+	 */
 	@Override
 	public void finishSimulationRun() {
+		if (Simulator.clock >= Simulator.totRunLen)  {
+			if (Simulator.stoppingRule != Simulator.FIXEDLEN)  {
+				logln("WARNING: The simulation was stopped because of reaching max totalRunLen!");
+				logln("         The required precision may not have been reached!");
+			}
+			else
+				logln("Info: STOPPING because max totalRunLen is reached!");
+		}
+		
 		logln("Simulation run finished.");
 		logln();
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#finishSimulation()
+	 */
 	@Override
 	public void finishSimulation() {
 		logln();
@@ -110,25 +130,34 @@ public class ConsoleSimulatorProgress implements SimulatorProgress {
 		logln("Simulation finished.");
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#isCanceled()
+	 */
 	@Override
 	public boolean isCanceled() {
 		return false;
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#getMaxUpdateLogicalTimeInterval()
+	 */
 	@Override
-	public double getCheckInterval(double totRunLength) {
-		return totRunLength / 20.0;
+	public double getMaxUpdateLogicalTimeInterval() {
+		return Simulator.totRunLen / 20.0;
+	}
+	
+	/* (non-Javadoc)
+	 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#getMaxUpdateRealTimeInterval()
+	 */
+	@Override
+	public long getMaxUpdateRealTimeInterval() {
+		return 60 * 1000; // 60 sec
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#precisionCheck(boolean, java.lang.String)
+	 */
 	@Override
-	public void finishPrecisionCheck(boolean done, String failedPlaceName) {
-	}
-
-	@Override
-	public void startPrecisionCheck(int numTotalColors) {
-	}
-
-	@Override
-	public void updatePrecisionCheckProgress(boolean passed, int passedColors) {
+	public void precisionCheck(boolean done, String failedPlaceName) {
 	}
 }
