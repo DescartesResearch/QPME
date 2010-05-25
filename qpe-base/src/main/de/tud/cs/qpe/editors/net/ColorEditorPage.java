@@ -44,6 +44,7 @@ package de.tud.cs.qpe.editors.net;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -51,6 +52,7 @@ import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.XPath;
 import org.dom4j.tree.DefaultElement;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColorCellEditor;
 import org.eclipse.jface.viewers.ICellModifier;
@@ -129,35 +131,32 @@ public class ColorEditorPage extends Composite implements PropertyChangeListener
 	}
 
 	public void updatePropertyFields() {
-		XPath xpathSelector = DocumentHelper.createXPath("ancestor-or-self::*/colors/color");
+		XPath xpathSelector = DocumentHelper.createXPath("./colors/color");
 		List colors = xpathSelector.selectNodes(model);
 		colorTableViewer.setInput(colors);
 		delColorButton.setEnabled(colorTable.getSelectionIndex() != -1);
 	}
 
 	private Element createColor() {
-		// Add the colors to indexed hashmaps.
-		// This way fast checks for name and color
-		// duplicates can be performed.
-		HashMap<String, Element> nameIndex = new HashMap<String, Element>();
-		HashMap<String, Element> colorIndex = new HashMap<String, Element>();
+		// Add the color names to a hashset.
+		// This way fast checks for name duplicates can be performed.
+		HashSet<String> nameIndex = new HashSet<String>();
 
-		XPath xpathSelector = DocumentHelper.createXPath("ancestor-or-self::*/colors/color");
+
+		XPath xpathSelector = DocumentHelper.createXPath("./colors/color");
 		Iterator colorIterator = xpathSelector.selectNodes(model).iterator();
 		while (colorIterator.hasNext()) {
 			Element color = (Element) colorIterator.next();
-			nameIndex.put(color.attributeValue("name"), color);
-			String rgb = color.attributeValue("real-color");
-			colorIndex.put(rgb, color);
+			nameIndex.add(color.attributeValue("name"));
 		}
 
 		// Find a new name.
 		Element newColor = new DefaultElement("color");
 		for (int x = 0;; x++) {
-			if ((x == 0) && (!nameIndex.containsKey("new color"))) {
+			if ((x == 0) && (!nameIndex.contains("new color"))) {
 				newColor.addAttribute("name", "new color");
 				break;
-			} else if ((x > 0) && !nameIndex.containsKey("new color " + Integer.toString(x))) {
+			} else if ((x > 0) && !nameIndex.contains("new color " + Integer.toString(x))) {
 				newColor.addAttribute("name", "new color " + Integer.toString(x));
 				break;
 			}
@@ -409,19 +408,13 @@ public class ColorEditorPage extends Composite implements PropertyChangeListener
 
 				switch (index) {
 				case 0:
-					// Add the colors to indexed hashmaps.
-					// This way fast checks for name
-					// duplicates can be performed.
-					HashMap<String, Element> nameIndex = new HashMap<String, Element>();
-					XPath xpathSelector = DocumentHelper.createXPath("ancestor-or-self::*/colors/color");
-					Iterator colorIterator = xpathSelector.selectNodes(model).iterator();
-					while (colorIterator.hasNext()) {
-						Element tmpColor = (Element) colorIterator.next();
-						nameIndex.put((String) tmpColor.attributeValue("name"), tmpColor);
-					}
-
-					if (!nameIndex.containsKey(value)) {
-						DocumentManager.setAttribute(color, "name", (String) value);
+					if (!color.attributeValue("name").equals(value)) {
+						XPath xpathSelector = DocumentHelper.createXPath("count(./colors/color[@name='" + value.toString() + "']) = 0");
+						if(xpathSelector.booleanValueOf(model)) {
+							DocumentManager.setAttribute(color, "name", (String) value);
+						} else {
+							MessageDialog.openError(getShell(), "Duplicate color names", "Another color with this name already exists.");
+						}
 					}
 					break;
 				case 1:

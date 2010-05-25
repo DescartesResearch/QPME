@@ -44,6 +44,7 @@ package de.tud.cs.qpe.editors.net;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -51,8 +52,13 @@ import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.XPath;
 import org.dom4j.tree.DefaultElement;
+import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
+import org.eclipse.jface.viewers.ICellEditorValidator;
 import org.eclipse.jface.viewers.ICellModifier;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -135,24 +141,24 @@ public class QueueEditorPage extends Composite implements PropertyChangeListener
 	}
 
 	public static Element createQueue(Element model) {
-		// Add the queues to indexed hashmaps.
+		// Add the queue names to a hashset.
 		// This way fast checks for name duplicates can be performed.
-		HashMap<String, Element> nameIndex = new HashMap<String, Element>();
+		HashSet<String> nameIndex = new HashSet<String>();
 
-		XPath xpathSelector = DocumentHelper.createXPath("ancestor-or-self::*/queues/queue");
+		XPath xpathSelector = DocumentHelper.createXPath("./queues/queue");
 		Iterator queueIterator = xpathSelector.selectNodes(model).iterator();
 		while (queueIterator.hasNext()) {
 			Element queue = (Element) queueIterator.next();
-			nameIndex.put(queue.attributeValue("name"), queue);
+			nameIndex.add(queue.attributeValue("name"));
 		}
 
 		// Find a new name.
 		Element newQueue = new DefaultElement("queue");
 		for (int x = 0;; x++) {
-			if ((x == 0) && (!nameIndex.containsKey("new queue"))) {
+			if ((x == 0) && (!nameIndex.contains("new queue"))) {
 				newQueue.addAttribute("name", "new queue");
 				break;
-			} else if ((x > 0) && !nameIndex.containsKey("new queue " + Integer.toString(x))) {
+			} else if ((x > 0) && !nameIndex.contains("new queue " + Integer.toString(x))) {
 				newQueue.addAttribute("name", "new queue " + Integer.toString(x));
 				break;
 			}
@@ -400,19 +406,13 @@ public class QueueEditorPage extends Composite implements PropertyChangeListener
 				int iValue;
 				switch (index) {
 				case 0:
-					// Add the queues to indexed hashmaps.
-					// This way fast checks for name
-					// duplicates can be performed.
-					HashMap<String, Element> nameIndex = new HashMap<String, Element>();
-					XPath xpathSelector = DocumentHelper.createXPath("ancestor-or-self::*/queues/queue");
-					Iterator queueIterator = xpathSelector.selectNodes(model).iterator();
-					while (queueIterator.hasNext()) {
-						Element tmpQueue = (Element) queueIterator.next();
-						nameIndex.put((String) tmpQueue.attributeValue("name"), tmpQueue);
-					}
-
-					if (!nameIndex.containsKey(value)) {
-						DocumentManager.setAttribute(queue, "name", (String) value);
+					if (!queue.attributeValue("name").equals(value)) {
+						XPath xpathSelector = DocumentHelper.createXPath("count(./queues/queue[@name='" + value.toString() + "']) = 0");
+						if(xpathSelector.booleanValueOf(model)) {
+							DocumentManager.setAttribute(queue, "name", (String) value);
+						} else {
+							MessageDialog.openError(getShell(), "Duplicate queue names", "Another queue with this name already exists.");
+						}
 					}
 					break;
 				case 1:
@@ -436,7 +436,7 @@ public class QueueEditorPage extends Composite implements PropertyChangeListener
 
 	protected void initCellEditors() {
 		CellEditor[] cellEditors = new CellEditor[4];
-		cellEditors[0] = new TextCellEditor(queueTableViewer.getTable());
+		cellEditors[0] = new TextCellEditor(queueTableViewer.getTable());;
 		cellEditors[1] = new ComboBoxCellEditor(queueTableViewer.getTable(), STRATEGIES);
 		cellEditors[2] = new IntegerCellEditor(queueTableViewer.getTable());
 		cellEditors[3] = cellEditors[0];

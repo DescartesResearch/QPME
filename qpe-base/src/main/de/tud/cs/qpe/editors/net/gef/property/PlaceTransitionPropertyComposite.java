@@ -42,23 +42,32 @@
 package de.tud.cs.qpe.editors.net.gef.property;
 
 import java.beans.PropertyChangeListener;
+import java.util.List;
 
+import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.dom4j.XPath;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.jface.fieldassist.FieldDecoration;
+import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import de.tud.cs.qpe.model.DocumentManager;
 
 public abstract class PlaceTransitionPropertyComposite extends Composite implements PropertyChangeListener {
-	protected Element _model;
+	private Element _model;
 
-	protected Text name;
+	private Text name;
+	private ControlDecoration nameDecoration;
 
 	public PlaceTransitionPropertyComposite(Element model, Composite parent) {
 		super(parent, SWT.BORDER);
@@ -68,6 +77,7 @@ public abstract class PlaceTransitionPropertyComposite extends Composite impleme
 		GridLayout layout = new GridLayout(1, false);
 		layout.verticalSpacing = 8;
 		layout.horizontalSpacing = 12;
+		layout.marginLeft = FieldDecorationRegistry.getDefault().getMaximumDecorationWidth();
 		setLayout(layout);
 
 		// Output a label for the name.
@@ -75,12 +85,35 @@ public abstract class PlaceTransitionPropertyComposite extends Composite impleme
 
 		// Output the editable textfield for the name.
 		name = new Text(this, SWT.BORDER);
+		nameDecoration = new ControlDecoration(name, SWT.LEFT | SWT.TOP);
+		FieldDecoration decoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_ERROR);
+		nameDecoration.setImage(decoration.getImage());
+		nameDecoration.hide();
 		name.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		// Update the Label in the editor if the value is changed.
 		name.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
-				String newValue = PlaceTransitionPropertyComposite.this.name.getText();
-				DocumentManager.setAttribute(getModel(), "name", newValue);
+				String newValue = name.getText();
+				if (newValue.isEmpty()) {
+					name.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+					nameDecoration.setDescriptionText("A name is required.");
+					nameDecoration.setShowHover(true);
+					nameDecoration.show();
+				} else {
+					XPath xpathSelector = DocumentHelper.createXPath(
+							"count(../*[@name='" + newValue.toString() + "' and not(@id='" + getModel().attributeValue("id") + "')]) = 0");
+					if(xpathSelector.booleanValueOf(getModel())) {
+						name.setBackground(null);
+						nameDecoration.setShowHover(false);
+						nameDecoration.hide();
+						DocumentManager.setAttribute(getModel(), "name", newValue);
+					} else {
+						name.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+						nameDecoration.setDescriptionText("The name is not unique.");
+						nameDecoration.setShowHover(true);
+						nameDecoration.show();
+					}
+				}
 			}
 		});
 

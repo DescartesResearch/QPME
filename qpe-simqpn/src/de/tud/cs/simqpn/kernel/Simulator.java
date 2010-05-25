@@ -94,6 +94,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -1101,6 +1102,31 @@ public class Simulator {
 		numPlaces = placeList.size();
 		numTrans = transitionList.size();
 		numQueues = queueList.size();
+		
+		// -----------------------------------------------------------------------------------------------------------
+		// CHECK COLOR DEFINITIONS
+		// -----------------------------------------------------------------------------------------------------------
+		XPath colorSelector = DocumentHelper.createXPath("//color");
+		List colorList = colorSelector.selectNodes(net);
+		// Set for checking the uniqueness of color names
+		HashSet<String> colorNames = new HashSet<String>();
+		
+		for (int i = 0; i < colorList.size(); i++) {
+			Element col = (Element)colorList.get(i);
+			
+			String name = col.attributeValue("name");
+			if (colorNames.contains(name)) {
+				logln("ERROR: Another color definition with the same name does already exist!");
+				logln("Details: ");
+				logln("  color-num      = " + i);
+				logln("  color.id       = " + col.attributeValue("id"));
+				logln("  color.name     = " + name);
+				throw new SimQPNException();
+			} else {
+				colorNames.add(name);
+			}
+		}
+		
 
 		// -----------------------------------------------------------------------------------------------------------
 		// CREATE PLACES
@@ -1151,13 +1177,27 @@ public class Simulator {
 		// Allocate an array able to contain the places.
 		logln(2, "places = new Place[" + numPlaces + "];");
 		places = new Place[numPlaces];
-		queues = new Queue[numQueues]; 
+		queues = new Queue[numQueues];
+		// Set for checking the uniqueness of queue names
+		HashSet<String> queueNames = new HashSet<String>();
 
 		for (int i = 0; i < numQueues; i++) {
 			Element queue = (Element) queueList.get(i);
 
 			int numberOfServers;
 			int queueingStrategy = Queue.FCFS;
+			
+			String name = queue.attributeValue("name");
+			if (queueNames.contains(name)) {
+				logln("ERROR: Another queue definition with the same name does already exist!");
+				logln("Details: ");
+				logln("  queue-num      = " + i);
+				logln("  queue.id       = " + queue.attributeValue("id"));
+				logln("  queue.name     = " + name);
+				throw new SimQPNException();
+			} else {
+				queueNames.add(name);
+			}
 
 			if ("IS".equals(queue.attributeValue("strategy"))) {
 				queueingStrategy = Queue.IS; 
@@ -1204,9 +1244,24 @@ public class Simulator {
 
 		// Create the place-objects of every-place. Depending on its type-attribute create Place or QPlace objects.
 		Iterator placeIterator = placeList.iterator();
+		// Set for checking the uniqueness of place names
+		HashSet<String> placeNames = new HashSet<String>();
 		
 		for (int i = 0; placeIterator.hasNext(); i++) {
 			Element place = (Element) placeIterator.next();
+			
+			String name = place.attributeValue("name");
+			if (placeNames.contains(name)) {
+				logln("Error: Another place with the same name does already exist!");
+				logln("Details: ");
+				logln("  place-num   = " + i);
+				logln("  place.id    = " + place.attributeValue("id"));
+				logln("  place.name  = " + name);								
+				throw new SimQPNException();
+			} else {
+				placeNames.add(name);
+			}
+			
 			// SDK-DEBUG: Are you sure the XPath expression below selects the right connections? 
 			//   <connection> is a child of the <connections> child element of <net> <connections> inside transitions 
 			//   should not be selected here!
@@ -1394,11 +1449,26 @@ public class Simulator {
 		// Allocate an array able to contain the transitions.
 		logln(2, "trans = new Transition[" + numTrans + "];");
 		trans = new Transition[numTrans];
+		// Set for checking the uniqueness of transition names
+		HashSet<String> transNames = new HashSet<String>();
 
 		// Create the transition-objects of every transition.
 		Iterator transitionIterator = transitionList.iterator();
 		for (int i = 0; transitionIterator.hasNext(); i++) {
 			Element transition = (Element) transitionIterator.next();
+			
+			String name = transition.attributeValue("name");
+			if (transNames.contains(name)) {
+				logln("ERROR: Another transition with the same name does already exist!");				
+				logln("Details: ");
+				logln("  transition-num   = " + i);
+				logln("  transition.id    = " + transition.attributeValue("id"));
+				logln("  transition.name  = " + transition.attributeValue("name"));
+				throw new SimQPNException();
+			} else {
+				transNames.add(name);
+			}
+			
 			if(!"immediate-transition".equals(transition.attributeValue("type"))) {
 				logln("ERROR: Invalid or missing transition type setting!");
 				logln("       Only \"immediate-transition\" is currently supported.");				

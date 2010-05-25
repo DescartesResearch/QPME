@@ -53,7 +53,13 @@
  *******************************************************************************/
 package de.tud.cs.qpe.editors.net.controller.command;
 
+import java.util.HashSet;
+import java.util.Iterator;
+
+import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.dom4j.XPath;
+import org.dom4j.tree.DefaultElement;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.commands.Command;
 
@@ -123,11 +129,47 @@ public class PlaceTransitionCreateCommand extends Command {
 		// the palette-tool-entry,
 		// see ShapesEditorPaletteFactory#createComponentsGroup()
 		if ("place".equals(newElement.getName())) {
+			HashSet<String> nameIndex = new HashSet<String>();
+
+			XPath xpathSelector = DocumentHelper.createXPath("./places/place");
+			Iterator queueIterator = xpathSelector.selectNodes(parent).iterator();
+			while (queueIterator.hasNext()) {
+				Element queue = (Element) queueIterator.next();
+				nameIndex.add(queue.attributeValue("name"));
+			}
+
+			// Find a new name.
 			String placeName = "new place";
+			for (int x = 0;; x++) {
+				if ((x == 0) && (!nameIndex.contains("new place"))) {
+					break;
+				} else if ((x > 0) && !nameIndex.contains("new place " + Integer.toString(x))) {
+					placeName = "new place " + Integer.toString(x);
+					break;
+				}
+			}
 			newElement.addAttribute("name", placeName);
 			DocumentManager.addChild(parent.element("places"), newElement);
 		} else if ("transition".equals(newElement.getName())) {
+			HashSet<String> nameIndex = new HashSet<String>();
+
+			XPath xpathSelector = DocumentHelper.createXPath("./transitions/transition");
+			Iterator queueIterator = xpathSelector.selectNodes(parent).iterator();
+			while (queueIterator.hasNext()) {
+				Element queue = (Element) queueIterator.next();
+				nameIndex.add(queue.attributeValue("name"));
+			}
+
+			// Find a new name.
 			String transitionName = "new transition";
+			for (int x = 0;; x++) {
+				if ((x == 0) && (!nameIndex.contains("new transition"))) {
+					break;
+				} else if ((x > 0) && !nameIndex.contains("new transition " + Integer.toString(x))) {
+					transitionName = "new transition " + Integer.toString(x);
+					break;
+				}
+			}
 			newElement.addAttribute("name", transitionName);
 			DocumentManager.addChild(parent.element("transitions"), newElement);
 		}
