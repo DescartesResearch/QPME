@@ -1387,6 +1387,15 @@ public class Simulator {
 			}
 			XPath xpathSelector = DocumentHelper.createXPath("modes/mode");
 			int numModes = xpathSelector.selectNodes(transition).size();
+			if(numModes == 0) {
+				logln("Error: incidence function not defined!");
+				logln("Details: ");
+				logln("  transition-num   = " + i);
+				logln("  transition.id    = " + transition.attributeValue("id"));
+				logln("  transition.name  = " + transition.attributeValue("name"));
+				logln("  transition.type  = " + transition.attributeValue("type"));				
+				throw new SimQPNException();
+			}
 			xpathSelector = DocumentHelper.createXPath("//connection[@source-id = '" + transition.attributeValue("id") + "']");
 			int numOutgoingConnections = xpathSelector.selectNodes(net).size();
 			xpathSelector = DocumentHelper.createXPath("//connection[@target-id = '" + transition.attributeValue("id") + "']");
