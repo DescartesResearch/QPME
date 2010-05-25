@@ -3145,7 +3145,9 @@ public class Simulator {
 		// Note: we store totRunLen and rampUpLen in local variables to improve performance of the while loop below.		
 		double totRunL = totRunLen;
 		double rampUpL = rampUpLen;
-		double nextChkAfter = timeBtwChkStops;
+		double nextChkAfter = timeBtwChkStops > 0 ? timeBtwChkStops : totRunL; // If secondsBtwChkStops is used, disable checking of stopping criterion
+																			   // until beforeInitHeartBeat == false. By setting nextChkAfter = totRunL
+																			   // stopping criterion checking is disabled.
 		/* ORIGINAL HEARTBEAT IMPLEMENTATION
 		double nextChkAfter = timeBtwChkStops > 0 ? timeBtwChkStops : timeInitHeartBeat;
 		*/
@@ -3155,7 +3157,7 @@ public class Simulator {
 
 		boolean beforeInitHeartBeat = true;		// Flag indicating when we are still before the first heart beat (progress update).
 												//   If true, the value of timeBtwHeartBeats is still measured, and set to 0.
-		double nextHeartBeat = 0.0;				// Simulation run time of the last heart beat.
+		double nextHeartBeat = 0.0;				// Simulation run time of the next heart beat.
 		double timeBtwHeartBeats = 0.0;			// How often progress updates are made (in logical simulation time units).
 		long lastTimeMsrm = System.currentTimeMillis();		// The value of the last wall clock time measurement. Used for progress updates.
 		double maxProgressInterval = progressMonitor.getMaxUpdateLogicalTimeInterval();
@@ -3304,6 +3306,10 @@ public class Simulator {
 						timeBtwHeartBeats = (Simulator.clock / (curTimeMsrm - lastTimeMsrm)) * progressUpdateRate;
 					}
 					beforeInitHeartBeat = false;
+					if (timeBtwChkStops == 0) {
+						// enable checking of stopping criterion
+						nextChkAfter = clock;
+					}
 				}
 				
 				if (progressMonitor.isCanceled()) {
