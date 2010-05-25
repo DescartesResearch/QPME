@@ -70,6 +70,7 @@ import org.eclipse.gef.MouseWheelZoomHandler;
 import org.eclipse.gef.dnd.TemplateTransferDragSourceListener;
 import org.eclipse.gef.dnd.TemplateTransferDropTargetListener;
 import org.eclipse.gef.editparts.ScalableFreeformRootEditPart;
+import org.eclipse.gef.editparts.ScalableRootEditPart;
 import org.eclipse.gef.editparts.ZoomManager;
 import org.eclipse.gef.palette.PaletteRoot;
 import org.eclipse.gef.requests.CreationFactory;
@@ -150,7 +151,7 @@ public class IncidenceFunctionEditor extends GraphicalEditorWithFlyoutPalette im
 
 		GraphicalViewer viewer = getGraphicalViewer();
 		viewer.setEditPartFactory(new IncidenceFunctionEditPartFactory());
-		ScalableFreeformRootEditPart rootEditPart = new ScalableFreeformRootEditPart();
+		ScalableRootEditPart rootEditPart = new ScalableRootEditPart();
 		viewer.setRootEditPart(rootEditPart);
 		viewer.setKeyHandler(new GraphicalViewerKeyHandler(viewer));
 
@@ -181,7 +182,7 @@ public class IncidenceFunctionEditor extends GraphicalEditorWithFlyoutPalette im
 		viewer.setContents(getModel());
 
 		// add the ShortestPathConnectionRouter.
-		ScalableFreeformRootEditPart root = (ScalableFreeformRootEditPart) viewer.getRootEditPart();
+		ScalableRootEditPart root = (ScalableRootEditPart) viewer.getRootEditPart();
 		ConnectionLayer connLayer = (ConnectionLayer) root.getLayer(LayerConstants.CONNECTION_LAYER);
 
 		AbstractRouter router;

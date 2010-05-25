@@ -64,7 +64,8 @@ public class IncidenceFunctionLayout extends AbstractLayout {
 	 */
 	@Override
 	protected Dimension calculatePreferredSize(IFigure container, int wHint, int hHint) {
-		return getMinimumSize(container, wHint, hHint);
+		Dimension minSize = getMinimumSize(container, wHint, hHint);
+		return new Dimension(Math.max(minSize.width, wHint), Math.max(minSize.height, hHint));
 	}
 
 	/*
@@ -78,10 +79,10 @@ public class IncidenceFunctionLayout extends AbstractLayout {
 		Dimension minimumSize = new Dimension();
 
 		Dimension inputPlacePartSize = getInputPartSize(container);
-		Dimension modePartSize = getInputPartSize(container);
-		Dimension outputPlacePartSize = getInputPartSize(container);
+		Dimension modePartSize = getModePartSize(container);
+		Dimension outputPlacePartSize = getOutputPartSize(container);
 
-		minimumSize.width = margin + inputPlacePartSize.width + 2 * margin + modePartSize.width + 2 * margin + outputPlacePartSize.width;
+		minimumSize.width = margin + inputPlacePartSize.width + 5 * margin + modePartSize.width + 5 * margin + outputPlacePartSize.width;
 		minimumSize.height = margin + Math.max(Math.max(inputPlacePartSize.height, modePartSize.height), outputPlacePartSize.height) + margin;
 
 		return minimumSize;
@@ -93,10 +94,8 @@ public class IncidenceFunctionLayout extends AbstractLayout {
 	 * @see org.eclipse.draw2d.LayoutManager#layout(org.eclipse.draw2d.IFigure)
 	 */
 	public void layout(IFigure container) {
-		Dimension totalSize = new Dimension();
-		totalSize.width = container.getBounds().width;
-		totalSize.height = container.getBounds().height;
-		if ((totalSize.width != 0) && (totalSize.height != 0)) {
+		Rectangle clientArea = container.getClientArea();
+		if ((clientArea.width != 0) && (clientArea.height != 0)) {
 			// Calculate sizes.
 			int inputMargin = 0;
 			int inputHeight = 0;
@@ -126,9 +125,9 @@ public class IncidenceFunctionLayout extends AbstractLayout {
 					modeElementCounter++;
 				}
 			}
-			inputMargin = Math.max(margin, (totalSize.height - inputHeight) / (inputElementCounter + 1));
-			modeMargin = Math.max(margin, (totalSize.height - modeHeight) / (modeElementCounter + 1));
-			outputMargin = Math.max(margin, (totalSize.height - outputHeight) / (outputElementCounter + 1));
+			inputMargin = Math.max(margin, (clientArea.height - inputHeight) / (inputElementCounter + 1));
+			modeMargin = Math.max(margin, (clientArea.height - modeHeight) / (modeElementCounter + 1));
+			outputMargin = Math.max(margin, (clientArea.height - outputHeight) / (outputElementCounter + 1));
 
 			int maxHeight = Math.max(Math.max(inputHeight, modeHeight), outputMargin);
 			if (maxHeight == inputHeight) {
@@ -138,10 +137,6 @@ public class IncidenceFunctionLayout extends AbstractLayout {
 			} else {
 				maxHeight = outputMargin + maxHeight + outputMargin;
 			}
-			// Eventually update the IncidenceFunctionLayers size.
-			if (maxHeight > totalSize.height) {
-				container.setBounds(new Rectangle(0, 0, totalSize.width, totalSize.height));
-			}
 
 			// Do the actual layouting.
 
@@ -149,14 +144,14 @@ public class IncidenceFunctionLayout extends AbstractLayout {
 			Dimension outputPlacePartSize = getOutputPartSize(container);
 
 			Point inputPlacePoint = new Point();
-			inputPlacePoint.x = margin + (inputPlacePartSize.width / 2);
-			inputPlacePoint.y = inputMargin;
+			inputPlacePoint.x = clientArea.x + margin + (inputPlacePartSize.width / 2);
+			inputPlacePoint.y = clientArea.y + inputMargin;
 			Point modePoint = new Point();
-			modePoint.x = totalSize.width / 2;
-			modePoint.y = modeMargin;
+			modePoint.x = clientArea.x + clientArea.width / 2;
+			modePoint.y = clientArea.y + modeMargin;
 			Point outputPlacePoint = new Point();
-			outputPlacePoint.x = totalSize.width - (margin + (outputPlacePartSize.width / 2));
-			outputPlacePoint.y = outputMargin;
+			outputPlacePoint.x = clientArea.x + clientArea.width - (margin + (outputPlacePartSize.width / 2));
+			outputPlacePoint.y = clientArea.y + outputMargin;
 
 			// Do the actual layouting.
 			figureIterator = container.getChildren().iterator();
@@ -199,10 +194,10 @@ public class IncidenceFunctionLayout extends AbstractLayout {
 			if (figure instanceof PlaceFigure) {
 				PlaceFigure castedFigure = (PlaceFigure) figure;
 				if(castedFigure.getType() == PlaceFigure.TYPE_INPUT_PLACE) {
-					if (figure.getBounds().width > size.width) {
-						size.width = figure.getBounds().width;
+					if (figure.getPreferredSize().width > size.width) {
+						size.width = figure.getPreferredSize().width;
 					}
-					size.height += margin + figure.getBounds().height;
+					size.height += margin + figure.getPreferredSize().height;
 				}
 			}
 		}
@@ -215,10 +210,10 @@ public class IncidenceFunctionLayout extends AbstractLayout {
 		while (figureIterator.hasNext()) {
 			IFigure figure = (IFigure) figureIterator.next();
 			if (figure instanceof ModeFigure) {
-				if (figure.getBounds().width > size.width) {
-					size.width = figure.getBounds().width;
+				if (figure.getPreferredSize().width > size.width) {
+					size.width = figure.getPreferredSize().width;
 				}
-				size.height += margin + figure.getBounds().height;
+				size.height += margin + figure.getPreferredSize().height;
 			}
 		}
 		return size;
@@ -232,10 +227,10 @@ public class IncidenceFunctionLayout extends AbstractLayout {
 			if (figure instanceof PlaceFigure) {
 				PlaceFigure castedFigure = (PlaceFigure) figure;
 				if(castedFigure.getType() == PlaceFigure.TYPE_OUTPUT_PLACE) {
-					if (figure.getBounds().width > size.width) {
-						size.width = figure.getBounds().width;
+					if (figure.getPreferredSize().width > size.width) {
+						size.width = figure.getPreferredSize().width;
 					}
-					size.height += margin + figure.getBounds().height;
+					size.height += margin + figure.getPreferredSize().height;
 				}
 			}
 		}

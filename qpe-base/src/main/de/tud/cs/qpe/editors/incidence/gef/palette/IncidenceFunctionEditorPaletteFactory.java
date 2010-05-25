@@ -53,6 +53,12 @@
   *******************************************************************************/
 package de.tud.cs.qpe.editors.incidence.gef.palette;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.gef.palette.ConnectionCreationToolEntry;
 import org.eclipse.gef.palette.PaletteContainer;
@@ -65,6 +71,7 @@ import org.eclipse.gef.requests.CreationFactory;
 import org.eclipse.gef.ui.palette.FlyoutPaletteComposite.FlyoutPreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.osgi.framework.Bundle;
 
 import de.tud.cs.qpe.QPEBasePlugin;
 
@@ -102,10 +109,8 @@ public final class IncidenceFunctionEditorPaletteFactory {
 					public Object getObjectType() {
 						return new Integer(Graphics.LINE_SOLID);
 					}
-				}, ImageDescriptor.createFromFile(QPEBasePlugin.class,
-						"icons/connection_s16.gif"), ImageDescriptor
-						.createFromFile(QPEBasePlugin.class,
-								"icons/connection_s24.gif"));
+				}, getImageDescriptor("images/Connection.gif"), 
+					getImageDescriptor("images/Connection.gif"));
 		componentsDrawer.add(tool);
 
 		return componentsDrawer;
@@ -181,6 +186,18 @@ public final class IncidenceFunctionEditorPaletteFactory {
 	/** Utility class. */
 	private IncidenceFunctionEditorPaletteFactory() {
 		// Utility class
+	}
+	
+	public static ImageDescriptor getImageDescriptor(final String fileName) {
+		Bundle bundle = Platform.getBundle(QPEBasePlugin.PLUGIN_ID);
+		final URL installURL = FileLocator.find(bundle, new Path("/"), null);
+
+		try {
+			final URL url = new URL(installURL, fileName);
+			return ImageDescriptor.createFromURL(url);
+		} catch (MalformedURLException mue) {
+			return null;
+		}
 	}
 
 }

@@ -116,7 +116,7 @@ public class IncidenceFunctionEditPart extends AbstractGraphicalEditPart
 	 * @see org.eclipse.gef.editparts.AbstractGraphicalEditPart#createFigure()
 	 */
 	protected IFigure createFigure() {
-		Figure f = new FreeformLayer();
+		Figure f = new Figure();
 		f.setBorder(new MarginBorder(3));
 		// Setup the LayoutManager. Here the ColorLayout
 		// alligns the child elements (Color figures) in a
