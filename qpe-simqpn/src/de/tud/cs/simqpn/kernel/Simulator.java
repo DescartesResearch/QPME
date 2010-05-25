@@ -209,6 +209,9 @@ public class Simulator {
 	public static double beginRunWallClock;		// currentTimeMillis at the begin of the run (wall clock time).
 	public static double endRunWallClock;		// currentTimeMillis at the end of the run (wall clock time).
 	public static double runWallClockTime;		// Total duration of the run in seconds.
+	
+	// Progress monitoring
+	public static SimulatorProgress progressMonitor;
 
 	// Check if using double for time is really needed and if overhead is tolerable. Consider switching to float.
 	public static double clock;					// Global simulation clock. Time is usually measured in milliseconds.
@@ -454,13 +457,10 @@ public class Simulator {
 			} else {
 				logln("Error: Invalid run mode specified!");				
 				throw new SimQPNException();
-			}		
+			}				
+		} finally {		
+			simRunning = false;	
 		}
-		catch(SimQPNException e) {
-			simRunning = false;
-			throw e;			
-		}		
-		simRunning = false;	
 		return result;
 	}
 
@@ -557,13 +557,15 @@ public class Simulator {
 	 * @exception
 	 */
 	public static SimulatorResults runBatchMeans(Element net, String configuration, SimulatorProgress monitor) throws SimQPNException {
-		monitor.startSimulation();
+		progressMonitor =  monitor;
+		progressMonitor.startSimulation();
 		Simulator sim = new Simulator(net, configuration);
 		sim.getReady();
-		monitor.startSimulationRun(1);
-		sim.run(monitor);
-		monitor.finishSimulationRun();
-		monitor.finishSimulation();
+		progressMonitor.startSimulationRun(1);
+		sim.run();
+		progressMonitor.finishSimulationRun();
+		progressMonitor.finishSimulation();
+		progressMonitor = null;
 		return new SimulatorResults(sim.places, sim.queues);
 	}
 
@@ -582,7 +584,9 @@ public class Simulator {
 		if (numRuns <= 1) {
 			logln("Error: numRuns should be > 1!");
 			throw new SimQPNException();
-		}
+		}	
+
+		progressMonitor = monitor;
 
 		Simulator sim = new Simulator(net, configuration);
 		sim.getReady();
@@ -672,13 +676,13 @@ public class Simulator {
 			}
 		}
 
-		monitor.startSimulation();
+		progressMonitor.startSimulation();
 
 		// Run replication loop
 		for (int i = 0; i < numRuns; i++) {
-			monitor.startSimulationRun(i + 1);
-			sim.run(monitor);
-			monitor.finishSimulationRun();
+			progressMonitor.startSimulationRun(i + 1);
+			sim.run();
+			progressMonitor.finishSimulationRun();
 
 			for (int p = 0; p < numPlaces; p++) {
 				pl = places[p];
@@ -693,7 +697,7 @@ public class Simulator {
 				}
 			}
 
-			if (monitor.isCanceled())
+			if (progressMonitor.isCanceled())
 				break;
 
 			sim = new Simulator(net, configuration);
@@ -701,11 +705,13 @@ public class Simulator {
 			places = sim.places;
 		}
 
-		monitor.finishSimulation();
+		progressMonitor.finishSimulation();
 
 		for (int i = 0; i < 2 * numPlaces; i++)
 			if (aggrStats[i] != null)
 				aggrStats[i].finish();
+		
+		progressMonitor = null;
 
 		return aggrStats;
 	}
@@ -724,6 +730,8 @@ public class Simulator {
 			logln("         Setting numRuns to 5.");
 			numRuns = 5;
 		}
+		
+		progressMonitor = monitor;
 
 		Simulator sim = new Simulator(net, configuration);
 		sim.getReady();
@@ -753,7 +761,7 @@ public class Simulator {
 			}
 		}
 
-		monitor.startSimulation();
+		progressMonitor.startSimulation();
 
 		// Run replication loop
 		for (int i = 0; i < numRuns; i++) {
@@ -831,9 +839,10 @@ public class Simulator {
 			// END-CONFIG
 			// -----------------------------------------------------------------------------------------
 
-			monitor.startSimulationRun(i + 1);
-			sim.run(monitor);
-			monitor.finishSimulationRun();
+
+			progressMonitor.startSimulationRun(i + 1);
+			sim.run();
+			progressMonitor.finishSimulationRun();
 
 			for (int p = 0; p < numPlaces; p++) {
 				pl = places[p];
@@ -848,7 +857,7 @@ public class Simulator {
 				}
 			}
 
-			if (monitor.isCanceled())
+			if (progressMonitor.isCanceled())
 				break;
 
 			sim = new Simulator(net, configuration);
@@ -856,12 +865,14 @@ public class Simulator {
 			places = sim.places;
 		}
 
-		monitor.finishSimulation();
+		progressMonitor.finishSimulation();
 
 		for (int i = 0; i < 2 * numPlaces; i++)
 			if (aggrStats[i] != null)
 				aggrStats[i].finish();
 
+		progressMonitor = null;
+		
 		return aggrStats;
 	}
 
@@ -2973,7 +2984,7 @@ public class Simulator {
 	 * @return
 	 * @exception
 	 */
-	public void run(SimulatorProgress monitor) throws SimQPNException {
+	public void run() throws SimQPNException {
 			
 		// SimonSpinner: TEMP CHANGE
 		//		try {
@@ -3021,8 +3032,8 @@ public class Simulator {
 		double nextHeartBeat = 0.0;				// Simulation run time of the last heart beat.
 		double timeBtwHeartBeats = 0.0;			// How often progress updates are made (in logical simulation time units).
 		long lastTimeMsrm = System.currentTimeMillis();		// The value of the last wall clock time measurement. Used for progress updates.
-		double maxProgressInterval = monitor.getMaxUpdateLogicalTimeInterval();
-		long progressUpdateRate = monitor.getMaxUpdateRealTimeInterval();
+		double maxProgressInterval = progressMonitor.getMaxUpdateLogicalTimeInterval();
+		long progressUpdateRate = progressMonitor.getMaxUpdateRealTimeInterval();
 		
 		// BEGIN MAIN SIMULATION LOOP ---------------------------------------------------------------------------------
 		while (clock < totRunL) { 
@@ -3037,7 +3048,7 @@ public class Simulator {
 				for (int q = 0; q < numQueues; q++)
 					queues[q].start();
 
-				monitor.finishWarmUp();
+				progressMonitor.finishWarmUp();
 			}
 
 			// Step 1: Fire until no transitions are enabled.			
@@ -3154,17 +3165,17 @@ public class Simulator {
 					beforeInitHeartBeat = false;
 				}
 				
-				if (monitor.isCanceled()) {
+				if (progressMonitor.isCanceled()) {
 					clock = totRunL;
 				}
 			} else {
 				if(Simulator.clock >= nextHeartBeat) {
 					long curTimeMsrm = System.currentTimeMillis();
-					monitor.updateSimulationProgress(clock / (totRunL - 1) * 100, (curTimeMsrm - lastTimeMsrm));					
+					progressMonitor.updateSimulationProgress(clock / (totRunL - 1) * 100, (curTimeMsrm - lastTimeMsrm));					
 					lastTimeMsrm = curTimeMsrm;
 					nextHeartBeat = Simulator.clock + timeBtwHeartBeats;
 					
-					if (monitor.isCanceled()) {
+					if (progressMonitor.isCanceled()) {
 						clock = totRunL;
 					}
 				}
@@ -3203,10 +3214,10 @@ public class Simulator {
 					}
 				}
 				if (done) {
-					monitor.precisionCheck(done, null);
+					progressMonitor.precisionCheck(done, null);
 					break; // exit while loop
 				} else {
-					monitor.precisionCheck(done, pl.name);
+					progressMonitor.precisionCheck(done, pl.name);
 				}
 
 				if (timeBtwChkStops > 0)
@@ -3218,7 +3229,21 @@ public class Simulator {
 		}
 
 		// END MAIN SIMULATION LOOP ---------------------------------------------------------------------------------
-		monitor.updateSimulationProgress(100, 0);
+		progressMonitor.updateSimulationProgress(100, 0);
+		
+		if (progressMonitor.isCanceled()) {
+			progressMonitor.warning("The simulation was canceled by the user.\n"
+					+ "The required precision may not have been reached!");
+		} else {
+			if (Simulator.clock >= Simulator.totRunLen)  {
+				if (Simulator.stoppingRule != Simulator.FIXEDLEN)  {
+					progressMonitor.warning("The simulation was stopped because of reaching max totalRunLen.\n"
+							+ "The required precision may not have been reached!");
+				}
+				else
+					logln("Info: STOPPING because max totalRunLen is reached!");
+			}
+		}
 		
 		endRunClock = clock;
 		msrmPrdLen = endRunClock - endRampUpClock;

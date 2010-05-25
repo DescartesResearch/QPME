@@ -115,5 +115,12 @@ public interface SimulatorProgress {
 	 * 							Otherwise null.
 	 */
 	public void precisionCheck(boolean done, String failedPlaceName);
+	
+	/**
+	 * Called if the simulation reaches a possibly critical state. An implementation should
+	 * show a warning to the user with the specified message.
+	 * @param message - description of the warning.
+	 */
+	public void warning(String message);
 
 }

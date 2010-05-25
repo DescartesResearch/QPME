@@ -65,7 +65,14 @@ import cern.jet.random.Exponential;
  * @version %I%, %G%
  */
 
-public class Queue {	
+public class Queue {
+	
+	// Overflow Detection Sensitivity Parameters
+	public static final long START_EPOCH_LENGTH = 100;
+	public static final long MAX_EPOCH_LENGTH = 10000 * START_EPOCH_LENGTH;
+	public static final int  MIN_CONS_RISING_EPOCHS	= 30;
+	public static final int  MAX_CONS_RISING_EPOCHS	= 100;
+	public static final long DETECTION_THRESHOLD = 1000;
     
 	// Supported Queueing Disciplines:	
 	public static final int IS = 0;
@@ -103,6 +110,15 @@ public class Queue {
 						randColorGen;		// PS queues: expPS==true: Random number generator for generating token colors.
 	
 	public QueueStats	queueStats;			// Object containing statistics for this queue.
+	
+	private long		tkPopulation;		// The current number of tokens residing in the queue
+	private long		maxEpochPopulation;	// Overflow Detection: the maximum token population in the current epoch
+	private long		totalMaxPopulation; // Overflow Detection: the total maximum token population in the queue
+	private int			epochMsrmCnt;		// Overflow Detection: the number of measurements that were taken in the current epoch
+	private long		epochLength = START_EPOCH_LENGTH;	// Overflow Detection: the length (number of measurements) of one epoch
+	private long		maxPopulationAtRisingStart;
+	private int			cntConsRisingEpoch; // Overflow Detection: the number of consecutive epochs in which the maximum population has grown
+	private boolean		deactivateWarning = false;;
 	
 	/**
 	 * Constructor
@@ -403,7 +419,66 @@ public class Queue {
 	 * @exception
 	 */
 	@SuppressWarnings("unchecked")
-	public void addTokens(QPlace qPl, int color, int count) throws SimQPNException {				 				
+	public void addTokens(QPlace qPl, int color, int count) throws SimQPNException {	
+		
+		tkPopulation += count;
+		
+		// Overflow detection mechanism:
+		// The following algorithm tries to determine an upper bound for the token
+		// population in the queue. A number of measurements is grouped to epochs with dynamic
+		// length. The length of an epoch is adjusted to the growth rate of the population.
+		// If the maximum total population increases in several consecutive epochs a
+		// warning is printed out.
+		if (tkPopulation > maxEpochPopulation) maxEpochPopulation = tkPopulation;
+		epochMsrmCnt++;
+		
+		if (Simulator.clock <= 1.0) {
+			// Skip overflow detection at the beginning of the simulation.
+			// No representative results can be determined during startup.
+			cntConsRisingEpoch = 0;
+			maxPopulationAtRisingStart = maxEpochPopulation;
+		} else if (epochMsrmCnt >= epochLength) {
+			// New maximum population?
+			if (maxEpochPopulation > totalMaxPopulation) {
+				totalMaxPopulation = maxEpochPopulation;
+				cntConsRisingEpoch++;
+			} else {
+				// Maximum population of queue in current epoch is lower
+				// than the total maximum. Reset consecutive epoch counter
+				// and increase epoch length. If the population is growing indefinitely
+				// (maybe with valleys) then there must be a value for epoch length, so that
+				// in each epoch a new maximum is reached. Otherwise an upper bound is finally reached.
+				cntConsRisingEpoch = 0;
+				maxPopulationAtRisingStart = totalMaxPopulation;
+				if ((epochLength * 2) <= MAX_EPOCH_LENGTH) {
+					epochLength *= 2;
+				}
+			}
+			maxEpochPopulation = 0;
+			epochMsrmCnt = 0;
+			
+			if (totalMaxPopulation < DETECTION_THRESHOLD) {
+				// If total population is below the detection threshold, do not
+				// count consecutive rising epochs. Thus the overflow detection is
+				// disabled if the queue population is low.
+				maxPopulationAtRisingStart = totalMaxPopulation;
+			} else {
+				// Check whether an overflow warning is issued. The first
+				// part of the condition is for fast growing queues, the second
+				// part for slowly growing ones.
+				if (((totalMaxPopulation > 10 * maxPopulationAtRisingStart) 
+							&& (cntConsRisingEpoch > MIN_CONS_RISING_EPOCHS))
+					|| ((cntConsRisingEpoch > MAX_CONS_RISING_EPOCHS) 
+							&& (totalMaxPopulation > 2 * maxPopulationAtRisingStart))) {
+						if (!deactivateWarning) {
+							Simulator.progressMonitor.warning("Queue \"" + name + "\" is exceedingly growing. An overflow might occur.");
+							deactivateWarning = true;
+						}
+						cntConsRisingEpoch = 0;
+						maxPopulationAtRisingStart = totalMaxPopulation;
+				}
+			}
+		}
 		
 		if (statsLevel >= 2) // NOTE: For statsLevel=1, we don't need to do anything since throughput data is calculated as sum of the throughputs of all QPlaces the Queue is part of.
 			queueStats.updateTotTkPopStats(count);	 
@@ -463,6 +538,8 @@ public class Queue {
 	 * @exception
 	 */
 	public void completeService(Token token) throws SimQPNException {
+		
+		tkPopulation--;
 
 		if (statsLevel >= 2) // NOTE: For statsLevel=1, we don't need to do anything since throughput data is calculated as sum of the throughputs of all QPlaces the Queue is part of.
 			queueStats.updateTotTkPopStats(-1);

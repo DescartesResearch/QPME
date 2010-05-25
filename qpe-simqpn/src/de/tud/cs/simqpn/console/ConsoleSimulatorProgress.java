@@ -42,10 +42,10 @@
 
 package de.tud.cs.simqpn.console;
 
+import static de.tud.cs.simqpn.kernel.Simulator.WELCH;
+import static de.tud.cs.simqpn.kernel.Simulator.logln;
 import de.tud.cs.simqpn.kernel.Simulator;
 import de.tud.cs.simqpn.kernel.SimulatorProgress;
-
-import static de.tud.cs.simqpn.kernel.Simulator.*;
 
 /**
  * Prints the simulation progress on the console. Used in standalone simulation mode.
@@ -107,15 +107,6 @@ public class ConsoleSimulatorProgress implements SimulatorProgress {
 	 */
 	@Override
 	public void finishSimulationRun() {
-		if (Simulator.clock >= Simulator.totRunLen)  {
-			if (Simulator.stoppingRule != Simulator.FIXEDLEN)  {
-				logln("WARNING: The simulation was stopped because of reaching max totalRunLen!");
-				logln("         The required precision may not have been reached!");
-			}
-			else
-				logln("Info: STOPPING because max totalRunLen is reached!");
-		}
-		
 		logln("Simulation run finished.");
 		logln();
 	}
@@ -159,5 +150,13 @@ public class ConsoleSimulatorProgress implements SimulatorProgress {
 	 */
 	@Override
 	public void precisionCheck(boolean done, String failedPlaceName) {
+	}
+
+	/* (non-Javadoc)
+	 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#warning(java.lang.String)
+	 */
+	@Override
+	public void warning(String message) {
+		logln("WARNING: " + message);
 	}
 }

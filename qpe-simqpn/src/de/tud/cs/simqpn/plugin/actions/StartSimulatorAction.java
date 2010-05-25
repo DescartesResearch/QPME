@@ -59,6 +59,8 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
@@ -86,6 +88,7 @@ import de.tud.cs.simqpn.kernel.Simulator;
 import de.tud.cs.simqpn.kernel.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.Stats;
 import de.tud.cs.simqpn.kernel.StatsDocumentBuilder;
+import de.tud.cs.simqpn.plugin.QPESimQPNPlugin;
 import de.tud.cs.simqpn.plugin.wiizard.RunSimulationWizard;
 
 public class StartSimulatorAction extends Action implements
@@ -109,10 +112,7 @@ public class StartSimulatorAction extends Action implements
 	public void run(IAction action) {
 		Shell shell = window.getShell();
 		if(Simulator.simRunning) {
-			MessageBox messageBox = new MessageBox(shell, SWT.ICON_WARNING | SWT.OK);
-			messageBox
-					.setMessage("SimQPN is currently active! Please wait until the current simulation run is finished.");
-			messageBox.open();
+			MessageDialog.openWarning(shell, "Simulation warning", "SimQPN is currently active! Please wait until the current simulation run is finished.");
 		} else {
 			if (net != null) {
 				RunSimulationWizard wizard = new RunSimulationWizard(net);
@@ -154,17 +154,6 @@ public class StartSimulatorAction extends Action implements
 								
 							};
 							progress.run(true, true, simulation);
-							
-							if ((Simulator.analMethod == Simulator.BATCH_MEANS) &&
-									(Simulator.stoppingRule != Simulator.FIXEDLEN)) {
-								if(Simulator.clock >= Simulator.totRunLen) {
-									MessageBox msg = new MessageBox(shell, SWT.OK | SWT.ICON_WARNING);
-									msg.setMessage("The simulation stopped because the maximum run length was reached. The specified precision may not be fulfilled.");
-									msg.setText("Precision Warning");
-									msg.open();
-								}
-							}
-
 						} catch (InvocationTargetException e) {
 							e.printStackTrace();
 						} catch (InterruptedException e) {
@@ -175,10 +164,7 @@ public class StartSimulatorAction extends Action implements
 
 				// TODO: Maximize the Console view
 			} else {
-				MessageBox messageBox = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
-				messageBox.setMessage("No queueing petri net model found.\nPlease choose one in the editor area.");
-				messageBox.setText("Missing model error");
-				messageBox.open();
+				MessageDialog.openError(shell, "Missing model error", "No queueing petri net model found.\nPlease choose one in the editor area."); 
 			}
 		}
 	}
@@ -298,6 +284,22 @@ public class StartSimulatorAction extends Action implements
 						SimpleQueryEditor.ID, true));
 
 			} catch (SimQPNException e) {
+				display.syncExec(new Runnable() {
+					@Override
+					public void run() {
+						MessageDialog.openError(window.getShell(), "Simulation Error", 
+							"An error occurred during the simulation. For details see the console output.");
+					}
+				});
+				throw new InvocationTargetException(e);
+			} catch (final Exception e) {
+				display.syncExec(new Runnable() {
+					@Override
+					public void run() {
+						MessageDialog.openError(window.getShell(), "Simulation Error", 
+								"An internal error occurred during the simulation: " + e.getClass().getName());
+					}
+				});
 				throw new InvocationTargetException(e);
 			} finally {
 				monitor.done();
@@ -338,14 +340,6 @@ public class StartSimulatorAction extends Action implements
 		 */
 		@Override
 		public void finishSimulationRun() {
-			if (Simulator.clock >= Simulator.totRunLen)  {
-				if (Simulator.stoppingRule != Simulator.FIXEDLEN)  {
-					logln("WARNING: The simulation was stopped because of reaching max totalRunLen!");
-					logln("         The required precision may not have been reached!");
-				}
-				else
-					logln("Info: STOPPING because max totalRunLen is reached!");
-			}			
 			logln("Simulation run finished.");
 			logln();
 		}
@@ -438,6 +432,26 @@ public class StartSimulatorAction extends Action implements
 			if(!done) {
 				this.failedPlace = failedPlaceName;
 			}
+		}
+
+		@Override
+		public void warning(final String message) {
+			Simulator.logln("WARNING: " + message);
+			display.syncExec(new Runnable() {
+				@Override
+				public void run() {
+					if(lastProgress != 100) {
+						//Simulation still running
+						MessageDialog dialog = new MessageDialog(window.getShell(), "Simulation Warning", 
+								null, message, MessageDialog.WARNING, new String[] {"Cancel Simulation", "Ignore"}, 0);
+						if(dialog.open() == 0) {
+							monitor.setCanceled(true);
+						}
+					} else {
+						MessageDialog.openWarning(window.getShell(), "Simulation Warning", message);
+					}
+				}				
+			});
 		}
 
 		private void updateStatusString() {
