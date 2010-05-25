@@ -82,9 +82,9 @@ public class Page2SimulationRunSettingsWizardPage extends BaseWizardPage {
 
 	protected Text secondsBtwChkStopsText;
 	
-	protected Text timeInitHeartBeatText;
-
-	protected Text secondsBtwHeartBeatsText;
+//	protected Text timeInitHeartBeatText;
+//
+//	protected Text secondsBtwHeartBeatsText;
 
 	protected Spinner verbosityLevelSpinner;
 
@@ -179,29 +179,33 @@ public class Page2SimulationRunSettingsWizardPage extends BaseWizardPage {
 			}
 		});		
 		
-		Label timeInitHeartBeatLabel = new Label(container, SWT.NULL);
-		timeInitHeartBeatLabel.setText("Time before initial heart beat");
-		timeInitHeartBeatText = new Text(container, SWT.BORDER | SWT.SINGLE);
-		gd = new GridData(GridData.FILL_HORIZONTAL);
-		gd.horizontalSpan = 2;
-		timeInitHeartBeatText.setLayoutData(gd);
-		timeInitHeartBeatText.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				updateModel();
-			}
-		});
-
-		Label timeBtwHeartBeatsLabel = new Label(container, SWT.NULL);
-		timeBtwHeartBeatsLabel.setText("Seconds between heart beats");
-		secondsBtwHeartBeatsText = new Text(container, SWT.BORDER | SWT.SINGLE);
-		gd = new GridData(GridData.FILL_HORIZONTAL);
-		gd.horizontalSpan = 2;
-		secondsBtwHeartBeatsText.setLayoutData(gd);
-		secondsBtwHeartBeatsText.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				updateModel();
-			}
-		});
+		//
+		// Since progress monitor implementation these parameters are not used anymore
+		//		
+//		Label timeInitHeartBeatLabel = new Label(container, SWT.NULL);
+//		timeInitHeartBeatLabel.setText("Time before initial heart beat");
+//		timeInitHeartBeatText = new Text(container, SWT.BORDER | SWT.SINGLE);
+//		gd = new GridData(GridData.FILL_HORIZONTAL);
+//		gd.horizontalSpan = 2;
+//		timeInitHeartBeatText.setLayoutData(gd);
+//		timeInitHeartBeatText.addModifyListener(new ModifyListener() {
+//			public void modifyText(ModifyEvent e) {
+//				updateModel();
+//			}
+//		});
+//
+//		Label timeBtwHeartBeatsLabel = new Label(container, SWT.NULL);
+//		timeBtwHeartBeatsLabel.setText("Seconds between heart beats");
+//		secondsBtwHeartBeatsText = new Text(container, SWT.BORDER | SWT.SINGLE);
+//		gd = new GridData(GridData.FILL_HORIZONTAL);
+//		gd.horizontalSpan = 2;
+//		secondsBtwHeartBeatsText.setLayoutData(gd);
+//		secondsBtwHeartBeatsText.addModifyListener(new ModifyListener() {
+//			public void modifyText(ModifyEvent e) {
+//				updateModel();
+//			}
+//		});
+		
 
 		// Verbosity level.
 		Label verbosityLevelLabel = new Label(container, SWT.NULL);
@@ -296,27 +300,27 @@ public class Page2SimulationRunSettingsWizardPage extends BaseWizardPage {
 			}			
 		}
 
-		try {
-			dValue = Double.parseDouble(timeInitHeartBeatText.getText());
-		} catch (NumberFormatException nfe) {
-			setErrorMessage("Invalid number format. Time before initial heart beat must be a positive number.");
-			return false;
-		}
-		if (dValue <= 0) {
-			setErrorMessage("Time before initial heart beat must be a positive number.");
-			return false;
-		}
-
-		try {
-			dValue = Double.parseDouble(secondsBtwHeartBeatsText.getText());
-		} catch (NumberFormatException nfe) {
-			setErrorMessage("Invalid number format. Seconds between heart beats must be a positive number.");
-			return false;
-		}
-		if (dValue <= 0) {
-			setErrorMessage("Seconds between heart beats must be a positive number.");
-			return false;
-		}
+//		try {
+//			dValue = Double.parseDouble(timeInitHeartBeatText.getText());
+//		} catch (NumberFormatException nfe) {
+//			setErrorMessage("Invalid number format. Time before initial heart beat must be a positive number.");
+//			return false;
+//		}
+//		if (dValue <= 0) {
+//			setErrorMessage("Time before initial heart beat must be a positive number.");
+//			return false;
+//		}
+//
+//		try {
+//			dValue = Double.parseDouble(secondsBtwHeartBeatsText.getText());
+//		} catch (NumberFormatException nfe) {
+//			setErrorMessage("Invalid number format. Seconds between heart beats must be a positive number.");
+//			return false;
+//		}
+//		if (dValue <= 0) {
+//			setErrorMessage("Seconds between heart beats must be a positive number.");
+//			return false;
+//		}
 
 		int iValue;
 		try {
@@ -395,8 +399,8 @@ public class Page2SimulationRunSettingsWizardPage extends BaseWizardPage {
 				} else {
 					DocumentManager.removeAttribute(metaAttribute, "seconds-between-stop-checks");
 				}
-				DocumentManager.setAttribute(metaAttribute, "time-before-initial-heart-beat", timeInitHeartBeatText.getText());
-				DocumentManager.setAttribute(metaAttribute, "seconds-between-heart-beats", secondsBtwHeartBeatsText.getText());
+//				DocumentManager.setAttribute(metaAttribute, "time-before-initial-heart-beat", timeInitHeartBeatText.getText());
+//				DocumentManager.setAttribute(metaAttribute, "seconds-between-heart-beats", secondsBtwHeartBeatsText.getText());
 				DocumentManager.setAttribute(metaAttribute, "verbosity-level", Integer.toString(verbosityLevelSpinner.getSelection()));
 				DocumentManager.setAttribute(metaAttribute, "output-directory", statsDirText.getText());
 			}
@@ -449,8 +453,8 @@ public class Page2SimulationRunSettingsWizardPage extends BaseWizardPage {
 				secondsBtwChkStopsLabel.setVisible(false);
 				secondsBtwChkStopsText.setVisible(false);				
 			}
-			timeInitHeartBeatText.setText(metaAttribute.attributeValue("time-before-initial-heart-beat", ""));
-			secondsBtwHeartBeatsText.setText(metaAttribute.attributeValue("seconds-between-heart-beats", ""));
+//			timeInitHeartBeatText.setText(metaAttribute.attributeValue("time-before-initial-heart-beat", ""));
+//			secondsBtwHeartBeatsText.setText(metaAttribute.attributeValue("seconds-between-heart-beats", ""));
 			verbosityLevelSpinner.setSelection(Integer.parseInt(metaAttribute.attributeValue("verbosity-level", "")));
 			statsDirText.setText(metaAttribute.attributeValue("output-directory", ""));
 

@@ -186,9 +186,11 @@ public class Simulator {
 												//   secondsBtwChkStops sec between checks.
 	public static double secondsBtwChkStops;	// Seconds between checks if stopping criterion is fulfilled. TODO: Add to User's Guide. 
 												//   Used only when timeBtwChkStops == 0.
+	/* ORIGINAL HEARTBEAT IMPLEMENTATION
 	public static double timeInitHeartBeat;		// Time when the first progress update is made. After this
 												//   progress updates are made once every secsBtwHeartBeats seconds.
 	public static double secsBtwHeartBeats;		// How often progress updates are made (heart beats).
+	*/
 	
 	public static double runsBtwCvrgChks;		// CVRG_EST: Frequency of checking if enough data has been gathered
 												//   to provide conf. interval for true coverage with required relative precision.
@@ -2544,6 +2546,7 @@ public class Simulator {
 			logln(2, "secondsBtwChkStops = " + secondsBtwChkStops + ";");
 		}
 		
+		/* ORIGINAL HEARTBEAT IMPLEMENTATION
 		if(simulatorSettings.attributeValue("time-before-initial-heart-beat") == null) {		
 			logln("Error: Configuration parameter \"time-before-initial-heart-beat\" is not configured!");					
 			logln("  configuration = " + configuration);						
@@ -2559,6 +2562,7 @@ public class Simulator {
 		}		
 		secsBtwHeartBeats = Double.parseDouble(simulatorSettings.attributeValue("seconds-between-heart-beats"));
 		logln(2, "secsBtwHeartBeats = " + secsBtwHeartBeats + ";");
+		*/
 		
 		if (analMethod != BATCH_MEANS && stoppingRule != FIXEDLEN) {
 			logln("Error: Stopping rule \"" + simulatorSettings.attributeValue("stopping-rule") + "\" is not supported for the batch means analysis method!");					
@@ -3140,8 +3144,11 @@ public class Simulator {
 
 		// Note: we store totRunLen and rampUpLen in local variables to improve performance of the while loop below.		
 		double totRunL = totRunLen;
-		double rampUpL = rampUpLen;		
+		double rampUpL = rampUpLen;
+		double nextChkAfter = timeBtwChkStops;
+		/* ORIGINAL HEARTBEAT IMPLEMENTATION
 		double nextChkAfter = timeBtwChkStops > 0 ? timeBtwChkStops : timeInitHeartBeat;
+		*/
 
 		beginRunWallClock = System.currentTimeMillis();
 
@@ -3315,17 +3322,19 @@ public class Simulator {
 				}
 			}
 
-//			if (runMode == NORMAL && analMethod != REPL_DEL && clock > nextHeartBeat) {
-//				double elapsedSecs = (System.currentTimeMillis() - beginRunWallClock) / 1000;
-//				double clockTimePerSec = clock / elapsedSecs;
-//				log("Info: Simulation time = " + (long) clock + "  Elapsed wall clock time = ");
-//				if (nextHeartBeat == timeInitHeartBeat)		// check if this is the initial heart beat
-//					logln((int) elapsedSecs + " sec");
-//				else
-//					logln((int) (elapsedSecs / 60) + " min");
-//				nextHeartBeat = Simulator.clock + clockTimePerSec * (secsBtwHeartBeats + 10);
-//				// Make sure at least secsBtwHeartBeats seconds have elapsed at next heart beat
-//			}
+			/* ORIGINAL HEARTBEAT IMPLEMENTATION
+			if (runMode == NORMAL && analMethod != REPL_DEL && clock > nextHeartBeat) {
+				double elapsedSecs = (System.currentTimeMillis() - beginRunWallClock) / 1000;
+				double clockTimePerSec = clock / elapsedSecs;
+				log("Info: Simulation time = " + (long) clock + "  Elapsed wall clock time = ");
+				if (nextHeartBeat == timeInitHeartBeat)		// check if this is the initial heart beat
+					logln((int) elapsedSecs + " sec");
+				else
+					logln((int) (elapsedSecs / 60) + " min");
+				nextHeartBeat = Simulator.clock + clockTimePerSec * (secsBtwHeartBeats + 10);
+				// Make sure at least secsBtwHeartBeats seconds have elapsed at next heart beat
+			}
+			*/
 
 			// Step 5: Check Stopping Criterion
 			if (stoppingRule != FIXEDLEN && (!inRampUp) && clock > nextChkAfter) {
