@@ -43,38 +43,13 @@
  */
 package de.tud.cs.simqpn.plugin.wiizard;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-
-import org.dom4j.Document;
 import org.dom4j.Element;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWizard;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 
-import de.tud.cs.qpe.editors.net.NetEditorInput;
-import de.tud.cs.qpe.editors.query.QueryEditorInput;
-import de.tud.cs.qpe.editors.query.SimpleQueryEditor;
-import de.tud.cs.simqpn.kernel.SimQPNException;
-import de.tud.cs.simqpn.kernel.Simulator;
-import de.tud.cs.simqpn.kernel.Stats;
-import de.tud.cs.simqpn.kernel.StatsDocumentBuilder;
 import de.tud.cs.simqpn.plugin.wiizard.page.BaseWizardPage;
 import de.tud.cs.simqpn.plugin.wiizard.page.Page1ConfigurationSelectionWizardPage;
 import de.tud.cs.simqpn.plugin.wiizard.page.Page2SimulationRunSettingsWizardPage;

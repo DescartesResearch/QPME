@@ -45,7 +45,7 @@ package de.tud.cs.qpe.editors.net;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.dom4j.Document;
@@ -258,7 +258,7 @@ public class MultipageNetEditor extends MultiPageEditorPart implements PropertyC
 			XMLWriter writer = null;
 			try {
 				OutputFormat format = OutputFormat.createPrettyPrint();
-				writer = new XMLWriter(new FileWriter(path), format);
+				writer = new XMLWriter(new FileOutputStream(path), format);
 				writer.write(doc);
 
 				// Reset the dirty-property.

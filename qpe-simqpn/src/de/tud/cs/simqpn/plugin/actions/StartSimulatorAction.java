@@ -44,7 +44,7 @@ package de.tud.cs.simqpn.plugin.actions;
 import static de.tud.cs.simqpn.kernel.Simulator.logln;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
@@ -54,23 +54,19 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IProgressMonitorWithBlocking;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.wizard.WizardDialog;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -88,7 +84,6 @@ import de.tud.cs.simqpn.kernel.Simulator;
 import de.tud.cs.simqpn.kernel.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.Stats;
 import de.tud.cs.simqpn.kernel.StatsDocumentBuilder;
-import de.tud.cs.simqpn.plugin.QPESimQPNPlugin;
 import de.tud.cs.simqpn.plugin.wiizard.RunSimulationWizard;
 
 public class StartSimulatorAction extends Action implements
@@ -313,7 +308,7 @@ public class StartSimulatorAction extends Action implements
 		private void saveXmlToFile(Document doc, File file) {
 			XMLWriter writer = null;
 			try {
-				writer = new XMLWriter(new FileWriter(file), OutputFormat
+				writer = new XMLWriter(new FileOutputStream(file), OutputFormat
 						.createPrettyPrint());
 				writer.write(doc);
 			} catch (IOException e) {

@@ -44,7 +44,7 @@
 package de.tud.cs.simqpn.console;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -56,7 +56,7 @@ import org.dom4j.XPath;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
- 
+
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.Simulator;
 import de.tud.cs.simqpn.kernel.Stats;
@@ -150,7 +150,7 @@ public class SimQPN {
 	private static void saveXmlToFile(Document doc, File file) {
 		XMLWriter writer = null;
 		try {
-			writer = new XMLWriter(new FileWriter(file), OutputFormat.createPrettyPrint());
+			writer = new XMLWriter(new FileOutputStream(file), OutputFormat.createPrettyPrint());
 			writer.write(doc);
 		} catch (IOException e) {
 			e.printStackTrace();
