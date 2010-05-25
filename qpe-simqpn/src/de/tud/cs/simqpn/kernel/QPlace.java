@@ -142,7 +142,7 @@ public class QPlace extends Place {
 		super.init();
 		
 		//SDK-TODO: This check might cause problems for some distributions where meanServTimes is not initialized!
-		if (queue.expPS || qPlaceQueueStats.indrStats) {
+		if ((statsLevel > 0) && (queue.expPS || qPlaceQueueStats.indrStats)) {
 			for (int c = 0; c < numColors; c++) 
 				// Make sure that all meanServTimes have been initialized
 				if (meanServTimes[c] < 0) {
