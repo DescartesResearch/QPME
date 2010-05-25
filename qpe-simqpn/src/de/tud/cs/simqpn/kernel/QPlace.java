@@ -142,12 +142,14 @@ public class QPlace extends Place {
 		super.init();
 		
 		//SDK-TODO: This check might cause problems for some distributions where meanServTimes is not initialized!
-		for (int c = 0; c < numColors; c++) 
-			// Make sure that all meanServTimes have been initialized
-			if (meanServTimes[c] < 0) {
-				Simulator.logln("Error: meanServTimes[" + c + "] has not been initialized for QPlace " + name);
-				throw new SimQPNException(); 
-			}			
+		if (queue.expPS || qPlaceQueueStats.indrStats) {
+			for (int c = 0; c < numColors; c++) 
+				// Make sure that all meanServTimes have been initialized
+				if (meanServTimes[c] < 0) {
+					Simulator.logln("Error: meanServTimes[" + c + "] has not been initialized for QPlace " + name);
+					throw new SimQPNException(); 
+				}
+		}
 
 		// PS Queues	
 		if (queue.queueDiscip == Queue.PS && (!queue.expPS))  {							
