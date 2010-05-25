@@ -3170,7 +3170,8 @@ public class Simulator {
 				progressMonitor.finishWarmUp();
 			}
 
-			// Step 1: Fire until no transitions are enabled.			
+			// Step 1: Fire until no transitions are enabled.
+			int fireCnt = 0;
 			while (enTransCnt > 0) {				
 				Transition nextTrans;		// transition to fire next
 
@@ -3227,6 +3228,20 @@ public class Simulator {
 							enTransCnt++;
 						}						
 					}
+				}
+				
+				// If there are always transitions enabled,
+				// this results in an infinite loop. Make it
+				// possible for the user to cancel the simulation
+				// anyway.
+				if (fireCnt > 10000000) {
+					if (progressMonitor.isCanceled()) {
+						clock = totRunL;
+						break;
+					}
+					fireCnt = 0;
+				} else {
+					fireCnt++;
 				}
 			} // end firing enabled transitions
 
