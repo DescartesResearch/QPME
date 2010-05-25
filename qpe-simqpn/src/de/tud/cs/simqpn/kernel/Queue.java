@@ -185,6 +185,12 @@ public class Queue {
 	 */
 	public void init() throws SimQPNException  {
 		statsLevel = 10; 
+		
+		if (qPlaces == null) {
+			Simulator.logln("ERROR: No qplaces associated with queue " + name);
+			throw new SimQPNException();
+		}
+		
 		for (int p = 0; p < qPlaces.length; p++)  { //NOTE: The two variables below are intentionally set here and not in addQPlace(), since the user might choose (although that's not recommended) to initialize qPlaces externally bypassing addQPlace().  
 			totNumColors += qPlaces[p].numColors;		
 			if (qPlaces[p].statsLevel < statsLevel) 
