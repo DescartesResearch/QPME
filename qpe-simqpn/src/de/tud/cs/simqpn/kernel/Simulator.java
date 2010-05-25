@@ -1303,30 +1303,34 @@ public class Simulator {
 						+ dDis + ", " 
 						+ place + ")"); 												
 			} else if ("queueing-place".equals(place.attributeValue("type"))) {
-				String queueRef = place.attributeValue("queue-ref");
-				Queue queue = findQueueByXmlId(queueRef);
-				places[i] = new QPlace(
-						i, 																	// id
-						place.attributeValue("name"), 										// name
-						colors, 															// color names	
-						numIncomingConnections,												// # incoming connections
-						numOutgoingConnections, 											// # outgoing connections
-						statsLevel, 														// stats level
-						dDis, 																// departure discipline
-						queue,													// Reference to the integrated Queue										
-						place);																// Reference to the place' XML element				
-				logln(2, "places[" + i + "] = new QPlace(" 
-						+ i + ", '" 
-						+ place.attributeValue("name") + "', " 
-						+ colors + ", " 
-						+ numIncomingConnections + ", " 
-						+ numOutgoingConnections + ", " 
-						+ statsLevel + ", " 
-						+ dDis + ", " 
-						+ queue + ", "  
-						+ place + ")"); 								
-				queue.addQPlace((QPlace) places[i]);				
-				
+				try {
+					String queueRef = place.attributeValue("queue-ref");
+					Queue queue = findQueueByXmlId(queueRef);
+					places[i] = new QPlace(
+							i, 																	// id
+							place.attributeValue("name"), 										// name
+							colors, 															// color names	
+							numIncomingConnections,												// # incoming connections
+							numOutgoingConnections, 											// # outgoing connections
+							statsLevel, 														// stats level
+							dDis, 																// departure discipline
+							queue,													// Reference to the integrated Queue										
+							place);																// Reference to the place' XML element				
+					logln(2, "places[" + i + "] = new QPlace(" 
+							+ i + ", '" 
+							+ place.attributeValue("name") + "', " 
+							+ colors + ", " 
+							+ numIncomingConnections + ", " 
+							+ numOutgoingConnections + ", " 
+							+ statsLevel + ", " 
+							+ dDis + ", " 
+							+ queue + ", "  
+							+ place + ")"); 								
+					queue.addQPlace((QPlace) places[i]);				
+				} catch(NoSuchElementException ex) {
+					logln("ERROR: No queue defined for queueing place: " + place.attributeValue("name"));
+					throw new SimQPNException();
+				}
 			} else {
 				logln("ERROR: Invalid or missing place type setting!");
 				logln("       Currently only 'ordinary-place' and 'queueing-place' are supported.");
