@@ -211,6 +211,18 @@ public class Simulator {
 	public static double endRunWallClock;		// currentTimeMillis at the end of the run (wall clock time).
 	public static double runWallClockTime;		// Total duration of the run in seconds.
 	
+	// Time histogram configuration parameters.
+	public static final int       TIME_HISTOGRAM_MIN_NUM_BUCKETS = 2;
+	public static final int       TIME_HISTOGRAM_MAX_NUM_BUCKETS = 1000;
+	public static final double    TIME_HISTOGRAM_DEFAULT_BUCKET_SIZE = 100;
+	
+	// Queue overflow detection sensitivity configuration parameters
+	public static final long OVERFLOW_DET_START_EPOCH_LENGTH = 100;
+	public static final long OVERFLOW_DET_MAX_EPOCH_LENGTH = 10000 * OVERFLOW_DET_START_EPOCH_LENGTH;
+	public static final long OVERFLOW_DET_DETECTION_THRESHOLD = 1000;
+	public static final int  OVERFLOW_DET_MIN_CONS_RISING_EPOCHS = 30;
+	public static final int  OVERFLOW_DET_MAX_CONS_RISING_EPOCHS = 100;
+	
 	// Progress monitoring
 	public static SimulatorProgress progressMonitor;
 

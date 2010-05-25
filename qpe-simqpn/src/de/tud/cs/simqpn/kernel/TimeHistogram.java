@@ -54,17 +54,13 @@ public class TimeHistogram implements Serializable  {
 	private int				maxNumBuckets;				// Maximum number of buckets
 	private int[]			data;						// Histogram data
 	
-	private final int       MIN_NUM_BUCKETS = 2;
-	private final int       MAX_NUM_BUCKETS = 1000;
-	private final double    DEFAULT_BUCKET_SIZE = 100;
-	
 	/**
 	 * Constructor 
 	 *
 	 */	
 	public TimeHistogram()  {
-		this.numBuckets = MIN_NUM_BUCKETS;
-		this.maxNumBuckets = MAX_NUM_BUCKETS;
+		this.numBuckets = Simulator.TIME_HISTOGRAM_MIN_NUM_BUCKETS;
+		this.maxNumBuckets = Simulator.TIME_HISTOGRAM_MAX_NUM_BUCKETS;
 		
 		this.data = new int[numBuckets];
 		for (int i = 0; i < numBuckets; i++) this.data[i] = 0;
@@ -81,7 +77,7 @@ public class TimeHistogram implements Serializable  {
 		if (bucketSize > 0)
 			this.bucketSize = bucketSize;
 		else
-			this.bucketSize = DEFAULT_BUCKET_SIZE;
+			this.bucketSize = Simulator.TIME_HISTOGRAM_DEFAULT_BUCKET_SIZE;
 	}
 
 	/**
@@ -94,7 +90,7 @@ public class TimeHistogram implements Serializable  {
 		if(maxNumBuckets > 0) {
 			this.maxNumBuckets = maxNumBuckets;
 		} else {
-			this.maxNumBuckets = MAX_NUM_BUCKETS;
+			this.maxNumBuckets = Simulator.TIME_HISTOGRAM_MAX_NUM_BUCKETS;
 		}
 	}
 

@@ -67,13 +67,6 @@ import cern.jet.random.Exponential;
 
 public class Queue {
 	
-	// Overflow Detection Sensitivity Parameters
-	public static final long START_EPOCH_LENGTH = 100;
-	public static final long MAX_EPOCH_LENGTH = 10000 * START_EPOCH_LENGTH;
-	public static final int  MIN_CONS_RISING_EPOCHS	= 30;
-	public static final int  MAX_CONS_RISING_EPOCHS	= 100;
-	public static final long DETECTION_THRESHOLD = 1000;
-    
 	// Supported Queueing Disciplines:	
 	public static final int IS = 0;
 	public static final int FCFS = 1;
@@ -115,7 +108,7 @@ public class Queue {
 	private long		maxEpochPopulation;	// Overflow Detection: the maximum token population in the current epoch
 	private long		totalMaxPopulation; // Overflow Detection: the total maximum token population in the queue
 	private int			epochMsrmCnt;		// Overflow Detection: the number of measurements that were taken in the current epoch
-	private long		epochLength = START_EPOCH_LENGTH;	// Overflow Detection: the length (number of measurements) of one epoch
+	private long		epochLength = Simulator.OVERFLOW_DET_START_EPOCH_LENGTH;	// Overflow Detection: the length (number of measurements) of one epoch
 	private long		maxPopulationAtRisingStart;
 	private int			cntConsRisingEpoch; // Overflow Detection: the number of consecutive epochs in which the maximum population has grown
 	private boolean		deactivateWarning = false;;
@@ -456,14 +449,14 @@ public class Queue {
 				// in each epoch a new maximum is reached. Otherwise an upper bound is finally reached.
 				cntConsRisingEpoch = 0;
 				maxPopulationAtRisingStart = totalMaxPopulation;
-				if ((epochLength * 2) <= MAX_EPOCH_LENGTH) {
+				if ((epochLength * 2) <= Simulator.OVERFLOW_DET_MAX_EPOCH_LENGTH) {
 					epochLength *= 2;
 				}
 			}
 			maxEpochPopulation = 0;
 			epochMsrmCnt = 0;
 			
-			if (totalMaxPopulation < DETECTION_THRESHOLD) {
+			if (totalMaxPopulation < Simulator.OVERFLOW_DET_DETECTION_THRESHOLD) {
 				// If total population is below the detection threshold, do not
 				// count consecutive rising epochs. Thus the overflow detection is
 				// disabled if the queue population is low.
@@ -473,8 +466,8 @@ public class Queue {
 				// part of the condition is for fast growing queues, the second
 				// part for slowly growing ones.
 				if (((totalMaxPopulation > 10 * maxPopulationAtRisingStart) 
-							&& (cntConsRisingEpoch > MIN_CONS_RISING_EPOCHS))
-					|| ((cntConsRisingEpoch > MAX_CONS_RISING_EPOCHS) 
+							&& (cntConsRisingEpoch > Simulator.OVERFLOW_DET_MIN_CONS_RISING_EPOCHS))
+					|| ((cntConsRisingEpoch > Simulator.OVERFLOW_DET_MAX_CONS_RISING_EPOCHS) 
 							&& (totalMaxPopulation > 2 * maxPopulationAtRisingStart))) {
 						if (!deactivateWarning) {
 							Simulator.progressMonitor.warning("Queue \"" + name + "\" is exceedingly growing. An overflow might occur.");
