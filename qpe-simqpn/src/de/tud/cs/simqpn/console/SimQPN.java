@@ -128,10 +128,14 @@ public class SimQPN {
 							net = netDocument.getRootElement();
 							Simulator.configure(net, configuration);							
 							Stats[] result = Simulator.execute(net, configuration, new ConsoleSimulatorProgress());
-							StatsDocumentBuilder builder = new StatsDocumentBuilder(result, net, configuration);
-							Document statsDocument = builder.buildDocument();
-							File resultsFile = new File(Simulator.statsDir, builder.getResultFileBaseName() + ".simqpn");
-							saveXmlToFile(statsDocument, resultsFile);
+							// Skip stats document generation for WELCH and REPL_DEL since the 
+							// document builder does not support these methods yet.
+							if ((result != null) && (Simulator.analMethod == Simulator.BATCH_MEANS)) {
+								StatsDocumentBuilder builder = new StatsDocumentBuilder(result, net, configuration);
+								Document statsDocument = builder.buildDocument();
+								File resultsFile = new File(Simulator.statsDir, builder.getResultFileBaseName() + ".simqpn");
+								saveXmlToFile(statsDocument, resultsFile);
+							}
 						} catch (SimQPNException e) {
 							e.printStackTrace();
 						}

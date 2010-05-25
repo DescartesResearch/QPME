@@ -267,22 +267,25 @@ public class StartSimulatorAction extends Action implements
 				Simulator.configure(net, configuration);
 
 				Stats[] result = Simulator.execute(net, configuration, this);
-
-				monitor.subTask("Collect Results");
-				StatsDocumentBuilder builder = new StatsDocumentBuilder(result,
-						net, configuration);
-				Document statsDocument = builder.buildDocument();
-				File resultsFile = new File(Simulator.statsDir, builder
-						.getResultFileBaseName()
-						+ ".simqpn");
-				saveXmlToFile(statsDocument, resultsFile);
-
-				IEditorInput simulationOutput = new QueryEditorInput(new Path(
-						resultsFile.getAbsolutePath()));
-
-				display.asyncExec(new EditorOpener(simulationOutput,
-						SimpleQueryEditor.ID, true));
-
+				
+				// Skip stats document generation for WELCH and REPL_DEL since the 
+				// document builder does not support these methods yet.
+				if ((result != null) && (Simulator.analMethod == Simulator.BATCH_MEANS)) {
+					monitor.subTask("Collect Results");
+					StatsDocumentBuilder builder = new StatsDocumentBuilder(result,
+							net, configuration);
+					Document statsDocument = builder.buildDocument();
+					File resultsFile = new File(Simulator.statsDir, builder
+							.getResultFileBaseName()
+							+ ".simqpn");
+					saveXmlToFile(statsDocument, resultsFile);
+		
+					IEditorInput simulationOutput = new QueryEditorInput(new Path(
+							resultsFile.getAbsolutePath()));
+		
+					display.asyncExec(new EditorOpener(simulationOutput,
+							SimpleQueryEditor.ID, true));
+				}
 			} catch (SimQPNException e) {
 				display.syncExec(new Runnable() {
 					@Override
