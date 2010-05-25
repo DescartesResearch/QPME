@@ -160,33 +160,24 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 						children[i] = placeList.get(i);
 					}
 				} else if ("place".equals(element.getName())) {
-					if ("subnet-place".equals(element.attributeValue("type"))) {
-						XPath xpathSelector = DocumentHelper.createXPath("subnet/places/place");
-						List subnetPlaceList = xpathSelector.selectNodes(element);
-						children = new Object[subnetPlaceList.size()];
-						for (int i = 0; i < children.length; i++) {
-							children[i] = subnetPlaceList.get(i);
-						}
-					} else {					
-						Element placeMetaAttribute = getMetaAttribute(element);
-						if (placeMetaAttribute != null) {
-							int statsLevel = Integer.parseInt(placeMetaAttribute
-									.attributeValue("statsLevel"));
-							if (statsLevel >= 3) {
-								XPath xpathSelector = DocumentHelper
-										.createXPath("color-refs/color-ref");
-								List colorRefList = xpathSelector
-										.selectNodes(element);
-								children = new Object[colorRefList.size()];
-								for (int i = 0; i < children.length; i++) {
-									if ("queueing-place".equals(element
-											.attributeValue("type"))) {
-										children[i] = colorRefList.get(i);
-									} else {
-										children[i] = new DepositorySettings(
-												getMetaAttribute((Element) colorRefList
-														.get(i)));
-									}
+					Element placeMetaAttribute = getMetaAttribute(element);
+					if (placeMetaAttribute != null) {
+						int statsLevel = Integer.parseInt(placeMetaAttribute
+								.attributeValue("statsLevel"));
+						if (statsLevel >= 3) {
+							XPath xpathSelector = DocumentHelper
+									.createXPath("color-refs/color-ref");
+							List colorRefList = xpathSelector
+									.selectNodes(element);
+							children = new Object[colorRefList.size()];
+							for (int i = 0; i < children.length; i++) {
+								if ("queueing-place".equals(element
+										.attributeValue("type"))) {
+									children[i] = colorRefList.get(i);
+								} else {
+									children[i] = new DepositorySettings(
+											getMetaAttribute((Element) colorRefList
+													.get(i)));
 								}
 							}
 						}
@@ -236,22 +227,16 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 								.createXPath("places/place");
 						return !xpathSelector.selectNodes(element).isEmpty();
 					} else if ("place".equals(element.getName())) {
-						if ("subnet-place".equals(element.attributeValue("type"))) {
-							XPath xpathSelector = DocumentHelper
-								.createXPath("subnet/places/place");
-							return !xpathSelector.selectNodes(element).isEmpty();
-						} else {
-							Element placeMetaAttribute = getMetaAttribute(element);
-							if (placeMetaAttribute != null) {
-								int statsLevel = Integer
-										.parseInt(placeMetaAttribute
-												.attributeValue("statsLevel"));
-								if (statsLevel >= 3) {
-									XPath xpathSelector = DocumentHelper
-											.createXPath("color-refs/color-ref");
-									return !xpathSelector.selectNodes(element)
-											.isEmpty();
-								}
+						Element placeMetaAttribute = getMetaAttribute(element);
+						if (placeMetaAttribute != null) {
+							int statsLevel = Integer
+									.parseInt(placeMetaAttribute
+											.attributeValue("statsLevel"));
+							if (statsLevel >= 3) {
+								XPath xpathSelector = DocumentHelper
+										.createXPath("color-refs/color-ref");
+								return !xpathSelector.selectNodes(element)
+										.isEmpty();
 							}
 						}
 					} else if ("color-ref".equals(element.getName())
