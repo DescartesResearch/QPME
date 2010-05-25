@@ -63,7 +63,7 @@ public enum Metric {
 	MIN_ST("Minimum Token Residence Time", "minST"),
 	MAX_ST("Maximum Token Residence Time", "maxST"),
 	CONFIDENCE_INTERVAL_MEAN("Confidence Interval Mean", "stdStateMeanST"),
-	CONFIDENCE_INTERVAL_LENGTH("Confidence Interval Length", "ciHalfLenST"),
+	CONFIDENCE_INTERVAL_LENGTH("Confidence Interval Half Length", "ciHalfLenST"),
 	TOT_ARRIV_THR_PUT("Total Arrival Throughput", "totArrivThrPut", true),
 	TOT_DEPT_THR_PUT("Total Departure Throughput", "totDeptThrPut", true),
 	MEAN_TOT_TK_POP("Mean Total Token Population", "meanTotTkPop", true),
