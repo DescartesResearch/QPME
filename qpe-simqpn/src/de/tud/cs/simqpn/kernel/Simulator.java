@@ -1272,8 +1272,27 @@ public class Simulator {
 			 * CHRIS: Fixed that now too.
 			 */
 			
-			// Extract the names of the colors that can reside in this place			
-			List colorRefs = place.element("color-refs").elements("color-ref");
+			// Extract the names of the colors that can reside in this place
+			Element colorRefsElem = place.element("color-refs");
+			if (colorRefsElem == null) {
+				logln("ERROR: Missing color references!");
+				logln("Details: ");				
+				logln("  place-num                  = " + i);
+				logln("  place.id                   = " + place.attributeValue("id"));
+				logln("  place.name                 = " + place.attributeValue("name"));
+				logln("  place.departure-discipline = " + place.attributeValue("departure-discipline"));
+				throw new SimQPNException();
+			}
+			List colorRefs = colorRefsElem.elements("color-ref");
+			if (colorRefs.size() == 0) {
+				logln("ERROR: Missing color references!");
+				logln("Details: ");				
+				logln("  place-num                  = " + i);
+				logln("  place.id                   = " + place.attributeValue("id"));
+				logln("  place.name                 = " + place.attributeValue("name"));
+				logln("  place.departure-discipline = " + place.attributeValue("departure-discipline"));
+				throw new SimQPNException();
+			}
 			String[] colors = new String[colorRefs.size()];			
 			Iterator colorRefIterator = colorRefs.iterator();			
 			for (int c = 0; colorRefIterator.hasNext(); c++) {
@@ -1328,7 +1347,12 @@ public class Simulator {
 							+ place + ")"); 								
 					queue.addQPlace((QPlace) places[i]);				
 				} catch(NoSuchElementException ex) {
-					logln("ERROR: No queue defined for queueing place: " + place.attributeValue("name"));
+					logln("ERROR: No queue defined!");
+					logln("Details: ");
+					logln("  place-num   = " + i);
+					logln("  place.id    = " + place.attributeValue("id"));
+					logln("  place.name  = " + place.attributeValue("name"));
+					logln("  place.type  = " + place.attributeValue("type"));
 					throw new SimQPNException();
 				}
 			} else {
