@@ -170,7 +170,7 @@ public class Page1ConfigurationSelectionWizardPage extends BaseWizardPage {
 					activeConfiguration = newConfguration.attributeValue("configuration-name");
 					
 					// Add a meta-Attribute to all places containing the statsLevel attribute
-					XPath xpathSelector = DocumentHelper.createXPath("/net/places/place");
+					XPath xpathSelector = DocumentHelper.createXPath("//place");
 					Iterator placeIterator = xpathSelector.selectNodes(net).iterator();
 					while(placeIterator.hasNext()) {
 						Element place = (Element) placeIterator.next();

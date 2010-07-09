@@ -550,13 +550,13 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 			int i = getValue(distrFkt);
 			switch (getNumberOfParameters(distrFkt)) {
 			case 3:
-				DocumentManager.setAttribute(colorRef, getP3Name(distrFkt),
+				colorRef.addAttribute(getP3Name(distrFkt),
 						defaultValues[i][2]);
 			case 2:
-				DocumentManager.setAttribute(colorRef, getP2Name(distrFkt),
+				colorRef.addAttribute(getP2Name(distrFkt),
 						defaultValues[i][1]);
 			case 1:
-				DocumentManager.setAttribute(colorRef, getP1Name(distrFkt),
+				colorRef.addAttribute(getP1Name(distrFkt),
 						defaultValues[i][0]);
 			}
 		}
