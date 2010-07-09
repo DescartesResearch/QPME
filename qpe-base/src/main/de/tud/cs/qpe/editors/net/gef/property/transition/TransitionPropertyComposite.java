@@ -47,6 +47,7 @@ import java.util.List;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.XPath;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -102,12 +103,7 @@ public abstract class TransitionPropertyComposite extends
 				.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(SelectionEvent event) {
 						if (!IncidenceFunctionEditorInput.isValid(getModel())) {
-							MessageBox messageBox = new MessageBox(PlatformUI
-									.getWorkbench().getActiveWorkbenchWindow()
-									.getShell(), SWT.ICON_WARNING | SWT.OK);
-							messageBox
-									.setMessage("Before you can open the incidence function editor you must define at least one transition mode and at least one token color in each input and output place of the transition!");
-							messageBox.open();
+							MessageDialog.openWarning(getShell(), "Missing colors and/or modes", "Before you can open the incidence function editor you must define at least one transition mode and at least one token color in each input and output place of the transition!");
 						} else {
 							// Create a new input for the incidence-function
 							// editor.

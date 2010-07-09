@@ -105,7 +105,7 @@ public class TimedTransitionPropertyComposite extends TransitionPropertyComposit
 		gd.horizontalSpan = 2;
 		modeButtonComposite.setLayoutData(gd);
 		addModeButton = new Button(modeButtonComposite, SWT.PUSH);
-		addModeButton.setText("Add mode");
+		addModeButton.setText("Add Mode");
 		addModeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		addModeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -130,7 +130,7 @@ public class TimedTransitionPropertyComposite extends TransitionPropertyComposit
 		});
 
 		delModeButton = new Button(modeButtonComposite, SWT.PUSH);
-		delModeButton.setText("Del mode");
+		delModeButton.setText("Delete Mode");
 		delModeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		delModeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {

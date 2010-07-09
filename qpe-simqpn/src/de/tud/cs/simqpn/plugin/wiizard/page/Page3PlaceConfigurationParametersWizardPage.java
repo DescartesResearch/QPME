@@ -160,24 +160,30 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 						children[i] = placeList.get(i);
 					}
 				} else if ("place".equals(element.getName())) {
-					Element placeMetaAttribute = getMetaAttribute(element);
-					if (placeMetaAttribute != null) {
-						int statsLevel = Integer.parseInt(placeMetaAttribute
-								.attributeValue("statsLevel"));
-						if (statsLevel >= 3) {
-							XPath xpathSelector = DocumentHelper
-									.createXPath("color-refs/color-ref");
-							List colorRefList = xpathSelector
-									.selectNodes(element);
-							children = new Object[colorRefList.size()];
-							for (int i = 0; i < children.length; i++) {
-								if ("queueing-place".equals(element
-										.attributeValue("type"))) {
-									children[i] = colorRefList.get(i);
-								} else {
-									children[i] = new DepositorySettings(
-											getMetaAttribute((Element) colorRefList
-													.get(i)));
+					if("subnet-place".equals(element.attributeValue("type"))) {
+						XPath xpathSelector = DocumentHelper.createXPath("subnet/places/place");
+						List placeList = xpathSelector.selectNodes(element);
+						children = placeList.toArray();
+					} else {
+						Element placeMetaAttribute = getMetaAttribute(element);
+						if (placeMetaAttribute != null) {
+							int statsLevel = Integer.parseInt(placeMetaAttribute
+									.attributeValue("statsLevel"));
+							if (statsLevel >= 3) {
+								XPath xpathSelector = DocumentHelper
+										.createXPath("color-refs/color-ref");
+								List colorRefList = xpathSelector
+										.selectNodes(element);
+								children = new Object[colorRefList.size()];
+								for (int i = 0; i < children.length; i++) {
+									if ("queueing-place".equals(element
+											.attributeValue("type"))) {
+										children[i] = colorRefList.get(i);
+									} else {
+										children[i] = new DepositorySettings(
+												getMetaAttribute((Element) colorRefList
+														.get(i)));
+									}
 								}
 							}
 						}
@@ -227,16 +233,21 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 								.createXPath("places/place");
 						return !xpathSelector.selectNodes(element).isEmpty();
 					} else if ("place".equals(element.getName())) {
-						Element placeMetaAttribute = getMetaAttribute(element);
-						if (placeMetaAttribute != null) {
-							int statsLevel = Integer
-									.parseInt(placeMetaAttribute
-											.attributeValue("statsLevel"));
-							if (statsLevel >= 3) {
-								XPath xpathSelector = DocumentHelper
-										.createXPath("color-refs/color-ref");
-								return !xpathSelector.selectNodes(element)
-										.isEmpty();
+						if("subnet-place".equals(element.attributeValue("type"))) {
+							XPath xpathSelector = DocumentHelper.createXPath("subnet/places/place");
+							return !xpathSelector.selectNodes(element).isEmpty();
+						} else {
+							Element placeMetaAttribute = getMetaAttribute(element);
+							if (placeMetaAttribute != null) {
+								int statsLevel = Integer
+										.parseInt(placeMetaAttribute
+												.attributeValue("statsLevel"));
+								if (statsLevel >= 3) {
+									XPath xpathSelector = DocumentHelper
+											.createXPath("color-refs/color-ref");
+									return !xpathSelector.selectNodes(element)
+											.isEmpty();
+								}
 							}
 						}
 					} else if ("color-ref".equals(element.getName())
@@ -276,7 +287,7 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 							if (columnIndex == 0) {
 								return castedElement.attributeValue("name",
 										"new place");
-							} else if (1 == columnIndex) {
+							} else if ((1 == columnIndex) && !castedElement.attributeValue("type").equals("subnet-place")) {
 								return metaAttribute
 										.attributeValue("statsLevel");
 							}
@@ -361,7 +372,7 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 					Element castedElement = (Element) element;
 					if ("place".equals(castedElement.getName())) {
 						// The name property is the only one not editalbe.
-						if ("statsLevel".equals(property)) {
+						if ("statsLevel".equals(property) && !castedElement.attributeValue("type").equals("subnet-place")) {
 							return true;
 						}
 					}
@@ -381,7 +392,7 @@ public class Page3PlaceConfigurationParametersWizardPage extends BaseWizardPage
 					Element castedElement = (Element) element;
 					if ("place".equals(castedElement.getName())) {
 						// The name property is the only one not editalbe.
-						if ("statsLevel".equals(property)) {
+						if ("statsLevel".equals(property) && !castedElement.attributeValue("type").equals("subnet-place")) {
 							return new Integer(getMetaAttribute(castedElement)
 									.attributeValue("statsLevel"));
 						}

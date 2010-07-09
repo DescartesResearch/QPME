@@ -52,16 +52,15 @@
  *******************************************************************************/
 package de.tud.cs.qpe.editors.net.controller.command;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.dom4j.XPath;
 import org.eclipse.gef.commands.Command;
 
-import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.ConnectionHelper;
+import de.tud.cs.qpe.model.IncidenceFuntionHelper;
+import de.tud.cs.qpe.model.NetHelper;
+import de.tud.cs.qpe.model.TransitionHelper;
 
 /**
  * A command to disconnect (remove) a connection from its endpoints. The command
@@ -73,13 +72,10 @@ public class ConnectionDeleteCommand extends Command {
 
 	/** Connection instance to disconnect. */
 	private final Element connection;
+	
+	private Element transition;
 
-	/** Container the connections are stored in */
-	private Element connectionContainer;
-
-	private List incidenceFunctionConnections;
-
-	private Element incidenceFunctionConnectionsContainer;
+	private List<Element> incidenceFunctionConnections;
 
 	/**
 	 * Create a command that will disconnect a connection from its endpoints.
@@ -98,10 +94,7 @@ public class ConnectionDeleteCommand extends Command {
 	}
 
 	public boolean canExecute() {
-		if("true".equals(connection.attributeValue("locked"))) {
-			return false;
-		}
-		return true;
+		return !ConnectionHelper.isLocked(connection);
 	}
 
 	/*
@@ -109,57 +102,22 @@ public class ConnectionDeleteCommand extends Command {
 	 * 
 	 * @see org.eclipse.gef.commands.Command#execute()
 	 */
-
-	@SuppressWarnings("unchecked")
 	public void execute() {
-		connectionContainer = connection.getParent();
-
 		// Get source and targets.
-		String sourceId = connection.attributeValue("source-id", "");
-		XPath xpathSelector = DocumentHelper.createXPath("//place[@id = '"
-				+ sourceId + "'] | //transition[@id = '" + sourceId + "']");
-		Element sourceElement = (Element) xpathSelector
-				.selectSingleNode(connection);
-
-		String targetId = connection.attributeValue("target-id", "");
-		xpathSelector = DocumentHelper.createXPath("//place[@id = '" + targetId
-				+ "'] | //transition[@id = '" + targetId + "']");
-		Element targetElement = (Element) xpathSelector
-				.selectSingleNode(connection);
+		Element sourceElement = ConnectionHelper.getSource(connection);
+		Element targetElement = ConnectionHelper.getTarget(connection);
 
 		// Find out which one is the transition and which
 		// one is the place.
-		Element transition;
 		Element place;
-		if ("transition".equals(sourceElement.getName())) {
+		if (TransitionHelper.isTransition(sourceElement)) {
 			transition = sourceElement;
 			place = targetElement;
 		} else {
 			transition = targetElement;
 			place = sourceElement;
 		}
-
-		// Save the container element.
-		incidenceFunctionConnectionsContainer = transition
-				.element("connections");
-
-		incidenceFunctionConnections = new ArrayList();
-		// Get all color-refs of the place and remove
-		// all connections in the transition using it
-		// as source or target.
-		xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
-		Iterator colorRefIterator = xpathSelector.selectNodes(place).iterator();
-		while (colorRefIterator.hasNext()) {
-			Element colorRef = (Element) colorRefIterator.next();
-			xpathSelector = DocumentHelper
-					.createXPath("connections/connection[@source-id = '"
-							+ colorRef.attributeValue("id", "")
-							+ "' or @target-id = '"
-							+ colorRef.attributeValue("id", "") + "']");
-			;
-			List connections = xpathSelector.selectNodes(transition);
-			incidenceFunctionConnections.addAll(connections);
-		}
+		incidenceFunctionConnections = IncidenceFuntionHelper.listAllConnectionsFromOrToPlace(transition, place);
 
 		redo();
 	}
@@ -171,14 +129,12 @@ public class ConnectionDeleteCommand extends Command {
 	 */
 	public void redo() {
 		// Remove the connections in the transition.
-		Iterator connectionIterator = incidenceFunctionConnections.iterator();
-		while (connectionIterator.hasNext()) {
-			Element connection = (Element) connectionIterator.next();
-			DocumentManager.removeElement(connection);
+		for(Element con : incidenceFunctionConnections) {
+			IncidenceFuntionHelper.removeConnection(transition, con);
 		}
 
 		// Remove the connection itself.
-		DocumentManager.removeElement(connection);
+		ConnectionHelper.removeConnection(connection);
 	}
 
 	/*
@@ -187,16 +143,12 @@ public class ConnectionDeleteCommand extends Command {
 	 * @see org.eclipse.gef.commands.Command#undo()
 	 */
 	public void undo() {
-		// Readd the connection.
-		DocumentManager.addChild(connectionContainer, connection);
+		// Read the connection.
+		ConnectionHelper.addConnection(NetHelper.getNetOfTransition(transition), connection);
 
-		// Readd the connections in the transition.
-		Iterator connectionIterator = incidenceFunctionConnections.iterator();
-		while (connectionIterator.hasNext()) {
-			Element connection = (Element) connectionIterator.next();
-			DocumentManager.addChild(incidenceFunctionConnectionsContainer,
-					connection);
-			;
+		// Read the connections in the transition.
+		for(Element con : incidenceFunctionConnections) {
+			IncidenceFuntionHelper.addConnection(transition, con);
 		}
 	}
 }

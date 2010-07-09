@@ -106,7 +106,7 @@ public class PlaceTransitionDeleteCommand extends Command {
 	}
 
 	public boolean canExecute() {
-		if("true".equals(child.attributeValue("locked"))) {
+		if(Boolean.valueOf(child.attributeValue("locked", "false"))) {
 			return false;
 		}
 		return true;

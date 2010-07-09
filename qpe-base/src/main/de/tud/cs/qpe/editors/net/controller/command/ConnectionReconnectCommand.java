@@ -53,13 +53,17 @@
  *******************************************************************************/
 package de.tud.cs.qpe.editors.net.controller.command;
 
-import org.dom4j.DocumentHelper;
+import java.util.List;
+
 import org.dom4j.Element;
-import org.dom4j.XPath;
 import org.eclipse.gef.commands.Command;
 
 import de.tud.cs.qpe.editors.net.gef.palette.templates.PlaceTransition;
-import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.ConnectionHelper;
+import de.tud.cs.qpe.model.IncidenceFuntionHelper;
+import de.tud.cs.qpe.model.PlaceHelper;
+import de.tud.cs.qpe.model.SubnetHelper;
+import de.tud.cs.qpe.model.TransitionHelper;
 
 /**
  * A command to reconnect a connection to a different start point or end point.
@@ -105,6 +109,8 @@ public class ConnectionReconnectCommand extends Command {
 
 	/** The original target endpoint. */
 	private final Element oldTarget;
+	
+	private List<Element> oldIncidenceFunctionConnections;
 
 	/**
 	 * Instantiate a command that can reconnect a Connection instance to a
@@ -123,18 +129,8 @@ public class ConnectionReconnectCommand extends Command {
 		this.connection = connection;
 
 		// Get the old source and target elements.
-		XPath xpathSelector = DocumentHelper
-				.createXPath("../../places/place[@id = '"
-						+ connection.attributeValue("source-id")
-						+ "'] | ../../transitions/transition[@id = '"
-						+ connection.attributeValue("source-id") + "']");
-		oldSource = (Element) xpathSelector.selectSingleNode(connection);
-
-		xpathSelector = DocumentHelper.createXPath("../../places/place[@id = '"
-				+ connection.attributeValue("target-id")
-				+ "'] | ../../transitions/transition[@id = '"
-				+ connection.attributeValue("target-id") + "']");
-		oldTarget = (Element) xpathSelector.selectSingleNode(connection);
+		oldSource = ConnectionHelper.getSource(connection);
+		oldTarget = ConnectionHelper.getTarget(connection);
 
 		// Save them as new ones jut to make the query easier.
 		newSource = oldSource;
@@ -149,21 +145,20 @@ public class ConnectionReconnectCommand extends Command {
 	public boolean canExecute() {
 		if ((newSource != null) && (newTarget != null)) {
 			// If a connection allready exists, prevent a new one.
-			XPath xpathSelector = DocumentHelper
-					.createXPath("../../connections/connection[@source-id = '"
-							+ newSource.attributeValue("id")
-							+ "' and @target-id = '"
-							+ newTarget.attributeValue("id") + "']");
-			if (xpathSelector.selectNodes(newSource).size() == 0) {
+			if (!ConnectionHelper.existsConnection(newSource, newTarget)) {
 				// Allow connections from places to transitions.
-				if ("place".equals(newSource.getName())
-						&& "transition".equals(newTarget.getName())) {
-					return true;
+				if (PlaceHelper.isPlace(newSource) && TransitionHelper.isTransition(newTarget)) {
+					// In subnets connections from the output place are not allowed
+					if (!SubnetHelper.isOutputPlace(newSource)) {
+						return true;
+					}
 				}
 				// Allow connections from transitions to places.
-				if ("transition".equals(newSource.getName())
-						&& "place".equals(newTarget.getName())) {
-					return true;
+				if (TransitionHelper.isTransition(newSource) && PlaceHelper.isPlace(newTarget)) {
+					// In subnets connections to the input place are not allowed
+					if (!SubnetHelper.isInputPlace(newTarget)) {
+						return true;
+					}
 				}
 			}
 		}
@@ -176,18 +171,38 @@ public class ConnectionReconnectCommand extends Command {
 	 * before) or newTarget (if setNewTarget(...) was invoked before).
 	 */
 	public void execute() {
-		DocumentManager.setAttribute(connection, "source-id", newSource
-				.attributeValue("id"));
-		DocumentManager.setAttribute(connection, "target-id", newTarget
-				.attributeValue("id"));
+		Element transition;
+		Element place;
+		if(PlaceHelper.isPlace(oldSource)) {
+			transition = oldTarget;
+			place = oldSource;
+		} else {
+			transition = oldSource;
+			place = oldTarget;
+		}
+		ConnectionHelper.setSource(connection, newSource);
+		ConnectionHelper.setTarget(connection, newTarget);
+		oldIncidenceFunctionConnections = IncidenceFuntionHelper.listAllConnectionsFromOrToPlace(transition, place);
+		for(Element con : oldIncidenceFunctionConnections) {
+			IncidenceFuntionHelper.removeConnection(transition, con);
+		}
 	}
 
 	/**
 	 * Reconnect the connection to its original source and target endpoints.
 	 */
 	public void undo() {
-		DocumentManager.setAttribute(connection, "source-id", oldSource.attributeValue("id"));
-		DocumentManager.setAttribute(connection, "target-id", oldTarget.attributeValue("id"));
+		Element transition;
+		if(TransitionHelper.isTransition(oldSource)) {
+			transition = oldSource;
+		} else {
+			transition = oldTarget;
+		}
+		ConnectionHelper.setSource(connection, oldSource);
+		ConnectionHelper.setTarget(connection, oldTarget);
+		for(Element con : oldIncidenceFunctionConnections) {
+			IncidenceFuntionHelper.addConnection(transition, con);
+		}
 	}
 
 	/**

@@ -126,7 +126,8 @@ public class SimQPN {
 						System.out.println();
 						try {
 							net = netDocument.getRootElement();
-							Simulator.configure(net, configuration);							
+							Simulator.configure(net, configuration);
+							net = Simulator.prepareNet(net, configuration);
 							Stats[] result = Simulator.execute(net, configuration, new ConsoleSimulatorProgress());
 							// Skip stats document generation for WELCH and REPL_DEL since the 
 							// document builder does not support these methods yet.

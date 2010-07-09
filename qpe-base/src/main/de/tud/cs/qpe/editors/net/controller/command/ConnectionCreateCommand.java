@@ -53,13 +53,13 @@
  *******************************************************************************/
 package de.tud.cs.qpe.editors.net.controller.command;
 
-import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.dom4j.XPath;
-import org.dom4j.tree.DefaultElement;
 import org.eclipse.gef.commands.Command;
 
-import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.ConnectionHelper;
+import de.tud.cs.qpe.model.PlaceHelper;
+import de.tud.cs.qpe.model.SubnetHelper;
+import de.tud.cs.qpe.model.TransitionHelper;
 
 /**
  * A command to create a connection between two shapes. The command can be
@@ -135,21 +135,20 @@ public class ConnectionCreateCommand extends Command {
 	public boolean canExecute() {
 		if ((source != null) && (target != null)) {
 			// If a connection allready exists, prevent a new one.
-			XPath xpathSelector = DocumentHelper
-					.createXPath("../../connections/connection[@source-id = '"
-							+ source.attributeValue("id")
-							+ "' and @target-id = '"
-							+ target.attributeValue("id") + "']");
-			if (xpathSelector.selectNodes(source).size() == 0) {
+			if (!ConnectionHelper.existsConnection(source, target)) {
 				// Allow connections from places to transitions.
-				if ("places".equals(source.getParent().getName())
-						&& "transitions".equals(target.getParent().getName())) {
-					return true;
+				if (PlaceHelper.isPlace(source) && TransitionHelper.isTransition(target)) {
+					// In subnets connections from the output place are not allowed
+					if (!SubnetHelper.isOutputPlace(source)) {
+						return true;
+					}
 				}
 				// Allow connections from transitions to places.
-				if ("transitions".equals(source.getParent().getName())
-						&& "places".equals(target.getParent().getName())) {
-					return true;
+				if (TransitionHelper.isTransition(source) && PlaceHelper.isPlace(target)) {
+					// In subnets connections to the input place are not allowed
+					if (!SubnetHelper.isInputPlace(target)) {
+						return true;
+					}
 				}
 			}
 		}
@@ -172,14 +171,7 @@ public class ConnectionCreateCommand extends Command {
 	 * @see org.eclipse.gef.commands.Command#redo()
 	 */
 	public void redo() {
-		XPath xpathSelector = DocumentHelper.createXPath("../../connections");
-		Element container = (Element) xpathSelector.selectSingleNode(source);
-		// create a new connection element for this connection
-		// and set it's attributes.
-		connection = new DefaultElement("connection");
-		connection.addAttribute("source-id", source.attributeValue("id"));
-		connection.addAttribute("target-id", target.attributeValue("id"));
-		DocumentManager.addChild(container, connection);
+		connection = ConnectionHelper.createConnection(source, target);
 	}
 
 	/*
@@ -189,8 +181,6 @@ public class ConnectionCreateCommand extends Command {
 	 */
 
 	public void undo() {
-		// Remove the connection element from its
-		// container.
-		DocumentManager.removeElement(connection);
+		ConnectionHelper.removeConnection(connection);
 	}
 }

@@ -43,14 +43,10 @@ package de.tud.cs.qpe.editors.net;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 
-import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.dom4j.XPath;
 import org.dom4j.tree.DefaultElement;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CellEditor;
@@ -86,6 +82,7 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IEditorInput;
 
 import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.NetHelper;
 import de.tud.cs.qpe.utils.ColorHelper;
 import de.tud.cs.qpe.utils.ITableLabelColorProvider;
 
@@ -131,8 +128,7 @@ public class ColorEditorPage extends Composite implements PropertyChangeListener
 	}
 
 	public void updatePropertyFields() {
-		XPath xpathSelector = DocumentHelper.createXPath("./colors/color");
-		List colors = xpathSelector.selectNodes(model);
+		List<Element> colors = NetHelper.listColors(model);
 		colorTableViewer.setInput(colors);
 		delColorButton.setEnabled(colorTable.getSelectionIndex() != -1);
 	}
@@ -142,11 +138,8 @@ public class ColorEditorPage extends Composite implements PropertyChangeListener
 		// This way fast checks for name duplicates can be performed.
 		HashSet<String> nameIndex = new HashSet<String>();
 
-
-		XPath xpathSelector = DocumentHelper.createXPath("./colors/color");
-		Iterator colorIterator = xpathSelector.selectNodes(model).iterator();
-		while (colorIterator.hasNext()) {
-			Element color = (Element) colorIterator.next();
+		List<Element> colors = NetHelper.listColors(model);
+		for (Element color : colors) {
 			nameIndex.add(color.attributeValue("name"));
 		}
 
@@ -183,18 +176,18 @@ public class ColorEditorPage extends Composite implements PropertyChangeListener
 		gd.horizontalSpan = 2;
 		colorButtonComposite.setLayoutData(gd);
 		addColorButton = new Button(colorButtonComposite, SWT.PUSH);
-		addColorButton.setText("Add color");
+		addColorButton.setText("Add Color");
 		addColorButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		addColorButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				Element newColor = createColor();
-				DocumentManager.addChild(model.element("colors"), newColor);
+				NetHelper.addColor(model, newColor);
 				updatePropertyFields();
 			}
 		});
 
 		delColorButton = new Button(colorButtonComposite, SWT.PUSH);
-		delColorButton.setText("Del color");
+		delColorButton.setText("Delete Color");
 		delColorButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		delColorButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -203,37 +196,14 @@ public class ColorEditorPage extends Composite implements PropertyChangeListener
 				// Check if the color is used. If yes, show a dialog asking the
 				// user if he is sure. If yes then all usages of this collor
 				// have to be removed.
-				XPath xpathSelector = DocumentHelper.createXPath("//color-ref[@color-id = '" + color.attributeValue("id") + "']");
-				if (xpathSelector.selectSingleNode(model.getDocument()) != null) {
-					MessageBox messageBox = new MessageBox(colorTable.getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
-					messageBox
-							.setMessage("The Color you are trying to remove is beeing used in the current net. Are you sure you want it to be removed? Removing this color will couse the removal of all element using it. This process is irreversable.");
-					int buttonId = messageBox.open();
-					if (buttonId == SWT.YES) {
-						// Remove the color.
-						DocumentManager.removeElement(color);
-
-						// Remove all references to that color.
-						xpathSelector = DocumentHelper.createXPath("//color-ref[@color-id = '" + color.attributeValue("id") + "']");
-						Iterator colorRefItarator = xpathSelector.selectNodes(model).iterator();
-						while (colorRefItarator.hasNext()) {
-							Element colorRef = (Element) colorRefItarator.next();
-							DocumentManager.removeElement(colorRef);
-
-							// Remove all usages of the deleted color refs in
-							// any incidence-function.
-							xpathSelector = DocumentHelper.createXPath("//connection[@source-id = '" + colorRef.attributeValue("id") + "' or @target-id = '"
-									+ colorRef.attributeValue("id") + "']");
-							Iterator incidenceFunctionConnectionIterator = xpathSelector.selectNodes(model).iterator();
-							while (incidenceFunctionConnectionIterator.hasNext()) {
-								Element incidenceFunctionConnection = (Element) incidenceFunctionConnectionIterator.next();
-								DocumentManager.removeElement(incidenceFunctionConnection);
-							}
-						}
-
+				if (NetHelper.isColorReferencedInNet(model, color)) {
+					boolean result = MessageDialog.openConfirm(getShell(), "Color References", "The Color you are trying to remove is referenced in the current net. Are you sure you want it to be removed? Removing this color will cause the removal of all its references. This process is irreversible.");
+					if (result) {
+						// Remove the color and all of its references.
+						NetHelper.removeColor(model, color);
 					}
 				} else {
-					model.element("colors").remove(color);
+					NetHelper.removeColor(model, color);
 				}
 
 				updatePropertyFields();
@@ -409,8 +379,7 @@ public class ColorEditorPage extends Composite implements PropertyChangeListener
 				switch (index) {
 				case 0:
 					if (!color.attributeValue("name").equals(value)) {
-						XPath xpathSelector = DocumentHelper.createXPath("count(./colors/color[@name='" + value.toString() + "']) = 0");
-						if(xpathSelector.booleanValueOf(model)) {
+						if(!NetHelper.existsColorWithName(model, value.toString())) {
 							DocumentManager.setAttribute(color, "name", (String) value);
 						} else {
 							MessageDialog.openError(getShell(), "Duplicate color names", "Another color with this name already exists.");

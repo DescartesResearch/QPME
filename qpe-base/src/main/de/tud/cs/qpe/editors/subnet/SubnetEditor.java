@@ -55,7 +55,10 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.ISelectionListener;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.MultiPageEditorPart;
@@ -86,7 +89,7 @@ public class SubnetEditor extends MultiPageEditorPart implements
 			throw new PartInitException(
 					"Invalid Input: Must be SubnetEditorInput");
 
-		this.setPartName(((SubnetEditorInput) editorInput).getSubnet().attributeValue("name", "new transition"));
+		this.setPartName(((SubnetEditorInput) editorInput).getName());
 		super.init(site, editorInput);
 
 		// Add editor as listener to modifications of the
@@ -146,34 +149,39 @@ public class SubnetEditor extends MultiPageEditorPart implements
 		DocumentManager.removePropertyChangeListener(((SubnetEditorInput) this.getEditorInput()).getDocument().getRootElement(), this);
 		// Close all incidence function for this net when closing
 		// the nets main editor.
-		SubnetEditorInput curNetEditorInput = (SubnetEditorInput) this
-				.getEditorInput();
-		String curEditorNetId = curNetEditorInput.getDocument()
-				.getRootElement().attributeValue("event-manager-id");
-
-		IEditorReference[] editors = PlatformUI.getWorkbench()
-				.getActiveWorkbenchWindow().getActivePage()
-				.getEditorReferences();
-		for (int i = 0; i < editors.length; i++) {
-			try {
-				IEditorInput editorInput = editors[i].getEditorInput();
-				if (editors[i].getEditor(false) instanceof CloseableEditor) {
-					if (editorInput instanceof SubnetEditorInput) {
-						SubnetEditorInput input = (SubnetEditorInput) editorInput;
-						String editorInputId = input.getDocument()
-								.getRootElement().attributeValue(
-										"event-manager-id");
-						if (curEditorNetId.equals(editorInputId)
-								&& (curNetEditorInput != editorInput)) {
-							CloseableEditor closeableEditor = (CloseableEditor) editors[i]
-									.getEditor(false);
-							closeableEditor.close(false);
-						}
-					}
-				}
-			} catch (PartInitException e) {
-			}
-		}
+		// TODO: Only close subnet and incidence function editors that are children of the current subnet editor.
+//		SubnetEditorInput curNetEditorInput = (SubnetEditorInput) this
+//				.getEditorInput();
+//		String curEditorNetId = curNetEditorInput.getDocument()
+//				.getRootElement().attributeValue("event-manager-id");
+//
+//		IWorkbenchWindow activeWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+//		if (activeWindow != null) {
+//			IWorkbenchPage activePage = activeWindow.getActivePage();
+//			if (activePage != null) {
+//				IEditorReference[] editors = activePage.getEditorReferences();
+//				for (int i = 0; i < editors.length; i++) {
+//					try {
+//						IEditorInput editorInput = editors[i].getEditorInput();
+//						if (editors[i].getEditor(false) instanceof CloseableEditor) {
+//							if (editorInput instanceof SubnetEditorInput) {
+//								SubnetEditorInput input = (SubnetEditorInput) editorInput;
+//								String editorInputId = input.getDocument()
+//										.getRootElement().attributeValue(
+//												"event-manager-id");
+//								if (curEditorNetId.equals(editorInputId)
+//										&& (curNetEditorInput != editorInput)) {
+//									CloseableEditor closeableEditor = (CloseableEditor) editors[i]
+//											.getEditor(false);
+//									closeableEditor.close(false);
+//								}
+//							}
+//						}
+//					} catch (PartInitException e) {
+//					}
+//				}
+//			}
+//		}
 	}
 
 	public boolean isDirty() {

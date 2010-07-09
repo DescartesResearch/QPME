@@ -126,10 +126,7 @@ public class IncidenceFunctionEditor extends GraphicalEditorWithFlyoutPalette im
 
 		IncidenceFunctionEditorInput input = (IncidenceFunctionEditorInput) editorInput;
 		incidenceFunction = input.getIncidenceFunction();
-
-		File docFile = new File(incidenceFunction.getDocument().getRootElement().attributeValue("path", "new document.qpe"));
-		String name = docFile.getName().substring(0, docFile.getName().length() - 4) + ":" + incidenceFunction.attributeValue("name", "new transition");
-		this.setPartName(name);
+		this.setPartName(input.getName());
 		
 		super.init(site, editorInput);
 	}

@@ -87,8 +87,10 @@ package de.tud.cs.simqpn.kernel;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -100,10 +102,18 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
 
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamSource;
+
 import org.dom4j.Attribute;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.XPath;
+import org.dom4j.io.DocumentResult;
+import org.dom4j.io.DocumentSource;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.XMLWriter;
 
 import cern.jet.random.AbstractContinousDistribution;
 import cern.jet.random.Beta;
@@ -389,6 +399,50 @@ public class Simulator {
 		// END-CONFIG
 		// ------------------------------------------------------------------------------------------------------
 	}
+	
+	/**
+	 * Prepares the net for simulation. Should be called after Simulator.configure and
+	 * before Simulator.execute
+	 */
+	public static Element prepareNet(Element net, String configuration) throws SimQPNException {
+		Element result = net;
+		XPath xpathSelector = DocumentHelper.createXPath("//place[@type = 'subnet-place']");
+		if(xpathSelector.selectSingleNode(net) != null) {
+			try {
+				// There are subnet-places in the net; replace the subnet place by their subnet
+				InputStream xslt = Simulator.class.getResourceAsStream("/de/tud/cs/simqpn/transforms/hqpn_transform.xsl");
+				TransformerFactory transformFactory = TransformerFactory.newInstance();
+				Transformer hqpnTransform = transformFactory.newTransformer(new StreamSource(xslt));
+				DocumentSource source = new DocumentSource(net.getDocument());
+				DocumentResult flattenNet = new DocumentResult();
+				hqpnTransform.transform(source, flattenNet);
+				result = flattenNet.getDocument().getRootElement();
+				
+				// Save the transformed net to disk for debug purposes
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HHmmssS");
+				File f = new File(Simulator.statsDir, "SimQPN_FlatHQPN_" + configuration + "_" + dateFormat.format(new Date()) + ".qpe");
+				XMLWriter writer = null;
+				try {
+					writer = new XMLWriter(new FileOutputStream(f), OutputFormat.createPrettyPrint());
+					writer.write(result.getDocument());
+				} catch (IOException e) {
+					e.printStackTrace();
+				} finally {
+					if (writer != null) {
+						try {
+							writer.close();
+						} catch (IOException e) {
+						}
+					}
+				}
+			} catch (Exception e) {
+				Simulator.logln("ERROR: Could not merge subnets into a flattened net.");
+				e.printStackTrace();
+				throw new SimQPNException();
+			}
+		}			
+		return result;
+	}
 
 	/**
 	 * Method execute - executes the simulation run
@@ -403,7 +457,7 @@ public class Simulator {
 		// CHRIS: Not done yet
 
 		Stats[] result = null;
-
+		
 		simRunning = true;
 		// NOTE: In the following, if the simulation is interrupted, simRunning should be reset. 		  
 				
@@ -428,7 +482,7 @@ public class Simulator {
 				logln("Error: Transition priorities currently not supported (Set to 0 for all places)");
 				throw new SimQPNException();
 			}
-		
+			
 			if (runMode == NORMAL) {
 				if (analMethod == BATCH_MEANS) { // Method of non-overlapping batch means
 					SimulatorResults results = runBatchMeans(net, configuration, monitor);

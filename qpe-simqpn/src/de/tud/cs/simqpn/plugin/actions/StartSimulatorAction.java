@@ -259,8 +259,9 @@ public class StartSimulatorAction extends Action implements
 			monitor.setTaskName("Simulation");
 			try {
 				monitor.subTask("Configure Simulator");
+				
 				Simulator.configure(net, configuration);
-
+				net = Simulator.prepareNet(net, configuration);
 				Stats[] result = Simulator.execute(net, configuration, this);
 				
 				// Skip stats document generation for WELCH and REPL_DEL since the 

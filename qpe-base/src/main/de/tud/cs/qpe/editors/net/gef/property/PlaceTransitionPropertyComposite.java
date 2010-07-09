@@ -116,7 +116,6 @@ public abstract class PlaceTransitionPropertyComposite extends Composite impleme
 				}
 			}
 		});
-
 		this.layout();
 	}
 
@@ -138,6 +137,7 @@ public abstract class PlaceTransitionPropertyComposite extends Composite impleme
 
 	protected void updatePropertyFields() {
 		if (getModel() != null) {
+			name.setEnabled(!Boolean.valueOf(getModel().attributeValue("locked", "false")));
 			if(!name.getText().equals(getModel().attributeValue("name", "unamed-element"))) {
 				name.setText(getModel().attributeValue("name", "unamed-element"));
 			}

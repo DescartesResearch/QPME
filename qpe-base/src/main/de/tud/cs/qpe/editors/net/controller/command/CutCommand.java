@@ -51,6 +51,8 @@ import org.dom4j.Element;
 import org.dom4j.XPath;
 import org.eclipse.jface.viewers.StructuredSelection;
 
+import de.tud.cs.qpe.editors.net.controller.editpart.editor.ConnectionEditPart;
+import de.tud.cs.qpe.editors.net.controller.editpart.editor.PlaceTransitionEditPart;
 import de.tud.cs.qpe.model.DocumentManager;
 
 public class CutCommand extends CopyCommand {
@@ -62,21 +64,25 @@ public class CutCommand extends CopyCommand {
 	public CutCommand(StructuredSelection selection) {
 		super(selection);
 	}
-
+	
 	public void execute() {
 		// Copy the selection.
 		super.execute();
 		
-		// Remove the elements.
+		// Remove the elements (but only if they are not locked. If locked just copy them).
 		Iterator placeIterator = places.iterator();
 		while (placeIterator.hasNext()) {
 			Element place = (Element) placeIterator.next();
-			removedElements.put(place, place.getParent());
+			if (!Boolean.valueOf(place.attributeValue("locked", "false"))) {
+				removedElements.put(place, place.getParent());
+			}
 		}
 		Iterator transitionIterator = transitions.iterator();
 		while (transitionIterator.hasNext()) {
 			Element transition = (Element) transitionIterator.next();
-			removedElements.put(transition, transition.getParent());
+			if (!Boolean.valueOf(transition.attributeValue("locked", "false"))) {
+				removedElements.put(transition, transition.getParent());
+			}
 		}
 		
 		sourceDocument = removedElements.keySet().iterator().next().getDocument();

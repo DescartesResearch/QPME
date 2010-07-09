@@ -46,9 +46,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.dom4j.DocumentHelper;
+import org.dom4j.Attribute;
 import org.dom4j.Element;
-import org.dom4j.XPath;
 import org.dom4j.tree.DefaultElement;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ICellModifier;
@@ -81,12 +80,194 @@ import org.eclipse.swt.widgets.TableItem;
 
 import de.tud.cs.qpe.editors.net.gef.property.PlaceTransitionPropertyComposite;
 import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.NetHelper;
+import de.tud.cs.qpe.model.PlaceHelper;
+import de.tud.cs.qpe.model.SubnetHelper;
 import de.tud.cs.qpe.utils.ColorCellEditor;
 import de.tud.cs.qpe.utils.ColorHelper;
 import de.tud.cs.qpe.utils.ITableLabelColorProvider;
+import de.tud.cs.qpe.utils.IdGenerator;
 import de.tud.cs.qpe.utils.IntegerCellEditor;
 
 public abstract class PlacePropertyComposite extends PlaceTransitionPropertyComposite {
+	
+	protected class ColorTableCellModifier implements ICellModifier {
+		public boolean canModify(Object element, String property) {
+			// If this is an input/actualpopulation/output place of a subnet, colors
+			// cannot be modified.
+			if (SubnetHelper.isRestrictedPlace(getModel())) {
+				return false;
+			}			
+			
+			if ("Color".equals(property)) {
+				return !unusedColors.isEmpty();
+			}
+			return true;
+		}
+
+		public Object getValue(Object element, String property) {
+			// Get the index first.
+			int index = -1;
+			for (int i = 0; i < columnNames.length; i++) {
+				if (columnNames[i].equals(property)) {
+					index = i;
+					break;
+				}
+			}
+
+			// Get the color-ref element representing
+			// the color-ref beeing edited.
+			Element colorRef = getColorReference(element);
+			Element color = NetHelper.getColorByReference(getModel(), colorRef);
+			
+			return getValue(index, colorRef, color);
+		}
+		
+		protected Object getValue(int colIndex, Element colorRef, Element color) {
+			switch (colIndex) {
+			case 0:
+				// Update the color-cell-editor.
+				List<Element> items = new ArrayList<Element>();
+				items.add(color);
+				items.addAll(unusedColors);
+				if (colorCellEditor != null) {
+					colorCellEditor.setItems(items);
+					colorCellEditor.setValue(color);
+				}
+				return color;
+			case 1:
+				return (Integer) Integer.parseInt(colorRef.attributeValue("initial-population", "0"));
+			case 2:
+				return (Integer) Integer.parseInt(colorRef.attributeValue("maximum-capacity", "0"));
+			}
+
+			return null;
+		}
+
+		public void modify(Object element, String property, Object value) {
+			// Get the index first. The index specifies
+			// which attribute is edited.
+			int index = -1;
+			for (int i = 0; i < columnNames.length; i++) {
+				if (columnNames[i].equals(property)) {
+					index = i;
+					break;
+				}
+			}
+
+			// Get the color-ref element representing
+			// the color-ref beeing edited.
+			Element colorRef = getColorReference(element);
+
+			// We have to save this, in case the color-id has changed, so 
+			// the update-methods know what was changed.
+			String oldColorId = colorRef.attributeValue("color-id");
+			
+			modify(index, colorRef, value);
+
+			colorTableViewer.update(colorRef, null);
+			
+			colorRefModified(oldColorId, colorRef);
+		}
+		
+		protected void modify(int colIndex, Element colorRef, Object value) {
+			int iValue;
+			switch (colIndex) {
+			case 0:
+				Element color = (Element) value;
+				DocumentManager.setAttribute(colorRef, "color-id", color.attributeValue("id"));
+
+				// If a color-setting inside a color-ref has
+				// changed, then the colorCellEditor has to
+				// be updated.
+				updateUsedColors();
+
+				// Since Eclipe does lasy instantiation we can't be sure
+				// that the cellEditor allready exists.
+				updateUnusedColors();
+
+				if (colorCellEditor != null) {
+					colorCellEditor.setItems(unusedColors);
+				}
+
+				break;
+			case 1:
+				iValue = ((Integer) value).intValue();
+				if(iValue >= 0) {
+					DocumentManager.setAttribute(colorRef, "initial-population", ((Integer) value).toString());
+				}
+				break;
+			case 2:
+				iValue = ((Integer) value).intValue();
+				if(iValue >= 0) {
+					DocumentManager.setAttribute(colorRef, "maximum-capacity", ((Integer) value).toString());
+				}
+				break;
+			}
+		}
+	}
+	
+	protected class ColorTableLabelProvider implements ITableLabelColorProvider {
+		public void dispose() {
+		}
+
+		public Image getColumnImage(Object element, int columnIndex) {
+			return null;
+		}
+
+		public String getColumnText(Object element, int columnIndex) {
+			// Get the color-ref element representing
+			// the color-ref beeing edited.
+			Element colorRef = getColorReference(element);
+			Element color = NetHelper.getColorByReference(getModel(), colorRef);
+
+			return getColumnText(colorRef, color, columnIndex);
+		}
+		
+		protected String getColumnText(Element colorRef, Element color, int columnIndex) {
+			switch (columnIndex) {
+			case 0:
+				if (color != null) {
+					return color.attributeValue("name", "new color");
+				}
+			case 1:
+				return colorRef.attributeValue("initial-population", "0");
+			case 2:
+				return colorRef.attributeValue("maximum-capacity", "0");
+			}
+			return null;
+		}
+
+		public void addListener(ILabelProviderListener listener) {
+		}
+
+		public void removeListener(ILabelProviderListener listener) {
+		}
+
+		public boolean isLabelProperty(Object element, String property) {
+			return false;
+		}
+
+		public org.eclipse.swt.graphics.Color getForeground(Object element, int columnIndex) {
+			if (SubnetHelper.isRestrictedPlace(getModel())) {
+				return new Color(null, 180, 180, 180);
+			}
+			return null;
+		}
+
+		public org.eclipse.swt.graphics.Color getBackground(Object element, int columnIndex) {
+			if (columnIndex == 0) {
+				Element colorRef = getColorReference(element);
+				Element color = NetHelper.getColorByReference(getModel(), colorRef);
+				
+				if (color != null) {
+					return new Color(null, ColorHelper.getRGBFromString(color.attributeValue("real-color", "#ffffff")));
+				}
+			}
+			return null;
+		}
+	}
+	
 	protected Combo departureDiscipline;
 
 	protected Table colorTable;
@@ -116,19 +297,15 @@ public abstract class PlacePropertyComposite extends PlaceTransitionPropertyComp
 		if (getModel() != null) {
 			// Iterate through all colors of this
 			// net and all it's parent nets.
-			XPath xpathSelector = DocumentHelper.createXPath("ancestor::*/colors/color");
-			Iterator colorIterator = xpathSelector.selectNodes(getModel()).iterator();
-			while (colorIterator.hasNext()) {
-				Element color = (Element) colorIterator.next();
-
+			List<Element> visibleColors = PlaceHelper.listVisibleColors(getModel());
+			for (Element color : visibleColors) {
 				// Check if the current color is referenced
 				// by the current element. If it is, put it
 				// into the used-list, otherwise into the
 				// unused-list, which is used for populating
 				// the drop-down-lists.
 				String colorId = color.attributeValue("id");
-				xpathSelector = DocumentHelper.createXPath("color-ref[@color-id = '" + colorId + "']");
-				if (xpathSelector.selectSingleNode(model) == null) {
+				if (!PlaceHelper.existsColorReferenceForColorId(getModel(), colorId)) {
 					unusedColors.add(color);
 				} else {
 					usedColors.add(color);
@@ -144,17 +321,22 @@ public abstract class PlacePropertyComposite extends PlaceTransitionPropertyComp
 
 		if (getModel() != null) {
 			departureDiscipline.setText((String) getModel().attributeValue("departure-discipline", "NORMAL"));
+			departureDiscipline.setEnabled(!PlaceHelper.isLocked(getModel()));
 			// Set the input of the color table.
-			XPath xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
-			colorTableViewer.setInput(xpathSelector.selectNodes(getModel()));
+			colorTableViewer.setInput(PlaceHelper.listColorReferences(getModel()));
 
-			// Only if an entry is selected, the
-			// delete button will be enabled.
-			delColorButton.setEnabled(colorTable.getSelectionIndex() != -1);
-
-			// Only if the color-list is not empty, we are
-			// allowerd to add a color.
-			addColorButton.setEnabled((unusedColors != null) && !unusedColors.isEmpty());
+			if (SubnetHelper.isRestrictedPlace(getModel())) {
+				delColorButton.setEnabled(false);
+				addColorButton.setEnabled(false);
+			} else {
+				// Only if an entry is selected, the
+				// delete button will be enabled.
+				delColorButton.setEnabled(colorTable.getSelectionIndex() != -1);
+	
+				// Only if the color-list is not empty, we are
+				// allowerd to add a color.
+				addColorButton.setEnabled((unusedColors != null) && !unusedColors.isEmpty());
+			}
 		}
 	}
 
@@ -164,9 +346,8 @@ public abstract class PlacePropertyComposite extends PlaceTransitionPropertyComp
 			// Add the listeners to the colors referneced by the new color-refs.
 			Iterator inputIterator = ((List) colorTableViewer.getInput()).iterator();
 			while (inputIterator.hasNext()) {
-				Element entry = (Element) inputIterator.next();
-				XPath xpathSelector = DocumentHelper.createXPath("//color[@id = '" + entry.attributeValue("color-id") + "']");
-				Element color = (Element) xpathSelector.selectSingleNode(entry);
+				Element colorRef = (Element) inputIterator.next();
+				Element color = NetHelper.getColorByReference(getModel(), colorRef);
 				DocumentManager.addPropertyChangeListener(color, this);
 			}
 		}
@@ -179,13 +360,12 @@ public abstract class PlacePropertyComposite extends PlaceTransitionPropertyComp
 			// Remove the listeners from the old elements.
 			Iterator inputIterator = ((List) colorTableViewer.getInput()).iterator();
 			while (inputIterator.hasNext()) {
-				Element entry = (Element) inputIterator.next();
-				XPath xpathSelector = DocumentHelper.createXPath("//color[@id = '" + entry.attributeValue("color-id") + "']");
+				Element colorRef = (Element) inputIterator.next();
 				// TIP: If the current element is deactivated because it is
 				// deleted,
 				// then we have to get the original document it one beolnged
 				// to or the XPath will return no result.
-				Element color = (Element) xpathSelector.selectSingleNode(DocumentManager.getDocumentRoot(entry));
+				Element color = NetHelper.getColorByReference(DocumentManager.getDocumentRoot(colorRef), colorRef);
 				DocumentManager.removePropertyChangeListener(color, this);
 			}
 		}
@@ -203,6 +383,7 @@ public abstract class PlacePropertyComposite extends PlaceTransitionPropertyComp
 				String newValue = PlacePropertyComposite.this.departureDiscipline.getText();
 				if (!oldValue.equals(newValue)) {
 					DocumentManager.setAttribute(getModel(), "departure-discipline", newValue);
+					departureDisciplineModified(oldValue, newValue);
 				}
 			}
 		});
@@ -225,33 +406,18 @@ public abstract class PlacePropertyComposite extends PlaceTransitionPropertyComp
 		gd.horizontalSpan = 2;
 		colorButtonComposite.setLayoutData(gd);
 		addColorButton = new Button(colorButtonComposite, SWT.PUSH);
-		addColorButton.setText("Add color-ref");
+		addColorButton.setText("Add Color-Ref");
 		addColorButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		addColorButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				if (!unusedColors.isEmpty()) {
-					Element colorRefContainer = getModel().element("color-refs");
-					if (colorRefContainer == null) {
-						colorRefContainer = getModel().addElement("color-refs");
-					}
-					// Create a new color-ref.
-					Element colorRef = new DefaultElement("color-ref");
-
-					// Set the new Color-Ref to the first color in the list.
-					colorRef.addAttribute("color-id", (String) unusedColors.get(0).attributeValue("id"));
-
-					// Set the default attributes.
-					colorRef.addAttribute("initial-population", "0");
-					colorRef.addAttribute("maximum-capacity", "0");
-
-					// Add the color-ref to the current place.
-					DocumentManager.addChild(colorRefContainer, colorRef);
+					Element colorRef = createColorReference();
+				
+					PlaceHelper.addColorReference(getModel(), colorRef);
 
 					// Register as listener for chages to the referenced color.
-					XPath xpathSelector = DocumentHelper.createXPath("//color[@id = '" + colorRef.attributeValue("color-id") + "']");
-
 					// TODO: Something is going wrong here when adding colors to a place.
-					Element color = (Element) xpathSelector.selectSingleNode(colorRef);
+					Element color = NetHelper.getColorByReference(getModel(), colorRef);
 					DocumentManager.addPropertyChangeListener(color, PlacePropertyComposite.this);
 
 					// Update the visuals.
@@ -263,7 +429,7 @@ public abstract class PlacePropertyComposite extends PlaceTransitionPropertyComp
 		});
 
 		delColorButton = new Button(colorButtonComposite, SWT.PUSH);
-		delColorButton.setText("Del color-ref");
+		delColorButton.setText("Delete Color-Ref");
 		delColorButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		delColorButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -271,27 +437,35 @@ public abstract class PlacePropertyComposite extends PlaceTransitionPropertyComp
 				int selectionIndex = colorTable.getSelectionIndex();
 
 				// Get the color-ref with the selected index.
-				XPath xpathSelector = DocumentHelper.createXPath("color-refs/color-ref[" + Integer.toString(selectionIndex + 1) + "]");
-				Element colorRef = (Element) xpathSelector.selectSingleNode(getModel());
+				Element colorRef = PlaceHelper.getColorReferenceByIndex(getModel(), selectionIndex);
 
 				// Unregister as listener for chages to the referenced color.
-				xpathSelector = DocumentHelper.createXPath("//color[@id = '" + colorRef.attributeValue("color-id") + "']");
-				Element color = (Element) xpathSelector.selectSingleNode(colorRef);
+				Element color = NetHelper.getColorByReference(getModel(), colorRef);
 				DocumentManager.removePropertyChangeListener(color, PlacePropertyComposite.this);
 
-				// TODO: remove all connections in the Incidence-Function using
-				// the current color-ref.
-				
 				colorRefRemoved(colorRef);
 				
-				// Remove the selected colorRef from the current node.
-				DocumentManager.removeElement(colorRef);
+				PlaceHelper.removeColorReference(getModel(), colorRef);
 
 				// Update the visuals.
 				updatePropertyFields();
 			}
 		});
 		colorButtonComposite.layout();
+	}
+	
+	protected Element createColorReference() {
+		// Create a new color-ref.
+		Element colorRef = new DefaultElement("color-ref");
+
+		// Set the new Color-Ref to the first color in the list.
+		colorRef.addAttribute("color-id", (String) unusedColors.get(0).attributeValue("id"));
+
+		// Set the default attributes.
+		colorRef.addAttribute("initial-population", "0");
+		colorRef.addAttribute("maximum-capacity", "0");
+		
+		return colorRef;		
 	}
 
 	protected void initTable() {
@@ -304,13 +478,27 @@ public abstract class PlacePropertyComposite extends PlaceTransitionPropertyComp
 
 		initTableColumns();
 		initTableViewer();
-		initCellEditors();
+		ArrayList<CellEditor> editors = initCellEditors();
+		colorTableViewer.setCellEditors(editors.toArray(new CellEditor[editors.size()]));
 
 		// Add a listener updating the delete-buttons
 		// enabled state when another item is selected.
 		colorTableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent e) {
-				delColorButton.setEnabled(colorTable.getSelectionIndex() != -1);
+				if (SubnetHelper.isRestrictedPlace(getModel())) {
+					// If this is a restricted place in a subnet, only color references to locally defined
+					// colors can be deleted.
+					TableItem[] selection = colorTable.getSelection();
+					if (selection.length == 1) {
+						Element colorRef = (Element)selection[0].getData();
+						Element subnet = SubnetHelper.getSubnetOfPlace(getModel());
+						delColorButton.setEnabled(SubnetHelper.isColorLocallyDefined(subnet, colorRef.attributeValue("color-id")));
+					} else {
+						delColorButton.setEnabled(false);
+					}
+				} else {
+					delColorButton.setEnabled(colorTable.getSelectionIndex() != -1);
+				}
 			}
 		});
 
@@ -364,182 +552,21 @@ public abstract class PlacePropertyComposite extends PlaceTransitionPropertyComp
 	}
 
 	protected void initLabelProvider() {
-		colorTableViewer.setLabelProvider(new ITableLabelColorProvider() {
-			public void dispose() {
-			}
-
-			public Image getColumnImage(Object element, int columnIndex) {
-				return null;
-			}
-
-			public String getColumnText(Object element, int columnIndex) {
-				Element colorRef = (Element) element;
-				String colorId = colorRef.attributeValue("color-id");
-				XPath xpathSelector = DocumentHelper.createXPath("//color[@id = '" + colorId + "']");
-				Element color = (Element) xpathSelector.selectSingleNode(getModel());
-
-				switch (columnIndex) {
-				case 0:
-					if (color != null) {
-						return color.attributeValue("name", "new color");
-					}
-				case 1:
-					return colorRef.attributeValue("initial-population", "0");
-				case 2:
-					return colorRef.attributeValue("maximum-capacity", "0");
-				}
-				return null;
-			}
-
-			public void addListener(ILabelProviderListener listener) {
-			}
-
-			public void removeListener(ILabelProviderListener listener) {
-			}
-
-			public boolean isLabelProperty(Object element, String property) {
-				return false;
-			}
-
-			public org.eclipse.swt.graphics.Color getForeground(Object element, int columnIndex) {
-				return null;
-			}
-
-			public org.eclipse.swt.graphics.Color getBackground(Object element, int columnIndex) {
-				if (columnIndex == 0) {
-					Element colorRef = (Element) element;
-					XPath xpathSelector = DocumentHelper.createXPath("//color[@id = '" + colorRef.attributeValue("color-id") + "']");
-					Element color = (Element) xpathSelector.selectSingleNode(colorRef);
-					if (color != null) {
-						return new Color(null, ColorHelper.getRGBFromString(color.attributeValue("real-color", "#ffffff")));
-					}
-				}
-				return null;
-			}
-		});
+		colorTableViewer.setLabelProvider(new ColorTableLabelProvider());
 	}
 
 	protected void initCellModifier() {
-		colorTableViewer.setCellModifier(new ICellModifier() {
-			public boolean canModify(Object element, String property) {
-				if ("Color".equals(property)) {
-					return !unusedColors.isEmpty();
-				}
-				return true;
-			}
-
-			public Object getValue(Object element, String property) {
-				// Get the index first.
-				int index = -1;
-				for (int i = 0; i < columnNames.length; i++) {
-					if (columnNames[i].equals(property)) {
-						index = i;
-						break;
-					}
-				}
-
-				Element colorRef = (Element) element;
-				String colorId = colorRef.attributeValue("color-id");
-				XPath xpathSelector = DocumentHelper.createXPath("//color[@id = '" + colorId + "']");
-				Element color = (Element) xpathSelector.selectSingleNode(getModel());
-
-				switch (index) {
-				case 0:
-					// Update the color-cell-editor.
-					List<Element> items = new ArrayList<Element>();
-					items.add(color);
-					items.addAll(unusedColors);
-					if (colorCellEditor != null) {
-						colorCellEditor.setItems(items);
-						colorCellEditor.setValue(color);
-					}
-					return color;
-				case 1:
-					return (Integer) Integer.parseInt(colorRef.attributeValue("initial-population", "0"));
-				case 2:
-					return (Integer) Integer.parseInt(colorRef.attributeValue("maximum-capacity", "0"));
-				}
-
-				return null;
-			}
-
-			public void modify(Object element, String property, Object value) {
-				// Get the index first. The index specifies
-				// which attribute is edited.
-				int index = -1;
-				for (int i = 0; i < columnNames.length; i++) {
-					if (columnNames[i].equals(property)) {
-						index = i;
-						break;
-					}
-				}
-
-				// Get the color-ref element representing
-				// the color-ref beeing edited.
-				Element colorRef = null;
-				// If a selection is made from the drop-down
-				// list, then this is of type Item ... otherwise
-				// the direct value will be used.
-				if (element instanceof Item) {
-					TableItem item = (TableItem) element;
-					colorRef = (Element) item.getData();
-				} else {
-					colorRef = (Element) element;
-				}
-
-				// We have to save this, in case the color-id has changed, so 
-				// the update-methods know what was changed.
-				String oldColorId = colorRef.attributeValue("color-id");
-				
-				int iValue;
-				switch (index) {
-				case 0:
-					Element color = (Element) value;
-					DocumentManager.setAttribute(colorRef, "color-id", color.attributeValue("id"));
-
-					// If a color-setting inside a color-ref has
-					// changed, then the colorCellEditor has to
-					// be updated.
-					updateUsedColors();
-
-					// Since Eclipe does lasy instantiation we can't be sure
-					// that the cellEditor allready exists.
-					updateUnusedColors();
-
-					if (colorCellEditor != null) {
-						colorCellEditor.setItems(unusedColors);
-					}
-
-					break;
-				case 1:
-					iValue = ((Integer) value).intValue();
-					if(iValue >= 0) {
-						DocumentManager.setAttribute(colorRef, "initial-population", ((Integer) value).toString());
-					}
-					break;
-				case 2:
-					iValue = ((Integer) value).intValue();
-					if(iValue >= 0) {
-						DocumentManager.setAttribute(colorRef, "maximum-capacity", ((Integer) value).toString());
-					}
-					break;
-				}
-
-				colorTableViewer.update(colorRef, null);
-				
-				colorRefModified(oldColorId, colorRef);
-			}
-		});
+		colorTableViewer.setCellModifier(new ColorTableCellModifier());
 	}
 
-	protected void initCellEditors() {
-		CellEditor[] cellEditors = new CellEditor[3];
+	protected ArrayList<CellEditor> initCellEditors() {
+		ArrayList<CellEditor> cellEditors = new ArrayList<CellEditor>();
 		colorCellEditor = new ColorCellEditor(colorTableViewer.getTable());
-		cellEditors[0] = colorCellEditor;
-		cellEditors[1] = new IntegerCellEditor(colorTableViewer.getTable());
-		cellEditors[2] = new IntegerCellEditor(colorTableViewer.getTable());
-
-		colorTableViewer.setCellEditors(cellEditors);
+		cellEditors.add(colorCellEditor);
+		cellEditors.add(new IntegerCellEditor(colorTableViewer.getTable()));
+		cellEditors.add(new IntegerCellEditor(colorTableViewer.getTable()));
+		
+		return cellEditors;
 	}
 
 	protected void updateUsedColors() {
@@ -549,12 +576,9 @@ public abstract class PlacePropertyComposite extends PlaceTransitionPropertyComp
 		// list after the operation was performed.
 		if (usedColors != null) {
 			usedColors.clear();
-			XPath xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
-			Iterator colorRefIterator = xpathSelector.selectNodes(getModel()).iterator();
-			while (colorRefIterator.hasNext()) {
-				Element colorRef = (Element) colorRefIterator.next();
-				xpathSelector = DocumentHelper.createXPath("../../colors/color[@id = '" + colorRef.attributeValue("color-id") + "']");
-				usedColors.add((Element) xpathSelector.selectSingleNode(getModel()));
+			List<Element> colorRefs = PlaceHelper.listColorReferences(getModel());
+			for (Element colorRef : colorRefs) {
+				usedColors.add(NetHelper.getColorByReference(getModel(), colorRef));
 			}
 		}
 	}
@@ -564,16 +588,13 @@ public abstract class PlacePropertyComposite extends PlaceTransitionPropertyComp
 
 		// Select all color-nodes that are defined in this and
 		// higher-level nets.
-		XPath xpathSelector = DocumentHelper.createXPath("ancestor::*/colors/color");
-		Iterator colorIterator = xpathSelector.selectNodes(getModel()).iterator();
+		List<Element> colors = PlaceHelper.listVisibleColors(getModel());
 
 		// For each of these colors, check if they are
 		// allready referenced by this net-element. If
 		// not, then add it to the unused color list.
-		while (colorIterator.hasNext()) {
-			Element color = (Element) colorIterator.next();
-			xpathSelector = DocumentHelper.createXPath("color-refs/color-ref[@color-id = '" + color.attributeValue("id") + "']");
-			if (xpathSelector.selectSingleNode(getModel()) == null) {
+		for (Element color : colors) {
+			if (!PlaceHelper.existsColorReferenceForColorId(getModel(), color.attributeValue("id"))) {
 				unusedColors.add(color);
 			}
 		}
@@ -597,19 +618,30 @@ public abstract class PlacePropertyComposite extends PlaceTransitionPropertyComp
 		}
 	}
 	
-	protected void colorRefAdded(Element colorRef) {
+	protected void colorRefAdded(Element colorRef) {	
 	}
 	
 	protected void colorRefRemoved(Element colorRef) {
-		// Get all the connections in any incidence function that use this color-ref and removde them.
-		XPath xpathSelector = DocumentHelper.createXPath("//*[@source-id = " + colorRef.attributeValue("id") + " or @target-id = " + colorRef.attributeValue("id") + "]");
-		Iterator incidenceFunctionConnectionIterator = xpathSelector.selectNodes(colorRef).iterator();
-		while(incidenceFunctionConnectionIterator.hasNext()) {
-			Element connection = (Element) incidenceFunctionConnectionIterator.next();
-			DocumentManager.removeElement(connection);
-		}
 	}
 	
-	protected void colorRefModified(String oldColorId, Element colorRef) {		
+	protected void colorRefModified(String oldColorId, Element colorRef) {
+	}
+	
+	protected void departureDisciplineModified(String oldDiscipline, String newDiscipline) {
+		
+	}
+	
+	protected Element getColorReference(Object element) {
+		Element colorRef = null;
+		// If a selection is made from the drop-down
+		// list, then this is of type Item ... otherwise
+		// the direct value will be used.
+		if (element instanceof Item) {
+			TableItem item = (TableItem) element;
+			colorRef = (Element) item.getData();
+		} else {
+			colorRef = (Element) element;
+		}
+		return colorRef;
 	}
 }

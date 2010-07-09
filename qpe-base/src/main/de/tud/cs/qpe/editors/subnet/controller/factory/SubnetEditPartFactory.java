@@ -59,6 +59,7 @@ import org.eclipse.gef.EditPartFactory;
 
 import de.tud.cs.qpe.editors.net.controller.editpart.editor.ConnectionEditPart;
 import de.tud.cs.qpe.editors.net.controller.editpart.editor.PlaceEditPart;
+import de.tud.cs.qpe.editors.net.controller.editpart.editor.SubnetPlaceEditPart;
 import de.tud.cs.qpe.editors.net.controller.editpart.editor.TransitionEditPart;
 import de.tud.cs.qpe.editors.subnet.controller.editpart.SubnetEditPart;
 
@@ -98,7 +99,11 @@ public class SubnetEditPartFactory implements EditPartFactory {
 			return new SubnetEditPart();
 		}
 		if ("place".equals(element.getName())) {
-			return new PlaceEditPart();
+			if("subnet-place".equals(element.attributeValue("type"))) {
+				return new SubnetPlaceEditPart();
+			} else {
+				return new PlaceEditPart();
+			}
 		}
 		if ("transition".equals(element.getName())) {
 			return new TransitionEditPart();

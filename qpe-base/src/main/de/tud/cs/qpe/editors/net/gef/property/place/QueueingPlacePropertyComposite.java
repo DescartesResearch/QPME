@@ -46,41 +46,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.dom4j.Attribute;
-import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.dom4j.XPath;
-import org.dom4j.tree.DefaultElement;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
-import org.eclipse.jface.viewers.ICellModifier;
-import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
 
 import de.tud.cs.qpe.editors.net.QueueEditorPage;
 import de.tud.cs.qpe.model.DocumentManager;
-import de.tud.cs.qpe.utils.ColorCellEditor;
-import de.tud.cs.qpe.utils.ColorHelper;
+import de.tud.cs.qpe.model.NetHelper;
 import de.tud.cs.qpe.utils.DoubleCellEditor;
 import de.tud.cs.qpe.utils.FileCellEditor;
-import de.tud.cs.qpe.utils.ITableLabelColorProvider;
 import de.tud.cs.qpe.utils.IntegerCellEditor;
 
 public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
@@ -115,9 +101,8 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 			public void modifyText(ModifyEvent evnt) {
 				if ("place".equals(getModel().getName())) {
 					String oldValue = getModel().attributeValue("queue-ref", "");
-					XPath xpathSelector = DocumentHelper.createXPath("//queue[@name = '"
-							+ QueueingPlacePropertyComposite.this.queue.getText() + "']");
-					Element q = (Element) xpathSelector.selectSingleNode(getModel());
+					Element q = NetHelper.getQueueByName(getModel(), 
+							QueueingPlacePropertyComposite.this.queue.getText());
 					if (q != null) {
 						String newValue = q.attributeValue("id", "");
 						if (!newValue.equals(oldValue)) {
@@ -180,9 +165,7 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 			@Override
 			public void handleEvent(Event event) {
 				Element newQueue = QueueEditorPage.createQueue(getModel());
-				XPath xpathSelector = DocumentHelper.createXPath("//queues");
-				Element queues = (Element) xpathSelector.selectSingleNode(getModel());
-				DocumentManager.addChild(queues, newQueue);
+				NetHelper.addQueue(getModel(), newQueue);
 				updateQueueList();
 				selectQueue(newQueue.attributeValue("name", ""));
 				updatePropertyFields();
@@ -192,9 +175,7 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 
 	private Element getQueueElement() {
 		String id = getModel().attributeValue("queue-ref", "");
-		XPath xpathSelector = DocumentHelper.createXPath("//queue[@id = '" + id + "']");
-		Element q = (Element) xpathSelector.selectSingleNode(getModel());
-		return q;
+		return NetHelper.getQueueById(getModel(), id);
 	}
 	
 	private void selectQueue(String name) {
@@ -206,101 +187,32 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 	 * 
 	 * @see de.tud.cs.qpe.parts.property.place.PlacePropertyComposite#initCellEditors()
 	 */
-	protected void initCellEditors() {
-		CellEditor[] cellEditors = new CellEditor[10];
-		colorCellEditor = new ColorCellEditor(colorTableViewer.getTable());
-		cellEditors[0] = colorCellEditor;
-		cellEditors[1] = new IntegerCellEditor(colorTableViewer.getTable());
-		cellEditors[2] = new IntegerCellEditor(colorTableViewer.getTable());
-		cellEditors[3] = cellEditors[2];
-		cellEditors[4] = cellEditors[2];
-		cellEditors[5] = new ComboBoxCellEditor(colorTableViewer.getTable(),
-				distHelper.getItems());
-		cellEditors[6] = new DoubleCellEditor(colorTableViewer.getTable());
-		cellEditors[7] = cellEditors[6];
-		cellEditors[8] = cellEditors[6];
-		cellEditors[9] = new FileCellEditor(colorTableViewer.getTable());
+	protected ArrayList<CellEditor> initCellEditors() {
+		ArrayList<CellEditor> cellEditors = super.initCellEditors();
+		cellEditors.add(new IntegerCellEditor(colorTableViewer.getTable()));
+		cellEditors.add(new IntegerCellEditor(colorTableViewer.getTable()));
+		cellEditors.add(new ComboBoxCellEditor(colorTableViewer.getTable(),
+				distHelper.getItems()));
+		cellEditors.add(new DoubleCellEditor(colorTableViewer.getTable()));
+		cellEditors.add(new DoubleCellEditor(colorTableViewer.getTable()));
+		cellEditors.add(new DoubleCellEditor(colorTableViewer.getTable()));
+		cellEditors.add(new FileCellEditor(colorTableViewer.getTable()));
 
-		colorTableViewer.setCellEditors(cellEditors);
+		return cellEditors;
 	}
 
-	protected void initColorTable() {
-		Label colorName = new Label(this, SWT.NULL);
-		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-		gd.horizontalSpan = 2;
-		colorName.setLayoutData(gd);
-		colorName.setText("Colors");
-		initTable();
-
-		// Add buttons for ading and deleting colors
-		Composite colorButtonComposite = new Composite(this, SWT.NULL);
-		colorButtonComposite.setLayout(new GridLayout(2, false));
-		gd = new GridData(GridData.FILL_HORIZONTAL);
-		gd.horizontalSpan = 2;
-		colorButtonComposite.setLayoutData(gd);
-		addColorButton = new Button(colorButtonComposite, SWT.PUSH);
-		addColorButton.setText("Add color-ref");
-		addColorButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		addColorButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				if (!unusedColors.isEmpty()) {
-					Element colorRefContainer = getModel()
-							.element("color-refs");
-					if (colorRefContainer == null) {
-						colorRefContainer = getModel().addElement("color-refs");
-					}
-					// Create a new color-ref.
-					Element colorRef = new DefaultElement("color-ref");
-
-					// Set the new Color-Ref to the first color in the list.
-					colorRef.addAttribute("color-id", (String) unusedColors
-							.get(0).attributeValue("id"));
-
-					// Set the default attributes.
-					colorRef.addAttribute("initial-population", "0");
-					colorRef.addAttribute("maximum-capacity", "0");
-					colorRef.addAttribute("ranking", "0");
-					colorRef.addAttribute("priority", "0");
-					colorRef.addAttribute("distribution-function", "Exponential");
-
-					// Add the color-ref to the current place.
-					DocumentManager.addChild(colorRefContainer, colorRef);
-
-					// Initialize the default parameters of the distribution function.
-					distHelper.initializeAttributes(colorRef);
-
-					// Update the visuals.
-					updatePropertyFields();
-				}
-			}
-		});
-
-		delColorButton = new Button(colorButtonComposite, SWT.PUSH);
-		delColorButton.setText("Del color-ref");
-		delColorButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		delColorButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				// Get the index of the selected color-ref.
-				int selectionIndex = colorTable.getSelectionIndex();
-
-				// Get the color-ref with the selected index.
-				XPath xpathSelector = DocumentHelper
-						.createXPath("color-refs/color-ref["
-								+ Integer.toString(selectionIndex + 1) + "]");
-				Element colorRef = (Element) xpathSelector
-						.selectSingleNode(getModel());
-
-				// TODO: remove all connections in the Incidence-Function using
-				// the current color-ref. As done in Transitions.
-
-				// Remove the selected colorRef from the current node.
-				DocumentManager.removeElement(colorRef);
-
-				// Update the visuals.
-				updatePropertyFields();
-			}
-		});
-		colorButtonComposite.layout();
+	
+	@Override
+	protected Element createColorReference() {
+		Element colorRef = super.createColorReference();
+		colorRef.addAttribute("ranking", "0");
+		colorRef.addAttribute("priority", "0");
+		colorRef.addAttribute("distribution-function", "Exponential");
+		
+		// Initialize the default parameters of the distribution function.
+		distHelper.initializeAttributes(colorRef);
+		
+		return colorRef;
 	}
 
 	/*
@@ -309,14 +221,15 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 	 * @see de.tud.cs.qpe.parts.property.place.PlacePropertyComposite#initCellModifier()
 	 */
 	protected void initCellModifier() {
-		colorTableViewer.setCellModifier(new ICellModifier() {
+		colorTableViewer.setCellModifier(new ColorTableCellModifier() {
+			@Override
 			public boolean canModify(Object element, String property) {
 				Element colorRef = (Element) element;
 				String distrFkt = colorRef.attributeValue(
 						"distribution-function", "Exponential");
 
-				if ("Color".equals(property)) {
-					return !unusedColors.isEmpty();
+				if (!super.canModify(element, property)) {
+					return false;
 				} else if ("p1".equals(property)) {
 					if ((distrFkt == null)
 							|| (distHelper.getNumberOfParameters(distrFkt) == 0)) {
@@ -338,140 +251,63 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 				}
 				return true;
 			}
-
-			public Object getValue(Object element, String property) {
-				// Get the index first.
-				int index = -1;
-				for (int i = 0; i < columnNames.length; i++) {
-					if (columnNames[i].equals(property)) {
-						index = i;
-						break;
-					}
-				}
-
-				Element colorRef = (Element) element;
-				String colorId = colorRef.attributeValue("color-id");
-				XPath xpathSelector = DocumentHelper
-						.createXPath("//color[@id = '" + colorId + "']");
-				Element color = (Element) xpathSelector
-						.selectSingleNode(getModel());
-
+			
+			@Override
+			protected Object getValue(int columnIndex, Element colorRef,
+					Element color) {
 				String distrFkt = colorRef.attributeValue(
 						"distribution-function", "Exponential");
 
-				switch (index) {
-				case 0:
-					// Update the color-cell-editor.
-					List<Element> items = new ArrayList<Element>();
-					items.add(color);
-					items.addAll(unusedColors);
-					if (colorCellEditor != null) {
-						colorCellEditor.setItems(items);
-						colorCellEditor.setValue(color);
-					}
-					return color;
-				case 1:
-					return new Integer(colorRef.attributeValue(
-							"initial-population", "0"));
-				case 2:
-					return new Integer(colorRef.attributeValue(
-							"maximum-capacity", "0"));
-				case 3:
-					return new Integer(colorRef.attributeValue("ranking", "0"));
-				case 4:
-					return new Integer(colorRef.attributeValue("priority", "0"));
-				case 5:
-					return distHelper.getValue(colorRef.attributeValue(
-							"distribution-function", "Exponential"));
-				case 6:
-					if ((distrFkt != null)
-							&& (distHelper.getNumberOfParameters(distrFkt) > 0)) {
-						return new Double(colorRef.attributeValue(distHelper
-								.getP1Name(distrFkt), "1.0"));
-					}
-				case 7:
-					if ((distrFkt != null)
-							&& (distHelper.getNumberOfParameters(distrFkt) > 1)) {
-						return new Double(colorRef.attributeValue(distHelper
-								.getP2Name(distrFkt), "1.0"));
-					}
-				case 8:
-					if ((distrFkt != null)
-							&& (distHelper.getNumberOfParameters(distrFkt) > 2)) {
-						return new Double(colorRef.attributeValue(distHelper
-								.getP3Name(distrFkt), "1.0"));
-					}
-				case 9:
-					if("Empirical".equals(distrFkt)) {
-						return colorRef.attributeValue("pdf_filename", "");
-					}
+				switch (columnIndex) {
+					case 0:
+					case 1:
+					case 2:
+						return super.getValue(columnIndex, colorRef, color);
+					case 3:
+						return new Integer(colorRef.attributeValue("ranking", "0"));
+					case 4:
+						return new Integer(colorRef.attributeValue("priority", "0"));
+					case 5:
+						return distHelper.getValue(colorRef.attributeValue(
+								"distribution-function", "Exponential"));
+					case 6:
+						if ((distrFkt != null)
+								&& (distHelper.getNumberOfParameters(distrFkt) > 0)) {
+							return new Double(colorRef.attributeValue(distHelper
+									.getP1Name(distrFkt), "1.0"));
+						}
+					case 7:
+						if ((distrFkt != null)
+								&& (distHelper.getNumberOfParameters(distrFkt) > 1)) {
+							return new Double(colorRef.attributeValue(distHelper
+									.getP2Name(distrFkt), "1.0"));
+						}
+					case 8:
+						if ((distrFkt != null)
+								&& (distHelper.getNumberOfParameters(distrFkt) > 2)) {
+							return new Double(colorRef.attributeValue(distHelper
+									.getP3Name(distrFkt), "1.0"));
+						}
+					case 9:
+						if("Empirical".equals(distrFkt)) {
+							return colorRef.attributeValue("pdf_filename", "");
+						}
 				}
 
 				return null;
 			}
-
-			public void modify(Object element, String property, Object value) {
-				// Get the index first.
-				int index = -1;
-				for (int i = 0; i < columnNames.length; i++) {
-					if (columnNames[i].equals(property)) {
-						index = i;
-						break;
-					}
-				}
-
-				// Get the color-ref element representing
-				// the color-ref beeing edited.
-				Element colorRef = null;
-				// If a selection is made from the drop-down
-				// list, then this is of type Item ... otherwise
-				// the direct value will be used.
-				if (element instanceof Item) {
-					TableItem item = (TableItem) element;
-					colorRef = (Element) item.getData();
-				} else {
-					colorRef = (Element) element;
-				}
-
+			
+			@Override
+			protected void modify(int columnIndex, Element colorRef, Object value) {
 				int iValue;
 
 				String distrFkt = colorRef.attributeValue(
 						"distribution-function", "Exponential");
-				switch (index) {
+				switch (columnIndex) {
 				case 0:
-					Element color = (Element) value;
-					colorRef.addAttribute("color-id", color
-							.attributeValue("id"));
-
-					// If a color-setting inside a color-ref has
-					// changed, then the colorCellEditor has to
-					// be updated.
-					updateUsedColors();
-
-					// Since Eclipe does lasy instantiation we can't be sure
-					// that the cellEditor allready exists.
-					updateUnusedColors();
-
-					if (colorCellEditor != null) {
-						colorCellEditor.setItems(unusedColors);
-					}
-
-					break;
 				case 1:
-					iValue = ((Integer) value).intValue();
-					if (iValue >= 0) {
-						DocumentManager.setAttribute(colorRef,
-								"initial-population", ((Integer) value)
-										.toString());
-					}
-					break;
 				case 2:
-					iValue = ((Integer) value).intValue();
-					if (iValue >= 0) {
-						DocumentManager.setAttribute(colorRef,
-								"maximum-capacity", ((Integer) value)
-										.toString());
-					}
+					super.modify(columnIndex, colorRef, value);
 					break;
 				case 3:
 					iValue = ((Integer) value).intValue();
@@ -526,8 +362,6 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 				}
 
 				distHelper.cleanupAttributes(colorRef);
-
-				colorTableViewer.update(colorRef, null);
 			}
 		});
 	}
@@ -538,107 +372,45 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 	 * @see de.tud.cs.qpe.parts.property.place.PlacePropertyComposite#initLabelProvider()
 	 */
 	protected void initLabelProvider() {
-		colorTableViewer.setLabelProvider(new ITableLabelColorProvider() {
-			public void dispose() {
-			}
-
-			public Image getColumnImage(Object element, int columnIndex) {
-				return null;
-			}
-
-			public String getColumnText(Object element, int columnIndex) {
-				// Get the color-ref element representing
-				// the color-ref beeing edited.
-				Element colorRef = null;
-				// If a selection is made from the drop-down
-				// list, then this is of type Item ... otherwise
-				// the direct value will be used.
-				if (element instanceof Item) {
-					TableItem item = (TableItem) element;
-					colorRef = (Element) item.getData();
-				} else {
-					colorRef = (Element) element;
-				}
-
+		colorTableViewer.setLabelProvider(new ColorTableLabelProvider() {
+			@Override
+			protected String getColumnText(Element colorRef, Element color,
+					int columnIndex) {
 				String curDistFkt = colorRef.attributeValue(
 						"distribution-function", "Exponential");
 				switch (columnIndex) {
-				case 0:
-					XPath xpathSelector = DocumentHelper
-							.createXPath("ancestor::*/colors/color[@id = '"
-									+ colorRef.attributeValue("color-id")
-									+ "']");
-					Element color = (Element) xpathSelector
-							.selectSingleNode(getModel());
-					if (color != null) {
-						return color.attributeValue("name", "new color");
-					}
-				case 1:
-					return colorRef.attributeValue("initial-population", "0");
-				case 2:
-					return colorRef.attributeValue("maximum-capacity", "0");
-				case 3:
-					return colorRef.attributeValue("ranking", "0");
-				case 4:
-					return colorRef.attributeValue("priority", "0");
-				case 5:
-					return colorRef.attributeValue("distribution-function",
-							"Exponential");
-				case 6:
-					if (distHelper.getNumberOfParameters(curDistFkt) >= 1) {
-						return colorRef.attributeValue(distHelper
-								.getP1Name(curDistFkt), "1.0");
-					}
-				case 7:
-					if (distHelper.getNumberOfParameters(curDistFkt) >= 2) {
-						return colorRef.attributeValue(distHelper
-								.getP2Name(curDistFkt), "1.0");
-					}
-					break;
-				case 8:
-					if (distHelper.getNumberOfParameters(curDistFkt) == 3) {
-						return colorRef.attributeValue(distHelper
-								.getP3Name(curDistFkt), "1.0");
-					}
-					break;
-				case 9:
-					if("Empirical".equals(curDistFkt)) {
-						return colorRef.attributeValue("pdf_filename", "");
-					}
-				}
-				return null;
-			}
-
-			public void addListener(ILabelProviderListener listener) {
-			}
-
-			public void removeListener(ILabelProviderListener listener) {
-			}
-
-			public boolean isLabelProperty(Object element, String property) {
-				return false;
-			}
-
-			public org.eclipse.swt.graphics.Color getForeground(Object element,
-					int columnIndex) {
-				return null;
-			}
-
-			public org.eclipse.swt.graphics.Color getBackground(Object element,
-					int columnIndex) {
-				if (columnIndex == 0) {
-					Element colorRef = (Element) element;
-					XPath xpathSelector = DocumentHelper
-							.createXPath("//color[@id = '"
-									+ colorRef.attributeValue("color-id")
-									+ "']");
-					Element color = (Element) xpathSelector
-							.selectSingleNode(colorRef);
-					if (color != null) {
-						return new Color(null, ColorHelper
-								.getRGBFromString(color.attributeValue(
-										"real-color", "#ffffff")));
-					}
+					case 0:
+					case 1:
+					case 2:
+						return super.getColumnText(colorRef, color, columnIndex);
+					case 3:
+						return colorRef.attributeValue("ranking", "0");
+					case 4:
+						return colorRef.attributeValue("priority", "0");
+					case 5:
+						return colorRef.attributeValue("distribution-function",
+								"Exponential");
+					case 6:
+						if (distHelper.getNumberOfParameters(curDistFkt) >= 1) {
+							return colorRef.attributeValue(distHelper
+									.getP1Name(curDistFkt), "1.0");
+						}
+					case 7:
+						if (distHelper.getNumberOfParameters(curDistFkt) >= 2) {
+							return colorRef.attributeValue(distHelper
+									.getP2Name(curDistFkt), "1.0");
+						}
+						break;
+					case 8:
+						if (distHelper.getNumberOfParameters(curDistFkt) == 3) {
+							return colorRef.attributeValue(distHelper
+									.getP3Name(curDistFkt), "1.0");
+						}
+						break;
+					case 9:
+						if("Empirical".equals(curDistFkt)) {
+							return colorRef.attributeValue("pdf_filename", "");
+						}
 				}
 				return null;
 			}
@@ -680,8 +452,7 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 		if (getModel() != null) {
 			updateQueueList();
 			String id = getModel().attributeValue("queue-ref", "");
-			XPath xpathSelector = DocumentHelper.createXPath("//queue[@id = '" + id + "']");
-			Element q = (Element) xpathSelector.selectSingleNode(getModel());
+			Element q = NetHelper.getQueueById(getModel(), id);
 			if (q != null) {
 				queue.select(queue.indexOf(q.attributeValue("name", "")));
 				strategy.select(strategy.indexOf(q.attributeValue("strategy", "")));
@@ -692,10 +463,9 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 
 	private void updateQueueList() {
 		queue.removeAll();
-		XPath xpathSelector = DocumentHelper.createXPath("//queues/queue");
-		List queues = xpathSelector.selectNodes(getModel());
-		for (Object queueElement : queues) {
-			queue.add(((Element) queueElement).attributeValue("name"));
+		List<Element> queues = NetHelper.listQueues(getModel());
+		for (Element queueElement : queues) {
+			queue.add(queueElement.attributeValue("name"));
 		}
 	}
 

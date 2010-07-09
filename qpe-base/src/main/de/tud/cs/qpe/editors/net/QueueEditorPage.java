@@ -43,22 +43,14 @@ package de.tud.cs.qpe.editors.net;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 
-import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.dom4j.XPath;
 import org.dom4j.tree.DefaultElement;
-import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.fieldassist.ControlDecoration;
-import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
-import org.eclipse.jface.viewers.ICellEditorValidator;
 import org.eclipse.jface.viewers.ICellModifier;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -80,13 +72,13 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IEditorInput;
 
 import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.NetHelper;
 import de.tud.cs.qpe.utils.ITableLabelColorProvider;
 import de.tud.cs.qpe.utils.IntegerCellEditor;
 
@@ -134,8 +126,7 @@ public class QueueEditorPage extends Composite implements PropertyChangeListener
 	}
 
 	public void updatePropertyFields() {
-		XPath xpathSelector = DocumentHelper.createXPath("ancestor-or-self::*/queues/queue");
-		List queues = xpathSelector.selectNodes(model);
+		List<Element> queues = NetHelper.listQueues(model);
 		queueTableViewer.setInput(queues);
 		delQueueButton.setEnabled(queueTable.getSelectionIndex() != -1);
 	}
@@ -145,10 +136,8 @@ public class QueueEditorPage extends Composite implements PropertyChangeListener
 		// This way fast checks for name duplicates can be performed.
 		HashSet<String> nameIndex = new HashSet<String>();
 
-		XPath xpathSelector = DocumentHelper.createXPath("./queues/queue");
-		Iterator queueIterator = xpathSelector.selectNodes(model).iterator();
-		while (queueIterator.hasNext()) {
-			Element queue = (Element) queueIterator.next();
+		List<Element> queues = NetHelper.listQueues(model);
+		for (Element queue : queues) {
 			nameIndex.add(queue.attributeValue("name"));
 		}
 
@@ -184,18 +173,18 @@ public class QueueEditorPage extends Composite implements PropertyChangeListener
 		gd.horizontalSpan = 2;
 		queueButtonComposite.setLayoutData(gd);
 		addQueueButton = new Button(queueButtonComposite, SWT.PUSH);
-		addQueueButton.setText("Add queue");
+		addQueueButton.setText("Add Queue");
 		addQueueButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		addQueueButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				Element newQueue = createQueue(model);
-				DocumentManager.addChild(model.element("queues"), newQueue);
+				NetHelper.addQueue(model, newQueue);
 				updatePropertyFields();
 			}
 		});
 
 		delQueueButton = new Button(queueButtonComposite, SWT.PUSH);
-		delQueueButton.setText("Del queue");
+		delQueueButton.setText("Delete Queue");
 		delQueueButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		delQueueButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -204,27 +193,14 @@ public class QueueEditorPage extends Composite implements PropertyChangeListener
 				// Check if the queue is used. If yes, show a dialog asking the
 				// user if he is sure. If yes then all usages of this queue
 				// have to be removed.
-				XPath xpathSelector = DocumentHelper.createXPath("//queue-ref[@queue-id = '" + queue.attributeValue("id") + "']");
-				if (xpathSelector.selectSingleNode(model.getDocument()) != null) {
-					MessageBox messageBox = new MessageBox(queueTable.getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
-					messageBox
-							.setMessage("The Queue you are trying to remove is beeing used in the current net. Are you sure you want it to be removed? Removing this queue will couse the removal of all element using it. This process is irreversable.");
-					int buttonId = messageBox.open();
-					if (buttonId == SWT.YES) {
-						// Remove the queue.
-						DocumentManager.removeElement(queue);
-
-						// Remove all references to that queue.
-						xpathSelector = DocumentHelper.createXPath("//queue-ref[@queue-id = '" + queue.attributeValue("id") + "']");
-						Iterator queueRefItarator = xpathSelector.selectNodes(model).iterator();
-						while (queueRefItarator.hasNext()) {
-							Element queueRef = (Element) queueRefItarator.next();
-							DocumentManager.removeElement(queueRef);
-						}
-
+				if (NetHelper.isQueueReferencedInNet(model, queue)) {
+					boolean result = MessageDialog.openConfirm(getShell(), "", "The Queue you are trying to remove is is referenced in the current net. Are you sure you want it to be removed? Removing this queue will cause the removal of all its references. This process is irreversible.");
+					if (result) {
+						// Remove the queue and its references.
+						NetHelper.removeQueue(model, queue);
 					}
 				} else {
-					model.element("queues").remove(queue);
+					NetHelper.removeQueue(model, queue);
 				}
 
 				updatePropertyFields();
@@ -407,8 +383,7 @@ public class QueueEditorPage extends Composite implements PropertyChangeListener
 				switch (index) {
 				case 0:
 					if (!queue.attributeValue("name").equals(value)) {
-						XPath xpathSelector = DocumentHelper.createXPath("count(./queues/queue[@name='" + value.toString() + "']) = 0");
-						if(xpathSelector.booleanValueOf(model)) {
+						if(!NetHelper.existsQueueWithName(model, value.toString())) {
 							DocumentManager.setAttribute(queue, "name", (String) value);
 						} else {
 							MessageDialog.openError(getShell(), "Duplicate queue names", "Another queue with this name already exists.");

@@ -53,6 +53,7 @@
 
 package de.tud.cs.qpe.editors.incidence;
 
+import java.io.File;
 import java.util.Iterator;
 
 import org.dom4j.Document;
@@ -85,8 +86,8 @@ public class IncidenceFunctionEditorInput implements IEditorInput {
 	}
 
 	public String getName() {
-		String name = content.getDocument().getRootElement().attributeValue("path", "new document") + ":" + content.getParent().attributeValue("name", "new transition");
-		return name;
+		File docFile = new File(content.getDocument().getRootElement().attributeValue("path", "new document.qpe"));
+		return docFile.getName().substring(0, docFile.getName().length() - 4) + ":" + content.getParent().attributeValue("name", "new transition");
 	}
 
 	public IPersistableElement getPersistable() {

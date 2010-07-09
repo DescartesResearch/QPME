@@ -129,8 +129,13 @@ public class PlaceEditPart extends AbstractGraphicalEditPart implements
 	 * @see org.eclipse.gef.editparts.AbstractEditPart#getModelChildren()
 	 */
 	protected List getModelChildren() {
-		XPath xpathSelector = DocumentHelper
-				.createXPath("color-refs/color-ref");
+		XPath xpathSelector;
+		if (getType() == PlaceFigure.TYPE_INPUT_PLACE) {
+			xpathSelector = DocumentHelper.createXPath("color-refs/color-ref[not(@direction = 'in')]");
+		} else {
+			xpathSelector = DocumentHelper.createXPath("color-refs/color-ref[not(@direction = 'out')]");
+		}
+				
 		return xpathSelector.selectNodes(getCastedModel().getElement());
 	}
 

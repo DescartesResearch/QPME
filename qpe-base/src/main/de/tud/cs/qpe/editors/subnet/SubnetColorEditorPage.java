@@ -44,13 +44,11 @@ package de.tud.cs.qpe.editors.subnet;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
-import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.dom4j.XPath;
 import org.dom4j.tree.DefaultElement;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColorCellEditor;
 import org.eclipse.jface.viewers.ICellModifier;
@@ -77,7 +75,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
@@ -85,6 +82,8 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PlatformUI;
 
 import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.NetHelper;
+import de.tud.cs.qpe.model.SubnetHelper;
 import de.tud.cs.qpe.utils.ColorHelper;
 import de.tud.cs.qpe.utils.ITableLabelColorProvider;
 
@@ -135,9 +134,7 @@ public class SubnetColorEditorPage extends Composite implements
 	}
 
 	public void updatePropertyFields() {
-		XPath xpathSelector = DocumentHelper
-				.createXPath("ancestor-or-self::*/colors/color");
-		List colors = xpathSelector.selectNodes(model);
+		List<Element> colors = SubnetHelper.listVisibleColors(model);
 		colorTableViewer.setInput(colors);
 		delColorButton.setEnabled(isOwnColorSelected());
 	}
@@ -149,11 +146,8 @@ public class SubnetColorEditorPage extends Composite implements
 		HashMap<String, Element> nameIndex = new HashMap<String, Element>();
 		HashMap<String, Element> colorIndex = new HashMap<String, Element>();
 
-		XPath xpathSelector = DocumentHelper
-				.createXPath("ancestor-or-self::*/colors/color");
-		Iterator colorIterator = xpathSelector.selectNodes(model).iterator();
-		while (colorIterator.hasNext()) {
-			Element color = (Element) colorIterator.next();
+		List<Element> colors = SubnetHelper.listVisibleColors(model);
+		for(Element color : colors) {
 			nameIndex.put(color.attributeValue("name"), color);
 			String rgb = color.attributeValue("real-color");
 			colorIndex.put(rgb, color);
@@ -195,7 +189,7 @@ public class SubnetColorEditorPage extends Composite implements
 		gd.horizontalSpan = 2;
 		colorButtonComposite.setLayoutData(gd);
 		addColorButton = new Button(colorButtonComposite, SWT.PUSH);
-		addColorButton.setText("Add color");
+		addColorButton.setText("Add Color");
 		addColorButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		addColorButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -206,7 +200,7 @@ public class SubnetColorEditorPage extends Composite implements
 		});
 
 		delColorButton = new Button(colorButtonComposite, SWT.PUSH);
-		delColorButton.setText("Del color");
+		delColorButton.setText("Delete Color");
 		delColorButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		delColorButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -216,52 +210,14 @@ public class SubnetColorEditorPage extends Composite implements
 				// Check if the color is used. If yes, show a dialog asking the
 				// user if he is sure. If yes then all usages of this collor
 				// have to be removed.
-				XPath xpathSelector = DocumentHelper
-						.createXPath("//color-ref[@color-id = '"
-								+ color.attributeValue("id") + "']");
-				if (xpathSelector.selectSingleNode(model.getDocument()) != null) {
-					MessageBox messageBox = new MessageBox(colorTable
-							.getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
-					messageBox
-							.setMessage("The Color you are trying to remove is beeing used in the current net. Are you sure you want it to be removed? Removing this color will couse the removal of all element using it. This process is irreversable.");
-					int buttonId = messageBox.open();
-					if (buttonId == SWT.YES) {
-						// Remove the color.
-						DocumentManager.removeElement(color);
-
-						// Remove all references to that color.
-						xpathSelector = DocumentHelper
-								.createXPath("//color-ref[@color-id = '"
-										+ color.attributeValue("id") + "']");
-						Iterator colorRefItarator = xpathSelector.selectNodes(
-								model).iterator();
-						while (colorRefItarator.hasNext()) {
-							Element colorRef = (Element) colorRefItarator
-									.next();
-							DocumentManager.removeElement(colorRef);
-
-							// Remove all usages of the deleted color refs in
-							// any incidence-function.
-							xpathSelector = DocumentHelper
-									.createXPath("//connection[@source-id = '"
-											+ colorRef.attributeValue("id")
-											+ "' or @target-id = '"
-											+ colorRef.attributeValue("id")
-											+ "']");
-							Iterator incidenceFunctionConnectionIterator = xpathSelector
-									.selectNodes(model).iterator();
-							while (incidenceFunctionConnectionIterator
-									.hasNext()) {
-								Element incidenceFunctionConnection = (Element) incidenceFunctionConnectionIterator
-										.next();
-								DocumentManager
-										.removeElement(incidenceFunctionConnection);
-							}
-						}
-
+				if (NetHelper.isColorReferencedInNet(model, color)) {
+					boolean result = MessageDialog.openConfirm(getShell(), "Color References", "The Color you are trying to remove is referenced in the current net. Are you sure you want it to be removed? Removing this color will cause the removal of all its references. This process is irreversible.");
+					if (result) {
+						// Remove the color and all of its references.
+						NetHelper.removeColor(model, color);
 					}
 				} else {
-					model.element("colors").remove(color);
+					NetHelper.removeColor(model, color);
 				}
 
 				updatePropertyFields();
@@ -451,12 +407,8 @@ public class SubnetColorEditorPage extends Composite implements
 					// This way fast checks for name
 					// duplicates can be performed.
 					HashMap<String, Element> nameIndex = new HashMap<String, Element>();
-					XPath xpathSelector = DocumentHelper
-							.createXPath("ancestor-or-self::*/colors/color");
-					Iterator colorIterator = xpathSelector.selectNodes(model)
-							.iterator();
-					while (colorIterator.hasNext()) {
-						Element tmpColor = (Element) colorIterator.next();
+					List<Element> colors = SubnetHelper.listVisibleColors(model);
+					for(Element tmpColor : colors) {
 						nameIndex.put((String) tmpColor.attributeValue("name"),
 								tmpColor);
 					}

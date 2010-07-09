@@ -54,6 +54,8 @@
 
 package de.tud.cs.qpe.editors.subnet;
 
+import java.io.File;
+
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -82,8 +84,8 @@ public class SubnetEditorInput implements IEditorInput {
 	}
 
 	public String getName() {
-		String name = content.getDocument().getRootElement().attributeValue("path", "new document") + ":" + content.getParent().attributeValue("name", "new transition");
-		return name;
+		File docFile = new File(content.getDocument().getRootElement().attributeValue("path", "new document.qpe"));
+		return docFile.getName().substring(0, docFile.getName().length() - 4) + ":" + content.getParent().attributeValue("name", "new place");
 	}
 
 	public IPersistableElement getPersistable() {
@@ -121,7 +123,7 @@ public class SubnetEditorInput implements IEditorInput {
 	public boolean equals(Object arg0) {
 		if (arg0 instanceof SubnetEditorInput) {
 			SubnetEditorInput editorInput = (SubnetEditorInput) arg0;
-			return editorInput.getModel().attributeValue("id", "").equals(getModel().attributeValue("id"));
+			return editorInput.getModel().getParent().attributeValue("id", "").equals(getModel().getParent().attributeValue("id", ""));
 		}
 		return false;
 	}

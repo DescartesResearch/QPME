@@ -61,7 +61,7 @@ import de.tud.cs.qpe.editors.net.controller.editpart.editor.PlaceTransitionEditP
 import de.tud.cs.qpe.editors.net.controller.editpart.editor.TransitionEditPart;
 
 public class CopyCommand extends Command {
-	private StructuredSelection selection;
+	protected StructuredSelection selection;
 
 	protected List<Element> places = new ArrayList<Element>();
 	protected List<Element> transitions = new ArrayList<Element>();
