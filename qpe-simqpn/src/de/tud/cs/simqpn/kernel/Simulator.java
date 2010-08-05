@@ -96,9 +96,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
 
@@ -275,6 +277,15 @@ public class Simulator {
 	public Place[] places;
 	public Transition[] trans;
 	public Queue[] queues;
+	
+	// hashmaps to allow fast lookup of array index for a given element
+	protected Map<Element, Integer> placeToIndexMap = new HashMap<Element, Integer>();
+	protected Map<Element, Integer> transitionToIndexMap = new HashMap<Element, Integer>();
+	protected Map<Element, Integer> queueToIndexMap = new HashMap<Element, Integer>();
+	
+	// hashmaps to allow fast lookup of number of incoming and outgoing connections
+	protected Map<String, Integer> sourceIdToNumConnectionsMap = new HashMap<String, Integer>();
+	protected Map<String, Integer> targetIdToNumConnectionsMap = new HashMap<String, Integer>();
 
 	// XML Configuration.
 	protected String configuration;
@@ -282,6 +293,7 @@ public class Simulator {
 	protected List placeList;
 	protected List transitionList;
 	protected List queueList;
+	protected Map<String, Element> idToElementMap = new HashMap<String, Element>();
 	protected static PrintStream logPrintStream;
 
 	public Simulator(Element net, String configuration) {
@@ -293,6 +305,48 @@ public class Simulator {
 		transitionList = xpathSelector.selectNodes(net);
 		xpathSelector = DocumentHelper.createXPath("//queue");
 		queueList = xpathSelector.selectNodes(net);
+		
+		xpathSelector = DocumentHelper.createXPath("//connection");
+		for (Object o : xpathSelector.selectNodes(net)) {
+			if (o instanceof Element) {
+				Element e = (Element) o;
+				String sourceId = e.attributeValue("source-id");
+				String targetId = e.attributeValue("target-id");
+
+				Integer numSourceIdConnections = sourceIdToNumConnectionsMap
+						.get(sourceId);
+				if (numSourceIdConnections == null) {
+					numSourceIdConnections = new Integer(1);
+				} else {
+					numSourceIdConnections++;
+				}
+				sourceIdToNumConnectionsMap.put(sourceId,
+						numSourceIdConnections);
+
+				Integer numTargetIdConnections = targetIdToNumConnectionsMap
+						.get(targetId);
+				if (numTargetIdConnections == null) {
+					numTargetIdConnections = new Integer(1);
+				} else {
+					numTargetIdConnections++;
+				}
+				targetIdToNumConnectionsMap.put(targetId,
+						numTargetIdConnections);
+			}
+		}
+
+		
+		xpathSelector = DocumentHelper.createXPath("//*");
+		for (Object o : xpathSelector.selectNodes(net)) {
+			if (o instanceof Element) {
+				Element e = (Element) o;
+				
+				String eId = e.attributeValue("id");
+				if (eId != null) {
+					idToElementMap.put(eId, e);
+				}
+			}
+		}
 	}
 
 	public static void configure(Element net, String configuration) throws SimQPNException {
@@ -462,26 +516,7 @@ public class Simulator {
 		// NOTE: In the following, if the simulation is interrupted, simRunning should be reset. 		  
 				
 		try {
-			XPath xpathSelector = DocumentHelper.createXPath("//color-ref[@maximum-capacity > 0]");
-			if(xpathSelector.selectSingleNode(net) != null) {
-				logln("Error: Max population attribute currently not supported (Set to 0 for all places)");
-				throw new SimQPNException();
-			}		
-			xpathSelector = DocumentHelper.createXPath("//color-ref[@ranking > 0]");
-			if(xpathSelector.selectSingleNode(net) != null) {
-				logln("Error: Ranking attribute currently not supported (Set to 0 for all places)");
-				throw new SimQPNException();
-			}
-			xpathSelector = DocumentHelper.createXPath("//color-ref[@priority > 0]");
-			if(xpathSelector.selectSingleNode(net) != null) {
-				logln("Error: Priority attribute currently not supported (Set to 0 for all places)");
-				throw new SimQPNException();
-			}
-			xpathSelector = DocumentHelper.createXPath("//transition[@priority > 0]");
-			if(xpathSelector.selectSingleNode(net) != null) {
-				logln("Error: Transition priorities currently not supported (Set to 0 for all places)");
-				throw new SimQPNException();
-			}
+			validateInputNet(net);
 			
 			if (runMode == NORMAL) {
 				if (analMethod == BATCH_MEANS) { // Method of non-overlapping batch means
@@ -531,6 +566,29 @@ public class Simulator {
 			simRunning = false;	
 		}
 		return result;
+	}
+
+	private static void validateInputNet(Element net) throws SimQPNException {
+		XPath xpathSelector = DocumentHelper.createXPath("//color-ref[@maximum-capacity > 0]");
+		if(xpathSelector.selectSingleNode(net) != null) {
+			logln("Error: Max population attribute currently not supported (Set to 0 for all places)");
+			throw new SimQPNException();
+		}		
+		xpathSelector = DocumentHelper.createXPath("//color-ref[@ranking > 0]");
+		if(xpathSelector.selectSingleNode(net) != null) {
+			logln("Error: Ranking attribute currently not supported (Set to 0 for all places)");
+			throw new SimQPNException();
+		}
+		xpathSelector = DocumentHelper.createXPath("//color-ref[@priority > 0]");
+		if(xpathSelector.selectSingleNode(net) != null) {
+			logln("Error: Priority attribute currently not supported (Set to 0 for all places)");
+			throw new SimQPNException();
+		}
+		xpathSelector = DocumentHelper.createXPath("//transition[@priority > 0]");
+		if(xpathSelector.selectSingleNode(net) != null) {
+			logln("Error: Transition priorities currently not supported (Set to 0 for all places)");
+			throw new SimQPNException();
+		}
 	}
 
 	/* 
@@ -1155,693 +1213,636 @@ public class Simulator {
 		 */
 
 		// Random Number Generation (Note: needs to be initialized before starting the model definition)
-		randGenClass = MersenneTwister;
-		useRandSeedTable = true;
-
-		randNumGen = new Uniform(new DRand(new java.util.Date()));
-		if (useRandSeedTable)
-			randSeedGen = new RandomSeedGenerator(randNumGen.nextIntFromTo(0, Integer.MAX_VALUE), randNumGen.nextIntFromTo(0, RandomSeedTable.COLUMNS - 1));
+		initializeRandomNumberGenerator();
 
 		// *****************************************************************************************************************
 		// BEGIN-MODEL-DEFINITION
 		// *****************************************************************************************************************
 
 		// Initialize the place and transition sizes.
-		numPlaces = placeList.size();
-		numTrans = transitionList.size();
-		numQueues = queueList.size();
+		initializePlaceAndTransitionSizes();
 		
 		// -----------------------------------------------------------------------------------------------------------
 		// CHECK COLOR DEFINITIONS
 		// -----------------------------------------------------------------------------------------------------------
-		XPath colorSelector = DocumentHelper.createXPath("//color");
-		List colorList = colorSelector.selectNodes(net);
-		// Set for checking the uniqueness of color names
-		HashSet<String> colorNames = new HashSet<String>();
-		
-		for (int i = 0; i < colorList.size(); i++) {
-			Element col = (Element)colorList.get(i);
-			
-			String name = col.attributeValue("name");
-			if (colorNames.contains(name)) {
-				logln("ERROR: Another color definition with the same name does already exist!");
-				logln("Details: ");
-				logln("  color-num      = " + i);
-				logln("  color.id       = " + col.attributeValue("id"));
-				logln("  color.name     = " + name);
-				throw new SimQPNException();
-			} else {
-				colorNames.add(name);
-			}
-		}
+		checkColorDefinitions();
 		
 
 		// -----------------------------------------------------------------------------------------------------------
 		// CREATE PLACES
 		// -----------------------------------------------------------------------------------------------------------
-		/*
-		 * @param int id          - global id of the place - IMPORTANT: must be equal to the index in the array!!!!!!! 
-		 * @param String name     - name of the place
-		 * @param int numColors   - number of colors 
-		 * @param int numInTrans  - number of input transitions 
-		 * @param int numOutTrans - number of output transitions 
-		 * @param int[1..4] statsLevel - determines the amount of statistics to be gathered during the run 
-		 *    Level 1: Token Throughput (Arrival/Departure Rates) 
-		 *    Level 2: + Token Population, Token Occupancy, Queue Utilization
-		 *    Level 3: + Token Sojourn Times (sample mean and variance + steady state point estimates and confidence intervals)
-		 *    Level 4: + Token Sojourn Time Histograms
-		 *    Level 5: + Record Sojourn Times in a file 
-		 * @param int depDiscip/dDis - determines the departure discipline: Place.NORMAL or Place.FIFO
-		 * 
-		 * For QPlace two extra parameters:
-		 * 
-		 * @param int queueDiscip/qDis - queueing discipline is Queue.IS, Queue.FCFS or Queue.PS. 
-		 *    NOTE: if a different queueing discipline is specified (e.g. RANDOM) print WARNING and use FCFS instead. 
-		 * @param int numServers - number of servers in queueing station - NOTE: for IS set to 0
-		 * 
-		 * IMPORTANT: Pay attention to variable types!!! Validate input parameters provided by the user to make sure 
-		 *   that they make sense! For e.g. Number of servers should be an integer >= 0.
-		 * 
-		 * IMPORTANT: In general, you should provide a way to add "help information" associated with different items 
-		 *   in the tool. For example, if one wants to know what a configuration option means, one should be able to 
-		 *   somehow click on it and ask for help. Ballons that appear when moving the cursor over the option is one 
-		 *   possibility. A more general solution would be to have a help page associated with each input screen in 
-		 *   the QPE. The page could be displayed by pressing F1 for example.
-		 * 
-		 */
-
-		/* 
-		 * SDK-DEBUG: A general question: Does your code guarantee that all id's assigned to elements (places, 
-		 *   transitions, colors, connections, modes) are globally unique across all element types?
-		 * CHRIS: Yes it does. The id generator is initialized with the current system time from there on is 
-		 *   allways increased by one for every id generated. Id generation is synchronized, so there should be 
-		 *   no way of creating double ids (ok ... except if the user messes with the system time or works during 
-		 *   daylightsaving time changes and starts the program the same second twice, but I thought the chance for 
-		 *   that would be quite slim) ;)  
-		 */
-		
-		logln(2, "\n/////////////////////////////////////////////");
-		logln(2, "// Create places");
-		// Allocate an array able to contain the places.
-		logln(2, "places = new Place[" + numPlaces + "];");
-		places = new Place[numPlaces];
-		queues = new Queue[numQueues];
-		// Set for checking the uniqueness of queue names
-		HashSet<String> queueNames = new HashSet<String>();
-
-		for (int i = 0; i < numQueues; i++) {
-			Element queue = (Element) queueList.get(i);
-
-			int numberOfServers;
-			int queueingStrategy = Queue.FCFS;
-			
-			String name = queue.attributeValue("name");
-			if (queueNames.contains(name)) {
-				logln("ERROR: Another queue definition with the same name does already exist!");
-				logln("Details: ");
-				logln("  queue-num      = " + i);
-				logln("  queue.id       = " + queue.attributeValue("id"));
-				logln("  queue.name     = " + name);
-				throw new SimQPNException();
-			} else {
-				queueNames.add(name);
-			}
-
-			if ("IS".equals(queue.attributeValue("strategy"))) {
-				queueingStrategy = Queue.IS; 
-				numberOfServers = 0; //NOTE: This is assumed in QPlaceQueueStats.updateTkPopStats()! 
-			} else {
-				if ("FCFS".equals(queue.attributeValue("strategy"))) {
-					queueingStrategy = Queue.FCFS; 
-				} else if ("PS".equals(queue.attributeValue("strategy"))) {
-					queueingStrategy = Queue.PS; 
-				} else {						
-					logln("ERROR: Invalid or missing \"strategy\" (queueing discipline) setting!");
-					logln("Details: ");
-					logln("  queue-num      = " + i);
-					logln("  queue.id       = " + queue.attributeValue("id"));
-					logln("  queue.name     = " + queue.attributeValue("name"));
-					logln("  queue.strategy = " + queue.attributeValue("strategy"));
-					throw new SimQPNException();
-				}
-				if (queue.attributeValue("number-of-servers") == null) {
-					logln("ERROR: \"number-of-servers\" parameter not set!");
-					logln("Details: ");
-					logln("  queue-num   = " + i);
-					logln("  queue.id    = " + queue.attributeValue("id"));
-					logln("  queue.name  = " + queue.attributeValue("name"));												
-					throw new SimQPNException();
-				}
-				numberOfServers = Integer.parseInt(queue.attributeValue("number-of-servers"));
-			}				
-	
-			queues[i] = new Queue(
-					i,															// index
-					queue.attributeValue("id"),									// xml-id
-					queue.attributeValue("name"), 								// name
-					queueingStrategy, 											// queueing d
-					numberOfServers	 											// # servers
-					);
-			logln(2, "queues[" + i + "] = new Queue(" 
-					+ i + ", '" 
-					+ queue.attributeValue("name") + "', " 
-					+ queueingStrategy + ", " 
-					+ numberOfServers + ")");					
-		}
-
-
-		// Create the place-objects of every-place. Depending on its type-attribute create Place or QPlace objects.
-		Iterator placeIterator = placeList.iterator();
-		// Set for checking the uniqueness of place names
-		HashSet<String> placeNames = new HashSet<String>();
-		
-		for (int i = 0; placeIterator.hasNext(); i++) {
-			Element place = (Element) placeIterator.next();
-			
-			String name = place.attributeValue("name");
-			if (placeNames.contains(name)) {
-				logln("Error: Another place with the same name does already exist!");
-				logln("Details: ");
-				logln("  place-num   = " + i);
-				logln("  place.id    = " + place.attributeValue("id"));
-				logln("  place.name  = " + name);								
-				throw new SimQPNException();
-			} else {
-				placeNames.add(name);
-			}
-			
-			// SDK-DEBUG: Are you sure the XPath expression below selects the right connections? 
-			//   <connection> is a child of the <connections> child element of <net> <connections> inside transitions 
-			//   should not be selected here!
-			// CHRIS: Since I specify the source-id attribute and specify the id of a place, only inter place/tansition 
-			//   connections can be selected, the incidence function connections are between color-refs and modes and since 
-			//   the ids are concidered unique, the correct connection element will be selected.
-			XPath xpathSelector = DocumentHelper.createXPath("//connection[@source-id = '" + place.attributeValue("id") + "']");
-			int numOutgoingConnections = xpathSelector.selectNodes(net).size();
-			xpathSelector = DocumentHelper.createXPath("//connection[@target-id = '" + place.attributeValue("id") + "']");
-			int numIncomingConnections = xpathSelector.selectNodes(net).size();
-
-			Element metaAttribute = getSettings(place, configuration);
-			// Stats-level should be configurable as above.
-			if (metaAttribute.attributeValue("statsLevel") == null) {
-				logln("Error: statsLevel parameter not set!");
-				logln("Details: ");
-				logln("  place-num   = " + i);
-				logln("  place.id    = " + place.attributeValue("id"));
-				logln("  place.name  = " + place.attributeValue("name"));								
-				throw new SimQPNException();
-			}
-			int statsLevel = Integer.parseInt(metaAttribute.attributeValue("statsLevel"));
-			
-			int dDis;
-			
-			// This is a user-defined config-parameter for both ordinary- and queueing-place.			
-			if (place.attributeValue("departure-discipline") == null) {
-				logln("ERROR: departure-discipline parameter not set!");
-				logln("Details: ");
-				logln("  place-num   = " + i);
-				logln("  place.id    = " + place.attributeValue("id"));
-				logln("  place.name  = " + place.attributeValue("name"));								
-				throw new SimQPNException();
-			}			
-			if ("NORMAL".equals(place.attributeValue("departure-discipline"))) {
-				dDis = Place.NORMAL;
-			} else if ("FIFO".equals(place.attributeValue("departure-discipline"))) {
-				dDis = Place.FIFO;
-			} else {
-				logln("ERROR: Invalid departure-discipline setting!");
-				logln("Details: ");				
-				logln("  place-num                  = " + i);
-				logln("  place.id                   = " + place.attributeValue("id"));
-				logln("  place.name                 = " + place.attributeValue("name"));
-				logln("  place.departure-discipline = " + place.attributeValue("departure-discipline"));
-				throw new SimQPNException();				
-			}
-			/* 
-			 * IMPORTANT:			
-			 * My understanding was that all attributes should be included in the XML document even if they are set to 
-			 * their default values. Under this assumption, default values are dealt with in QPE and here when mapping 
-			 * the model to SimQPN it is assumed that all attributes are set to valid values. So if that's not the case 
-			 * we should print an error message and stop. This would make it easier to shake out potential bugs in the 
-			 * mapping.
-			 * 
-			 * CHRIS: I had changed that in the editor. Unfortunately this only applys to newly created nodes. 
-			 *
-			 * SDK-DEBUG2: 
-			 * I have noticed that still some parameters (e.g. minObsrv, maxObsrv, queueMinObsrv, queueMaxObsrv, distribution-function) 
-			 * are not included in the XML file when the default value is chosen.  
-			 * All attributes must be included in the XML even if they were not changed from their default values, i.e., 
-			 * the XML file should be complete! 
-			 * CHRIS: Fixed that now too.
-			 */
-			
-			// Extract the names of the colors that can reside in this place
-			Element colorRefsElem = place.element("color-refs");
-			if (colorRefsElem == null) {
-				logln("ERROR: Missing color references!");
-				logln("Details: ");				
-				logln("  place-num                  = " + i);
-				logln("  place.id                   = " + place.attributeValue("id"));
-				logln("  place.name                 = " + place.attributeValue("name"));
-				logln("  place.departure-discipline = " + place.attributeValue("departure-discipline"));
-				throw new SimQPNException();
-			}
-			List colorRefs = colorRefsElem.elements("color-ref");
-			if (colorRefs.size() == 0) {
-				logln("ERROR: Missing color references!");
-				logln("Details: ");				
-				logln("  place-num                  = " + i);
-				logln("  place.id                   = " + place.attributeValue("id"));
-				logln("  place.name                 = " + place.attributeValue("name"));
-				logln("  place.departure-discipline = " + place.attributeValue("departure-discipline"));
-				throw new SimQPNException();
-			}
-			String[] colors = new String[colorRefs.size()];			
-			Iterator colorRefIterator = colorRefs.iterator();			
-			for (int c = 0; colorRefIterator.hasNext(); c++) {
-			   Element colorRef = (Element) colorRefIterator.next();
-			   xpathSelector = DocumentHelper.createXPath("colors/color[(@id='" + colorRef.attributeValue("color-id") + "')]");
-			   Element color = (Element) xpathSelector.selectSingleNode(net);
-			   colors[c] = color.attributeValue("name");			   
-			}
-			
-			if ("ordinary-place".equals(place.attributeValue("type"))) {
-				places[i] = new Place(
-						i,																	// id 
-						place.attributeValue("name"), 										// name
-						colors, 															// color names
-						numIncomingConnections,												// # incoming connections 
-						numOutgoingConnections, 											// # outgoing connections
-						statsLevel,															// stats level
-						dDis, 																// departure discipline
-						place);																// Reference to the place' XML element				
-				logln(2, "places[" + i + "] = new Place(" 
-						+ i + ", '" 
-						+ place.attributeValue("name") + "', " 
-						+ colors + ", " 
-						+ numIncomingConnections + ", " 
-						+ numOutgoingConnections + ", " 
-						+ statsLevel + ", " 
-						+ dDis + ", " 
-						+ place + ")"); 												
-			} else if ("queueing-place".equals(place.attributeValue("type"))) {
-				try {
-					String queueRef = place.attributeValue("queue-ref");
-					Queue queue = findQueueByXmlId(queueRef);
-					places[i] = new QPlace(
-							i, 																	// id
-							place.attributeValue("name"), 										// name
-							colors, 															// color names	
-							numIncomingConnections,												// # incoming connections
-							numOutgoingConnections, 											// # outgoing connections
-							statsLevel, 														// stats level
-							dDis, 																// departure discipline
-							queue,													// Reference to the integrated Queue										
-							place);																// Reference to the place' XML element				
-					logln(2, "places[" + i + "] = new QPlace(" 
-							+ i + ", '" 
-							+ place.attributeValue("name") + "', " 
-							+ colors + ", " 
-							+ numIncomingConnections + ", " 
-							+ numOutgoingConnections + ", " 
-							+ statsLevel + ", " 
-							+ dDis + ", " 
-							+ queue + ", "  
-							+ place + ")"); 								
-					queue.addQPlace((QPlace) places[i]);				
-				} catch(NoSuchElementException ex) {
-					logln("ERROR: No queue defined!");
-					logln("Details: ");
-					logln("  place-num   = " + i);
-					logln("  place.id    = " + place.attributeValue("id"));
-					logln("  place.name  = " + place.attributeValue("name"));
-					logln("  place.type  = " + place.attributeValue("type"));
-					throw new SimQPNException();
-				}
-			} else {
-				logln("ERROR: Invalid or missing place type setting!");
-				logln("       Currently only 'ordinary-place' and 'queueing-place' are supported.");
-				logln("Details: ");
-				logln("  place-num   = " + i);
-				logln("  place.id    = " + place.attributeValue("id"));
-				logln("  place.name  = " + place.attributeValue("name"));
-				logln("  place.type  = " + place.attributeValue("type"));
-				throw new SimQPNException();
-			}
-		}
+		createPlaces();
 
 		// -----------------------------------------------------------------------------------------------------------
 		// CREATE TRANSITIONS
 		// -----------------------------------------------------------------------------------------------------------
-		/*
-		 * public Transition(int id, String name, int numModes, int numInPlaces, int numOutPlaces, double transWeight) 
-		 * 
-		 * @param int id                  - global id of the transition 
-		 * @param String name             - name of the transition 
-		 * @param int numModes            - number of modes 
-		 * @param int numInPlaces         - number of input places 
-		 * @param int numOutPlaces        - number of output places 
-		 * @param double transWeight      - transition weight
-		 * 
-		 * Validate input parameters provided by the user to make sure that they make sense!!! For e.g. transWeight >= 0
-		 * 
-		 * IMPORTANT: Timed transitions and Subnet places are currently not supported!!! If the net uses them, just 
-		 * print an error message and exit.
-		 * 
-		 * IMPORTANT: trans id must be equal to its index in the trans array!!!
-		 * 
-		 */
-
-		logln(2, "\n/////////////////////////////////////////////");
-		logln(2, "// Create transitions");
-		// Allocate an array able to contain the transitions.
-		logln(2, "trans = new Transition[" + numTrans + "];");
-		trans = new Transition[numTrans];
-		// Set for checking the uniqueness of transition names
-		HashSet<String> transNames = new HashSet<String>();
-
-		// Create the transition-objects of every transition.
-		Iterator transitionIterator = transitionList.iterator();
-		for (int i = 0; transitionIterator.hasNext(); i++) {
-			Element transition = (Element) transitionIterator.next();
-			
-			String name = transition.attributeValue("name");
-			if (transNames.contains(name)) {
-				logln("ERROR: Another transition with the same name does already exist!");				
-				logln("Details: ");
-				logln("  transition-num   = " + i);
-				logln("  transition.id    = " + transition.attributeValue("id"));
-				logln("  transition.name  = " + transition.attributeValue("name"));
-				throw new SimQPNException();
-			} else {
-				transNames.add(name);
-			}
-			
-			if(!"immediate-transition".equals(transition.attributeValue("type"))) {
-				logln("ERROR: Invalid or missing transition type setting!");
-				logln("       Only \"immediate-transition\" is currently supported.");				
-				logln("Details: ");
-				logln("  transition-num   = " + i);
-				logln("  transition.id    = " + transition.attributeValue("id"));
-				logln("  transition.name  = " + transition.attributeValue("name"));
-				logln("  transition.type  = " + transition.attributeValue("type"));
-				throw new SimQPNException();
-			}
-			XPath xpathSelector = DocumentHelper.createXPath("modes/mode");
-			int numModes = xpathSelector.selectNodes(transition).size();
-			if(numModes == 0) {
-				logln("Error: incidence function not defined!");
-				logln("Details: ");
-				logln("  transition-num   = " + i);
-				logln("  transition.id    = " + transition.attributeValue("id"));
-				logln("  transition.name  = " + transition.attributeValue("name"));
-				logln("  transition.type  = " + transition.attributeValue("type"));				
-				throw new SimQPNException();
-			}
-			xpathSelector = DocumentHelper.createXPath("//connection[@source-id = '" + transition.attributeValue("id") + "']");
-			int numOutgoingConnections = xpathSelector.selectNodes(net).size();
-			xpathSelector = DocumentHelper.createXPath("//connection[@target-id = '" + transition.attributeValue("id") + "']");
-			int numIncomingConnections = xpathSelector.selectNodes(net).size();			
-			if(transition.attributeValue("weight") == null) {
-				logln("Error: transition weight not set!");
-				logln("Details: ");
-				logln("  transition-num   = " + i);
-				logln("  transition.id    = " + transition.attributeValue("id"));
-				logln("  transition.name  = " + transition.attributeValue("name"));
-				logln("  transition.type  = " + transition.attributeValue("type"));				
-				throw new SimQPNException();
-			}
-			double transitionWeight = Double.parseDouble(transition.attributeValue("weight"));
-			
-			trans[i] = new Transition(
-					i,																		// id
-					transition.attributeValue("name"), 										// name
-					numModes, 																// # modes
-					numIncomingConnections, 												// # incoming connections
-					numOutgoingConnections, 												// # outgoing connections
-					transitionWeight);														// transition weight
-			logln(2, "trans[" + i + "] = new Transition(" 
-					+ i + ", '" 
-					+ transition.attributeValue("name") + "', " 
-					+ numModes + ", " 
-					+ numIncomingConnections + ", " 
-					+ numOutgoingConnections + ", " 
-					+ transitionWeight + ");       transition-element = " + transition);									
-		}		
+		createTransitions();		
 
 		// -----------------------------------------------------------------------------------------------------------
 		// CONFIGURE INPUT/OUTPUT RELATIONSHIPS
 		// -----------------------------------------------------------------------------------------------------------
-
-		logln(2, "\n/////////////////////////////////////////////");
-		logln(2, "// Configure input/output relationships");
-		// Initialize the place-transition and transition-place connections.
-		XPath xpathSelector = DocumentHelper.createXPath("/net/connections/connection");
-		Iterator connectionIterator = xpathSelector.selectNodes(net).iterator();
-		
-		while (connectionIterator.hasNext()) {
-			// Get the next connection
-			Element connection = (Element) connectionIterator.next();
-
-			// Select the source and target of this connection
-			xpathSelector = DocumentHelper.createXPath("//*[@id = '" + connection.attributeValue("source-id") + "']");
-			Element sourceElement = (Element) xpathSelector.selectSingleNode(net);
-			xpathSelector = DocumentHelper.createXPath("//*[@id = '" + connection.attributeValue("target-id") + "']");
-			Element targetElement = (Element) xpathSelector.selectSingleNode(net);
-
-			// if the source is a place, then select the Place object which it is assigned to.
-			if ("place".equals(sourceElement.getName())) {
-				// Select the source place.
-				for (int p = 0; p < places.length; p++) {
-					if (placeList.get(p).equals(sourceElement)) {
-						// SDK-DEBUG: Does "equals" work correctly here? Or should you rather compare the id's?
-						// CHRIS: Since references to the DOM elements instances are returned the check works and is
-						// a lot faster.
-
-						// Select the target transition
-						for (int t = 0; t < trans.length; t++) {
-							if (transitionList.get(t).equals(targetElement)) {
-								// Connect place and transition
-								for (int ot = 0; ot < places[p].outTrans.length; ot++) {
-									if (places[p].outTrans[ot] == null) {
-										places[p].outTrans[ot] = trans[t];
-										logln(2, "places[" + p + "].outTrans[" + ot + "] = trans[" + t + "];");										
-										break;
-									}
-								}
-								for (int ip = 0; ip < trans[t].inPlaces.length; ip++) {
-									if (trans[t].inPlaces[ip] == null) {
-										trans[t].inPlaces[ip] = places[p];
-										logln(2, "trans[" + t + "].inPlaces[" + ip + "] = places[" + p + "];");										
-										break;
-									}
-								}
-								break;
-							}
-						}
-						break;
-					}
-				}
-			}
-			// if the source is a transition, then select the Transition object which it is assigned to.
-			else if ("transition".equals(sourceElement.getName())) {
-				// Select the source transition.
-				for (int t = 0; t < trans.length; t++) {
-					if (transitionList.get(t).equals(sourceElement)) {
-						// Select the target place.
-						for (int p = 0; p < places.length; p++) {
-							if (placeList.get(p).equals(targetElement)) {
-								// Connect transition and place.
-								for (int op = 0; op < trans[t].outPlaces.length; op++) {
-									if (trans[t].outPlaces[op] == null) {
-										trans[t].outPlaces[op] = places[p];
-										logln(2, "trans[" + t + "].outPlaces[" + op + "] = places[" + p + "];");										
-										break;
-									}
-								}
-								for (int it = 0; it < places[p].inTrans.length; it++) {
-									if (places[p].inTrans[it] == null) {
-										places[p].inTrans[it] = trans[t];
-										logln(2, "places[" + p + "].inTrans[" + it + "] = trans[" + t +"];");										
-										break;
-									}
-								}
-								break;
-							}
-						}
-						break;
-					}
-				}
-			}
-		}
+		configureInputOutputRelationships();
 
 		// -----------------------------------------------------------------------------------------------------------
 		// CONFIGURE TRANSITION MODE WEIGHTS
 		// -----------------------------------------------------------------------------------------------------------
-
-		logln(2, "\n/////////////////////////////////////////////");
-		logln(2, "// Configure transition mode weights");
-		transitionIterator = transitionList.iterator();
-		for (int i = 0; transitionIterator.hasNext(); i++) {
-			Element transition = (Element) transitionIterator.next();
-			xpathSelector = DocumentHelper.createXPath("modes/mode");
-			Iterator modeIterator = xpathSelector.selectNodes(transition).iterator();
-			for (int j = 0; modeIterator.hasNext(); j++) {
-				Element mode = (Element) modeIterator.next();
-				if(mode.attributeValue("firing-weight") == null) {
-					logln("Error: transition mode' \"firing-weight\" not set");
-					logln("Details: ");
-					logln("  transition-num   = " + i);
-					logln("  transition.id    = " + transition.attributeValue("id"));
-					logln("  transition.name  = " + transition.attributeValue("name"));
-					logln("  mode-num         = " + j);
-					logln("  mode.id          = " + mode.attributeValue("id"));
-					logln("  mode.name        = " + mode.attributeValue("name"));					
-					throw new SimQPNException();										
-				}				
-				trans[i].modeWeights[j] = Double.parseDouble(mode.attributeValue("firing-weight"));
-				logln(2, "trans[" + i + "].modeWeights[" + j + "] = " + trans[i].modeWeights[j]);				
-			}
-		}
+		configureTransitionModeWeights();
 
 		// -----------------------------------------------------------------------------------------------------------
 		// CONFIGURE TRANSITION INPUT/OUTPUT FUNCTIONS [mode, inPlace, color]
 		// -----------------------------------------------------------------------------------------------------------
+		configureTransitionInputOutputFunctions();
 
+		// -----------------------------------------------------------------------------------------------------------
+		// CONFIGURE QUEUE SERVICE TIME DISTRIBUTIONS (times normally in milliseconds)
+		// -----------------------------------------------------------------------------------------------------------
+		configureQueueServiceTimeDistributions();
+		
+		// --------------------------------------------------------------------------------------------------------
+		// CONFIGURE INITIAL MARKING
+		// --------------------------------------------------------------------------------------------------------
+		// Note: All initial tokens should be in ordianary places or depositories.
+		// No initial tokens are allowed in the queues.
+		configureInitialMarking();
+
+		// *****************************************************************************************************************
+		// END-MODEL-DEFINITION
+		// *****************************************************************************************************************
+
+		// BEGIN-CONFIG
+		// ------------------------------------------------------------------------------------------------------
+
+		configureSimulatorSettings();
+
+		configureBatchMeansMethod();
+
+		// END-CONFIG
+		// ---------------------------------------------------------------------------------------------------------
+
+		// Working variables
+		initializeWorkingVariables();
+	}
+
+	private void initializeWorkingVariables() throws SimQPNException {
+		inRampUp = true;
+		endRampUpClock = 0;
+		endRunClock = 0;
+		msrmPrdLen = 0; // Set at the end of the run when the actual length is known.
+		beginRunWallClock = 0;
+		endRunWallClock = 0;
+		runWallClockTime = 0;
+
+		clock = 0;	// Note that it has been assumed throughout the code that
+		   			// the simulation starts at virtual time 0.
+
+		eventList.clear();
+		// eventList = new LinkedList();  // Old LinkedList implementation of the event list.
+		
+		// Make sure clock has been initialized before calling init below
+		// Call places[i].init() first and then thans[i].init() and queues[i].init() 
+		for (int i = 0; i < numPlaces; i++)
+			places[i].init();
+		for (int i = 0; i < numTrans; i++)
+			trans[i].init();
+		for (int i = 0; i < numQueues; i++)
+			queues[i].init();
+	}
+
+	private void configureBatchMeansMethod() throws SimQPNException {
 		/*
-		 * For each transition for every input/output place must specify how many tokens of  each color of the 
-		 * respective place are destroyed/created.
+		 * "Advanced Configuration Options" only applicable to the BATCH_MEANS method
+		 * 
+		 * These options are configurable for each place/queue/depository that
+		 * has statsLevel >= 3. Options should be displayed only if BATCH_MEANS
+		 * is chosen and in this case only for places that have statsLevel set
+		 * to be >= 3.
+		 * 
+		 * double signLevST - Required significance level. 
+		 * double reqAbsPrc - Used if stoppingRule=ABSPRC: Required absolute precision (max c.i. half length). 
+		 * double reqRelPrc - Used if stoppingRule=RELPRC: Required relative precision (max ratio of c.i. half length to mean).
+		 * int batchSizeST - Batch size for the batch means algorithm.
+		 * int minBatches - Minimum number of batches required for steady state statistics. If minBatches[c] <= 0, no steady state statistics are collected for this color!
+		 * int numBMeansCorlTested - If > 0 checks whether the batch size is sufficient - the first numBMeansCorlTested batch means from the beginning of steady state are tested for autocorrelation.
+		 * 
+		 * NOTE: reqAbsPrc should be available only if stoppingRule=ABSPRC; reqRelPrc should be available only if stoppingRule=RELPRC.
+		 * 
+		 * Check and make sure that numBMeansCorlTested is even!
 		 */
 
-		logln(2, "\n/////////////////////////////////////////////");
-		logln(2, "// Configure transition input/output functions [mode, inPlace, color]");
-		// trans[{transition-number}].inFunc[{place-number}][{color-ref-number}][{mode-number}]
-		// = {number-of-tokens};
-		
-		for (int t = 0; t < trans.length; t++) {
-			// Select the element for the current transition.
-			Element transition = (Element) transitionList.get(t);
-
-			xpathSelector = DocumentHelper.createXPath("modes/mode");
-			List modes = xpathSelector.selectNodes(transition);
-
-			// Iterate through all modes
-			for (int m = 0; m < trans[t].numModes; m++) {
-				int numInputTokens = 0;
-				// Iterate through all input-places.
-				for (int p = 0; p < trans[t].inPlaces.length; p++) {
-					Element inputPlace = trans[t].inPlaces[p].element;
-					// Go through all color-refs for the current place.
-					xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
-					List colorRefs = xpathSelector.selectNodes(inputPlace);
-
-					// Allocate an array saving the number of tokens for each color-ref to the current mode for the
-					// current input place. If there is no connection, then this value is 0.
-					trans[t].inFunc[m][p] = new int[colorRefs.size()];
-					logln(2, "trans[" + t + "].inFunc[" + m + "][" + p + "] = new int[" + colorRefs.size() + "];");					
-
-					Iterator colorRefIterator = colorRefs.iterator();
-					for (int con = 0; colorRefIterator.hasNext(); con++) {
+		// CONFIG: BATCH_MEANS Method Initialization Parameters
+		if (analMethod == BATCH_MEANS)  {
+			Iterator placeIterator; placeIterator = placeList.iterator();
+			for (int p = 0; placeIterator.hasNext(); p++) {
+				Element place = (Element) placeIterator.next();
+				Place pl = places[p];
+				if (pl.statsLevel >= 3) {
+					logln(2, "places[" + p + "]");
+					XPath xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
+					Iterator colorRefIterator = xpathSelector.selectNodes(place).iterator();
+					for (int cr = 0; colorRefIterator.hasNext(); cr++) {
 						Element colorRef = (Element) colorRefIterator.next();
-
-						String colorRefId = colorRef.attributeValue("id");
-						String modeId = ((Element) modes.get(m)).attributeValue("id");
-
-						xpathSelector = DocumentHelper.createXPath("connections/connection[(@source-id='" + colorRefId + "') and (@target-id='" + modeId + "')]");
-						Element connection = (Element) xpathSelector.selectSingleNode(transition);
-						if (connection != null) {
-							if(connection.attributeValue("count") == null) {
-								logln("ERROR: incidence function connection' \"count\" (arc weight) attribute not set!");
-								logln("Details: ");
-								logln("  transition-num    = " + t);
-								logln("  transition.id     = " + transition.attributeValue("id"));
-								logln("  transition.name   = " + transition.attributeValue("name"));
-								logln("  mode-num          = " + m);
-								logln("  mode.id           = " + ((Element) modes.get(m)).attributeValue("id"));
-								logln("  mode.name         = " + ((Element) modes.get(m)).attributeValue("name"));																
-								logln("  inPlace.id        = " + inputPlace.attributeValue("id"));
-								logln("  inPlace.name      = " + inputPlace.attributeValue("name"));								
-								logln("  colorRef.id       = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id = " + colorRef.attributeValue("color-id"));
+						Element colorRefSettings = getSettings(colorRef, configuration);
+						// Initialize Place (or Depository if pl is QPlace)
+						if (colorRefSettings != null) {
+							if (colorRefSettings.attributeValue("signLev") == null) {
+								logln("Error: Configuration parameter \"signLev\" for Batch Means Method is missing!");
+								logln("Details:");
+								logln("  configuration = " + configuration);						
+								logln("  place-num          = " + p);
+								logln("  place.id           = " + place.attributeValue("id"));
+								logln("  place.name         = " + place.attributeValue("name"));						
+								logln("  colorRef-num       = " + cr);
+								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
 								throw new SimQPNException();
 							}
-							int numTokens = Integer.parseInt(connection.attributeValue("count"));
-							//SDK-DEBUG: Attribute "count" is usually missing in the XML file.
-							//CHRIS: fixed that.
-							trans[t].inFunc[m][p][con] = numTokens;							
-							logln(2, "trans[" + t + "].inFunc[" + m + "][" + p + "][" + con +"] = " + numTokens);
-							numInputTokens += numTokens;
-						} else {							
-							trans[t].inFunc[m][p][con] = 0;
-							logln(2, "trans[" + t + "].inFunc[" + m + "][" + p + "][" + con +"] = 0");
-						}
-					}
-				}
-				if(numInputTokens == 0) {
-					logln("ERROR: an immediate transition with a mode that requires no input tokens found! This would cause a simulation deadlock.");
-					logln("Details: ");
-					logln("  transition-num    = " + t);
-					logln("  transition.id     = " + transition.attributeValue("id"));
-					logln("  transition.name   = " + transition.attributeValue("name"));
-					logln("  mode-num          = " + m);
-					logln("  mode.id           = " + ((Element) modes.get(m)).attributeValue("id"));
-					logln("  mode.name         = " + ((Element) modes.get(m)).attributeValue("name"));																
-					throw new SimQPNException();
-				}
+							pl.placeStats.signLevST[cr] = Double.parseDouble(colorRefSettings.attributeValue("signLev"));
+							logln(2, "-- placeStats.signLevST[" + cr + "] = " + pl.placeStats.signLevST[cr]);							
 
-				// Iterate through all output-places.
-				for (int p = 0; p < trans[t].outPlaces.length; p++) {
-					Element outputPlace = trans[t].outPlaces[p].element;
-					// Go through all color-refs for the current place.
-					xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
-					List colorRefs = xpathSelector.selectNodes(outputPlace);
-					
-					// Allocate an array saving the number of tokens for each color-ref to mode connection. 
-					// If there is no connection, then this value is 0.
-					trans[t].outFunc[m][p] = new int[colorRefs.size()];					
-					logln(2, "trans[" + t + "].outFunc[" + m + "][" + p +"] = new int[" + colorRefs.size() + "];");
-						
-					Iterator colorRefIterator = colorRefs.iterator();
-					for (int con = 0; colorRefIterator.hasNext(); con++) {
-						Element colorRef = (Element) colorRefIterator.next();
-
-						String colorRefId = colorRef.attributeValue("id");
-						String modeId = ((Element) modes.get(m)).attributeValue("id");
-
-						xpathSelector = DocumentHelper.createXPath("connections/connection[(@source-id='" + modeId + "') and (@target-id='" + colorRefId + "')]");
-						Element connection = (Element) xpathSelector.selectSingleNode(transition);
-						if (connection != null) {
-							if(connection.attributeValue("count") == null) {
-								logln("ERROR: incidence function connection' \"count\" (arc weight) attribute not set!");
-								logln("Details: ");
-								logln("  transition-num    = " + t);
-								logln("  transition.id     = " + transition.attributeValue("id"));
-								logln("  transition.name   = " + transition.attributeValue("name"));
-								logln("  mode-num          = " + m);
-								logln("  mode.id           = " + ((Element) modes.get(m)).attributeValue("id"));
-								logln("  mode.name         = " + ((Element) modes.get(m)).attributeValue("name"));																
-								logln("  outPlace.id       = " + outputPlace.attributeValue("id"));
-								logln("  outPlace.name     = " + outputPlace.attributeValue("name"));								
-								logln("  colorRef.id       = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id = " + colorRef.attributeValue("color-id"));
-								throw new SimQPNException();								
+							if (colorRefSettings.attributeValue("reqAbsPrc") == null) {
+								logln("Error: Configuration parameter \"reqAbsPrc\" for Batch Means Method is missing!");
+								logln("Details:");
+								logln("  configuration = " + configuration);						
+								logln("  place-num          = " + p);
+								logln("  place.id           = " + place.attributeValue("id"));
+								logln("  place.name         = " + place.attributeValue("name"));						
+								logln("  colorRef-num       = " + cr);
+								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+								throw new SimQPNException();
 							}
-							int numTokens = Integer.parseInt(connection.attributeValue("count"));
-							trans[t].outFunc[m][p][con] = numTokens;
-							logln(2, "trans[" + t + "].outFunc[" + m + "][" + p + "][" + con + "] = " + numTokens + ";");							
-						} else {
-							trans[t].outFunc[m][p][con] = 0;
-							logln(2, "trans[" + t + "].outFunc[" + m + "][" + p + "][" + con + "] = 0;");							
+							pl.placeStats.reqAbsPrc[cr] = Double.parseDouble(colorRefSettings.attributeValue("reqAbsPrc"));
+							logln(2, "-- placeStats.reqAbsPrc[" + cr + "] = " + pl.placeStats.reqAbsPrc[cr]);
+							
+							if (colorRefSettings.attributeValue("reqRelPrc") == null) {								
+								logln("Error: Configuration parameter \"reqRelPrc\" for Batch Means Method is missing!");
+								logln("Details:");
+								logln("  configuration = " + configuration);						
+								logln("  place-num          = " + p);
+								logln("  place.id           = " + place.attributeValue("id"));
+								logln("  place.name         = " + place.attributeValue("name"));						
+								logln("  colorRef-num       = " + cr);
+								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+								throw new SimQPNException();
+							}
+							pl.placeStats.reqRelPrc[cr] = Double.parseDouble(colorRefSettings.attributeValue("reqRelPrc"));
+							logln(2, "-- placeStats.reqRelPrc[" + cr + "] = " + pl.placeStats.reqRelPrc[cr]);
+
+							if (colorRefSettings.attributeValue("batchSize") == null) {
+								logln("Error: Configuration parameter \"batchSize\" for Batch Means Method is missing!");
+								logln("Details:");
+								logln("  configuration = " + configuration);						
+								logln("  place-num          = " + p);
+								logln("  place.id           = " + place.attributeValue("id"));
+								logln("  place.name         = " + place.attributeValue("name"));						
+								logln("  colorRef-num       = " + cr);
+								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));								
+								throw new SimQPNException();
+							}
+							pl.placeStats.batchSizeST[cr] = Integer.parseInt(colorRefSettings.attributeValue("batchSize"));
+							logln(2, "-- placeStats.batchSizeST[" + cr + "] = " + pl.placeStats.batchSizeST[cr]);							
+
+							if (colorRefSettings.attributeValue("minBatches") == null) {
+								logln("Error: Configuration parameter \"minBatches\" for Batch Means Method is missing!");
+								logln("Details:");
+								logln("  configuration = " + configuration);						
+								logln("  place-num          = " + p);
+								logln("  place.id           = " + place.attributeValue("id"));
+								logln("  place.name         = " + place.attributeValue("name"));						
+								logln("  colorRef-num       = " + cr);
+								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																
+								throw new SimQPNException();
+							}
+							pl.placeStats.minBatches[cr] = Integer.parseInt(colorRefSettings.attributeValue("minBatches"));
+							logln(2, "-- placeStats.minBatches[" + cr + "] = " + pl.placeStats.minBatches[cr]);							
+
+							if (colorRefSettings.attributeValue("numBMeansCorlTested") == null) {
+								logln("Error: Configuration parameter \"numBMeansCorlTested\" for Batch Means Method is missing!");
+								logln("Details:");
+								logln("  configuration = " + configuration);						
+								logln("  place-num          = " + p);
+								logln("  place.id           = " + place.attributeValue("id"));
+								logln("  place.name         = " + place.attributeValue("name"));						
+								logln("  colorRef-num       = " + cr);
+								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
+								throw new SimQPNException();
+							}
+							pl.placeStats.numBMeansCorlTested[cr] = Integer.parseInt(colorRefSettings.attributeValue("numBMeansCorlTested"));
+							logln(2, "-- placeStats.numBMeansCorlTested[" + cr + "] = " + pl.placeStats.numBMeansCorlTested[cr]);
+							
+							// Note that if (minBatches > 0 && numBMeansCorlTested[c] > 0),
+							// minBatches[c] must be > numBMeansCorlTested[c]!
+							if (pl.placeStats.minBatches[cr] > 0 && 
+								pl.placeStats.numBMeansCorlTested[cr] > 0 && 
+								!(pl.placeStats.minBatches[cr] > pl.placeStats.numBMeansCorlTested[cr])) {
+								logln("Error: Place.placeStats.minBatches[c] must be greater than Place.placeStats.numBMeansCorlTested[c]!");
+								logln("Details:");
+								logln("  configuration = " + configuration);						
+								logln("  place-num          = " + p);
+								logln("  place.id           = " + place.attributeValue("id"));
+								logln("  place.name         = " + place.attributeValue("name"));						
+								logln("  colorRef-num       = " + cr);
+								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
+								throw new SimQPNException();
+							}
+							// If (numBMeansCorlTested[c] <= 0) no correlation test is done!
+							// Note that numBMeansCorlTested must be even!
+							if (pl.placeStats.numBMeansCorlTested[cr] % 2 != 0) {
+								logln("Error: Place.placeStats.numBMeansCorlTested[c] must be even!");
+								logln("Details:");
+								logln("  configuration = " + configuration);						
+								logln("  place-num          = " + p);
+								logln("  place.id           = " + place.attributeValue("id"));
+								logln("  place.name         = " + place.attributeValue("name"));						
+								logln("  colorRef-num       = " + cr);
+								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
+								throw new SimQPNException();
+							}
+
+							if (pl.statsLevel >= 4) {
+								if (colorRefSettings.attributeValue("bucketSize") == null) {
+									logln("Error: Configuration parameter \"bucketSize\" for Batch Means Method is missing!");
+									logln("Details:");
+									logln("  configuration = " + configuration);
+									logln("  place-num          = " + p);
+									logln("  place.id           = " + place.attributeValue("id"));
+									logln("  place.name         = " + place.attributeValue("name"));
+									logln("  colorRef-num       = " + cr);
+									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+									throw new SimQPNException();
+								}
+								pl.placeStats.histST[cr].setBucketSize(Double.parseDouble(colorRefSettings.attributeValue("bucketSize")));
+								logln(2, "-- placeStats.histST[" + cr + "].bucketSize = " + pl.placeStats.histST[cr].getBucketSize());
+
+								if(colorRefSettings.attributeValue("maxBuckets") == null) {
+									logln("Error: Configuration parameter \"maxBuckets\" for Batch Means Method is missing!");
+									logln("Details:");
+									logln("  configuration = " + configuration);
+									logln("  place-num          = " + p);
+									logln("  place.id           = " + place.attributeValue("id"));
+									logln("  place.name         = " + place.attributeValue("name"));
+									logln("  colorRef-num       = " + cr);
+									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+									throw new SimQPNException();
+								}
+								pl.placeStats.histST[cr].setMaximumNumberOfBuckets(Integer.parseInt(colorRefSettings.attributeValue("maxBuckets")));
+								logln(2, "-- placeStats.histST[" + cr + "].maxBuckets = " + pl.placeStats.histST[cr].getMaximumNumberOfBuckets());
+							}
+						} else {							
+							logln("Error: SimQPN configuration parameters for Batch Means Method are missing!");
+							logln("Details:");
+							logln("  configuration = " + configuration);						
+							logln("  place-num          = " + p);
+							logln("  place.id           = " + place.attributeValue("id"));
+							logln("  place.name         = " + place.attributeValue("name"));						
+							logln("  colorRef-num       = " + cr);
+							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+							throw new SimQPNException();
+							/* ORIGINAL MANUAL CONFIGURATION
+							pl.placeStats.signLevST[cr] = 0.05;     // e.g. 0.05 ---> 95% c.i.; 0.1 ---> 90%
+							logln(2, "-- placeStats.signLevST[" + cr + "] = " + pl.placeStats.signLevST[cr]);							
+							pl.placeStats.reqAbsPrc[cr] = 50;
+							logln(2, "-- placeStats.reqAbsPrc[" + cr + "] = " + pl.placeStats.reqAbsPrc[cr]);							
+							pl.placeStats.reqRelPrc[cr] = 0.05;		// e.g. 0.1 ---> 10% relative precision
+							logln(2, "-- placeStats.reqRelPrc[" + cr + "] = " + pl.placeStats.reqRelPrc[cr]);								 
+							pl.placeStats.batchSizeST[cr] = 200;    // Initial batch size
+							logln(2, "-- placeStats.batchSizeST[" + cr + "] = " + pl.placeStats.batchSizeST[cr]);							
+							pl.placeStats.minBatches[cr] = 60; 
+								// Note that if (minBatches > 0 && numBMeansCorlTested[c] > 0),
+								// minBatches[c] must be > numBMeansCorlTested[c]!
+							logln(2, "-- placeStats.minBatches[" + cr + "] = " + pl.placeStats.minBatches[cr]);	 
+							pl.placeStats.numBMeansCorlTested[cr] = 50; 
+								// Note that numBMeansCorlTested must be even!
+								// If (numBMeansCorlTested[c] <= 0) no correlation test is done!
+							logln(2, "-- placeStats.numBMeansCorlTested[" + cr + "] = " + pl.placeStats.numBMeansCorlTested[cr]);
+							
+						    */
+						}
+
+						// Initialize Queue if pl is QPlace
+						if (pl instanceof QPlace) {
+							QPlace qpl = (QPlace) pl;
+							if (colorRefSettings != null) {
+								if (colorRefSettings.attributeValue("queueSignLev") == null) {
+									logln("Error: Configuration parameter \"queueSignLev\" for Batch Means Method is missing!");
+									logln("Details:");
+									logln("  configuration = " + configuration);						
+									logln("  place-num          = " + p);
+									logln("  place.id           = " + place.attributeValue("id"));
+									logln("  place.name         = " + place.attributeValue("name"));						
+									logln("  colorRef-num       = " + cr);
+									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
+									throw new SimQPNException();
+								}								
+								qpl.qPlaceQueueStats.signLevST[cr] = Double.parseDouble(colorRefSettings.attributeValue("queueSignLev"));
+								logln(2, "-- qPlaceQueueStats.signLevST[" + cr + "] = " + qpl.qPlaceQueueStats.signLevST[cr]);
+
+								if (colorRefSettings.attributeValue("queueReqAbsPrc") == null) {
+									logln("Error: Configuration parameter \"queueReqAbsPrc\" for Batch Means Method is missing!");
+									logln("Details:");
+									logln("  configuration = " + configuration);						
+									logln("  place-num          = " + p);
+									logln("  place.id           = " + place.attributeValue("id"));
+									logln("  place.name         = " + place.attributeValue("name"));						
+									logln("  colorRef-num       = " + cr);
+									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
+									throw new SimQPNException();
+								}
+								qpl.qPlaceQueueStats.reqAbsPrc[cr] = Double.parseDouble(colorRefSettings.attributeValue("queueReqAbsPrc"));
+								logln(2, "-- qPlaceQueueStats.reqAbsPrc[" + cr + "] = " + qpl.qPlaceQueueStats.reqAbsPrc[cr]);
+
+								if (colorRefSettings.attributeValue("queueReqRelPrc") == null) {
+									logln("Error: Configuration parameter \"queueReqRelPrc\" for Batch Means Method is missing!");
+									logln("Details:");
+									logln("  configuration = " + configuration);						
+									logln("  place-num          = " + p);
+									logln("  place.id           = " + place.attributeValue("id"));
+									logln("  place.name         = " + place.attributeValue("name"));						
+									logln("  colorRef-num       = " + cr);
+									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
+									throw new SimQPNException();
+								}
+								qpl.qPlaceQueueStats.reqRelPrc[cr] = Double.parseDouble(colorRefSettings.attributeValue("queueReqRelPrc"));
+								logln(2, "-- qPlaceQueueStats.reqRelPrc[" + cr + "] = " + qpl.qPlaceQueueStats.reqRelPrc[cr]);
+								
+								if (colorRefSettings.attributeValue("queueBatchSize") == null) {
+									logln("Error: Configuration parameter \"queueBatchSize\" for Batch Means Method is missing!");
+									logln("Details:");
+									logln("  configuration = " + configuration);						
+									logln("  place-num          = " + p);
+									logln("  place.id           = " + place.attributeValue("id"));
+									logln("  place.name         = " + place.attributeValue("name"));						
+									logln("  colorRef-num       = " + cr);
+									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
+									throw new SimQPNException();
+								}								
+								qpl.qPlaceQueueStats.batchSizeST[cr] = Integer.parseInt(colorRefSettings.attributeValue("queueBatchSize"));
+								logln(2, "-- qPlaceQueueStats.batchSizeST[" + cr + "] = " + qpl.qPlaceQueueStats.batchSizeST[cr]);
+
+								if(colorRefSettings.attributeValue("queueMinBatches") == null) {
+									logln("Error: Configuration parameter \"queueMinBatches\" for Batch Means Method is missing!");
+									logln("Details:");
+									logln("  configuration = " + configuration);						
+									logln("  place-num          = " + p);
+									logln("  place.id           = " + place.attributeValue("id"));
+									logln("  place.name         = " + place.attributeValue("name"));						
+									logln("  colorRef-num       = " + cr);
+									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
+									throw new SimQPNException();
+								}
+								qpl.qPlaceQueueStats.minBatches[cr] = Integer.parseInt(colorRefSettings.attributeValue("queueMinBatches"));
+								logln(2, "-- qPlaceQueueStats.minBatches[" + cr + "] = " + qpl.qPlaceQueueStats.minBatches[cr]);								
+
+								if(colorRefSettings.attributeValue("queueNumBMeansCorlTested") == null) {
+									logln("Error: Configuration parameter \"queueNumBMeansCorlTested\" for Batch Means Method is missing!");
+									logln("Details:");
+									logln("  configuration = " + configuration);						
+									logln("  place-num          = " + p);
+									logln("  place.id           = " + place.attributeValue("id"));
+									logln("  place.name         = " + place.attributeValue("name"));						
+									logln("  colorRef-num       = " + cr);
+									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
+									throw new SimQPNException();
+								}								
+								qpl.qPlaceQueueStats.numBMeansCorlTested[cr] = Integer.parseInt(colorRefSettings.attributeValue("queueNumBMeansCorlTested"));
+								logln(2, "-- qPlaceQueueStats.numBMeansCorlTested[" + cr + "] = " + qpl.qPlaceQueueStats.numBMeansCorlTested[cr]);								
+								
+								if (qpl.qPlaceQueueStats.minBatches[cr] > 0 && 
+									qpl.qPlaceQueueStats.numBMeansCorlTested[cr] > 0 && 
+									!(qpl.qPlaceQueueStats.minBatches[cr] > qpl.qPlaceQueueStats.numBMeansCorlTested[cr])) {
+									logln("Error: QPlace.qPlaceQueueStats.minBatches[c] must be greater than QPlace.qPlaceQueueStats.numBMeansCorlTested[c]!");
+									logln("Details:");
+									logln("  configuration = " + configuration);						
+									logln("  place-num          = " + p);
+									logln("  place.id           = " + place.attributeValue("id"));
+									logln("  place.name         = " + place.attributeValue("name"));						
+									logln("  colorRef-num       = " + cr);
+									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
+									throw new SimQPNException();
+								}
+								// If (numBMeansCorlTested[c] <= 0) no correlation test is done!								
+								// Note that numBMeansCorlTested must be even!
+								if (qpl.qPlaceQueueStats.numBMeansCorlTested[cr] % 2 != 0) {
+									logln("Error: QPlace.qPlaceQueueStats.numBMeansCorlTested[c] must be even!");
+									logln("Details:");
+									logln("  configuration = " + configuration);						
+									logln("  place-num          = " + p);
+									logln("  place.id           = " + place.attributeValue("id"));
+									logln("  place.name         = " + place.attributeValue("name"));						
+									logln("  colorRef-num       = " + cr);
+									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
+									throw new SimQPNException();
+								}
+
+								if (pl.statsLevel >= 4) {
+									if (colorRefSettings.attributeValue("queueBucketSize") == null) {
+										logln("Error: Configuration parameter \"queueBucketSize\" for Batch Means Method is missing!");
+										logln("Details:");
+										logln("  configuration = " + configuration);
+										logln("  place-num          = " + p);
+										logln("  place.id           = " + place.attributeValue("id"));
+										logln("  place.name         = " + place.attributeValue("name"));
+										logln("  colorRef-num       = " + cr);
+										logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+										logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+										throw new SimQPNException();
+									}
+									qpl.qPlaceQueueStats.histST[cr].setBucketSize(Double.parseDouble(colorRefSettings.attributeValue("queueBucketSize")));
+									logln(2, "-- qPlaceQueueStats.histST[" + cr + "].bucketSize = " + qpl.qPlaceQueueStats.histST[cr].getBucketSize());
+
+									if(colorRefSettings.attributeValue("queueMaxBuckets") == null) {
+										logln("Error: Configuration parameter \"queueMaxBuckets\" for Batch Means Method is missing!");
+										logln("Details:");
+										logln("  configuration = " + configuration);
+										logln("  place-num          = " + p);
+										logln("  place.id           = " + place.attributeValue("id"));
+										logln("  place.name         = " + place.attributeValue("name"));
+										logln("  colorRef-num       = " + cr);
+										logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+										logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+										throw new SimQPNException();
+									}
+									qpl.qPlaceQueueStats.histST[cr].setMaximumNumberOfBuckets(Integer.parseInt(colorRefSettings.attributeValue("queueMaxBuckets")));
+									logln(2, "-- qPlaceQueueStats.histST[" + cr + "].maxBuckets = " + qpl.qPlaceQueueStats.histST[cr].getMaximumNumberOfBuckets());
+								}
+							} else {
+								logln("Error: SimQPN configuration parameters for Batch Means Method are missing!");
+								logln("Details:");
+								logln("  configuration = " + configuration);						
+								logln("  place-num          = " + p);
+								logln("  place.id           = " + place.attributeValue("id"));
+								logln("  place.name         = " + place.attributeValue("name"));						
+								logln("  colorRef-num       = " + cr);
+								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+								throw new SimQPNException();
+								/* ORIGINAL MANUAL CONFIGURATION
+								qpl.qPlaceQueueStats.signLevST[cr] = 0.05;		// e.g. 0.05 ---> 95% c.i.; 0.1 ---> 90%
+								logln(2, "-- qPlaceQueueStats.signLevST[" + cr + "] = " + qpl.qPlaceQueueStats.signLevST[cr]);								
+								qpl.qPlaceQueueStats.reqAbsPrc[cr] = 50;
+								logln(2, "-- qPlaceQueueStats.reqAbsPrc[" + cr + "] = " + qpl.qPlaceQueueStats.reqAbsPrc[cr]);								
+								qpl.qPlaceQueueStats.reqRelPrc[cr] = 0.05;		// e.g. 0.1 ---> 10% relative precision
+								logln(2, "-- qPlaceQueueStats.reqRelPrc[" + cr + "] = " + qpl.qPlaceQueueStats.reqRelPrc[cr]);								
+								qpl.qPlaceQueueStats.batchSizeST[cr] = 200;		// Initial batch size
+								logln(2, "-- qPlaceQueueStats.batchSizeST[" + cr + "] = " + qpl.qPlaceQueueStats.batchSizeST[cr]);								
+								qpl.qPlaceQueueStats.minBatches[cr] = 60; 
+									// Note that if (minBatches > 0 && numBMeansCorlTested[c] > 0),
+									// minBatches[c] must be > numBMeansCorlTested[c]!
+								logln(2, "-- qPlaceQueueStats.minBatches[" + cr + "] = " + qpl.qPlaceQueueStats.minBatches[cr]);								
+								qpl.qPlaceQueueStats.numBMeansCorlTested[cr] = 50; 
+									// Note that numBMeansCorlTested must be even!
+									// If (numBMeansCorlTested[c] <= 0) no correlation test is done!
+								logln(2, "-- qPlaceQueueStats.numBMeansCorlTested[" + cr + "] = " + qpl.qPlaceQueueStats.numBMeansCorlTested[cr]);
+							    */
+							}
 						}
 					}
 				}
 			}
 		}
+	}
 
-		// -----------------------------------------------------------------------------------------------------------
-		// CONFIGURE QUEUE SERVICE TIME DISTRIBUTIONS (times normally in milliseconds)
-		// -----------------------------------------------------------------------------------------------------------
+	private void configureSimulatorSettings() throws SimQPNException {
+		logln(2, "\n/////////////////////////////////////////////");
+		logln(2, "// Misc settings");
+		Element simulatorSettings = getSettings(net, configuration);
+						
+		if ("RELPRC".equals(simulatorSettings.attributeValue("stopping-rule"))) {
+			stoppingRule = RELPRC;
+			logln(2, "stoppingRule = RELPRC;");			
+		} else if ("ABSPRC".equals(simulatorSettings.attributeValue("stopping-rule"))) {
+			stoppingRule = ABSPRC;
+			logln(2, "stoppingRule = ABSPRC;");			
+		} else if ("FIXEDLEN".equals(simulatorSettings.attributeValue("stopping-rule"))) {
+			stoppingRule = FIXEDLEN;
+			logln(2, "stoppingRule = FIXEDLEN;");			
+		} else {
+			logln("Error: Configuration parameter \"stopping-rule\" not configured correctly!");					
+			logln("  configuration = " + configuration);
+			throw new SimQPNException();
+		}
+		// Only for scenario 1 stopping-rule is set. For others it is set to FIXEDLEN.		
+		if (Integer.parseInt(simulatorSettings.attributeValue("scenario")) != 1 && stoppingRule != FIXEDLEN)  {
+			logln("Error: Stopping rule \"" + simulatorSettings.attributeValue("stopping-rule") + "\" is not supported for the chosen analysis method!");					
+			logln("  configuration = " + configuration);
+			throw new SimQPNException();
+		}
 
+		if (simulatorSettings.attributeValue("total-run-length") == null) {
+			logln("Error: Configuration parameter \"total-run-length\" is not configured!");					
+			logln("  configuration = " + configuration);
+			throw new SimQPNException();
+		}		
+		totRunLen = Double.parseDouble(simulatorSettings.attributeValue("total-run-length"));
+		logln(2, "totRunLen = " + totRunLen + ";");
+		
+		if (Integer.parseInt(simulatorSettings.attributeValue("scenario")) != 3) {		
+			if (simulatorSettings.attributeValue("ramp-up-length") == null) {
+				logln("Error: Configuration parameter \"ramp-up-length\" is not configured!");					
+				logln("  configuration = " + configuration);
+				throw new SimQPNException();
+			}
+			rampUpLen = Double.parseDouble(simulatorSettings.attributeValue("ramp-up-length"));
+			logln(2, "rampUpLen = " + rampUpLen + ";");			
+		} else { // Method of Welch
+			rampUpLen = totRunLen; // Note: The method of Welch is currently run until rampUpLen is reached.
+		}
+						
+		if(stoppingRule != FIXEDLEN) {
+			if(simulatorSettings.attributeValue("time-between-stop-checks") == null) {						
+				logln("Error: Configuration parameter \"time-between-stop-checks\" is not configured!");					
+				logln("  configuration = " + configuration);			
+				throw new SimQPNException();
+			}		
+			timeBtwChkStops = Double.parseDouble(simulatorSettings.attributeValue("time-between-stop-checks"));
+			logln(2, "timeBtwChkStops = " + timeBtwChkStops + ";");			
+			if(simulatorSettings.attributeValue("seconds-between-stop-checks") == null) {						
+				logln("Error: Configuration parameter \"seconds-between-stop-checks\" is not configured!");					
+				logln("  configuration = " + configuration);			
+				throw new SimQPNException();
+			}		
+			secondsBtwChkStops = Double.parseDouble(simulatorSettings.attributeValue("seconds-between-stop-checks"));
+			logln(2, "secondsBtwChkStops = " + secondsBtwChkStops + ";");
+		}
+		
+		/* ORIGINAL HEARTBEAT IMPLEMENTATION
+		if(simulatorSettings.attributeValue("time-before-initial-heart-beat") == null) {		
+			logln("Error: Configuration parameter \"time-before-initial-heart-beat\" is not configured!");					
+			logln("  configuration = " + configuration);						
+			throw new SimQPNException();
+		}		
+		timeInitHeartBeat = Double.parseDouble(simulatorSettings.attributeValue("time-before-initial-heart-beat"));
+		logln(2, "timeInitHeartBeat = " + timeInitHeartBeat + ";");
+		
+		if(simulatorSettings.attributeValue("seconds-between-heart-beats") == null) {		
+			logln("Error: Configuration parameter \"seconds-between-heart-beats\" is not configured!");					
+			logln("  configuration = " + configuration);						
+			throw new SimQPNException();
+		}		
+		secsBtwHeartBeats = Double.parseDouble(simulatorSettings.attributeValue("seconds-between-heart-beats"));
+		logln(2, "secsBtwHeartBeats = " + secsBtwHeartBeats + ";");
+		*/
+		
+		if (analMethod != BATCH_MEANS && stoppingRule != FIXEDLEN) {
+			logln("Error: Stopping rule \"" + simulatorSettings.attributeValue("stopping-rule") + "\" is not supported for the batch means analysis method!");					
+			logln("  configuration = " + configuration);
+			throw new SimQPNException();
+		}
+		// CONFIG: Whether to use indirect estimators for FCFS queues
+		for (int p = 0; p < numPlaces; p++) {
+			Place pl = places[p];
+			if (pl.statsLevel >= 3 && pl instanceof QPlace) {
+				((QPlace) pl).qPlaceQueueStats.indrStats = false;
+				logln(2, "places[" + p + "].qPlaceQueueStats.indrStats = false;");				
+			}
+		}
+	}
+
+	private void configureInitialMarking() throws SimQPNException {
+		logln(2, "\n/////////////////////////////////////////////");
+		logln(2, "// Configure Initial Marking");
+		Iterator placeIterator = placeList.iterator();
+		for (int i = 0; placeIterator.hasNext(); i++) {
+			Element place = (Element) placeIterator.next();
+			XPath xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
+			Iterator colorRefIterator = xpathSelector.selectNodes(place).iterator();
+			for (int j = 0; colorRefIterator.hasNext(); j++) {
+				Element colorRef = (Element) colorRefIterator.next();
+				if(colorRef.attributeValue("initial-population") == null) {
+					logln("Error: Queueing place' \"initial-population\" parameter not set!");					
+					logln("  place-num          = " + i);
+					logln("  place.id           = " + place.attributeValue("id"));
+					logln("  place.name         = " + place.attributeValue("name"));						
+					logln("  colorRef-num       = " + j);
+					logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+					logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 																											
+					throw new SimQPNException();
+				}
+				places[i].tokenPop[j] = Integer.parseInt(colorRef.attributeValue("initial-population"));
+				logln(2, "places[" + i + "].tokenPop[" + j + "] = " + places[i].tokenPop[j] + ";");				
+			}
+		}
+	}
+
+	private void configureQueueServiceTimeDistributions()
+			throws SimQPNException {
 		/* 
 		 * Distribution Name (Initialization Parameters)
 		 * --------------------------------------------------------------------------------------------- 
@@ -1874,7 +1875,7 @@ public class Simulator {
 				
 		logln(2, "\n/////////////////////////////////////////////");
 		logln(2, "// Configure Queue Service Time Distributions (times in milliseconds)");
-		placeIterator = placeList.iterator();
+		Iterator placeIterator = placeList.iterator();
 		for (int i = 0; placeIterator.hasNext(); i++) {
 			Element place = (Element) placeIterator.next();
 			if ("queueing-place".equals(place.attributeValue("type"))) {
@@ -1888,7 +1889,7 @@ public class Simulator {
 				if (!(qPl.queue.queueDiscip == Queue.PS && qPl.queue.expPS)) 
 					qPl.randServTimeGen = new AbstractContinousDistribution[qPl.numColors];
 				
-				xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
+				XPath xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
 				Iterator colorRefIterator = xpathSelector.selectNodes(place).iterator();
 				for (int j = 0; colorRefIterator.hasNext(); j++) {
 					Element colorRef = (Element) colorRefIterator.next();					
@@ -1933,7 +1934,7 @@ public class Simulator {
 					 * The actual values in the meanServTimes array are currently only used in three cases 
 					 *    1. QPlace.expPS == true (Exponential distribution)     
 					 *    2. QPlace.qPlaceQueueStats.indrStats == true
-					 *    3. distribution-function == Deterministic (not implemented yet)
+					 *    3. distribution-function == Deterministic
 					 * 
 					 * Note: Service time distributions are truncated at 0 to avoid negative
 					 *       values for service times, i.e. "if (servTime < 0) servTime = 0;"
@@ -2484,589 +2485,721 @@ public class Simulator {
 						logln("  colorRef.id        = " + colorRef.attributeValue("id"));
 						logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
 					} else if("Deterministic".equals(distributionFunction)) {
-						// Parameters p1, p2 and p3 passed from QPE.						
-						//SDK-TODO: implement support for this, use p1 to set service time
-						//TEMP
-						logln("ERROR: Deterministic distribution function currently not supported!");
-						logln("Details:");
-						logln("  place-num          = " + i);
-						logln("  place.id           = " + place.attributeValue("id"));
-						logln("  place.name         = " + place.attributeValue("name"));						
-						logln("  colorRef-num       = " + j);
-						logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-						logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 																											
-						throw new SimQPNException();						
-					}
-				}
-			}
-		}
-		
-		// --------------------------------------------------------------------------------------------------------
-		// CONFIGURE INITIAL MARKING
-		// --------------------------------------------------------------------------------------------------------
-		// Note: All initial tokens should be in ordianary places or depositories.
-		// No initial tokens are allowed in the queues.
-
-		logln(2, "\n/////////////////////////////////////////////");
-		logln(2, "// Configure Initial Marking");
-		placeIterator = placeList.iterator();
-		for (int i = 0; placeIterator.hasNext(); i++) {
-			Element place = (Element) placeIterator.next();
-			xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
-			Iterator colorRefIterator = xpathSelector.selectNodes(place).iterator();
-			for (int j = 0; colorRefIterator.hasNext(); j++) {
-				Element colorRef = (Element) colorRefIterator.next();
-				if(colorRef.attributeValue("initial-population") == null) {
-					logln("Error: Queueing place' \"initial-population\" parameter not set!");					
-					logln("  place-num          = " + i);
-					logln("  place.id           = " + place.attributeValue("id"));
-					logln("  place.name         = " + place.attributeValue("name"));						
-					logln("  colorRef-num       = " + j);
-					logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-					logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 																											
-					throw new SimQPNException();
-				}
-				places[i].tokenPop[j] = Integer.parseInt(colorRef.attributeValue("initial-population"));
-				logln(2, "places[" + i + "].tokenPop[" + j + "] = " + places[i].tokenPop[j] + ";");				
-			}
-		}
-
-		// *****************************************************************************************************************
-		// END-MODEL-DEFINITION
-		// *****************************************************************************************************************
-
-		// BEGIN-CONFIG
-		// ------------------------------------------------------------------------------------------------------
-
-		logln(2, "\n/////////////////////////////////////////////");
-		logln(2, "// Misc settings");
-		Element simulatorSettings = getSettings(net, configuration);
-						
-		if ("RELPRC".equals(simulatorSettings.attributeValue("stopping-rule"))) {
-			stoppingRule = RELPRC;
-			logln(2, "stoppingRule = RELPRC;");			
-		} else if ("ABSPRC".equals(simulatorSettings.attributeValue("stopping-rule"))) {
-			stoppingRule = ABSPRC;
-			logln(2, "stoppingRule = ABSPRC;");			
-		} else if ("FIXEDLEN".equals(simulatorSettings.attributeValue("stopping-rule"))) {
-			stoppingRule = FIXEDLEN;
-			logln(2, "stoppingRule = FIXEDLEN;");			
-		} else {
-			logln("Error: Configuration parameter \"stopping-rule\" not configured correctly!");					
-			logln("  configuration = " + configuration);
-			throw new SimQPNException();
-		}
-		// Only for scenario 1 stopping-rule is set. For others it is set to FIXEDLEN.		
-		if (Integer.parseInt(simulatorSettings.attributeValue("scenario")) != 1 && stoppingRule != FIXEDLEN)  {
-			logln("Error: Stopping rule \"" + simulatorSettings.attributeValue("stopping-rule") + "\" is not supported for the chosen analysis method!");					
-			logln("  configuration = " + configuration);
-			throw new SimQPNException();
-		}
-
-		if (simulatorSettings.attributeValue("total-run-length") == null) {
-			logln("Error: Configuration parameter \"total-run-length\" is not configured!");					
-			logln("  configuration = " + configuration);
-			throw new SimQPNException();
-		}		
-		totRunLen = Double.parseDouble(simulatorSettings.attributeValue("total-run-length"));
-		logln(2, "totRunLen = " + totRunLen + ";");
-		
-		if (Integer.parseInt(simulatorSettings.attributeValue("scenario")) != 3) {		
-			if (simulatorSettings.attributeValue("ramp-up-length") == null) {
-				logln("Error: Configuration parameter \"ramp-up-length\" is not configured!");					
-				logln("  configuration = " + configuration);
-				throw new SimQPNException();
-			}
-			rampUpLen = Double.parseDouble(simulatorSettings.attributeValue("ramp-up-length"));
-			logln(2, "rampUpLen = " + rampUpLen + ";");			
-		} else { // Method of Welch
-			rampUpLen = totRunLen; // Note: The method of Welch is currently run until rampUpLen is reached.
-		}
-						
-		if(stoppingRule != FIXEDLEN) {
-			if(simulatorSettings.attributeValue("time-between-stop-checks") == null) {						
-				logln("Error: Configuration parameter \"time-between-stop-checks\" is not configured!");					
-				logln("  configuration = " + configuration);			
-				throw new SimQPNException();
-			}		
-			timeBtwChkStops = Double.parseDouble(simulatorSettings.attributeValue("time-between-stop-checks"));
-			logln(2, "timeBtwChkStops = " + timeBtwChkStops + ";");			
-			if(simulatorSettings.attributeValue("seconds-between-stop-checks") == null) {						
-				logln("Error: Configuration parameter \"seconds-between-stop-checks\" is not configured!");					
-				logln("  configuration = " + configuration);			
-				throw new SimQPNException();
-			}		
-			secondsBtwChkStops = Double.parseDouble(simulatorSettings.attributeValue("seconds-between-stop-checks"));
-			logln(2, "secondsBtwChkStops = " + secondsBtwChkStops + ";");
-		}
-		
-		/* ORIGINAL HEARTBEAT IMPLEMENTATION
-		if(simulatorSettings.attributeValue("time-before-initial-heart-beat") == null) {		
-			logln("Error: Configuration parameter \"time-before-initial-heart-beat\" is not configured!");					
-			logln("  configuration = " + configuration);						
-			throw new SimQPNException();
-		}		
-		timeInitHeartBeat = Double.parseDouble(simulatorSettings.attributeValue("time-before-initial-heart-beat"));
-		logln(2, "timeInitHeartBeat = " + timeInitHeartBeat + ";");
-		
-		if(simulatorSettings.attributeValue("seconds-between-heart-beats") == null) {		
-			logln("Error: Configuration parameter \"seconds-between-heart-beats\" is not configured!");					
-			logln("  configuration = " + configuration);						
-			throw new SimQPNException();
-		}		
-		secsBtwHeartBeats = Double.parseDouble(simulatorSettings.attributeValue("seconds-between-heart-beats"));
-		logln(2, "secsBtwHeartBeats = " + secsBtwHeartBeats + ";");
-		*/
-		
-		if (analMethod != BATCH_MEANS && stoppingRule != FIXEDLEN) {
-			logln("Error: Stopping rule \"" + simulatorSettings.attributeValue("stopping-rule") + "\" is not supported for the batch means analysis method!");					
-			logln("  configuration = " + configuration);
-			throw new SimQPNException();
-		}
-		// CONFIG: Whether to use indirect estimators for FCFS queues
-		for (int p = 0; p < numPlaces; p++) {
-			Place pl = places[p];
-			if (pl.statsLevel >= 3 && pl instanceof QPlace) {
-				((QPlace) pl).qPlaceQueueStats.indrStats = false;
-				logln(2, "places[" + p + "].qPlaceQueueStats.indrStats = false;");				
-			}
-		}
-
-		/*
-		 * "Advanced Configuration Options" only applicable to the BATCH_MEANS method
-		 * 
-		 * These options are configurable for each place/queue/depository that
-		 * has statsLevel >= 3. Options should be displayed only if BATCH_MEANS
-		 * is chosen and in this case only for places that have statsLevel set
-		 * to be >= 3.
-		 * 
-		 * double signLevST - Required significance level. 
-		 * double reqAbsPrc - Used if stoppingRule=ABSPRC: Required absolute precision (max c.i. half length). 
-		 * double reqRelPrc - Used if stoppingRule=RELPRC: Required relative precision (max ratio of c.i. half length to mean).
-		 * int batchSizeST - Batch size for the batch means algorithm.
-		 * int minBatches - Minimum number of batches required for steady state statistics. If minBatches[c] <= 0, no steady state statistics are collected for this color!
-		 * int numBMeansCorlTested - If > 0 checks whether the batch size is sufficient - the first numBMeansCorlTested batch means from the beginning of steady state are tested for autocorrelation.
-		 * 
-		 * NOTE: reqAbsPrc should be available only if stoppingRule=ABSPRC; reqRelPrc should be available only if stoppingRule=RELPRC.
-		 * 
-		 * Check and make sure that numBMeansCorlTested is even!
-		 */
-
-		// CONFIG: BATCH_MEANS Method Initialization Parameters
-		if (analMethod == BATCH_MEANS)  {
-			placeIterator = placeList.iterator();
-			for (int p = 0; placeIterator.hasNext(); p++) {
-				Element place = (Element) placeIterator.next();
-				Place pl = places[p];
-				if (pl.statsLevel >= 3) {
-					logln(2, "places[" + p + "]");
-					xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
-					Iterator colorRefIterator = xpathSelector.selectNodes(place).iterator();
-					for (int cr = 0; colorRefIterator.hasNext(); cr++) {
-						Element colorRef = (Element) colorRefIterator.next();
-						Element colorRefSettings = getSettings(colorRef, configuration);
-						// Initialize Place (or Depository if pl is QPlace)
-						if (colorRefSettings != null) {
-							if (colorRefSettings.attributeValue("signLev") == null) {
-								logln("Error: Configuration parameter \"signLev\" for Batch Means Method is missing!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  place-num          = " + p);
-								logln("  place.id           = " + place.attributeValue("id"));
-								logln("  place.name         = " + place.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
-								throw new SimQPNException();
-							}
-							pl.placeStats.signLevST[cr] = Double.parseDouble(colorRefSettings.attributeValue("signLev"));
-							logln(2, "-- placeStats.signLevST[" + cr + "] = " + pl.placeStats.signLevST[cr]);							
-
-							if (colorRefSettings.attributeValue("reqAbsPrc") == null) {
-								logln("Error: Configuration parameter \"reqAbsPrc\" for Batch Means Method is missing!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  place-num          = " + p);
-								logln("  place.id           = " + place.attributeValue("id"));
-								logln("  place.name         = " + place.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
-								throw new SimQPNException();
-							}
-							pl.placeStats.reqAbsPrc[cr] = Double.parseDouble(colorRefSettings.attributeValue("reqAbsPrc"));
-							logln(2, "-- placeStats.reqAbsPrc[" + cr + "] = " + pl.placeStats.reqAbsPrc[cr]);
-							
-							if (colorRefSettings.attributeValue("reqRelPrc") == null) {								
-								logln("Error: Configuration parameter \"reqRelPrc\" for Batch Means Method is missing!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  place-num          = " + p);
-								logln("  place.id           = " + place.attributeValue("id"));
-								logln("  place.name         = " + place.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
-								throw new SimQPNException();
-							}
-							pl.placeStats.reqRelPrc[cr] = Double.parseDouble(colorRefSettings.attributeValue("reqRelPrc"));
-							logln(2, "-- placeStats.reqRelPrc[" + cr + "] = " + pl.placeStats.reqRelPrc[cr]);
-
-							if (colorRefSettings.attributeValue("batchSize") == null) {
-								logln("Error: Configuration parameter \"batchSize\" for Batch Means Method is missing!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  place-num          = " + p);
-								logln("  place.id           = " + place.attributeValue("id"));
-								logln("  place.name         = " + place.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));								
-								throw new SimQPNException();
-							}
-							pl.placeStats.batchSizeST[cr] = Integer.parseInt(colorRefSettings.attributeValue("batchSize"));
-							logln(2, "-- placeStats.batchSizeST[" + cr + "] = " + pl.placeStats.batchSizeST[cr]);							
-
-							if (colorRefSettings.attributeValue("minBatches") == null) {
-								logln("Error: Configuration parameter \"minBatches\" for Batch Means Method is missing!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  place-num          = " + p);
-								logln("  place.id           = " + place.attributeValue("id"));
-								logln("  place.name         = " + place.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																
-								throw new SimQPNException();
-							}
-							pl.placeStats.minBatches[cr] = Integer.parseInt(colorRefSettings.attributeValue("minBatches"));
-							logln(2, "-- placeStats.minBatches[" + cr + "] = " + pl.placeStats.minBatches[cr]);							
-
-							if (colorRefSettings.attributeValue("numBMeansCorlTested") == null) {
-								logln("Error: Configuration parameter \"numBMeansCorlTested\" for Batch Means Method is missing!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  place-num          = " + p);
-								logln("  place.id           = " + place.attributeValue("id"));
-								logln("  place.name         = " + place.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
-								throw new SimQPNException();
-							}
-							pl.placeStats.numBMeansCorlTested[cr] = Integer.parseInt(colorRefSettings.attributeValue("numBMeansCorlTested"));
-							logln(2, "-- placeStats.numBMeansCorlTested[" + cr + "] = " + pl.placeStats.numBMeansCorlTested[cr]);
-							
-							// Note that if (minBatches > 0 && numBMeansCorlTested[c] > 0),
-							// minBatches[c] must be > numBMeansCorlTested[c]!
-							if (pl.placeStats.minBatches[cr] > 0 && 
-								pl.placeStats.numBMeansCorlTested[cr] > 0 && 
-								!(pl.placeStats.minBatches[cr] > pl.placeStats.numBMeansCorlTested[cr])) {
-								logln("Error: Place.placeStats.minBatches[c] must be greater than Place.placeStats.numBMeansCorlTested[c]!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  place-num          = " + p);
-								logln("  place.id           = " + place.attributeValue("id"));
-								logln("  place.name         = " + place.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
-								throw new SimQPNException();
-							}
-							// If (numBMeansCorlTested[c] <= 0) no correlation test is done!
-							// Note that numBMeansCorlTested must be even!
-							if (pl.placeStats.numBMeansCorlTested[cr] % 2 != 0) {
-								logln("Error: Place.placeStats.numBMeansCorlTested[c] must be even!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  place-num          = " + p);
-								logln("  place.id           = " + place.attributeValue("id"));
-								logln("  place.name         = " + place.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
-								throw new SimQPNException();
-							}
-
-							if (pl.statsLevel >= 4) {
-								if (colorRefSettings.attributeValue("bucketSize") == null) {
-									logln("Error: Configuration parameter \"bucketSize\" for Batch Means Method is missing!");
-									logln("Details:");
-									logln("  configuration = " + configuration);
-									logln("  place-num          = " + p);
-									logln("  place.id           = " + place.attributeValue("id"));
-									logln("  place.name         = " + place.attributeValue("name"));
-									logln("  colorRef-num       = " + cr);
-									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
-									throw new SimQPNException();
-								}
-								pl.placeStats.histST[cr].setBucketSize(Double.parseDouble(colorRefSettings.attributeValue("bucketSize")));
-								logln(2, "-- placeStats.histST[" + cr + "].bucketSize = " + pl.placeStats.histST[cr].getBucketSize());
-
-								if(colorRefSettings.attributeValue("maxBuckets") == null) {
-									logln("Error: Configuration parameter \"maxBuckets\" for Batch Means Method is missing!");
-									logln("Details:");
-									logln("  configuration = " + configuration);
-									logln("  place-num          = " + p);
-									logln("  place.id           = " + place.attributeValue("id"));
-									logln("  place.name         = " + place.attributeValue("name"));
-									logln("  colorRef-num       = " + cr);
-									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
-									throw new SimQPNException();
-								}
-								pl.placeStats.histST[cr].setMaximumNumberOfBuckets(Integer.parseInt(colorRefSettings.attributeValue("maxBuckets")));
-								logln(2, "-- placeStats.histST[" + cr + "].maxBuckets = " + pl.placeStats.histST[cr].getMaximumNumberOfBuckets());
-							}
-						} else {							
-							logln("Error: SimQPN configuration parameters for Batch Means Method are missing!");
+						if(colorRef.attributeValue("p1") == null) {						
+							logln("ERROR: Parameter \"p1\" of Deterministic distribution function not set!");
 							logln("Details:");
-							logln("  configuration = " + configuration);						
-							logln("  place-num          = " + p);
+							logln("  place-num          = " + i);
 							logln("  place.id           = " + place.attributeValue("id"));
 							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + cr);
+							logln("  colorRef-num       = " + j);
 							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
-							throw new SimQPNException();
-							/* ORIGINAL MANUAL CONFIGURATION
-							pl.placeStats.signLevST[cr] = 0.05;     // e.g. 0.05 ---> 95% c.i.; 0.1 ---> 90%
-							logln(2, "-- placeStats.signLevST[" + cr + "] = " + pl.placeStats.signLevST[cr]);							
-							pl.placeStats.reqAbsPrc[cr] = 50;
-							logln(2, "-- placeStats.reqAbsPrc[" + cr + "] = " + pl.placeStats.reqAbsPrc[cr]);							
-							pl.placeStats.reqRelPrc[cr] = 0.05;		// e.g. 0.1 ---> 10% relative precision
-							logln(2, "-- placeStats.reqRelPrc[" + cr + "] = " + pl.placeStats.reqRelPrc[cr]);								 
-							pl.placeStats.batchSizeST[cr] = 200;    // Initial batch size
-							logln(2, "-- placeStats.batchSizeST[" + cr + "] = " + pl.placeStats.batchSizeST[cr]);							
-							pl.placeStats.minBatches[cr] = 60; 
-								// Note that if (minBatches > 0 && numBMeansCorlTested[c] > 0),
-								// minBatches[c] must be > numBMeansCorlTested[c]!
-							logln(2, "-- placeStats.minBatches[" + cr + "] = " + pl.placeStats.minBatches[cr]);	 
-							pl.placeStats.numBMeansCorlTested[cr] = 50; 
-								// Note that numBMeansCorlTested must be even!
-								// If (numBMeansCorlTested[c] <= 0) no correlation test is done!
-							logln(2, "-- placeStats.numBMeansCorlTested[" + cr + "] = " + pl.placeStats.numBMeansCorlTested[cr]);
-							
-						    */
+							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+							throw new SimQPNException();																					
 						}
+						double p1 = Double.parseDouble(colorRef.attributeValue("p1"));
+						// Validate input parameters
+						if (!(p1 >= 0))  {
+							logln("ERROR: Invalid \"p1\" parameter of Exponential distribution!");
+							logln("Details:");
+							logln("  p1             	= " + p1);
+							logln("  place-num          = " + i);
+							logln("  place.id           = " + place.attributeValue("id"));
+							logln("  place.name         = " + place.attributeValue("name"));						
+							logln("  colorRef-num       = " + j);
+							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+							throw new SimQPNException();																												
+						}						
 
-						// Initialize Queue if pl is QPlace
-						if (pl instanceof QPlace) {
-							QPlace qpl = (QPlace) pl;
-							if (colorRefSettings != null) {
-								if (colorRefSettings.attributeValue("queueSignLev") == null) {
-									logln("Error: Configuration parameter \"queueSignLev\" for Batch Means Method is missing!");
-									logln("Details:");
-									logln("  configuration = " + configuration);						
-									logln("  place-num          = " + p);
-									logln("  place.id           = " + place.attributeValue("id"));
-									logln("  place.name         = " + place.attributeValue("name"));						
-									logln("  colorRef-num       = " + cr);
-									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
-									throw new SimQPNException();
-								}								
-								qpl.qPlaceQueueStats.signLevST[cr] = Double.parseDouble(colorRefSettings.attributeValue("queueSignLev"));
-								logln(2, "-- qPlaceQueueStats.signLevST[" + cr + "] = " + qpl.qPlaceQueueStats.signLevST[cr]);
+						qPl.randServTimeGen[j] = new Deterministic(p1);
+						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Deterministic(" + p1 + ")");
+						qPl.meanServTimes[j] = p1;
+						logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = p1 = " + qPl.meanServTimes[j]);	
+					}
+				}
+			}
+		}
+	}
 
-								if (colorRefSettings.attributeValue("queueReqAbsPrc") == null) {
-									logln("Error: Configuration parameter \"queueReqAbsPrc\" for Batch Means Method is missing!");
-									logln("Details:");
-									logln("  configuration = " + configuration);						
-									logln("  place-num          = " + p);
-									logln("  place.id           = " + place.attributeValue("id"));
-									logln("  place.name         = " + place.attributeValue("name"));						
-									logln("  colorRef-num       = " + cr);
-									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
-									throw new SimQPNException();
-								}
-								qpl.qPlaceQueueStats.reqAbsPrc[cr] = Double.parseDouble(colorRefSettings.attributeValue("queueReqAbsPrc"));
-								logln(2, "-- qPlaceQueueStats.reqAbsPrc[" + cr + "] = " + qpl.qPlaceQueueStats.reqAbsPrc[cr]);
+	private void configureTransitionInputOutputFunctions()
+			throws SimQPNException {
+		/*
+		 * For each transition for every input/output place must specify how many tokens of  each color of the 
+		 * respective place are destroyed/created.
+		 */
 
-								if (colorRefSettings.attributeValue("queueReqRelPrc") == null) {
-									logln("Error: Configuration parameter \"queueReqRelPrc\" for Batch Means Method is missing!");
-									logln("Details:");
-									logln("  configuration = " + configuration);						
-									logln("  place-num          = " + p);
-									logln("  place.id           = " + place.attributeValue("id"));
-									logln("  place.name         = " + place.attributeValue("name"));						
-									logln("  colorRef-num       = " + cr);
-									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
-									throw new SimQPNException();
-								}
-								qpl.qPlaceQueueStats.reqRelPrc[cr] = Double.parseDouble(colorRefSettings.attributeValue("queueReqRelPrc"));
-								logln(2, "-- qPlaceQueueStats.reqRelPrc[" + cr + "] = " + qpl.qPlaceQueueStats.reqRelPrc[cr]);
-								
-								if (colorRefSettings.attributeValue("queueBatchSize") == null) {
-									logln("Error: Configuration parameter \"queueBatchSize\" for Batch Means Method is missing!");
-									logln("Details:");
-									logln("  configuration = " + configuration);						
-									logln("  place-num          = " + p);
-									logln("  place.id           = " + place.attributeValue("id"));
-									logln("  place.name         = " + place.attributeValue("name"));						
-									logln("  colorRef-num       = " + cr);
-									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
-									throw new SimQPNException();
-								}								
-								qpl.qPlaceQueueStats.batchSizeST[cr] = Integer.parseInt(colorRefSettings.attributeValue("queueBatchSize"));
-								logln(2, "-- qPlaceQueueStats.batchSizeST[" + cr + "] = " + qpl.qPlaceQueueStats.batchSizeST[cr]);
+		logln(2, "\n/////////////////////////////////////////////");
+		logln(2, "// Configure transition input/output functions [mode, inPlace, color]");
+		// trans[{transition-number}].inFunc[{place-number}][{color-ref-number}][{mode-number}]
+		// = {number-of-tokens};
+		
+		for (int t = 0; t < trans.length; t++) {
+			// Select the element for the current transition.
+			Element transition = (Element) transitionList.get(t);
 
-								if(colorRefSettings.attributeValue("queueMinBatches") == null) {
-									logln("Error: Configuration parameter \"queueMinBatches\" for Batch Means Method is missing!");
-									logln("Details:");
-									logln("  configuration = " + configuration);						
-									logln("  place-num          = " + p);
-									logln("  place.id           = " + place.attributeValue("id"));
-									logln("  place.name         = " + place.attributeValue("name"));						
-									logln("  colorRef-num       = " + cr);
-									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
-									throw new SimQPNException();
-								}
-								qpl.qPlaceQueueStats.minBatches[cr] = Integer.parseInt(colorRefSettings.attributeValue("queueMinBatches"));
-								logln(2, "-- qPlaceQueueStats.minBatches[" + cr + "] = " + qpl.qPlaceQueueStats.minBatches[cr]);								
+			XPath xpathSelector = DocumentHelper.createXPath("modes/mode");
+			List modes = xpathSelector.selectNodes(transition);
 
-								if(colorRefSettings.attributeValue("queueNumBMeansCorlTested") == null) {
-									logln("Error: Configuration parameter \"queueNumBMeansCorlTested\" for Batch Means Method is missing!");
-									logln("Details:");
-									logln("  configuration = " + configuration);						
-									logln("  place-num          = " + p);
-									logln("  place.id           = " + place.attributeValue("id"));
-									logln("  place.name         = " + place.attributeValue("name"));						
-									logln("  colorRef-num       = " + cr);
-									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
-									throw new SimQPNException();
-								}								
-								qpl.qPlaceQueueStats.numBMeansCorlTested[cr] = Integer.parseInt(colorRefSettings.attributeValue("queueNumBMeansCorlTested"));
-								logln(2, "-- qPlaceQueueStats.numBMeansCorlTested[" + cr + "] = " + qpl.qPlaceQueueStats.numBMeansCorlTested[cr]);								
-								
-								if (qpl.qPlaceQueueStats.minBatches[cr] > 0 && 
-									qpl.qPlaceQueueStats.numBMeansCorlTested[cr] > 0 && 
-									!(qpl.qPlaceQueueStats.minBatches[cr] > qpl.qPlaceQueueStats.numBMeansCorlTested[cr])) {
-									logln("Error: QPlace.qPlaceQueueStats.minBatches[c] must be greater than QPlace.qPlaceQueueStats.numBMeansCorlTested[c]!");
-									logln("Details:");
-									logln("  configuration = " + configuration);						
-									logln("  place-num          = " + p);
-									logln("  place.id           = " + place.attributeValue("id"));
-									logln("  place.name         = " + place.attributeValue("name"));						
-									logln("  colorRef-num       = " + cr);
-									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
-									throw new SimQPNException();
-								}
-								// If (numBMeansCorlTested[c] <= 0) no correlation test is done!								
-								// Note that numBMeansCorlTested must be even!
-								if (qpl.qPlaceQueueStats.numBMeansCorlTested[cr] % 2 != 0) {
-									logln("Error: QPlace.qPlaceQueueStats.numBMeansCorlTested[c] must be even!");
-									logln("Details:");
-									logln("  configuration = " + configuration);						
-									logln("  place-num          = " + p);
-									logln("  place.id           = " + place.attributeValue("id"));
-									logln("  place.name         = " + place.attributeValue("name"));						
-									logln("  colorRef-num       = " + cr);
-									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
-									throw new SimQPNException();
-								}
+			// Iterate through all modes
+			for (int m = 0; m < trans[t].numModes; m++) {
+				int numInputTokens = 0;
+				// Iterate through all input-places.
+				for (int p = 0; p < trans[t].inPlaces.length; p++) {
+					Element inputPlace = trans[t].inPlaces[p].element;
+					// Go through all color-refs for the current place.
+					xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
+					List colorRefs = xpathSelector.selectNodes(inputPlace);
 
-								if (pl.statsLevel >= 4) {
-									if (colorRefSettings.attributeValue("queueBucketSize") == null) {
-										logln("Error: Configuration parameter \"queueBucketSize\" for Batch Means Method is missing!");
-										logln("Details:");
-										logln("  configuration = " + configuration);
-										logln("  place-num          = " + p);
-										logln("  place.id           = " + place.attributeValue("id"));
-										logln("  place.name         = " + place.attributeValue("name"));
-										logln("  colorRef-num       = " + cr);
-										logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-										logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
-										throw new SimQPNException();
-									}
-									qpl.qPlaceQueueStats.histST[cr].setBucketSize(Double.parseDouble(colorRefSettings.attributeValue("queueBucketSize")));
-									logln(2, "-- qPlaceQueueStats.histST[" + cr + "].bucketSize = " + qpl.qPlaceQueueStats.histST[cr].getBucketSize());
+					// Allocate an array saving the number of tokens for each color-ref to the current mode for the
+					// current input place. If there is no connection, then this value is 0.
+					trans[t].inFunc[m][p] = new int[colorRefs.size()];
+					logln(2, "trans[" + t + "].inFunc[" + m + "][" + p + "] = new int[" + colorRefs.size() + "];");					
 
-									if(colorRefSettings.attributeValue("queueMaxBuckets") == null) {
-										logln("Error: Configuration parameter \"queueMaxBuckets\" for Batch Means Method is missing!");
-										logln("Details:");
-										logln("  configuration = " + configuration);
-										logln("  place-num          = " + p);
-										logln("  place.id           = " + place.attributeValue("id"));
-										logln("  place.name         = " + place.attributeValue("name"));
-										logln("  colorRef-num       = " + cr);
-										logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-										logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
-										throw new SimQPNException();
-									}
-									qpl.qPlaceQueueStats.histST[cr].setMaximumNumberOfBuckets(Integer.parseInt(colorRefSettings.attributeValue("queueMaxBuckets")));
-									logln(2, "-- qPlaceQueueStats.histST[" + cr + "].maxBuckets = " + qpl.qPlaceQueueStats.histST[cr].getMaximumNumberOfBuckets());
-								}
-							} else {
-								logln("Error: SimQPN configuration parameters for Batch Means Method are missing!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  place-num          = " + p);
-								logln("  place.id           = " + place.attributeValue("id"));
-								logln("  place.name         = " + place.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+					Iterator colorRefIterator = colorRefs.iterator();
+					for (int con = 0; colorRefIterator.hasNext(); con++) {
+						Element colorRef = (Element) colorRefIterator.next();
+
+						String colorRefId = colorRef.attributeValue("id");
+						String modeId = ((Element) modes.get(m)).attributeValue("id");
+
+						xpathSelector = DocumentHelper.createXPath("connections/connection[(@source-id='" + colorRefId + "') and (@target-id='" + modeId + "')]");
+						Element connection = (Element) xpathSelector.selectSingleNode(transition);
+						if (connection != null) {
+							if(connection.attributeValue("count") == null) {
+								logln("ERROR: incidence function connection' \"count\" (arc weight) attribute not set!");
+								logln("Details: ");
+								logln("  transition-num    = " + t);
+								logln("  transition.id     = " + transition.attributeValue("id"));
+								logln("  transition.name   = " + transition.attributeValue("name"));
+								logln("  mode-num          = " + m);
+								logln("  mode.id           = " + ((Element) modes.get(m)).attributeValue("id"));
+								logln("  mode.name         = " + ((Element) modes.get(m)).attributeValue("name"));																
+								logln("  inPlace.id        = " + inputPlace.attributeValue("id"));
+								logln("  inPlace.name      = " + inputPlace.attributeValue("name"));								
+								logln("  colorRef.id       = " + colorRef.attributeValue("id"));
+								logln("  colorRef.color-id = " + colorRef.attributeValue("color-id"));
 								throw new SimQPNException();
-								/* ORIGINAL MANUAL CONFIGURATION
-								qpl.qPlaceQueueStats.signLevST[cr] = 0.05;		// e.g. 0.05 ---> 95% c.i.; 0.1 ---> 90%
-								logln(2, "-- qPlaceQueueStats.signLevST[" + cr + "] = " + qpl.qPlaceQueueStats.signLevST[cr]);								
-								qpl.qPlaceQueueStats.reqAbsPrc[cr] = 50;
-								logln(2, "-- qPlaceQueueStats.reqAbsPrc[" + cr + "] = " + qpl.qPlaceQueueStats.reqAbsPrc[cr]);								
-								qpl.qPlaceQueueStats.reqRelPrc[cr] = 0.05;		// e.g. 0.1 ---> 10% relative precision
-								logln(2, "-- qPlaceQueueStats.reqRelPrc[" + cr + "] = " + qpl.qPlaceQueueStats.reqRelPrc[cr]);								
-								qpl.qPlaceQueueStats.batchSizeST[cr] = 200;		// Initial batch size
-								logln(2, "-- qPlaceQueueStats.batchSizeST[" + cr + "] = " + qpl.qPlaceQueueStats.batchSizeST[cr]);								
-								qpl.qPlaceQueueStats.minBatches[cr] = 60; 
-									// Note that if (minBatches > 0 && numBMeansCorlTested[c] > 0),
-									// minBatches[c] must be > numBMeansCorlTested[c]!
-								logln(2, "-- qPlaceQueueStats.minBatches[" + cr + "] = " + qpl.qPlaceQueueStats.minBatches[cr]);								
-								qpl.qPlaceQueueStats.numBMeansCorlTested[cr] = 50; 
-									// Note that numBMeansCorlTested must be even!
-									// If (numBMeansCorlTested[c] <= 0) no correlation test is done!
-								logln(2, "-- qPlaceQueueStats.numBMeansCorlTested[" + cr + "] = " + qpl.qPlaceQueueStats.numBMeansCorlTested[cr]);
-							    */
 							}
+							int numTokens = Integer.parseInt(connection.attributeValue("count"));
+							//SDK-DEBUG: Attribute "count" is usually missing in the XML file.
+							//CHRIS: fixed that.
+							trans[t].inFunc[m][p][con] = numTokens;							
+							logln(2, "trans[" + t + "].inFunc[" + m + "][" + p + "][" + con +"] = " + numTokens);
+							numInputTokens += numTokens;
+						} else {							
+							trans[t].inFunc[m][p][con] = 0;
+							logln(2, "trans[" + t + "].inFunc[" + m + "][" + p + "][" + con +"] = 0");
+						}
+					}
+				}
+				if(numInputTokens == 0) {
+					logln("ERROR: an immediate transition with a mode that requires no input tokens found! This would cause a simulation deadlock.");
+					logln("Details: ");
+					logln("  transition-num    = " + t);
+					logln("  transition.id     = " + transition.attributeValue("id"));
+					logln("  transition.name   = " + transition.attributeValue("name"));
+					logln("  mode-num          = " + m);
+					logln("  mode.id           = " + ((Element) modes.get(m)).attributeValue("id"));
+					logln("  mode.name         = " + ((Element) modes.get(m)).attributeValue("name"));																
+					throw new SimQPNException();
+				}
+
+				// Iterate through all output-places.
+				for (int p = 0; p < trans[t].outPlaces.length; p++) {
+					Element outputPlace = trans[t].outPlaces[p].element;
+					// Go through all color-refs for the current place.
+					xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
+					List colorRefs = xpathSelector.selectNodes(outputPlace);
+					
+					// Allocate an array saving the number of tokens for each color-ref to mode connection. 
+					// If there is no connection, then this value is 0.
+					trans[t].outFunc[m][p] = new int[colorRefs.size()];					
+					logln(2, "trans[" + t + "].outFunc[" + m + "][" + p +"] = new int[" + colorRefs.size() + "];");
+						
+					Iterator colorRefIterator = colorRefs.iterator();
+					for (int con = 0; colorRefIterator.hasNext(); con++) {
+						Element colorRef = (Element) colorRefIterator.next();
+
+						String colorRefId = colorRef.attributeValue("id");
+						String modeId = ((Element) modes.get(m)).attributeValue("id");
+
+						xpathSelector = DocumentHelper.createXPath("connections/connection[(@source-id='" + modeId + "') and (@target-id='" + colorRefId + "')]");
+						Element connection = (Element) xpathSelector.selectSingleNode(transition);
+						if (connection != null) {
+							if(connection.attributeValue("count") == null) {
+								logln("ERROR: incidence function connection' \"count\" (arc weight) attribute not set!");
+								logln("Details: ");
+								logln("  transition-num    = " + t);
+								logln("  transition.id     = " + transition.attributeValue("id"));
+								logln("  transition.name   = " + transition.attributeValue("name"));
+								logln("  mode-num          = " + m);
+								logln("  mode.id           = " + ((Element) modes.get(m)).attributeValue("id"));
+								logln("  mode.name         = " + ((Element) modes.get(m)).attributeValue("name"));																
+								logln("  outPlace.id       = " + outputPlace.attributeValue("id"));
+								logln("  outPlace.name     = " + outputPlace.attributeValue("name"));								
+								logln("  colorRef.id       = " + colorRef.attributeValue("id"));
+								logln("  colorRef.color-id = " + colorRef.attributeValue("color-id"));
+								throw new SimQPNException();								
+							}
+							int numTokens = Integer.parseInt(connection.attributeValue("count"));
+							trans[t].outFunc[m][p][con] = numTokens;
+							logln(2, "trans[" + t + "].outFunc[" + m + "][" + p + "][" + con + "] = " + numTokens + ";");							
+						} else {
+							trans[t].outFunc[m][p][con] = 0;
+							logln(2, "trans[" + t + "].outFunc[" + m + "][" + p + "][" + con + "] = 0;");							
 						}
 					}
 				}
 			}
 		}
+	}
 
-		// END-CONFIG
-		// ---------------------------------------------------------------------------------------------------------
+	private void configureTransitionModeWeights() throws SimQPNException {
+		logln(2, "\n/////////////////////////////////////////////");
+		logln(2, "// Configure transition mode weights");
+		Iterator transitionIterator = transitionList.iterator();
+		for (int i = 0; transitionIterator.hasNext(); i++) {
+			Element transition = (Element) transitionIterator.next();
+			XPath xpathSelector = DocumentHelper.createXPath("modes/mode");
+			Iterator modeIterator = xpathSelector.selectNodes(transition).iterator();
+			for (int j = 0; modeIterator.hasNext(); j++) {
+				Element mode = (Element) modeIterator.next();
+				if(mode.attributeValue("firing-weight") == null) {
+					logln("Error: transition mode' \"firing-weight\" not set");
+					logln("Details: ");
+					logln("  transition-num   = " + i);
+					logln("  transition.id    = " + transition.attributeValue("id"));
+					logln("  transition.name  = " + transition.attributeValue("name"));
+					logln("  mode-num         = " + j);
+					logln("  mode.id          = " + mode.attributeValue("id"));
+					logln("  mode.name        = " + mode.attributeValue("name"));					
+					throw new SimQPNException();										
+				}				
+				trans[i].modeWeights[j] = Double.parseDouble(mode.attributeValue("firing-weight"));
+				logln(2, "trans[" + i + "].modeWeights[" + j + "] = " + trans[i].modeWeights[j]);				
+			}
+		}
+	}
 
-		// Working variables
-		inRampUp = true;
-		endRampUpClock = 0;
-		endRunClock = 0;
-		msrmPrdLen = 0; // Set at the end of the run when the actual length is known.
-		beginRunWallClock = 0;
-		endRunWallClock = 0;
-		runWallClockTime = 0;
-
-		clock = 0;	// Note that it has been assumed throughout the code that
-		   			// the simulation starts at virtual time 0.
-
-		eventList.clear();
-		// eventList = new LinkedList();  // Old LinkedList implementation of the event list.
+	private void configureInputOutputRelationships() {
+		logln(2, "\n/////////////////////////////////////////////");
+		logln(2, "// Configure input/output relationships");
+		// Initialize the place-transition and transition-place connections.
+		XPath xpathSelector = DocumentHelper.createXPath("/net/connections/connection");
+		Iterator connectionIterator = xpathSelector.selectNodes(net).iterator();
 		
-		// Make sure clock has been initialized before calling init below
-		// Call places[i].init() first and then thans[i].init() and queues[i].init() 
-		for (int i = 0; i < numPlaces; i++)
-			places[i].init();
-		for (int i = 0; i < numTrans; i++)
-			trans[i].init();
-		for (int i = 0; i < numQueues; i++)
-			queues[i].init();
+		while (connectionIterator.hasNext()) {
+			// Get the next connection
+			Element connection = (Element) connectionIterator.next();
+
+			// Select the source and target of this connection			
+			Element sourceElement = idToElementMap.get(connection.attributeValue("source-id"));
+			Element targetElement = idToElementMap.get(connection.attributeValue("target-id"));
+
+			// if the source is a place, then select the Place object which it is assigned to.
+			if ("place".equals(sourceElement.getName())) {
+				
+				// source place index
+				int p = placeToIndexMap.get(sourceElement);
+				// target transition index
+				int t = transitionToIndexMap.get(targetElement);
+
+				// Connect place and transition
+				for (int ot = 0; ot < places[p].outTrans.length; ot++) {
+					if (places[p].outTrans[ot] == null) {
+						places[p].outTrans[ot] = trans[t];
+						logln(2, "places[" + p + "].outTrans[" + ot
+								+ "] = trans[" + t + "];");
+						break;
+					}
+				}
+				for (int ip = 0; ip < trans[t].inPlaces.length; ip++) {
+					if (trans[t].inPlaces[ip] == null) {
+						trans[t].inPlaces[ip] = places[p];
+						logln(2, "trans[" + t + "].inPlaces[" + ip
+								+ "] = places[" + p + "];");
+						break;
+					}
+				}
+			
+			}
+			// if the source is a transition, then select the Transition object which it is assigned to.
+			else if ("transition".equals(sourceElement.getName())) {
+
+				// source transition index
+				int t = transitionToIndexMap.get(sourceElement);
+				// target place index
+				int p = placeToIndexMap.get(targetElement);
+
+				// Connect transition and place.
+				for (int op = 0; op < trans[t].outPlaces.length; op++) {
+					if (trans[t].outPlaces[op] == null) {
+						trans[t].outPlaces[op] = places[p];
+						logln(2, "trans[" + t + "].outPlaces[" + op
+								+ "] = places[" + p + "];");
+						break;
+					}
+				}
+				for (int it = 0; it < places[p].inTrans.length; it++) {
+					if (places[p].inTrans[it] == null) {
+						places[p].inTrans[it] = trans[t];
+						logln(2, "places[" + p + "].inTrans[" + it
+								+ "] = trans[" + t + "];");
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	private void createTransitions() throws SimQPNException {
+		/*
+		 * public Transition(int id, String name, int numModes, int numInPlaces, int numOutPlaces, double transWeight) 
+		 * 
+		 * @param int id                  - global id of the transition 
+		 * @param String name             - name of the transition 
+		 * @param int numModes            - number of modes 
+		 * @param int numInPlaces         - number of input places 
+		 * @param int numOutPlaces        - number of output places 
+		 * @param double transWeight      - transition weight
+		 * 
+		 * Validate input parameters provided by the user to make sure that they make sense!!! For e.g. transWeight >= 0
+		 * 
+		 * IMPORTANT: Timed transitions and Subnet places are currently not supported!!! If the net uses them, just 
+		 * print an error message and exit.
+		 * 
+		 * IMPORTANT: trans id must be equal to its index in the trans array!!!
+		 * 
+		 */
+
+		logln(2, "\n/////////////////////////////////////////////");
+		logln(2, "// Create transitions");
+		// Allocate an array able to contain the transitions.
+		logln(2, "trans = new Transition[" + numTrans + "];");
+		trans = new Transition[numTrans];
+		// Set for checking the uniqueness of transition names
+		HashSet<String> transNames = new HashSet<String>();
+
+		// Create the transition-objects of every transition.
+		Iterator transitionIterator = transitionList.iterator();
+		for (int i = 0; transitionIterator.hasNext(); i++) {
+			Element transition = (Element) transitionIterator.next();
+			
+			String name = transition.attributeValue("name");
+			if (transNames.contains(name)) {
+				logln("ERROR: Another transition with the same name does already exist!");				
+				logln("Details: ");
+				logln("  transition-num   = " + i);
+				logln("  transition.id    = " + transition.attributeValue("id"));
+				logln("  transition.name  = " + transition.attributeValue("name"));
+				throw new SimQPNException();
+			} else {
+				transNames.add(name);
+			}
+			
+			if(!"immediate-transition".equals(transition.attributeValue("type"))) {
+				logln("ERROR: Invalid or missing transition type setting!");
+				logln("       Only \"immediate-transition\" is currently supported.");				
+				logln("Details: ");
+				logln("  transition-num   = " + i);
+				logln("  transition.id    = " + transition.attributeValue("id"));
+				logln("  transition.name  = " + transition.attributeValue("name"));
+				logln("  transition.type  = " + transition.attributeValue("type"));
+				throw new SimQPNException();
+			}
+			XPath xpathSelector = DocumentHelper.createXPath("modes/mode");
+			int numModes = xpathSelector.selectNodes(transition).size();
+			if(numModes == 0) {
+				logln("Error: incidence function not defined!");
+				logln("Details: ");
+				logln("  transition-num   = " + i);
+				logln("  transition.id    = " + transition.attributeValue("id"));
+				logln("  transition.name  = " + transition.attributeValue("name"));
+				logln("  transition.type  = " + transition.attributeValue("type"));				
+				throw new SimQPNException();
+			}
+			
+			int numOutgoingConnections = getNumConnectionsWithSourceId(transition.attributeValue("id"));
+			int numIncomingConnections = getNumConnectionsWithTargetId(transition.attributeValue("id"));
+			
+			if(transition.attributeValue("weight") == null) {
+				logln("Error: transition weight not set!");
+				logln("Details: ");
+				logln("  transition-num   = " + i);
+				logln("  transition.id    = " + transition.attributeValue("id"));
+				logln("  transition.name  = " + transition.attributeValue("name"));
+				logln("  transition.type  = " + transition.attributeValue("type"));				
+				throw new SimQPNException();
+			}
+			double transitionWeight = Double.parseDouble(transition.attributeValue("weight"));
+			
+			trans[i] = new Transition(
+					i,																		// id
+					transition.attributeValue("name"), 										// name
+					numModes, 																// # modes
+					numIncomingConnections, 												// # incoming connections
+					numOutgoingConnections, 												// # outgoing connections
+					transitionWeight);														// transition weight
+			transitionToIndexMap.put(transition, i);
+			logln(2, "trans[" + i + "] = new Transition(" 
+					+ i + ", '" 
+					+ transition.attributeValue("name") + "', " 
+					+ numModes + ", " 
+					+ numIncomingConnections + ", " 
+					+ numOutgoingConnections + ", " 
+					+ transitionWeight + ");       transition-element = " + transition);									
+		}
+	}
+
+	private void createPlaces() throws SimQPNException {
+		/*
+		 * @param int id          - global id of the place - IMPORTANT: must be equal to the index in the array!!!!!!! 
+		 * @param String name     - name of the place
+		 * @param int numColors   - number of colors 
+		 * @param int numInTrans  - number of input transitions 
+		 * @param int numOutTrans - number of output transitions 
+		 * @param int[1..4] statsLevel - determines the amount of statistics to be gathered during the run 
+		 *    Level 1: Token Throughput (Arrival/Departure Rates) 
+		 *    Level 2: + Token Population, Token Occupancy, Queue Utilization
+		 *    Level 3: + Token Sojourn Times (sample mean and variance + steady state point estimates and confidence intervals)
+		 *    Level 4: + Token Sojourn Time Histograms
+		 *    Level 5: + Record Sojourn Times in a file 
+		 * @param int depDiscip/dDis - determines the departure discipline: Place.NORMAL or Place.FIFO
+		 * 
+		 * For QPlace two extra parameters:
+		 * 
+		 * @param int queueDiscip/qDis - queueing discipline is Queue.IS, Queue.FCFS or Queue.PS. 
+		 *    NOTE: if a different queueing discipline is specified (e.g. RANDOM) print WARNING and use FCFS instead. 
+		 * @param int numServers - number of servers in queueing station - NOTE: for IS set to 0
+		 * 
+		 * IMPORTANT: Pay attention to variable types!!! Validate input parameters provided by the user to make sure 
+		 *   that they make sense! For e.g. Number of servers should be an integer >= 0.
+		 * 
+		 * IMPORTANT: In general, you should provide a way to add "help information" associated with different items 
+		 *   in the tool. For example, if one wants to know what a configuration option means, one should be able to 
+		 *   somehow click on it and ask for help. Ballons that appear when moving the cursor over the option is one 
+		 *   possibility. A more general solution would be to have a help page associated with each input screen in 
+		 *   the QPE. The page could be displayed by pressing F1 for example.
+		 * 
+		 */
+
+		/* 
+		 * SDK-DEBUG: A general question: Does your code guarantee that all id's assigned to elements (places, 
+		 *   transitions, colors, connections, modes) are globally unique across all element types?
+		 * CHRIS: Yes it does. The id generator is initialized with the current system time from there on is 
+		 *   allways increased by one for every id generated. Id generation is synchronized, so there should be 
+		 *   no way of creating double ids (ok ... except if the user messes with the system time or works during 
+		 *   daylightsaving time changes and starts the program the same second twice, but I thought the chance for 
+		 *   that would be quite slim) ;)  
+		 */
+		
+		logln(2, "\n/////////////////////////////////////////////");
+		logln(2, "// Create places");
+		// Allocate an array able to contain the places.
+		logln(2, "places = new Place[" + numPlaces + "];");
+		places = new Place[numPlaces];
+		queues = new Queue[numQueues];
+		// Set for checking the uniqueness of queue names
+		HashSet<String> queueNames = new HashSet<String>();
+
+		for (int i = 0; i < numQueues; i++) {
+			Element queue = (Element) queueList.get(i);
+
+			int numberOfServers;
+			int queueingStrategy = Queue.FCFS;
+			
+			String name = queue.attributeValue("name");
+			if (queueNames.contains(name)) {
+				logln("ERROR: Another queue definition with the same name does already exist!");
+				logln("Details: ");
+				logln("  queue-num      = " + i);
+				logln("  queue.id       = " + queue.attributeValue("id"));
+				logln("  queue.name     = " + name);
+				throw new SimQPNException();
+			} else {
+				queueNames.add(name);
+			}
+
+			if ("IS".equals(queue.attributeValue("strategy"))) {
+				queueingStrategy = Queue.IS; 
+				numberOfServers = 0; //NOTE: This is assumed in QPlaceQueueStats.updateTkPopStats()! 
+			} else {
+				if ("FCFS".equals(queue.attributeValue("strategy"))) {
+					queueingStrategy = Queue.FCFS; 
+				} else if ("PS".equals(queue.attributeValue("strategy"))) {
+					queueingStrategy = Queue.PS; 
+				} else {						
+					logln("ERROR: Invalid or missing \"strategy\" (queueing discipline) setting!");
+					logln("Details: ");
+					logln("  queue-num      = " + i);
+					logln("  queue.id       = " + queue.attributeValue("id"));
+					logln("  queue.name     = " + queue.attributeValue("name"));
+					logln("  queue.strategy = " + queue.attributeValue("strategy"));
+					throw new SimQPNException();
+				}
+				if (queue.attributeValue("number-of-servers") == null) {
+					logln("ERROR: \"number-of-servers\" parameter not set!");
+					logln("Details: ");
+					logln("  queue-num   = " + i);
+					logln("  queue.id    = " + queue.attributeValue("id"));
+					logln("  queue.name  = " + queue.attributeValue("name"));												
+					throw new SimQPNException();
+				}
+				numberOfServers = Integer.parseInt(queue.attributeValue("number-of-servers"));
+			}				
+	
+			queues[i] = new Queue(
+					i,															// index
+					queue.attributeValue("id"),									// xml-id
+					queue.attributeValue("name"), 								// name
+					queueingStrategy, 											// queueing d
+					numberOfServers	 											// # servers
+					);
+			queueToIndexMap.put(queue, i);
+			logln(2, "queues[" + i + "] = new Queue(" 
+					+ i + ", '" 
+					+ queue.attributeValue("name") + "', " 
+					+ queueingStrategy + ", " 
+					+ numberOfServers + ")");					
+		}
+
+
+		// Create the place-objects of every-place. Depending on its type-attribute create Place or QPlace objects.
+		Iterator placeIterator = placeList.iterator();
+		// Set for checking the uniqueness of place names
+		HashSet<String> placeNames = new HashSet<String>();
+		
+		for (int i = 0; placeIterator.hasNext(); i++) {
+			Element place = (Element) placeIterator.next();
+			
+			String name = place.attributeValue("name");
+			if (placeNames.contains(name)) {
+				logln("Error: Another place with the same name does already exist!");
+				logln("Details: ");
+				logln("  place-num   = " + i);
+				logln("  place.id    = " + place.attributeValue("id"));
+				logln("  place.name  = " + name);								
+				throw new SimQPNException();
+			} else {
+				placeNames.add(name);
+			}
+			
+			// SDK-DEBUG: Are you sure the XPath expression below selects the right connections? 
+			//   <connection> is a child of the <connections> child element of <net> <connections> inside transitions 
+			//   should not be selected here!
+			// CHRIS: Since I specify the source-id attribute and specify the id of a place, only inter place/tansition 
+			//   connections can be selected, the incidence function connections are between color-refs and modes and since 
+			//   the ids are concidered unique, the correct connection element will be selected.
+			
+			int numOutgoingConnections = getNumConnectionsWithSourceId(place.attributeValue("id"));
+			int numIncomingConnections = getNumConnectionsWithTargetId(place.attributeValue("id"));
+
+			Element metaAttribute = getSettings(place, configuration);
+			// Stats-level should be configurable as above.
+			if (metaAttribute.attributeValue("statsLevel") == null) {
+				logln("Error: statsLevel parameter not set!");
+				logln("Details: ");
+				logln("  place-num   = " + i);
+				logln("  place.id    = " + place.attributeValue("id"));
+				logln("  place.name  = " + place.attributeValue("name"));								
+				throw new SimQPNException();
+			}
+			int statsLevel = Integer.parseInt(metaAttribute.attributeValue("statsLevel"));
+			
+			int dDis;
+			
+			// This is a user-defined config-parameter for both ordinary- and queueing-place.			
+			if (place.attributeValue("departure-discipline") == null) {
+				logln("ERROR: departure-discipline parameter not set!");
+				logln("Details: ");
+				logln("  place-num   = " + i);
+				logln("  place.id    = " + place.attributeValue("id"));
+				logln("  place.name  = " + place.attributeValue("name"));								
+				throw new SimQPNException();
+			}			
+			if ("NORMAL".equals(place.attributeValue("departure-discipline"))) {
+				dDis = Place.NORMAL;
+			} else if ("FIFO".equals(place.attributeValue("departure-discipline"))) {
+				dDis = Place.FIFO;
+			} else {
+				logln("ERROR: Invalid departure-discipline setting!");
+				logln("Details: ");				
+				logln("  place-num                  = " + i);
+				logln("  place.id                   = " + place.attributeValue("id"));
+				logln("  place.name                 = " + place.attributeValue("name"));
+				logln("  place.departure-discipline = " + place.attributeValue("departure-discipline"));
+				throw new SimQPNException();				
+			}
+			/* 
+			 * IMPORTANT:			
+			 * My understanding was that all attributes should be included in the XML document even if they are set to 
+			 * their default values. Under this assumption, default values are dealt with in QPE and here when mapping 
+			 * the model to SimQPN it is assumed that all attributes are set to valid values. So if that's not the case 
+			 * we should print an error message and stop. This would make it easier to shake out potential bugs in the 
+			 * mapping.
+			 * 
+			 * CHRIS: I had changed that in the editor. Unfortunately this only applys to newly created nodes. 
+			 *
+			 * SDK-DEBUG2: 
+			 * I have noticed that still some parameters (e.g. minObsrv, maxObsrv, queueMinObsrv, queueMaxObsrv, distribution-function) 
+			 * are not included in the XML file when the default value is chosen.  
+			 * All attributes must be included in the XML even if they were not changed from their default values, i.e., 
+			 * the XML file should be complete! 
+			 * CHRIS: Fixed that now too.
+			 */
+			
+			// Extract the names of the colors that can reside in this place
+			Element colorRefsElem = place.element("color-refs");
+			if (colorRefsElem == null) {
+				logln("ERROR: Missing color references!");
+				logln("Details: ");				
+				logln("  place-num                  = " + i);
+				logln("  place.id                   = " + place.attributeValue("id"));
+				logln("  place.name                 = " + place.attributeValue("name"));
+				logln("  place.departure-discipline = " + place.attributeValue("departure-discipline"));
+				throw new SimQPNException();
+			}
+			List colorRefs = colorRefsElem.elements("color-ref");
+			if (colorRefs.size() == 0) {
+				logln("ERROR: Missing color references!");
+				logln("Details: ");				
+				logln("  place-num                  = " + i);
+				logln("  place.id                   = " + place.attributeValue("id"));
+				logln("  place.name                 = " + place.attributeValue("name"));
+				logln("  place.departure-discipline = " + place.attributeValue("departure-discipline"));
+				throw new SimQPNException();
+			}
+			String[] colors = new String[colorRefs.size()];			
+			Iterator colorRefIterator = colorRefs.iterator();			
+			for (int c = 0; colorRefIterator.hasNext(); c++) {
+			   Element colorRef = (Element) colorRefIterator.next();
+			   XPath xpathSelector = DocumentHelper.createXPath("colors/color[(@id='" + colorRef.attributeValue("color-id") + "')]");
+			   Element color = (Element) xpathSelector.selectSingleNode(net);
+			   colors[c] = color.attributeValue("name");			   
+			}
+			
+			if ("ordinary-place".equals(place.attributeValue("type"))) {
+				places[i] = new Place(
+						i,																	// id 
+						place.attributeValue("name"), 										// name
+						colors, 															// color names
+						numIncomingConnections,												// # incoming connections 
+						numOutgoingConnections, 											// # outgoing connections
+						statsLevel,															// stats level
+						dDis, 																// departure discipline
+						place);																// Reference to the place' XML element
+				placeToIndexMap.put(place, i);
+				logln(2, "places[" + i + "] = new Place(" 
+						+ i + ", '" 
+						+ place.attributeValue("name") + "', " 
+						+ colors + ", " 
+						+ numIncomingConnections + ", " 
+						+ numOutgoingConnections + ", " 
+						+ statsLevel + ", " 
+						+ dDis + ", " 
+						+ place + ")"); 												
+			} else if ("queueing-place".equals(place.attributeValue("type"))) {
+				try {
+					String queueRef = place.attributeValue("queue-ref");
+					Queue queue = findQueueByXmlId(queueRef);
+					places[i] = new QPlace(
+							i, 																	// id
+							place.attributeValue("name"), 										// name
+							colors, 															// color names	
+							numIncomingConnections,												// # incoming connections
+							numOutgoingConnections, 											// # outgoing connections
+							statsLevel, 														// stats level
+							dDis, 																// departure discipline
+							queue,													// Reference to the integrated Queue										
+							place);																// Reference to the place' XML element		
+					placeToIndexMap.put(place, i);
+					logln(2, "places[" + i + "] = new QPlace(" 
+							+ i + ", '" 
+							+ place.attributeValue("name") + "', " 
+							+ colors + ", " 
+							+ numIncomingConnections + ", " 
+							+ numOutgoingConnections + ", " 
+							+ statsLevel + ", " 
+							+ dDis + ", " 
+							+ queue + ", "  
+							+ place + ")"); 								
+					queue.addQPlace((QPlace) places[i]);				
+				} catch(NoSuchElementException ex) {
+					logln("ERROR: No queue defined!");
+					logln("Details: ");
+					logln("  place-num   = " + i);
+					logln("  place.id    = " + place.attributeValue("id"));
+					logln("  place.name  = " + place.attributeValue("name"));
+					logln("  place.type  = " + place.attributeValue("type"));
+					throw new SimQPNException();
+				}
+			} else {
+				logln("ERROR: Invalid or missing place type setting!");
+				logln("       Currently only 'ordinary-place' and 'queueing-place' are supported.");
+				logln("Details: ");
+				logln("  place-num   = " + i);
+				logln("  place.id    = " + place.attributeValue("id"));
+				logln("  place.name  = " + place.attributeValue("name"));
+				logln("  place.type  = " + place.attributeValue("type"));
+				throw new SimQPNException();
+			}
+		}
+	}
+	
+	protected int getNumConnectionsWithTargetId(String id) {
+		Integer num = targetIdToNumConnectionsMap.get(id);
+		if (num != null) {
+			return num.intValue();
+		}
+
+		return 0;
+	}
+
+	protected int getNumConnectionsWithSourceId(String id) {
+		Integer num = sourceIdToNumConnectionsMap.get(id);
+		if (num != null) {
+			return num.intValue();
+		}
+
+		return 0;
+	}
+
+	private void checkColorDefinitions() throws SimQPNException {
+		XPath colorSelector = DocumentHelper.createXPath("//color");
+		List colorList = colorSelector.selectNodes(net);
+		// Set for checking the uniqueness of color names
+		HashSet<String> colorNames = new HashSet<String>();
+		
+		for (int i = 0; i < colorList.size(); i++) {
+			Element col = (Element)colorList.get(i);
+			
+			String name = col.attributeValue("name");
+			if (colorNames.contains(name)) {
+				logln("ERROR: Another color definition with the same name does already exist!");
+				logln("Details: ");
+				logln("  color-num      = " + i);
+				logln("  color.id       = " + col.attributeValue("id"));
+				logln("  color.name     = " + name);
+				throw new SimQPNException();
+			} else {
+				colorNames.add(name);
+			}
+		}
+	}
+
+	private void initializePlaceAndTransitionSizes() {
+		numPlaces = placeList.size();
+		numTrans = transitionList.size();
+		numQueues = queueList.size();
+	}
+
+	private void initializeRandomNumberGenerator() {
+		randGenClass = MersenneTwister;
+		useRandSeedTable = true;
+
+		randNumGen = new Uniform(new DRand(new java.util.Date()));
+		if (useRandSeedTable)
+			randSeedGen = new RandomSeedGenerator(randNumGen.nextIntFromTo(0, Integer.MAX_VALUE), randNumGen.nextIntFromTo(0, RandomSeedTable.COLUMNS - 1));
 	}
 
 
