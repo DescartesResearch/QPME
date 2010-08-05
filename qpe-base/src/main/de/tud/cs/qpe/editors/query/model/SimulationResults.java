@@ -68,7 +68,9 @@ public class SimulationResults {
 	private List<Place> places;
 	
 	public SimulationResults(Element data) {
-		this.modelFile = new File(data.attributeValue("model-file"));
+		if (data.attributeValue("model-file") != null) {
+			this.modelFile = new File(data.attributeValue("model-file"));
+		}
 		try {
 			this.date = TIMESTAMP_FORMAT.parse(data.attributeValue("date"));
 		} catch (ParseException e) {
