@@ -59,6 +59,7 @@ import org.dom4j.io.XMLWriter;
 
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.Simulator;
+import de.tud.cs.simqpn.kernel.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.Stats;
 import de.tud.cs.simqpn.kernel.StatsDocumentBuilder;
 
@@ -69,8 +70,8 @@ public class SimQPN {
 	 */
 	public static void main(String[] args) {
 		Document netDocument = null;
-		Element net;
 		String configuration = null;
+		String outputFilename = null;
 		boolean listConfigurations = false;
 		boolean runSimulation = false;
 		boolean validConfig = false;
@@ -82,6 +83,8 @@ public class SimQPN {
 				} else if ("-r".equals(args[x])) {
 					runSimulation = true;
 					configuration = args[++x];
+				} else if ("-o".equals(args[x])) {
+					outputFilename = args[++x];
 				} else if (x == (args.length - 1)) {
 					SAXReader xmlReader = new SAXReader();
 					netDocument = xmlReader.read(args[x]);
@@ -90,11 +93,11 @@ public class SimQPN {
 
 			if ((listConfigurations || runSimulation) == false) {
 				System.out.println();
-				System.out.println("Syntax: Commandline [-l] [-r \"configuration name\"] qpn-file");
+				System.out.println("Syntax: Commandline [-l] [-r \"configuration name\"] [-o \"output-filename\"] qpn-file");
 				System.out.println("Error: At least one of the switches '-l' or '-r' must be specified!");
 			} else if (netDocument == null) {
 				System.out.println();
-				System.out.println("Syntax: Commandline [-l] [-r \"configuration name\"] qpn-file");
+				System.out.println("Syntax: Commandline [-l] [-r \"configuration name\"] [-o \"output-filename\"] qpn-file");
 			} else {
 				System.out.println();
 				if (listConfigurations == true) {
@@ -125,18 +128,8 @@ public class SimQPN {
 						System.out.println("Running configuration \"" + configuration + "\"");
 						System.out.println();
 						try {
-							net = netDocument.getRootElement();
-							Simulator.configure(net, configuration);
-							net = Simulator.prepareNet(net, configuration);
-							Stats[] result = Simulator.execute(net, configuration, new ConsoleSimulatorProgress());
-							// Skip stats document generation for WELCH and REPL_DEL since the 
-							// document builder does not support these methods yet.
-							if ((result != null) && (Simulator.analMethod == Simulator.BATCH_MEANS)) {
-								StatsDocumentBuilder builder = new StatsDocumentBuilder(result, net, configuration);
-								Document statsDocument = builder.buildDocument();
-								File resultsFile = new File(Simulator.statsDir, builder.getResultFileBaseName() + ".simqpn");
-								saveXmlToFile(statsDocument, resultsFile);
-							}
+							runSimulatorOnDocument(netDocument, configuration,
+									outputFilename, new ConsoleSimulatorProgress());
 						} catch (SimQPNException e) {
 							e.printStackTrace();
 						}
@@ -145,6 +138,44 @@ public class SimQPN {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+	}
+
+	public static void runSimulator(String inputFilename, String configuration,
+			String outputFilename, SimulatorProgress progress) {
+		try {
+			SAXReader xmlReader = new SAXReader();
+			Document inputDoc = xmlReader.read(inputFilename);
+
+			runSimulatorOnDocument(inputDoc, configuration, outputFilename,
+					progress);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static void runSimulatorOnDocument(Document netDocument,
+			String configuration, String outputFilename, SimulatorProgress progress) throws SimQPNException {
+		Element net = netDocument.getRootElement();
+		Simulator.configure(net, configuration);							
+		Stats[] result = Simulator.execute(net, configuration, progress);
+		// Skip stats document generation for WELCH and REPL_DEL since the 
+		// document builder does not support these methods yet.
+		if ((result != null) && (Simulator.analMethod == Simulator.BATCH_MEANS)) {
+			StatsDocumentBuilder builder = new StatsDocumentBuilder(result, net, configuration);
+			Document statsDocument = builder.buildDocument();
+
+			File resultsFile = null;
+			if (outputFilename != null) {
+				resultsFile = new File(outputFilename);
+			} else {
+				resultsFile = new File(Simulator.statsDir, builder.getResultFileBaseName() + ".simqpn");
+			}
+
+			System.out.println("Saving simulation result to "
+				+ resultsFile.getAbsolutePath());
+
+			saveXmlToFile(statsDocument, resultsFile);
 		}
 	}
 		
