@@ -44,6 +44,7 @@ package de.tud.cs.qpe.editors.net.gef.property;
 import java.beans.PropertyChangeListener;
 
 import org.dom4j.Element;
+import org.eclipse.gef.editparts.AbstractEditPart;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
@@ -57,6 +58,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 
 import de.tud.cs.qpe.editors.net.controller.editpart.editor.PlaceTransitionEditPart;
+import de.tud.cs.qpe.editors.net.controller.editpart.outline.NetTreeEditPart;
 import de.tud.cs.qpe.editors.net.gef.property.place.OrdinaryPlacePropertyComposite;
 import de.tud.cs.qpe.editors.net.gef.property.place.QueueingPlacePropertyComposite;
 import de.tud.cs.qpe.editors.net.gef.property.place.SubnetPlacePropertyComposite;
@@ -149,30 +151,34 @@ public class PlaceTransitionPropertyPage implements IPropertySheetPage {
 					oldPropetyComposite.deactivate();
 				}
 				
-				if (structuredSelection.getFirstElement() instanceof PlaceTransitionEditPart) {
-					PlaceTransitionEditPart editPart = (PlaceTransitionEditPart) structuredSelection
+				if (structuredSelection.getFirstElement() instanceof AbstractEditPart) {
+					AbstractEditPart editPart = (AbstractEditPart) structuredSelection
 							.getFirstElement();
-					Element newModel = (Element) editPart.getModel();
-					String type = newModel.attributeValue("type");
-					
-					if ("ordinary-place".equals(type)) {
-						stackLayout.topControl = ordinaryPlaceProperties;
-					} else if ("queueing-place".equals(type)) {
-						stackLayout.topControl = queueingPlaceProperties;
-					} else if ("subnet-place".equals(type)) {
-						stackLayout.topControl = subnetPlaceProperties;
-					} else if ("immediate-transition".equals(type)) {
-						stackLayout.topControl = immediateTransitionProperties;
-					} else if ("timed-transition".equals(type)) {
-						stackLayout.topControl = timedTransitionProperties;
+					if (editPart.getModel() instanceof Element) {
+						Element newModel = (Element) editPart.getModel();
+						String type = newModel.attributeValue("type");
+
+						if ("ordinary-place".equals(type)) {
+							stackLayout.topControl = ordinaryPlaceProperties;
+						} else if ("queueing-place".equals(type)) {
+							stackLayout.topControl = queueingPlaceProperties;
+						} else if ("subnet-place".equals(type)) {
+							stackLayout.topControl = subnetPlaceProperties;
+						} else if ("immediate-transition".equals(type)) {
+							stackLayout.topControl = immediateTransitionProperties;
+						} else if ("timed-transition".equals(type)) {
+							stackLayout.topControl = timedTransitionProperties;
+						} else {
+							stackLayout.topControl = emptyProperties;
+						}
+
+						// Set the new property change listener.
+						PlaceTransitionPropertyComposite newPropetyComposite = (PlaceTransitionPropertyComposite) stackLayout.topControl;
+						newPropetyComposite.setModel(newModel);
+						newPropetyComposite.activate();
 					} else {
 						stackLayout.topControl = emptyProperties;
 					}
-
-					// Set the new property change listener.
-					PlaceTransitionPropertyComposite newPropetyComposite = (PlaceTransitionPropertyComposite) stackLayout.topControl;
-					newPropetyComposite.setModel(newModel);
-					newPropetyComposite.activate();
 				} else {
 					stackLayout.topControl = emptyProperties;
 				}
