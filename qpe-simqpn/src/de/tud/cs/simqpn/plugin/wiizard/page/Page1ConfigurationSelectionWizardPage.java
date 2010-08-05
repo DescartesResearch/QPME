@@ -527,6 +527,14 @@ public class Page1ConfigurationSelectionWizardPage extends BaseWizardPage {
 		XPath xpathSelector = DocumentHelper.createXPath("/net/meta-attributes/meta-attribute[@name='sim-qpn']");
 		List configurations = xpathSelector.selectNodes(net);
 		configurationTableViewer.setInput(configurations);
+
+		// pre-select first entry
+		if (configurationTable.getItemCount() > 0) {
+			configurationTable.setSelection(0);
+			Element simQpnAttrib = (Element) configurations.get(0);
+			activeConfiguration = simQpnAttrib
+				.attributeValue("configuration-name");
+		}
 	}
 
 	private void updateMessages() {
