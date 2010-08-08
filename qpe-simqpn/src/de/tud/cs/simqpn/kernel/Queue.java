@@ -27,7 +27,7 @@
  * =============================================
  *
  * Original Author(s):  Samuel Kounev
- * Contributor(s):      Frederik Zipp  
+ * Contributor(s):      Frederik Zipp, Simon Spinner  
  * 
  * NOTE: The above list of contributors lists only the people that have
  * contributed to this source file - for a list of ALL contributors to 
@@ -43,6 +43,7 @@
  *  2009/04/08  Samuel Kounev     Added a check in clearEvents() to make sure that events are removed from the event lists.
  *  2009/08/03  Frederik Zipp     Added xmlId property. 
  *  2009/05/05  Frederik Zipp     Support for central queues.
+ *  2010/07/24  Simon Spinner	  Support for tracking tokens.
  * 
  */
 
@@ -285,12 +286,11 @@ public class Queue {
 					nC = qPlaces[p].numColors; 
 					for (int c=0; c < nC; c++, i++)  {
 						if (i == color) {
-							if (qPlaces[p].statsLevel >= 3)
-								Simulator.scheduleEvent(Simulator.clock + servTime, this, 
-										new Token(qPlaces[p], qPlaces[p].queueTokArrivTS[c].get(0), c));
-							else
-								Simulator.scheduleEvent(Simulator.clock + servTime, this, 
-										new Token(qPlaces[p], -1, c));							
+							if (qPlaces[p].queueTokens[c] != null) {
+								Simulator.scheduleEvent(Simulator.clock + servTime, this, (Token) qPlaces[p].queueTokens[c].get(0));
+							} else {
+								Simulator.scheduleEvent(Simulator.clock + servTime, this, new Token(qPlaces[p], c));
+							}
 							done = true;
 							break;
 						}
@@ -323,13 +323,12 @@ public class Queue {
 				}				
 				double servTime = minRST * totQueTokCnt;  // Default for "-/G/1-PS" queue 								
 				if (numServers > 1 && totQueTokCnt > 1)   // "-/G/n-PS" queues 					
-					servTime /= ((totQueTokCnt <= numServers) ? totQueTokCnt : numServers);				
-				if (qPlaces[tkSchedPl].statsLevel >= 3)
-					Simulator.scheduleEvent(Simulator.clock + servTime, this, 
-						new Token(qPlaces[tkSchedPl], qPlaces[tkSchedPl].queueTokArrivTS[tkSchedCol].get(tkSchedPos), tkSchedCol));				
-				else
-					Simulator.scheduleEvent(Simulator.clock + servTime, this, 
-						new Token(qPlaces[tkSchedPl], -1, tkSchedCol));				
+					servTime /= ((totQueTokCnt <= numServers) ? totQueTokCnt : numServers);
+				if (qPlaces[tkSchedPl].queueTokens[tkSchedCol] != null) {
+					Simulator.scheduleEvent(Simulator.clock + servTime, this, (Token) qPlaces[tkSchedPl].queueTokens[tkSchedCol].get(tkSchedPos));
+				} else {
+					Simulator.scheduleEvent(Simulator.clock + servTime, this, new Token(qPlaces[tkSchedPl], tkSchedCol));
+				}
 				lastEventClock = Simulator.clock;	
 				lastEventTkCnt = totQueTokCnt;
 				eventScheduled = true;
@@ -414,11 +413,12 @@ public class Queue {
 	 * 
 	 * @param color - color of tokens
 	 * @param count - number of tokens to deposit
+	 * @param tokensToBeAdded - individual tokens (if tracking = true)
 	 * @return
 	 * @exception
 	 */
 	@SuppressWarnings("unchecked")
-	public void addTokens(QPlace qPl, int color, int count) throws SimQPNException {	
+	public void addTokens(QPlace qPl, int color, int count, Token[] tokensToBeAdded) throws SimQPNException {	
 		
 		tkPopulation += count;
 		
@@ -487,7 +487,9 @@ public class Queue {
 			for (int i = 0; i < count; i++) {
 				double servTime = qPl.randServTimeGen[color].nextDouble();	
 				if (servTime < 0) servTime = 0;
-				Simulator.scheduleEvent(Simulator.clock + servTime, this, new Token(qPl, Simulator.clock, color));								
+				Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[i] : new Token(qPl, color);
+				tk.arrivTS = Simulator.clock;
+				Simulator.scheduleEvent(Simulator.clock + servTime, this, tk);								
 			}								 								
 		}
 		else if (queueDiscip == FCFS) {
@@ -496,7 +498,9 @@ public class Queue {
 				// Schedule service completion event
 				double servTime = qPl.randServTimeGen[color].nextDouble();
 				if (servTime < 0) servTime = 0;
-				Simulator.scheduleEvent(Simulator.clock + servTime, this, new Token(qPl, Simulator.clock, color));
+				Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[n] : new Token(qPl, color);
+				tk.arrivTS = Simulator.clock;
+				Simulator.scheduleEvent(Simulator.clock + servTime, this, tk);
 				numBusyServers++; n++;
 				// Update Stats
 				if (qPl.statsLevel >= 3)   
@@ -504,7 +508,9 @@ public class Queue {
 			}						
 			while (n < count) {
 				//  Place the rest of the tokens in the waitingLine
-				waitingLine.addLast(new Token(qPl, Simulator.clock, color));				
+				Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[n] : new Token(qPl, color);
+				tk.arrivTS = Simulator.clock;
+				waitingLine.addLast(tk);				
 				n++;					
 			}						
 		}
@@ -517,9 +523,14 @@ public class Queue {
 					qPl.queueTokResidServTimes[color].add(servTime);  			
 				}				
 			}
-			if (qPl.statsLevel >= 3) 
-				for (int i = 0; i < count; i++) 
-					qPl.queueTokArrivTS[color].add(Simulator.clock);			
+			if ((tokensToBeAdded != null) || (qPl.statsLevel >= 3)) {
+				// if we get tokens from caller or we have to measure the sojourn times, store the individual tokens.
+				for (int i = 0; i < count; i++) {
+					Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[i] : new Token(qPl, color);
+					tk.arrivTS = Simulator.clock;
+					qPl.queueTokens[color].add(tk);
+				}
+			}
 			if (eventScheduled) clearEvents();	// NOTE: clearEvents() resets eventScheduled to false; 
 			eventsUpToDate = false;
 		}
@@ -562,13 +573,13 @@ public class Queue {
 		else if (queueDiscip == PS) {
 			QPlace qPl = ((QPlace) token.place);
 			if (!expPS) {
-				if (qPl.statsLevel >= 3)
-					qPlaces[tkSchedPl].queueTokArrivTS[tkSchedCol].remove(tkSchedPos);
+				if (qPlaces[tkSchedPl].queueTokens[tkSchedCol] != null)
+					qPlaces[tkSchedPl].queueTokens[tkSchedCol].remove(tkSchedPos);
 				qPlaces[tkSchedPl].queueTokResidServTimes[tkSchedCol].remove(tkSchedPos);
 				updateResidServTimes(); //NOTE: WATCH OUT! Method should be called after served token has been removed from queueTokResidServTimes!   
 			}
-			else if (qPl.statsLevel >= 3)
-				qPl.queueTokArrivTS[token.color].remove(0);			
+			else if (qPl.queueTokens[token.color] != null)
+				qPl.queueTokens[token.color].remove(0);			
 			eventScheduled = false;
 			eventsUpToDate = false;			
 		} 

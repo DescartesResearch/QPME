@@ -74,6 +74,7 @@
  *  2009/16/12  Simon Spinner     Optimized run() avoiding usage of IntArrayList for managing enabled transitions. 
  *  2010/04/17	Simon Spinner     Add support for monitoring simulation progress and for cancelling.
  *  2010/04/17	Simon Spinner     Add warning for incidence functions with no input tokens.
+ *  2010/07/24	Simon Spinner	  Add probe configuration support.
  * 
  */
 package de.tud.cs.simqpn.kernel;
@@ -274,9 +275,11 @@ public class Simulator {
 	public int numPlaces;
 	public int numTrans;
 	public int numQueues;
+	public int numProbes;
 	public Place[] places;
 	public Transition[] trans;
 	public Queue[] queues;
+	public Probe[] probes;
 	
 	// hashmaps to allow fast lookup of array index for a given element
 	protected Map<Element, Integer> placeToIndexMap = new HashMap<Element, Integer>();
@@ -293,6 +296,7 @@ public class Simulator {
 	protected List placeList;
 	protected List transitionList;
 	protected List queueList;
+	protected List probeList;
 	protected Map<String, Element> idToElementMap = new HashMap<String, Element>();
 	protected static PrintStream logPrintStream;
 
@@ -305,6 +309,8 @@ public class Simulator {
 		transitionList = xpathSelector.selectNodes(net);
 		xpathSelector = DocumentHelper.createXPath("//queue");
 		queueList = xpathSelector.selectNodes(net);
+		xpathSelector = DocumentHelper.createXPath("//probe");
+		probeList = xpathSelector.selectNodes(net);
 		
 		xpathSelector = DocumentHelper.createXPath("//connection");
 		for (Object o : xpathSelector.selectNodes(net)) {
@@ -536,6 +542,10 @@ public class Simulator {
 							}
 						}
 					}
+					for (int pr = 0; pr < results.getProbes().length; pr++) {
+						stats.add(results.getProbes()[pr].probeStats);
+						results.getProbes()[pr].report();
+					}
 					result = (Stats[]) stats.toArray(new Stats[stats.size()]);
 				} else if (analMethod == REPL_DEL) { // Replication/Deletion Approach (Method of Independent Replications) 				
 					useStdStateStats = false;
@@ -693,7 +703,7 @@ public class Simulator {
 		progressMonitor.finishSimulationRun();
 		progressMonitor.finishSimulation();
 		progressMonitor = null;
-		return new SimulatorResults(sim.places, sim.queues);
+		return new SimulatorResults(sim.places, sim.queues, sim.probes);
 	}
 
 	/**
@@ -1225,8 +1235,7 @@ public class Simulator {
 		// -----------------------------------------------------------------------------------------------------------
 		// CHECK COLOR DEFINITIONS
 		// -----------------------------------------------------------------------------------------------------------
-		checkColorDefinitions();
-		
+		checkColorDefinitions();		
 
 		// -----------------------------------------------------------------------------------------------------------
 		// CREATE PLACES
@@ -1258,6 +1267,16 @@ public class Simulator {
 		// -----------------------------------------------------------------------------------------------------------
 		configureQueueServiceTimeDistributions();
 		
+		// -----------------------------------------------------------------------------------------------------------
+		// CREATE PROBES
+		// -----------------------------------------------------------------------------------------------------------
+		createProbes();
+		
+		// --------------------------------------------------------------------------------------------------------
+		// CONFIGURE PROBE ATTACHMENT TO PLACES
+		// --------------------------------------------------------------------------------------------------------
+		configureProbes();
+		
 		// --------------------------------------------------------------------------------------------------------
 		// CONFIGURE INITIAL MARKING
 		// --------------------------------------------------------------------------------------------------------
@@ -1283,6 +1302,12 @@ public class Simulator {
 		initializeWorkingVariables();
 	}
 
+	private void configureProbes() throws SimQPNException {
+		for (int pr = 0; pr < numProbes; pr++) {
+			probes[pr].instrument();
+		}
+	}
+
 	private void initializeWorkingVariables() throws SimQPNException {
 		inRampUp = true;
 		endRampUpClock = 0;
@@ -1300,6 +1325,8 @@ public class Simulator {
 		
 		// Make sure clock has been initialized before calling init below
 		// Call places[i].init() first and then thans[i].init() and queues[i].init() 
+		for (int i = 0; i < numProbes; i++)
+			probes[i].init();
 		for (int i = 0; i < numPlaces; i++)
 			places[i].init();
 		for (int i = 0; i < numTrans; i++)
@@ -1712,6 +1739,188 @@ public class Simulator {
 								logln(2, "-- qPlaceQueueStats.numBMeansCorlTested[" + cr + "] = " + qpl.qPlaceQueueStats.numBMeansCorlTested[cr]);
 							    */
 							}
+						}
+					}
+				}
+			}
+			
+			// Configure the probes statistic collection
+			Iterator probeIterator = probeList.iterator();
+			for (int p = 0; probeIterator.hasNext(); p++) {
+				Element probe = (Element) probeIterator.next();
+				Probe pr = probes[p];
+				if (pr.statsLevel >= 3) {
+					logln(2, "probes[" + p + "]");
+					XPath xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
+					Iterator colorRefIterator = xpathSelector.selectNodes(probe).iterator();
+					for (int cr = 0; colorRefIterator.hasNext(); cr++) {
+						Element colorRef = (Element) colorRefIterator.next();
+						Element colorRefSettings = getSettings(colorRef, configuration);
+						// Initialize Probe
+						if (colorRefSettings != null) {
+							if (colorRefSettings.attributeValue("signLev") == null) {
+								logln("Error: Configuration parameter \"signLev\" for Batch Means Method is missing!");
+								logln("Details:");
+								logln("  configuration = " + configuration);						
+								logln("  probe-num          = " + p);
+								logln("  probe.id           = " + probe.attributeValue("id"));
+								logln("  probe.name         = " + probe.attributeValue("name"));						
+								logln("  colorRef-num       = " + cr);
+								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+								throw new SimQPNException();
+							}
+							pr.probeStats.signLevST[cr] = Double.parseDouble(colorRefSettings.attributeValue("signLev"));
+							logln(2, "-- probeStats.signLevST[" + cr + "] = " + pr.probeStats.signLevST[cr]);							
+
+							if (colorRefSettings.attributeValue("reqAbsPrc") == null) {
+								logln("Error: Configuration parameter \"reqAbsPrc\" for Batch Means Method is missing!");
+								logln("Details:");
+								logln("  configuration = " + configuration);						
+								logln("  probe-num          = " + p);
+								logln("  probe.id           = " + probe.attributeValue("id"));
+								logln("  probe.name         = " + probe.attributeValue("name"));						
+								logln("  colorRef-num       = " + cr);
+								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+								throw new SimQPNException();
+							}
+							pr.probeStats.reqAbsPrc[cr] = Double.parseDouble(colorRefSettings.attributeValue("reqAbsPrc"));
+							logln(2, "-- probeStats.reqAbsPrc[" + cr + "] = " + pr.probeStats.reqAbsPrc[cr]);
+							
+							if (colorRefSettings.attributeValue("reqRelPrc") == null) {								
+								logln("Error: Configuration parameter \"reqRelPrc\" for Batch Means Method is missing!");
+								logln("Details:");
+								logln("  configuration = " + configuration);						
+								logln("  probe-num          = " + p);
+								logln("  probe.id           = " + probe.attributeValue("id"));
+								logln("  probe.name         = " + probe.attributeValue("name"));						
+								logln("  colorRef-num       = " + cr);
+								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+								throw new SimQPNException();
+							}
+							pr.probeStats.reqRelPrc[cr] = Double.parseDouble(colorRefSettings.attributeValue("reqRelPrc"));
+							logln(2, "-- probeStats.reqRelPrc[" + cr + "] = " + pr.probeStats.reqRelPrc[cr]);
+
+							if (colorRefSettings.attributeValue("batchSize") == null) {
+								logln("Error: Configuration parameter \"batchSize\" for Batch Means Method is missing!");
+								logln("Details:");
+								logln("  configuration = " + configuration);						
+								logln("  probe-num          = " + p);
+								logln("  probe.id           = " + probe.attributeValue("id"));
+								logln("  probe.name         = " + probe.attributeValue("name"));						
+								logln("  colorRef-num       = " + cr);
+								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));								
+								throw new SimQPNException();
+							}
+							pr.probeStats.batchSizeST[cr] = Integer.parseInt(colorRefSettings.attributeValue("batchSize"));
+							logln(2, "-- probeStats.batchSizeST[" + cr + "] = " + pr.probeStats.batchSizeST[cr]);							
+
+							if (colorRefSettings.attributeValue("minBatches") == null) {
+								logln("Error: Configuration parameter \"minBatches\" for Batch Means Method is missing!");
+								logln("Details:");
+								logln("  configuration = " + configuration);						
+								logln("  probe-num          = " + p);
+								logln("  probe.id           = " + probe.attributeValue("id"));
+								logln("  probe.name         = " + probe.attributeValue("name"));						
+								logln("  colorRef-num       = " + cr);
+								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																
+								throw new SimQPNException();
+							}
+							pr.probeStats.minBatches[cr] = Integer.parseInt(colorRefSettings.attributeValue("minBatches"));
+							logln(2, "-- probeStats.minBatches[" + cr + "] = " + pr.probeStats.minBatches[cr]);							
+
+							if (colorRefSettings.attributeValue("numBMeansCorlTested") == null) {
+								logln("Error: Configuration parameter \"numBMeansCorlTested\" for Batch Means Method is missing!");
+								logln("Details:");
+								logln("  configuration = " + configuration);						
+								logln("  probe-num          = " + p);
+								logln("  probe.id           = " + probe.attributeValue("id"));
+								logln("  probe.name         = " + probe.attributeValue("name"));						
+								logln("  colorRef-num       = " + cr);
+								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
+								throw new SimQPNException();
+							}
+							pr.probeStats.numBMeansCorlTested[cr] = Integer.parseInt(colorRefSettings.attributeValue("numBMeansCorlTested"));
+							logln(2, "-- probeStats.numBMeansCorlTested[" + cr + "] = " + pr.probeStats.numBMeansCorlTested[cr]);
+							
+							// Note that if (minBatches > 0 && numBMeansCorlTested[c] > 0),
+							// minBatches[c] must be > numBMeansCorlTested[c]!
+							if (pr.probeStats.minBatches[cr] > 0 && 
+								pr.probeStats.numBMeansCorlTested[cr] > 0 && 
+								!(pr.probeStats.minBatches[cr] > pr.probeStats.numBMeansCorlTested[cr])) {
+								logln("Error: Probe.probeStats.minBatches[c] must be greater than Probe.probeStats.numBMeansCorlTested[c]!");
+								logln("Details:");
+								logln("  configuration = " + configuration);						
+								logln("  probe-num          = " + p);
+								logln("  probe.id           = " + probe.attributeValue("id"));
+								logln("  probe.name         = " + probe.attributeValue("name"));						
+								logln("  colorRef-num       = " + cr);
+								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
+								throw new SimQPNException();
+							}
+							// If (numBMeansCorlTested[c] <= 0) no correlation test is done!
+							// Note that numBMeansCorlTested must be even!
+							if (pr.probeStats.numBMeansCorlTested[cr] % 2 != 0) {
+								logln("Error: Probe.probeStats.numBMeansCorlTested[c] must be even!");
+								logln("Details:");
+								logln("  configuration = " + configuration);						
+								logln("  probe-num          = " + p);
+								logln("  probe.id           = " + probe.attributeValue("id"));
+								logln("  probe.name         = " + probe.attributeValue("name"));						
+								logln("  colorRef-num       = " + cr);
+								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
+								throw new SimQPNException();
+							}
+
+							if (pr.statsLevel >= 4) {
+								if (colorRefSettings.attributeValue("bucketSize") == null) {
+									logln("Error: Configuration parameter \"bucketSize\" for Batch Means Method is missing!");
+									logln("Details:");
+									logln("  configuration = " + configuration);
+									logln("  probe-num          = " + p);
+									logln("  probe.id           = " + probe.attributeValue("id"));
+									logln("  probe.name         = " + probe.attributeValue("name"));
+									logln("  colorRef-num       = " + cr);
+									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+									throw new SimQPNException();
+								}
+								pr.probeStats.histST[cr].setBucketSize(Double.parseDouble(colorRefSettings.attributeValue("bucketSize")));
+								logln(2, "-- probeStats.histST[" + cr + "].bucketSize = " + pr.probeStats.histST[cr].getBucketSize());
+
+								if(colorRefSettings.attributeValue("maxBuckets") == null) {
+									logln("Error: Configuration parameter \"maxBuckets\" for Batch Means Method is missing!");
+									logln("Details:");
+									logln("  configuration = " + configuration);
+									logln("  probe-num          = " + p);
+									logln("  probe.id           = " + probe.attributeValue("id"));
+									logln("  probe.name         = " + probe.attributeValue("name"));
+									logln("  colorRef-num       = " + cr);
+									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+									throw new SimQPNException();
+								}
+								pr.probeStats.histST[cr].setMaximumNumberOfBuckets(Integer.parseInt(colorRefSettings.attributeValue("maxBuckets")));
+								logln(2, "-- probeStats.histST[" + cr + "].maxBuckets = " + pr.probeStats.histST[cr].getMaximumNumberOfBuckets());
+							}
+						} else {							
+							logln("Error: SimQPN configuration parameters for Batch Means Method are missing!");
+							logln("Details:");
+							logln("  configuration = " + configuration);						
+							logln("  probe-num          = " + p);
+							logln("  probe.id           = " + probe.attributeValue("id"));
+							logln("  probe.name         = " + probe.attributeValue("name"));						
+							logln("  colorRef-num       = " + cr);
+							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
+							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+							throw new SimQPNException();
 						}
 					}
 				}
@@ -2839,6 +3048,7 @@ public class Simulator {
 					numModes, 																// # modes
 					numIncomingConnections, 												// # incoming connections
 					numOutgoingConnections, 												// # outgoing connections
+					numProbes,
 					transitionWeight);														// transition weight
 			transitionToIndexMap.put(transition, i);
 			logln(2, "trans[" + i + "] = new Transition(" 
@@ -3085,6 +3295,7 @@ public class Simulator {
 						colors, 															// color names
 						numIncomingConnections,												// # incoming connections 
 						numOutgoingConnections, 											// # outgoing connections
+						numProbes,
 						statsLevel,															// stats level
 						dDis, 																// departure discipline
 						place);																// Reference to the place' XML element
@@ -3108,6 +3319,7 @@ public class Simulator {
 							colors, 															// color names	
 							numIncomingConnections,												// # incoming connections
 							numOutgoingConnections, 											// # outgoing connections
+							numProbes,
 							statsLevel, 														// stats level
 							dDis, 																// departure discipline
 							queue,													// Reference to the integrated Queue										
@@ -3143,6 +3355,156 @@ public class Simulator {
 				logln("  place.type  = " + place.attributeValue("type"));
 				throw new SimQPNException();
 			}
+		}
+	}
+	
+	private void createProbes() throws SimQPNException {
+		XPath xpathSelector;
+		
+		logln(2, "\n/////////////////////////////////////////////");
+		logln(2, "// Create probes");
+		// Allocate an array able to contain the places.
+		logln(2, "probes = new Probe[" + numProbes + "];");
+		probes = new Probe[numProbes];
+		
+		for (int i = 0; i < numProbes; i++) {
+			Element probe = (Element) probeList.get(i);		
+			
+			// Extract the names of the colors that are tracked by this probe
+			Element colorRefsElem = probe.element("color-refs");
+			if (colorRefsElem == null) {
+				logln("ERROR: Missing color references!");
+				logln("Details: ");				
+				logln("  probe-num                  = " + i);
+				logln("  probe.id                   = " + probe.attributeValue("id"));
+				logln("  probe.name                 = " + probe.attributeValue("name"));
+				throw new SimQPNException();
+			}
+			List colorRefs = colorRefsElem.elements("color-ref");
+			if (colorRefs.size() == 0) {
+				logln("ERROR: Missing color references!");
+				logln("Details: ");				
+				logln("  probe-num                  = " + i);
+				logln("  probe.id                   = " + probe.attributeValue("id"));
+				logln("  probe.name                 = " + probe.attributeValue("name"));
+				throw new SimQPNException();
+			}
+			String[] colors = new String[colorRefs.size()];
+			Iterator colorRefIterator = colorRefs.iterator();			
+			for (int c = 0; colorRefIterator.hasNext(); c++) {
+			   Element colorRef = (Element) colorRefIterator.next();
+			   xpathSelector = DocumentHelper.createXPath("colors/color[(@id='" + colorRef.attributeValue("color-id") + "')]");
+			   Element color = (Element) xpathSelector.selectSingleNode(net);
+			   colors[c] = color.attributeValue("name");
+			}
+			
+			// Extract start place of probe
+			xpathSelector = DocumentHelper.createXPath("//place[@id = '" + probe.attributeValue("start-place-id") + "']");
+			Element startElement = (Element) xpathSelector.selectSingleNode(net);
+			if (startElement == null) {
+				logln("ERROR: Start place reference invalid!");
+				logln("Details: ");				
+				logln("  probe-num                  = " + i);
+				logln("  probe.id                   = " + probe.attributeValue("id"));
+				logln("  probe.name                 = " + probe.attributeValue("name"));
+				throw new SimQPNException();
+			}
+			Place startPlace = null;
+			for (int p = 0; p < places.length; p++) {
+				if (placeList.get(p).equals(startElement)) {
+					startPlace = places[p];
+				}
+			}
+			int startTrigger = Probe.ON_ENTRY;
+			if ("entry".equals(probe.attributeValue("start-trigger"))) {
+				startTrigger = Probe.ON_ENTRY;
+			} else if ("exit".equals(probe.attributeValue("start-trigger"))) {
+				startTrigger = Probe.ON_EXIT; 
+			} else {						
+				logln("ERROR: Invalid or missing \"start-trigger\" setting!");
+				logln("Details: ");
+				logln("  probe-num           = " + i);
+				logln("  probe.id            = " + probe.attributeValue("id"));
+				logln("  probe.name          = " + probe.attributeValue("name"));
+				logln("  probe.start-trigger = " + probe.attributeValue("start-trigger"));
+				throw new SimQPNException();
+			}
+			
+			// Extract end place of probe
+			xpathSelector = DocumentHelper.createXPath("//place[@id = '" + probe.attributeValue("end-place-id") + "']");
+			Element endElement = (Element) xpathSelector.selectSingleNode(net);
+			if (endElement == null) {
+				logln("ERROR: End place reference invalid!");
+				logln("Details: ");				
+				logln("  probe-num                  = " + i);
+				logln("  probe.id                   = " + probe.attributeValue("id"));
+				logln("  probe.name                 = " + probe.attributeValue("name"));
+				throw new SimQPNException();
+			}
+			Place endPlace = null;
+			for (int p = 0; p < places.length; p++) {
+				if (placeList.get(p).equals(endElement)) {
+					endPlace = places[p];
+				}
+			}
+			int endTrigger = Probe.ON_ENTRY;
+			if ("entry".equals(probe.attributeValue("end-trigger"))) {
+				endTrigger = Probe.ON_ENTRY;
+			} else if ("exit".equals(probe.attributeValue("end-trigger"))) {
+				endTrigger = Probe.ON_EXIT; 
+			} else {						
+				logln("ERROR: Invalid or missing \"end-trigger\" setting!");
+				logln("Details: ");
+				logln("  probe-num           = " + i);
+				logln("  probe.id            = " + probe.attributeValue("id"));
+				logln("  probe.name          = " + probe.attributeValue("name"));
+				logln("  probe.end-trigger = " + probe.attributeValue("end-trigger"));
+				throw new SimQPNException();
+			}
+			
+			Element metaAttribute = getSettings(probe, configuration);
+			int statsLevel = 0;
+			if (metaAttribute != null) {
+				if (metaAttribute.attributeValue("statsLevel") == null) {
+					logln("Error: statsLevel parameter not set!");
+					logln("Details: ");
+					logln("  probe-num   = " + i);
+					logln("  probe.id    = " + probe.attributeValue("id"));
+					logln("  probe.name  = " + probe.attributeValue("name"));								
+					throw new SimQPNException();
+				}
+				statsLevel = Integer.parseInt(metaAttribute.attributeValue("statsLevel"));
+			} else {
+				logln("Error: meta-attribute element not set!");
+				logln("Details: ");
+				logln("  probe-num   = " + i);
+				logln("  probe.id    = " + probe.attributeValue("id"));
+				logln("  probe.name  = " + probe.attributeValue("name"));								
+				throw new SimQPNException();
+			}
+			
+			probes[i] = new Probe(
+					i,															// index
+					probe.attributeValue("id"),									// xml id
+					probe.attributeValue("name"), 								// name
+					colors,
+					startPlace,
+					startTrigger,
+					endPlace,
+					endTrigger,
+					statsLevel,
+					probe
+					);
+			logln(2, "probes[" + i + "] = new Probe(" 
+					+ i + ", '" 
+					+ probe.attributeValue("name") + "', "
+					+ colors + ", "
+					+ startPlace.name + ", "
+					+ startTrigger + ", "
+					+ endPlace.name + ", "
+					+ endTrigger + ", "
+					+ statsLevel + ", "
+					+ probe + ")");
 		}
 	}
 	
@@ -3191,6 +3553,7 @@ public class Simulator {
 		numPlaces = placeList.size();
 		numTrans = transitionList.size();
 		numQueues = queueList.size();
+		numProbes = probeList.size();
 	}
 
 	private void initializeRandomNumberGenerator() {
@@ -3362,6 +3725,8 @@ public class Simulator {
 					places[p].start();
 				for (int q = 0; q < numQueues; q++)
 					queues[q].start();
+				for (int pr = 0; pr < numProbes; pr++)
+					probes[pr].start();
 
 				progressMonitor.finishWarmUp();
 			}
@@ -3549,11 +3914,28 @@ public class Simulator {
 						}
 					}
 				}
-				if (done) {
-					progressMonitor.precisionCheck(done, null);
-					break; // exit while loop
-				} else {
+
+				if (!done) {
+					// The test already failed for a place.
 					progressMonitor.precisionCheck(done, pl.name);
+				} else {
+					// Check also the probes, whether they have enough samples
+					Probe probe = null;
+					for (int pr = 0; pr < numProbes; pr++) {
+						probe = probes[pr];
+						if (probe.statsLevel >= 3) {
+							if (!probe.probeStats.enoughStats()) {
+								done = false;
+								break;
+							}
+						}
+					}
+					if (done) {
+						progressMonitor.precisionCheck(done, null);
+						break; // exit while loop
+					} else {
+						progressMonitor.precisionCheck(done, probe.name); //TODO: distinguish between places and probes.
+					}
 				}
 
 				if (timeBtwChkStops > 0)
@@ -3595,6 +3977,8 @@ public class Simulator {
 				places[p].finish();
 			for (int q = 0; q < numQueues; q++)  //NOTE: queues[*].finish() should be called after places[*].finish()! 
 				queues[q].finish();
+			for (int pr = 0; pr < numProbes; pr++)
+				probes[pr].finish();
 		}
 
 		

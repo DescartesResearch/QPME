@@ -27,7 +27,7 @@
  * =============================================
  *
  * Original Author(s):  Frederik Zipp and Samuel Kounev
- * Contributor(s):   
+ * Contributor(s): Simon Spinner  
  * 
  * NOTE: The above list of contributors lists only the people that have
  * contributed to this source file - for a list of ALL contributors to 
@@ -37,6 +37,7 @@
  *  Date        ID                Description
  *  ----------  ----------------  ------------------------------------------------------------------  
  *  2009/05/05  Frederik Zipp     Created.
+ *  2010/08/02  Simon Spinner     Add probe support.
  * 
  */
 package de.tud.cs.simqpn.kernel;
@@ -45,10 +46,12 @@ public class SimulatorResults {
 
 	private final Place[] places;
 	private final Queue[] queues;
+	private final Probe[] probes;
 
-	public SimulatorResults(Place[] places, Queue[] queues) {
+	public SimulatorResults(Place[] places, Queue[] queues, Probe[] probes) {
 		this.places = places;
 		this.queues = queues;
+		this.probes = probes;
 	}
 
 	public Place[] getPlaces() {
@@ -57,5 +60,9 @@ public class SimulatorResults {
 
 	public Queue[] getQueues() {
 		return this.queues;
+	}
+	
+	public Probe[] getProbes() {
+		return this.probes;
 	}
 }

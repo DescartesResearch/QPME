@@ -27,7 +27,7 @@
  * =============================================
  *
  * Original Author(s):  Samuel Kounev
- * Contributor(s):   
+ * Contributor(s): Simon Spinner  
  * 
  * NOTE: The above list of contributors lists only the people that have
  * contributed to this source file - for a list of ALL contributors to 
@@ -39,6 +39,7 @@
  *  2003/08/??  Samuel Kounev     Created.
  *  2008/11/29  Samuel Kounev     Added run related parameters.   
  *  2008/12/13  Samuel Kounev     Added a field to store token colors that can reside in the respective location.                                
+ *  2010/08/02  Simon Spinner     Added constant for PROBE stats.
  * 
  */
 package de.tud.cs.simqpn.kernel;
@@ -57,6 +58,7 @@ public class Stats {
 	public static final int QUE_PLACE_QUEUE	= 1;	 
 	public static final int QUE_PLACE_DEP	= 2;
 	public static final int QUEUE			= 3;
+	public static final int PROBE           = 4;
 
 	// NOTE: The following data is replicated from the respective data in the target Place or Queue to make Stats objects self-contained!
 	public int 			id;						// ID of target place or queue			 		

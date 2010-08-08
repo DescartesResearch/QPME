@@ -27,7 +27,7 @@
  * =============================================
  *
  * Original Author(s):  Frederik Zipp
- * Contributor(s):   
+ * Contributor(s): Simon Spinner  
  * 
  * NOTE: The above list of contributors lists only the people that have
  * contributed to this source file - for a list of ALL contributors to 
@@ -37,6 +37,7 @@
  *  Date        ID                Description
  *  ----------  ----------------  ------------------------------------------------------------------  
  *  2009/02/27  Frederik Zipp     Build XML document for simulation results.
+ *  2010/08/02  Simon Spinner	  Add probe support.
  * 
  */
 package de.tud.cs.simqpn.kernel;
@@ -110,10 +111,15 @@ public class StatsDocumentBuilder {
 			place.addAttribute("type", "queue");
 			addQueueMetrics((QueueStats) stats, place);
 			break;
+		case Stats.PROBE:
+			place.addAttribute("type", "probe");
+			break;
 		}
 		place.addAttribute("name", stats.name);
 		if (stats.type == Stats.QUEUE) {
 			place.addAttribute("id", getQueueElement(stats.name).attributeValue("id"));
+		} else if (stats.type == Stats.PROBE) {
+			place.addAttribute("id", getProbeElement(stats.name).attributeValue("id"));
 		} else {
 			place.addAttribute("id", getPlaceElement(stats.name).attributeValue("id"));
 		}
@@ -138,6 +144,9 @@ public class StatsDocumentBuilder {
 			case Stats.QUE_PLACE_QUEUE:
 				addQPlaceQueueMetrics((QPlaceQueueStats) stats, color, colorIndex);
 				break;
+			case Stats.PROBE:
+				addProbeMetrics((ProbeStats) stats, color, colorIndex);
+				break;
 			case Stats.QUEUE:
 				// nothing
 			}
@@ -151,6 +160,37 @@ public class StatsDocumentBuilder {
 	}
 	
 	private void addOrdinaryPlaceMetrics(PlaceStats stats, Element color, int colorIndex) {
+		if (stats.statsLevel >= 1) {
+			addMetric(color, "arrivThrPut", stats.arrivThrPut[colorIndex]);
+			addMetric(color, "deptThrPut", stats.deptThrPut[colorIndex]);
+		}
+			
+		if (stats.statsLevel >= 2) {
+			addMetric(color, "minTkPop", stats.minTkPop[colorIndex]);
+			addMetric(color, "maxTkPop", stats.maxTkPop[colorIndex]);
+			addMetric(color, "meanTkPop", stats.meanTkPop[colorIndex]);
+			addMetric(color, "tkColOcp", stats.tkColOcp[colorIndex]);
+		}
+
+		if (stats.statsLevel >= 3) {
+			addMetric(color, "minST", stats.minST[colorIndex]);
+			addMetric(color, "maxST", stats.maxST[colorIndex]);
+			addMetric(color, "meanST", stats.meanST[colorIndex]);
+			addMetric(color, "stDevST", stats.stDevST[colorIndex]);
+			if (Simulator.analMethod == Simulator.BATCH_MEANS
+					&& stats.minBatches[colorIndex] > 0
+					&& stats.numBatchesST[colorIndex] >= stats.minBatches[colorIndex]) {
+				addMetric(color, "stdStateMeanST", stats.stdStateMeanST[colorIndex]);
+				addMetric(color, "ciHalfLenST", stats.ciHalfLenST[colorIndex]);
+				addMetric(color, "confLevelST", stats.confLevelST[colorIndex]);
+			}
+		}
+		if (stats.statsLevel >= 4) {
+			addHistogram(color, "histST", stats.histST[colorIndex]);
+		}
+	}
+	
+	private void addProbeMetrics(ProbeStats stats, Element color, int colorIndex) {
 		if (stats.statsLevel >= 1) {
 			addMetric(color, "arrivThrPut", stats.arrivThrPut[colorIndex]);
 			addMetric(color, "deptThrPut", stats.deptThrPut[colorIndex]);
@@ -256,6 +296,11 @@ public class StatsDocumentBuilder {
 
 	private Element getQueueElement(String queueName) {
 		XPath xpathSelector = DocumentHelper.createXPath("/net/queues/queue[@name = '" + queueName + "']");
+		return (Element) xpathSelector.selectSingleNode(this.net);
+	}
+	
+	private Element getProbeElement(String probeName) {
+		XPath xpathSelector = DocumentHelper.createXPath("/net/probes/probe[@name = '" + probeName + "']");
 		return (Element) xpathSelector.selectSingleNode(this.net);
 	}
 }

@@ -55,9 +55,12 @@
  *                                containing the arrival timestamps since that is the only information 
  *                                that is actually used. Renamed queueTokens to queueTokArrivTS.
  *  2008/12/13  Samuel Kounev     Changed to store names of token colors that can reside in this place.                                 
- * 
+ *  2010/07/24	Simon Spinner	  Add token tracking support.
+ *  2010/07/24  Simon Spinner	  Reintroduce queueTokens structure in order to track the individual tokens.
  */
 package de.tud.cs.simqpn.kernel;
+
+import java.util.ArrayList;
 
 import org.dom4j.Element;
 
@@ -82,17 +85,19 @@ public class QPlace extends Place {
 	public int[]		queueTokenPop;			// Number of tokens in the queueing station (queue), i.e. token population.
 												// Note that for queueing places Place.tokenPop contains tokens in the depository.
 	
-	public AbstractDoubleList[]				 
-						queueTokArrivTS;		// PS queues: statsLevel >= 3: Arrival timestamps of tokens in the queueing station (queue).												
 	public AbstractDoubleList[]
 						queueTokResidServTimes;	// PS queues: expPS==false: Residual service times of the tokens in the queueing station (queue).
+	@SuppressWarnings("rawtypes")
+	public ArrayList[]	queueTokens;			// PS queues: tokens in queueing station. 
 	
 	public AbstractContinousDistribution[]
 						randServTimeGen;		// PS queues: Random number generators for generating service times.
 	
 	public QPlaceQueueStats	qPlaceQueueStats;	
 	
-	public Element element;			
+	public Element element;
+	
+	private Token[] tkCopyBuffer;				// INTERNAL: Used to transfer tokens.
 	
 	/**
 	 * Constructor
@@ -102,17 +107,19 @@ public class QPlace extends Place {
 	 * @param colors      - names of the colors that can reside in this place
 	 * @param numInTrans  - number of input transitions
 	 * @param numOutTrans - number of output transitions
+	 * @param numProbes   - number of all probes in net
 	 * @param statsLevel  - determines the amount of statistics to be gathered during the run
 	 * @param depDiscip   - determines the depository's departure discipline (order): NORMAL or FIFO
 	 * @param queue       - reference to the integrated Queue
 	 * @param element     - reference to the XML element representing the place
 	 * 
 	 */
-	public QPlace(int id, String name, String[] colors, int numInTrans, int numOutTrans, int statsLevel, int depDiscip, Queue queue, Element element) throws SimQPNException {		
-		super(id, name, colors, numInTrans, numOutTrans, statsLevel, depDiscip, element);
+	public QPlace(int id, String name, String[] colors, int numInTrans, int numOutTrans, int numProbes, int statsLevel, int depDiscip, Queue queue, Element element) throws SimQPNException {		
+		super(id, name, colors, numInTrans, numOutTrans, numProbes, statsLevel, depDiscip, element);
 		
 		this.queue						= queue;
 		this.meanServTimes				= new double[numColors];
+		this.tkCopyBuffer				= new Token[1];
 		for (int c = 0; c < numColors; c++) 
 			this.meanServTimes[c]		= -1; // -1 means 'uninitialized'
 		
@@ -122,13 +129,6 @@ public class QPlace extends Place {
 		
 		if (statsLevel > 0) 
 			qPlaceQueueStats = new QPlaceQueueStats(id, name, colors, statsLevel, queue.queueDiscip, queue.numServers, meanServTimes);
-		
-		// PS Queues			
-		if (queue.queueDiscip == Queue.PS && statsLevel >= 3) {			 
-			this.queueTokArrivTS = new DoubleArrayList[numColors];	//TODO: replace with more efficient data structures.
-			for (int c = 0; c < numColors; c++)
-				this.queueTokArrivTS[c]	= new DoubleArrayList(100);	//SDK-TODO: See if 100 is optimal initial capacity. Note: The list is auto-expanding.						
-		}	
 	}
 	
 	/**
@@ -138,6 +138,8 @@ public class QPlace extends Place {
 	 * @return
 	 * @exception
 	 */
+	@SuppressWarnings("rawtypes")
+	@Override
 	public void init() throws SimQPNException {
 		super.init();
 		
@@ -151,6 +153,13 @@ public class QPlace extends Place {
 				}
 		}
 
+		// PS Queues			
+		this.queueTokens = new ArrayList[numColors]; //TODO: replace with more efficient data structures.
+		for (int c = 0; c < numColors; c++) {
+			if (tracking[c] || (queue.queueDiscip == Queue.PS && statsLevel >= 3))
+				this.queueTokens[c] = new ArrayList(100); 	//SDK-TODO: See if 100 is optimal initial capacity. Note: The list is auto-expanding.
+		}
+		
 		// PS Queues	
 		if (queue.queueDiscip == Queue.PS && (!queue.expPS))  {							
 			queueTokResidServTimes 	= new DoubleArrayList[numColors];	//NOTE: Note that given that queueTokResidServTimes is updated frequently, it is more efficient to use an array here than a LinkedList! 
@@ -167,6 +176,7 @@ public class QPlace extends Place {
 	 * @return
 	 * @exception
 	 */
+	@Override
 	public void start() throws SimQPNException {	
 		if (statsLevel > 0)  {		
 			// Start statistics collection
@@ -183,6 +193,7 @@ public class QPlace extends Place {
 	 * @return
 	 * @exception
 	 */
+	@Override
 	public void finish() throws SimQPNException {
 		if (statsLevel > 0)  {
 			// Complete statistics collection
@@ -196,11 +207,13 @@ public class QPlace extends Place {
 	 * 
 	 * @param color - color of tokens
 	 * @param count - number of tokens to deposit
+	 * @param tokensToBeAdded - Tokens to be added or null if tracking=false.
+	 * 							After the call all elements of this array are set to null.
 	 * @return
 	 * @exception
 	 */
-	@SuppressWarnings("unchecked")
-	public void addTokens(int color, int count) throws SimQPNException {	
+	@Override
+	public void addTokens(int color, int count, Token[] tokensToBeAdded) throws SimQPNException {	
 		if (count <= 0) { // DEBUG
 			Simulator.logln("Error: Attempted to add nonpositive number of tokens to queue " + name);
 			throw new SimQPNException();
@@ -211,8 +224,11 @@ public class QPlace extends Place {
 			qPlaceQueueStats.updateTkPopStats(color, queueTokenPop[color], count);																	
 		 				
 		queueTokenPop[color] += count;
-
-		queue.addTokens(this, color, count);
+		if (tracking[color]) {
+			queue.addTokens(this, color, count, tokensToBeAdded);
+		} else {
+			queue.addTokens(this, color, count, null);
+		}
 	}
 	
 	/**
@@ -242,7 +258,12 @@ public class QPlace extends Place {
 		queue.completeService(token);
 		
 		// Finally move token to depository
-		super.addTokens(token.color, 1);		
+		if (tracking[token.color]) {
+			tkCopyBuffer[0] = token;
+			super.addTokens(token.color, 1, tkCopyBuffer);
+		} else {
+			super.addTokens(token.color, 1, null);
+		}
 	}
 		
 	public void report() throws SimQPNException  {		

@@ -27,7 +27,7 @@
  * =============================================
  *
  * Original Author(s):  Samuel Kounev
- * Contributor(s):   
+ * Contributor(s): Simon Spinner  
  * 
  * NOTE: The above list of contributors lists only the people that have
  * contributed to this source file - for a list of ALL contributors to 
@@ -50,7 +50,8 @@
  *  2008/12/13  Samuel Kounev     Changed to store names of token colors that can reside in this place.
  *  2008/12/15  Samuel Kounev     Added new statLevel 4 storing sojourn time histogram data.
  *  2008/12/16  Samuel Kounev     Extended to estimate tkOcp - fraction of time that there is a token in the place.
- * 
+ *  2010/08/02  Simon Spinner     Changed output code to make it more customizable in subclasses.
+ *  
  */
 package de.tud.cs.simqpn.kernel;
 
@@ -320,17 +321,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 					if (numBMeansCorlTested[c] > 0) {
 						// Ensure that numBMeansCorlTested is even
 						if (numBMeansCorlTested[c] % 2 != 0) {
-							if (type == ORD_PLACE)
-								Simulator.log("Warning: In place " + name);
-							else if (type == QUE_PLACE_QUEUE)
-								Simulator.log("Warning: In queue of place " + name);
-							else if (type == QUE_PLACE_DEP)
-								Simulator.log("Warning: In depository of place " + name);
-							else {
-								Simulator.logln("Error: Internal error in PlaceStats of place " + name);
-								throw new SimQPNException();
-							}
-
+							Simulator.log("Warning: In " + getTypeDescription() + " " + name);
 							Simulator.logln(" numBMeansCorlTested for color " + c + " is not even!?");
 							Simulator.logln(" Setting numBMeansCorlTested["	+ c + "] to (numBMeansCorlTested[" 
 										+ c + "] + 1) = " + (numBMeansCorlTested[c] + 1));
@@ -338,16 +329,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 						}
 						// Ensure that minBatches[c] > numBMeansCorlTested[c]
 						if (!(minBatches[c] > numBMeansCorlTested[c])) {
-							if (type == ORD_PLACE)
-								Simulator.log("Warning: In place " + name);
-							else if (type == QUE_PLACE_QUEUE)
-								Simulator.log("Warning: In queue of place " + name);
-							else if (type == QUE_PLACE_DEP)
-								Simulator.log("Warning: In depository of place " + name);
-							else {
-								Simulator.logln("Error: Internal error in PlaceStats of place " + name);
-								throw new SimQPNException();
-							}
+							Simulator.log("Warning: In " + getTypeDescription() + " " + name);
 							Simulator.logln(" minBatches <= numBMeansCorlTested for color "	+ c + "!?");
 							Simulator.logln("         Setting minBatches[" + c + "] to numBMeansCorlTested[" + c + "] + 1 = " + (numBMeansCorlTested[c] + 1));
 							minBatches[c] = numBMeansCorlTested[c] + 1;
@@ -447,17 +429,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			obsrvST[color].add(sojTime);
 			if ((numObsrv + 1) == maxObsrvST[color] && Simulator.debugLevel > 0) {
 				Simulator.log("Warning: Maximum number of observations allowed for ");
-				if (type == ORD_PLACE)
-					Simulator.log("place " + name + ", color " + color);
-				else if (type == QUE_PLACE_QUEUE)
-					Simulator.log("queue of place " + name + ", color " + color);
-				else if (type == QUE_PLACE_DEP)
-					Simulator.log("depository of place " + name + ", color " + color);
-				else {
-					Simulator.logln("Error: Internal error in PlaceStats of place " + name);
-					throw new SimQPNException();
-				}				
-				Simulator.logln(" reached!");
+				Simulator.logln(getTypeDescription() + " " + name + ", color " + color + " reached!");
 				Simulator.logln("         Further observations will be ignored. Consider increasing maxObsrvST[c].");
 			}
 			return;
@@ -585,17 +557,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			double stDevST = Math.sqrt(Descriptive.sampleVariance(numST[color], sumST[color], sumSqST[color]));
 			if (stDevST == 0)  {				
 				Simulator.log("WARNING: Batch means correlation test was run for ");
-				if (type == ORD_PLACE)
-					Simulator.log("place " + name + ", color " + color);
-				else if (type == QUE_PLACE_QUEUE)
-					Simulator.log("queue of place " + name + ", color " + color);
-				else if (type == QUE_PLACE_DEP)
-					Simulator.log("depository of place " + name + ", color " + color);
-				else {
-					Simulator.logln("Error: Internal error in PlaceStats of place " + name);
-					throw new SimQPNException();
-				}
-				Simulator.logln();
+				Simulator.logln(getTypeDescription() + " " + name + ", color " + color);
 				Simulator.logln("         However, the standard deviation of the token residence time is 0 and therefore");
 				Simulator.logln("         the result of the test is ignored!");
 				Simulator.logln("         In future runs, you should set numBMeansCorlTested to 0 to switch off the correlation test!");
@@ -609,17 +571,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			else
 				Simulator.log("Info: FAILED ");
 			Simulator.log("Batch means correlation test for ");
-			if (type == ORD_PLACE)
-				Simulator.log("place " + name + ", color " + color);
-			else if (type == QUE_PLACE_QUEUE)
-				Simulator.log("queue of place " + name + ", color " + color);
-			else if (type == QUE_PLACE_DEP)
-				Simulator.log("depository of place " + name + ", color " + color);
-			else {
-				Simulator.logln("Error: Internal error in PlaceStats of place " + name);
-				throw new SimQPNException();
-			}
-			Simulator.logln();
+			Simulator.logln(getTypeDescription() + " " + name + ", color " + color);
 		}
 		return passed;
 	}
@@ -742,16 +694,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 		int c;
 
 		if (Simulator.debugLevel >= 3) {
-			if (type == ORD_PLACE)
-				Simulator.logln("Checking for enough stats in place " + name);
-			else if (type == QUE_PLACE_QUEUE)
-				Simulator.logln("Checking for enough stats in queue of place " + name);
-			else if (type == QUE_PLACE_DEP)
-				Simulator.logln("Checking for enough stats in depository of place " + name);
-			else {
-				Simulator.logln("Error: Internal error in PlaceStats of place " + name);
-				throw new SimQPNException();
-			}	
+			Simulator.logln("Checking for enough stats in " + getTypeDescription() + " " + name);	
 		}
 
 		int passedColors = 0;
@@ -799,16 +742,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 		}
 
 		if (passed && Simulator.debugLevel >= 3) {
-			if (type == ORD_PLACE)
-				Simulator.logln("PASSED: Enough stats gathered for place " + name);
-			else if (type == QUE_PLACE_QUEUE)
-				Simulator.logln("PASSED: Enough stats gathered for queue of place " + name);
-			else if (type == QUE_PLACE_DEP)
-				Simulator.logln("PASSED: Enough stats gathered for depository of place " + name);
-			else {
-				Simulator.logln("Error: Internal error in PlaceStats of place " + name);
-				throw new SimQPNException();
-			}			
+			Simulator.logln("PASSED: Enough stats gathered for " + getTypeDescription() + " " + name);			
 			Simulator.logln();
 		}
 		return passed;
@@ -872,6 +806,84 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 
 		Simulator.logln();
 		Simulator.logln();
+		
+		printReportHeader();
+
+		Simulator.logln();
+
+		printPlaceStats(); 
+				
+		for (int c = 0; c < numColors; c++) {
+			Simulator.logln();
+			Simulator.logln("------------------ Color = " + colors[c] + " --------------------");
+			
+			printColorPopulationStats(c);
+			
+			printColorSojournTimeStats(c);
+		}
+	}
+
+	/**
+	 * Prints the sojourn times for the specified color.
+	 * @param c color index
+	 */
+	protected void printColorSojournTimeStats(int c) {
+		if (statsLevel >= 3) {
+			Simulator.logln("-----");
+			// Simulator.logln("numST=" + numST[c] + " minST=" + minST[c] + " maxST=" + maxST[c]);
+			Simulator.logln("meanST=" + meanST[c] + " stDevST=" + stDevST[c]);				
+			if (Simulator.analMethod == Simulator.BATCH_MEANS && minBatches[c] > 0) {
+				Simulator.logln();
+				Simulator.logln("Steady State Statistics: ");
+				if (numBatchesST[c] >= minBatches[c]) {
+					Simulator.logln("numBatchesST=" + numBatchesST[c] + " batchSizeST=" + batchSizeST[c] + " stDevStdStateMeanST=" + stDevStdStateMeanST[c]);
+					Simulator.logln(confLevelST[c] + "% c.i. = " + stdStateMeanST[c] + " +/- " + ciHalfLenST[c]);
+				} else {
+					Simulator.logln("Only " + numBatchesST[c] + " batches collected!");
+					Simulator.logln("Need at least " + minBatches[c] + " for steady state statistics.");
+				}
+			}
+		}
+		if (statsLevel >= 4) {
+			Simulator.logln("-----");
+			Simulator.logln("Histogram Data");
+			for (int i = 1; i < 10; i++) 
+				Simulator.logln("   " + i*10 + "% percentile=" +  histST[c].getPercentile((double) i / 10));
+			Simulator.logln("   histogramMean=" + histST[c].getMean());				
+		}						
+		if (statsLevel >= 5) {
+			Simulator.logln("Token sojourn times dumped in " + statsDir);
+		}
+	}
+
+	/**
+	 * Prints the population stats for the specified color
+	 * @param c color index
+	 */
+	protected void printColorPopulationStats(int c) {
+		Simulator.logln("arrivCnt=" + arrivCnt[c] + " deptCnt="	+ deptCnt[c]);
+		Simulator.logln("arrivThrPut=" + arrivThrPut[c] + " deptThrPut=" + deptThrPut[c]);
+		if (statsLevel >= 2) {
+			// Simulator.logln("minTkPop=" + minTkPop[c] + " maxTkPop=" +
+			// maxTkPop[c]);
+			Simulator.logln("meanTkPop=" + meanTkPop[c] + " tkColOcp=" + tkColOcp[c]);
+		}
+	}
+
+	/**
+	 * Outputs the stats that belong to the complete place.
+	 */
+	protected void printPlaceStats() {
+		if (statsLevel >= 2) 
+			Simulator.logln("tkOcp=" + tkOcp);
+	}
+
+	/**
+	 * Prints a human-readable header for the report of this Stats object.
+	 * Can be overriden to customize the report output in subclasses
+	 * @throws SimQPNException
+	 */
+	protected void printReportHeader() throws SimQPNException {
 		if (type == ORD_PLACE)
 			Simulator.logln("REPORT for Ordinary Place : " + name + "----------------------------------------");
 		else if (type == QUE_PLACE_DEP)
@@ -879,49 +891,6 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 		else {
 			Simulator.logln("Error: Internal error in PlaceStats of place " + name);
 			throw new SimQPNException();			
-		}
-
-		Simulator.logln();
-
-		if (statsLevel >= 2) 
-			Simulator.logln("tkOcp=" + tkOcp); 
-				
-		for (int c = 0; c < numColors; c++) {
-			Simulator.logln();
-			Simulator.logln("------------------ Color = " + colors[c] + " --------------------");
-			Simulator.logln("arrivCnt=" + arrivCnt[c] + " deptCnt="	+ deptCnt[c]);
-			Simulator.logln("arrivThrPut=" + arrivThrPut[c] + " deptThrPut=" + deptThrPut[c]);
-			if (statsLevel >= 2) {
-				// Simulator.logln("minTkPop=" + minTkPop[c] + " maxTkPop=" +
-				// maxTkPop[c]);
-				Simulator.logln("meanTkPop=" + meanTkPop[c] + " tkColOcp=" + tkColOcp[c]);
-			}
-			if (statsLevel >= 3) {
-				Simulator.logln("-----");
-				// Simulator.logln("numST=" + numST[c] + " minST=" + minST[c] + " maxST=" + maxST[c]);
-				Simulator.logln("meanST=" + meanST[c] + " stDevST=" + stDevST[c]);				
-				if (Simulator.analMethod == Simulator.BATCH_MEANS && minBatches[c] > 0) {
-					Simulator.logln();
-					Simulator.logln("Steady State Statistics: ");
-					if (numBatchesST[c] >= minBatches[c]) {
-						Simulator.logln("numBatchesST=" + numBatchesST[c] + " batchSizeST=" + batchSizeST[c] + " stDevStdStateMeanST=" + stDevStdStateMeanST[c]);
-						Simulator.logln(confLevelST[c] + "% c.i. = " + stdStateMeanST[c] + " +/- " + ciHalfLenST[c]);
-					} else {
-						Simulator.logln("Only " + numBatchesST[c] + " batches collected!");
-						Simulator.logln("Need at least " + minBatches[c] + " for steady state statistics.");
-					}
-				}
-			}
-			if (statsLevel >= 4) {
-				Simulator.logln("-----");
-				Simulator.logln("Histogram Data");
-				for (int i = 1; i < 10; i++) 
-					Simulator.logln("   " + i*10 + "% percentile=" +  histST[c].getPercentile((double) i / 10));
-				Simulator.logln("   histogramMean=" + histST[c].getMean());				
-			}						
-			if (statsLevel >= 5) {
-				Simulator.logln("Token sojourn times dumped in " + statsDir);
-			}
 		}
 	}
 
@@ -1008,6 +977,24 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			
 			// Add the new meta-attribute.
 			DocumentManager.addChild(metaAttributeContainer, metaAttribute);
+		}
+	}
+	
+	/**
+	 * Used when printing warning and messages to the output. Can be customized in subclasses.
+	 * @return a human readable description of the object assiociated with this Stats object.
+	 * @throws SimQPNException
+	 */
+	protected String getTypeDescription() throws SimQPNException {
+		if (type == ORD_PLACE)
+			return "place";
+		else if (type == QUE_PLACE_QUEUE)
+			return "queue of place";
+		else if (type == QUE_PLACE_DEP)
+			return "depository of place";
+		else {
+			Simulator.logln("Error: Internal error in PlaceStats of place " + name);
+			throw new SimQPNException();
 		}
 	}
 }

@@ -26,8 +26,8 @@
  *                                
  * =============================================
  *
- * Original Author(s):  Samuel Kounev
- * Contributor(s): Simon Spinner  
+ * Original Author(s):  Simon Spinner
+ * Contributor(s):   
  * 
  * NOTE: The above list of contributors lists only the people that have
  * contributed to this source file - for a list of ALL contributors to 
@@ -35,39 +35,35 @@
  * 
  *  History:
  *  Date        ID                Description
- *  ----------  ----------------  ------------------------------------------------------------------
- *  2003/08/??  Samuel Kounev     Created.
- *  2008/11/29  Samuel Kounev     Added reference to the place where the token is located.
- *  2010/07/24	Simon Spinner	  Added timestamps map for probes.                                 
+ *  ----------  ----------------  ----------------------------------------------------------------------------------
+ *  2010/07/25  Simon Spinner     Created.
  * 
  */
 package de.tud.cs.simqpn.kernel;
 
-
 /**
- * Class Token
+ * This class represents a timestamp that is created by a
+ * probe when a token enters the probe's region. Instances
+ * of this class can be associated with tokens. This class
+ * is immutable, so that it can be replicated without cloning.
+ * 
+ * @author Simon Spinner
  *
- * @author Samuel Kounev
- * @version
  */
-public final class Token {
-	public final Place   place;
-	public double        arrivTS; //NOTE: arrivTS is used only in statLevel >= 3, otherwise it is set to -1 
-	public final int     color;
-	public final ProbeTimestamp[] 
-				         probeData; //NOTE: probeData is only used if tracking is enabled for place and color of this token.
+public final class ProbeTimestamp {
 	
-	public Token(Place place, int color) {
-		this.place		= place;
-		this.arrivTS	= -1;  
-		this.color		= color;
-		this.probeData = null;
-	}
+	public final int probeId;
+	public final double timestamp;
 	
-	public Token(Place place, int color, ProbeTimestamp[] probeData) {
-		this.place		= place;
-		this.arrivTS	= -1;  
-		this.color		= color;
-		this.probeData = probeData;
+	/**
+	 * Constructor
+	 * 
+	 * @param probeId - id of the probe this timestamps belongs to
+	 * @param timestamp - time in simulation time units
+	 */
+	public ProbeTimestamp(int probeId, double timestamp) {
+		this.probeId = probeId;
+		this.timestamp = timestamp;
 	}
+
 }

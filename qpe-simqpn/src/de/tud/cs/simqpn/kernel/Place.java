@@ -27,7 +27,7 @@
  * =============================================
  *
  * Original Author(s):  Samuel Kounev
- * Contributor(s):   
+ * Contributor(s): Simon Spinner  
  * 
  * NOTE: The above list of contributors lists only the people that have
  * contributed to this source file - for a list of ALL contributors to 
@@ -52,10 +52,11 @@
  *                                of tokens in the order of their arrival since this is the only
  *                                information actually used in the code.
  *  2008/12/13  Samuel Kounev     Changed to store names of token colors that can reside in this place.                               
- * 
+ *  2010/07/24	Simon Spinner	  Add token tracking support.
  */
 package de.tud.cs.simqpn.kernel;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 
 import org.dom4j.Element;
@@ -77,6 +78,7 @@ public class Place extends Node {
 	public String[]			colors;			// Names of the colors that can reside in this Place.
 	public int				statsLevel;		// Determines the amount of statistics to be gathered during the run.
 	public int				depDiscip;		// Departure discipline.
+	@SuppressWarnings("rawtypes")
 	public LinkedList		depQueue;		// depDiscip = FIFO: Departure queue - stores the colors of tokens in the order of their arrival.	
 	
 	public Transition[]		inTrans;
@@ -85,13 +87,25 @@ public class Place extends Node {
 	public int[]			availTokens;	// The token population currently available for output transitions.	
 	public boolean			depReady;		// depDiscip=FIFO: true if a token is currently available for output transitions of the place 
 	
+	@SuppressWarnings("rawtypes")
 	public LinkedList[]		tokArrivTS;		// statsLevel >= 3: Arrival timestamps of tokens in the place/depository.
+	
+	@SuppressWarnings("rawtypes")
+	public LinkedList[]		tokens;			// tracking[color] = true: list of individual tokens.
+	
+	public boolean[]		tracking;		// tracking[color] specifies whether tokens of the specified color should be tracked individually
+	
+	// Configuration of probes
+	public boolean[][]		probeStartOnEntry; 		// probeStartOnEntry[numColors][numProbes]: Probes on which the start event is triggered when a token enters this place
+	public boolean[][]		probeStartOnExit;		// probeStartOnExit[numColors][numProbes]: Probes on which the start event is triggered when a token exits this place
+	public boolean[][]		probeEndOnEntry; 		// probeEndOnEntry[numColors][numProbes]: Probes on which the end event is triggered when a token enters this place
+	public boolean[][]		probeEndOnExit;			// probeEndOnExit[numColors][numProbes]: Probes on which the start event is triggered when a token exits this place
+	public int[][]			probeInstrumentations;  // probeInstrumentations[numColors]: List of probes tracking tokens in this place
+	public final Probe[]	probes;					// probes[numProbes]: List of all probes in the net.
 	
 	public PlaceStats		placeStats;	 
 	
-	public Element			element;
-	public Simulator		sim;
-	
+	public Element			element;	
 
 	/**
 	 * 
@@ -102,21 +116,32 @@ public class Place extends Node {
 	 * @param colors      - names of the colors that can reside in this place
 	 * @param numInTrans  - number of input transitions
 	 * @param numOutTrans - number of output transitions
+	 * @param numProbes	  - number of all probes in net
 	 * @param statsLevel  - determines the amount of statistics to be gathered during the run
 	 * @param depDiscip   - determines the departure discipline (order): NORMAL or FIFO
 	 * @param element     - reference to the XML element representing the place
 	 */
-	public Place(int id, String name, String[] colors, int numInTrans, int numOutTrans, int statsLevel, int depDiscip, Element element) throws SimQPNException {
+	@SuppressWarnings("rawtypes")
+	public Place(int id, String name, String[] colors, int numInTrans, int numOutTrans, int numProbes, int statsLevel, int depDiscip, Element element) throws SimQPNException {
 		super(id, name);		
-		this.colors			= colors;	
-		this.numColors		= colors.length;	
-		this.inTrans		= new Transition[numInTrans];
-		this.outTrans		= new Transition[numOutTrans];
-		this.tokenPop		= new int[numColors];
-		this.availTokens	= new int[numColors]; 
-		this.statsLevel		= statsLevel;
-		this.depDiscip		= depDiscip;
-		this.element		= element;
+		this.colors			       = colors;	
+		this.numColors		       = colors.length;	
+		this.inTrans		       = new Transition[numInTrans];
+		this.outTrans		       = new Transition[numOutTrans];
+		this.tokenPop		       = new int[numColors];
+		this.availTokens		   = new int[numColors]; 
+		this.statsLevel		       = statsLevel;
+		this.depDiscip		       = depDiscip;
+		this.tokens			       = new LinkedList[numColors];
+		this.tracking			   = new boolean[numColors];
+		this.probes                = new Probe[numProbes];
+		this.probeStartOnEntry     = new boolean[numColors][numProbes];
+		this.probeStartOnExit      = new boolean[numColors][numProbes];
+		this.probeEndOnEntry       = new boolean[numColors][numProbes];
+		this.probeEndOnExit        = new boolean[numColors][numProbes];
+		this.probeInstrumentations = new int[numColors][];
+		this.element		       = element;
+
 		
 		for (int c = 0; c < numColors; c++)  { 
 			this.tokenPop[c] 	= 0;
@@ -136,6 +161,16 @@ public class Place extends Node {
 				for (int c = 0; c < numColors; c++)
 					this.tokArrivTS[c] = new LinkedList();
 			}				
+		}
+		
+		// By default tracking is disabled
+		Arrays.fill(tracking, false);
+		for (int c = 0; c < numColors; c++) {
+			Arrays.fill(probeStartOnEntry[c], false);
+			Arrays.fill(probeStartOnExit[c], false);
+			Arrays.fill(probeEndOnEntry[c], false);
+			Arrays.fill(probeEndOnExit[c], false);
+			probeInstrumentations[c] = new int[0];
 		}
 	}
 	
@@ -179,10 +214,30 @@ public class Place extends Node {
 		}
 		 			
 		if (statsLevel >= 3) {			
-			for (int c = 0; c < numColors; c++)
-				for (int i = 0; i < tokenPop[c]; i++)
+			for (int c = 0; c < numColors; c++) {
+				for (int i = 0; i < tokenPop[c]; i++) {
 					tokArrivTS[c].addLast(new Double(Simulator.clock));
-		}		 									
+				}
+			}
+		}
+
+		// Initialize token list for the initial marking
+		for (int c = 0; c < numColors; c++) {
+			int prC = probeInstrumentations[c].length;
+			
+			// Create timestamps for all probes associated with this place
+			ProbeTimestamp[] timestamps = new ProbeTimestamp[prC];
+			for (int pr = 0; pr < prC; pr++) {
+				timestamps[pr] = new ProbeTimestamp(probeInstrumentations[c][pr], Simulator.clock);
+			}
+			
+			// Create tokens
+			for (int i = 0; i < tokenPop[c]; i++) {
+				if (tracking[c]) {
+					tokens[c].addLast(new Token(this, c, timestamps));
+				}
+			}
+		}
 	}
 
 	/**
@@ -232,11 +287,13 @@ public class Place extends Node {
 	 * 
 	 * @param color - color of tokens
 	 * @param count - number of tokens to deposit
+	 * @param tokensToBeAdded - Tokens to be added or null if tracking=false.
+	 * 							After the call all elements of this array are set to null.
 	 * @return
 	 * @exception
 	 */
 	@SuppressWarnings("unchecked")
-	public void addTokens(int color, int count) throws SimQPNException {
+	public void addTokens(int color, int count, Token[] tokensToBeAdded) throws SimQPNException {
 		if (count <= 0) { // DEBUG
 			Simulator.logln("Error: Attempted to add nonpositive number of tokens to place " + name);
 			throw new SimQPNException();
@@ -251,7 +308,18 @@ public class Place extends Node {
 			}
 		}
 		// Now add tokens and update affected transitions
-		tokenPop[color] += count;				
+		tokenPop[color] += count;
+		if(tracking[color]) {
+			if (tokensToBeAdded == null) { // DEBUG
+				Simulator.logln("Error: Cannot add tokens to place " + name);
+				throw new SimQPNException();
+			}
+			
+			for (int i = 0; i < count; i++) {
+				tokens[color].addLast(tokensToBeAdded[i]);
+				tokensToBeAdded[i] = null;  // Note: set null to avoid dangling references.
+			}
+		}
 
 		if (depDiscip == NORMAL)  {
 			for (int i = 0; i < outTrans.length; i++)
@@ -281,11 +349,12 @@ public class Place extends Node {
 	 * Method removeTokens - removes N tokens of particular color
 	 * 
 	 * @param color - color of tokens
-	 * @param count - number of tokens to remove	
-	 * @return
+	 * @param count - number of tokens to remove (must be = 1 if tracking enabled)	
+	 * @param returnBuffer - an array used to store the removed tokens, if tracking enabled. (Condition: returnBuffer.length >= count) 
+	 * @return removed tokens (if tracking is enabled)
 	 * @exception
 	 */
-	public void removeTokens(int color, int count) throws SimQPNException {
+	public Token[] removeTokens(int color, int count, Token[] returnBuffer) throws SimQPNException {
 		/* //DEBUG
 		if (count <= 0) { 
 			Simulator.logln("Error: Attempted to remove nonpositive number of tokens from place " + name);
@@ -307,7 +376,16 @@ public class Place extends Node {
 			}				
 		}
 		// Now remove tokens and update affected transitions	
-		tokenPop[color] -= count;						
+		tokenPop[color] -= count;
+		if (tracking[color]) {
+			if (returnBuffer.length < count) {
+				Simulator.logln("Error: Return buffer for removed tokens too small.");
+				throw new SimQPNException();
+			}
+			for (int i = 0; i < count; i++) {
+				returnBuffer[i] = (Token)tokens[color].removeFirst();
+			}
+		}
 
 		if (depDiscip == NORMAL)  {
 			for (int i = 0; i < outTrans.length; i++)
@@ -331,6 +409,46 @@ public class Place extends Node {
 			throw new SimQPNException();
 		}
 		
+		return returnBuffer;		
+	}
+	
+	/**
+	 * Maps the name of a color to the index of the color in this place.
+	 * @param color - name of the color
+	 * @return index of the color (or -1 if color not defined in this place)
+	 */
+	public int getColorIndex(String color) {
+		for (int c = 0; c < colors.length; c++) {
+			if (colors[c].equals(color)) {
+				return c;
+			}
+		}
+		return -1;
+	}
+	
+	/**
+	 * Activates the tracking of individual tokens in this place.
+	 * @param probe - the probe requesting the tracking
+	 */
+	@SuppressWarnings("rawtypes")
+	public void addProbe(Probe probe) {
+		int probeId = probe.id;
+		for (String trackedColor : probe.colors) {
+			int c = getColorIndex(trackedColor);
+			if (c >= 0) {
+				tracking[c] = true;
+				probes[probeId] = probe;
+				
+				int[] p = new int[probeInstrumentations[c].length + 1];
+				System.arraycopy(probeInstrumentations[c], 0, p, 0, probeInstrumentations[c].length);
+				p[p.length - 1] = probeId;
+				probeInstrumentations[c] = p;
+				
+				if (tokens[c] == null) {
+					tokens[c] = new LinkedList();
+				}
+			}
+		}
 	}
 			
 }
