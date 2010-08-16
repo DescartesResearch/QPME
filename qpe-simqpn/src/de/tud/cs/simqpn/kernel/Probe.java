@@ -119,47 +119,51 @@ public class Probe {
 				Simulator.log(2, "probes[" + id + "].instrumentations = { ");
 				
 				// Instrument start place
-				if (startTrigger == ON_ENTRY) {
-					startPlace.addProbe(this);
-					Simulator.log(2, startPlace.name + "(start_on_entry), ");
+				if (startPlace == endPlace) {
+					if ((startTrigger == ON_ENTRY) && (endTrigger == ON_EXIT)) {
+						startPlace.addProbe(this, Place.PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT); 
+						Simulator.log(2, startPlace.name + "(start_on_entry), ");
+					} else if ((startTrigger == ON_EXIT) && (endTrigger == ON_ENTRY)) {
+						startPlace.addProbe(this, Place.PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY);
+						Simulator.log(2, startPlace.name + "(start_on_exit), ");
+					} else {
+						Simulator.logln("Error: illegal combination of start and end trigger.");
+						Simulator.logln("Details: ");
+						Simulator.logln("  probe-num           = " + id);
+						Simulator.logln("  probe.id            = " + xmlId);
+						Simulator.logln("  probe.name          = " + name);
+						Simulator.logln("  probe.start-trigger = " + startPlace.name);
+						Simulator.logln("  probe.end-trigger   = " + endPlace.name);
+						throw new SimQPNException();
+					}
 				} else {
-					Simulator.log(2, startPlace.name + "(start_on_exit), ");
+					if (startTrigger == ON_ENTRY) {
+						startPlace.addProbe(this, Place.PROBE_ACTION_START_ON_ENTRY);
+						Simulator.log(2, startPlace.name + "(start_on_entry), ");
+					} else {
+						startPlace.addProbe(this, Place.PROBE_ACTION_START_ON_EXIT);
+						Simulator.log(2, startPlace.name + "(start_on_exit), ");
+					}
 				}
 				
 				// Instrument the places in between
 				for (Place pl : markedPlaces) {
 					if ((pl != startPlace) && (pl != endPlace)) {
-						pl.addProbe(this);
+						pl.addProbe(this, Place.PROBE_ACTION_TRANSFER);
 						Simulator.log(2, pl.name + ", ");
 					}
 				}
 				
 				// Instrument the end place
 				if (endTrigger == ON_EXIT) {
-					if (startPlace != endPlace) 
-						endPlace.addProbe(this);
+					if (startPlace != endPlace) endPlace.addProbe(this, Place.PROBE_ACTION_END_ON_EXIT);
 					Simulator.log(2, endPlace.name + "(end_on_exit)");
 				} else {
+					if (startPlace != endPlace) endPlace.addProbe(this, Place.PROBE_ACTION_END_ON_ENTRY);
 					Simulator.log(2, endPlace.name + "(end_on_entry)");
 				}
 				Simulator.logln(2, " }");
 				
-				// Configure the probe start and end.
-				for (String color : colors) {
-					int c = startPlace.getColorIndex(color);
-					if (startTrigger == ON_ENTRY) {
-						startPlace.probeStartOnEntry[c][id] = true;
-					} else {
-						startPlace.probeStartOnExit[c][id] = true;
-					}
-					
-					c = endPlace.getColorIndex(color);
-					if (endTrigger == ON_ENTRY) {
-						endPlace.probeEndOnEntry[c][id] = true;
-					} else {
-						endPlace.probeEndOnExit[c][id] = true;
-					}
-				}
 			} else {
 				Simulator.logln("Error: start and end place of probe not connected.");
 				Simulator.logln("Details: ");
@@ -176,7 +180,7 @@ public class Probe {
 	/**
 	 * Method start
 	 *  	    
-	 * 	 
+	 * 
 	 * @param 
 	 * @return
 	 * @exception

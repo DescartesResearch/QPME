@@ -74,6 +74,16 @@ public class Place extends Node {
 	public static final int NORMAL	= 0;	// Arriving tokens become available for output transitions immediately upon arrival.  
 	public static final int FIFO	= 1;	// First-In-First-Out: Arriving tokens become available for output transitions in the order of their arrival.
 	
+	// Supported probe actions
+	public static final int PROBE_ACTION_NONE = 0;
+	public static final int PROBE_ACTION_START_ON_EXIT = 1;
+	public static final int PROBE_ACTION_START_ON_ENTRY = 2;
+	public static final int PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT = 3;
+	public static final int PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY = 4;
+	public static final int PROBE_ACTION_END_ON_EXIT = 5;
+	public static final int PROBE_ACTION_END_ON_ENTRY = 6;
+	public static final int PROBE_ACTION_TRANSFER = 7;
+	
 	public int				numColors;
 	public String[]			colors;			// Names of the colors that can reside in this Place.
 	public int				statsLevel;		// Determines the amount of statistics to be gathered during the run.
@@ -91,17 +101,13 @@ public class Place extends Node {
 	public LinkedList[]		tokArrivTS;		// statsLevel >= 3: Arrival timestamps of tokens in the place/depository.
 	
 	@SuppressWarnings("rawtypes")
-	public LinkedList[]		tokens;			// tracking[color] = true: list of individual tokens.
+	public LinkedList[]		tokens;			// individualTokens[color] = true: list of individual tokens.
 	
-	public boolean[]		tracking;		// tracking[color] specifies whether tokens of the specified color should be tracked individually
+	public boolean[]		individualTokens;		// individualTokens[color] specifies whether tokens of the specified color should be stored individually
 	
 	// Configuration of probes
-	public boolean[][]		probeStartOnEntry; 		// probeStartOnEntry[numColors][numProbes]: Probes on which the start event is triggered when a token enters this place
-	public boolean[][]		probeStartOnExit;		// probeStartOnExit[numColors][numProbes]: Probes on which the start event is triggered when a token exits this place
-	public boolean[][]		probeEndOnEntry; 		// probeEndOnEntry[numColors][numProbes]: Probes on which the end event is triggered when a token enters this place
-	public boolean[][]		probeEndOnExit;			// probeEndOnExit[numColors][numProbes]: Probes on which the start event is triggered when a token exits this place
-	public int[][]			probeInstrumentations;  // probeInstrumentations[numColors]: List of probes tracking tokens in this place
-	public final Probe[]	probes;					// probes[numProbes]: List of all probes in the net.
+	public int[][]			probeActions;
+	public Probe[][]		probeInstrumentations;  // probeInstrumentations[numColors]: List of probes tracking tokens in this place
 	
 	public PlaceStats		placeStats;	 
 	
@@ -133,13 +139,9 @@ public class Place extends Node {
 		this.statsLevel		       = statsLevel;
 		this.depDiscip		       = depDiscip;
 		this.tokens			       = new LinkedList[numColors];
-		this.tracking			   = new boolean[numColors];
-		this.probes                = new Probe[numProbes];
-		this.probeStartOnEntry     = new boolean[numColors][numProbes];
-		this.probeStartOnExit      = new boolean[numColors][numProbes];
-		this.probeEndOnEntry       = new boolean[numColors][numProbes];
-		this.probeEndOnExit        = new boolean[numColors][numProbes];
-		this.probeInstrumentations = new int[numColors][];
+		this.individualTokens			   = new boolean[numColors];
+		this.probeActions          = new int[numColors][numProbes];
+		this.probeInstrumentations = new Probe[numColors][];
 		this.element		       = element;
 
 		
@@ -164,13 +166,10 @@ public class Place extends Node {
 		}
 		
 		// By default tracking is disabled
-		Arrays.fill(tracking, false);
+		Arrays.fill(individualTokens, false);
 		for (int c = 0; c < numColors; c++) {
-			Arrays.fill(probeStartOnEntry[c], false);
-			Arrays.fill(probeStartOnExit[c], false);
-			Arrays.fill(probeEndOnEntry[c], false);
-			Arrays.fill(probeEndOnExit[c], false);
-			probeInstrumentations[c] = new int[0];
+			Arrays.fill(probeActions[c], PROBE_ACTION_NONE);
+			probeInstrumentations[c] = new Probe[0];
 		}
 	}
 	
@@ -228,12 +227,12 @@ public class Place extends Node {
 			// Create timestamps for all probes associated with this place
 			ProbeTimestamp[] timestamps = new ProbeTimestamp[prC];
 			for (int pr = 0; pr < prC; pr++) {
-				timestamps[pr] = new ProbeTimestamp(probeInstrumentations[c][pr], Simulator.clock);
+				timestamps[pr] = new ProbeTimestamp(probeInstrumentations[c][pr].id, Simulator.clock);
 			}
 			
 			// Create tokens
 			for (int i = 0; i < tokenPop[c]; i++) {
-				if (tracking[c]) {
+				if (individualTokens[c]) {
 					tokens[c].addLast(new Token(this, c, timestamps));
 				}
 			}
@@ -309,7 +308,7 @@ public class Place extends Node {
 		}
 		// Now add tokens and update affected transitions
 		tokenPop[color] += count;
-		if(tracking[color]) {
+		if(individualTokens[color]) {
 			if (tokensToBeAdded == null) { // DEBUG
 				Simulator.logln("Error: Cannot add tokens to place " + name);
 				throw new SimQPNException();
@@ -377,7 +376,7 @@ public class Place extends Node {
 		}
 		// Now remove tokens and update affected transitions	
 		tokenPop[color] -= count;
-		if (tracking[color]) {
+		if (individualTokens[color]) {
 			if (returnBuffer.length < count) {
 				Simulator.logln("Error: Return buffer for removed tokens too small.");
 				throw new SimQPNException();
@@ -427,26 +426,39 @@ public class Place extends Node {
 	}
 	
 	/**
-	 * Activates the tracking of individual tokens in this place.
-	 * @param probe - the probe requesting the tracking
+	 * Adds a probe instrumentation to this place.
+	 * @param probe - the probe
+	 * @param action - a PROBE_ACTION constant.
 	 */
 	@SuppressWarnings("rawtypes")
-	public void addProbe(Probe probe) {
+	public void addProbe(Probe probe, int action) {
 		int probeId = probe.id;
 		for (String trackedColor : probe.colors) {
 			int c = getColorIndex(trackedColor);
 			if (c >= 0) {
-				tracking[c] = true;
-				probes[probeId] = probe;
-				
-				int[] p = new int[probeInstrumentations[c].length + 1];
-				System.arraycopy(probeInstrumentations[c], 0, p, 0, probeInstrumentations[c].length);
-				p[p.length - 1] = probeId;
-				probeInstrumentations[c] = p;
-				
-				if (tokens[c] == null) {
-					tokens[c] = new LinkedList();
+				probeActions[c][probeId] = action;
+				if ((action != PROBE_ACTION_START_ON_EXIT) && (action != PROBE_ACTION_END_ON_ENTRY) 
+						&& (action != PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY)) {
+					individualTokens[c] = true;
+					if (tokens[c] == null) {
+						tokens[c] = new LinkedList();
+					}
 				}
+				
+				boolean found = false;
+				for (int i = 0; i < probeInstrumentations[c].length; i++) {
+					if (probeInstrumentations[c][i].id == probeId) {
+						found = true;
+						break;
+					}
+				}
+				
+				if (!found) {
+					Probe[] p = new Probe[probeInstrumentations[c].length + 1];
+					System.arraycopy(probeInstrumentations[c], 0, p, 0, probeInstrumentations[c].length);
+					p[p.length - 1] = probe;
+					probeInstrumentations[c] = p;
+				}				
 			}
 		}
 	}

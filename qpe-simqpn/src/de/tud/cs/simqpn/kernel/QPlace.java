@@ -156,7 +156,7 @@ public class QPlace extends Place {
 		// PS Queues			
 		this.queueTokens = new ArrayList[numColors]; //TODO: replace with more efficient data structures.
 		for (int c = 0; c < numColors; c++) {
-			if (tracking[c] || (queue.queueDiscip == Queue.PS && statsLevel >= 3))
+			if (individualTokens[c] || (queue.queueDiscip == Queue.PS && statsLevel >= 3))
 				this.queueTokens[c] = new ArrayList(100); 	//SDK-TODO: See if 100 is optimal initial capacity. Note: The list is auto-expanding.
 		}
 		
@@ -224,7 +224,7 @@ public class QPlace extends Place {
 			qPlaceQueueStats.updateTkPopStats(color, queueTokenPop[color], count);																	
 		 				
 		queueTokenPop[color] += count;
-		if (tracking[color]) {
+		if (individualTokens[color]) {
 			queue.addTokens(this, color, count, tokensToBeAdded);
 		} else {
 			queue.addTokens(this, color, count, null);
@@ -258,7 +258,7 @@ public class QPlace extends Place {
 		queue.completeService(token);
 		
 		// Finally move token to depository
-		if (tracking[token.color]) {
+		if (individualTokens[token.color]) {
 			tkCopyBuffer[0] = token;
 			super.addTokens(token.color, 1, tkCopyBuffer);
 		} else {

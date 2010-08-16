@@ -328,9 +328,11 @@ public class Transition extends Node {
 			randModeGen.setState2(pdf);
 			mode = enModesIDs[randModeGen.nextInt()];
 		}
-		int p, c, nP, nC, n;
+		int p, c, nP, nC, prC, n;
 		int maxN = 0;
 		Place pl;
+		Probe probe;
+		int probeIdx, probeAction;
 		nP = inPlaces.length;
 		// Step 1: Remove input tokens
 		for (p = 0; p < nP; p++) {
@@ -341,42 +343,59 @@ public class Transition extends Node {
 				if (n != 0) {
 					if (n > maxN) maxN = n;
 					Token[] tokens = pl.removeTokens(c, n, tkCopyBuffer);
-					int prC = pl.probeInstrumentations[c].length;
+					prC = pl.probeInstrumentations[c].length;
 					
 					if(prC > 0) {
 						// The input place is instrumented with probes, so look for timestamp data
 						// Iterate over all probes relevant to the current input place
 						for (int pr = 0; pr < prC; pr++) {
-							int probeIdx = pl.probeInstrumentations[c][pr];
-							Probe probe = pl.probes[probeIdx];
+							probe = pl.probeInstrumentations[c][pr];
+							probeIdx = probe.id;
+							probeAction = pl.probeActions[c][probeIdx];
+							ProbeTimestamp data = probeData[probeIdx];
 							
-							// Iterate over all input tokens and collect timestamps
-							for (int i = 0; i < n; i++) {
-								ProbeTimestamp curStamp = tokens[i].probeData[pr];
-								if (curStamp == null) continue;
-								
-								if (pl.probeEndOnExit[c][probeIdx]) {
-									probe.probeStats.updateSojTimeStats(c, Simulator.clock - curStamp.timestamp);
-								} else if (probeData[probeIdx] == null) {
-									probeData[probeIdx] = curStamp;									
-								} else if (probeData[probeIdx].timestamp != curStamp.timestamp) {
-									if (probeData[probeIdx].timestamp > curStamp.timestamp)
-										probeData[probeIdx] = curStamp;
-									if (conflictWarnings) {
-										Simulator.logln("WARNING: Conflicting timestamps for probe " + probe.name + " at transition " + name + " and mode " + mode + ".");
-										Simulator.logln("         The minimum timestamp will be used. Other timestamps are dumped.");
-										Simulator.logln("         Further occurences of this warning are disabled.");
-										conflictWarnings = false; // no further warnings for this mode
+							switch(probeAction) {
+							case Place.PROBE_ACTION_END_ON_EXIT:
+							case Place.PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT:
+								if (pl.individualTokens[c]) {
+									for (int i = 0; i < n; i++) {
+										ProbeTimestamp curStamp = tokens[i].probeData[pr];
+										if (curStamp == null) continue;
+										
+										probe.probeStats.updateSojTimeStats(c, Simulator.clock - curStamp.timestamp);
 									}
 								}
-							}
-
-							if (pl.probeStartOnExit[c][probeIdx]) {
-								if (probeData[probeIdx] == null) {
+								break;
+							case Place.PROBE_ACTION_START_ON_EXIT:
+							case Place.PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY:
+								if (data == null) {
 									// There is no timestamp so far for the current probe, so create it.
-									probeData[probeIdx] = new ProbeTimestamp(probeIdx, Simulator.clock);
+									data = new ProbeTimestamp(probeIdx, Simulator.clock);
 								}
+								break;
+							default:
+								if (pl.individualTokens[c]) {
+									for (int i = 0; i < n; i++) {
+										ProbeTimestamp curStamp = tokens[i].probeData[pr];
+										if (curStamp == null) continue;
+										
+										 if (data == null) {
+											data = curStamp;									
+										} else if (data.timestamp != curStamp.timestamp) {
+											if (data.timestamp > curStamp.timestamp)
+												data = curStamp;
+											if (conflictWarnings) {
+												Simulator.logln("WARNING: Conflicting timestamps for probe " + probe.name + " at transition " + name + " and mode " + mode + ".");
+												Simulator.logln("         The minimum timestamp will be used. Other timestamps are dumped.");
+												Simulator.logln("         Further occurences of this warning are disabled.");
+												conflictWarnings = false; // no further warnings for this mode
+											}
+										}
+									}
+								}
+								break;
 							}
+							probeData[probeIdx] = data;
 						}
 					}
 				}
@@ -393,23 +412,31 @@ public class Transition extends Node {
 			for (c = 0; c < nC; c++) {
 				n = outFunc[mode][p][c];
 				if (n != 0) {
-					int prC = pl.probeInstrumentations[c].length;
+					prC = pl.probeInstrumentations[c].length;
 					if (prC > 0) {
 						// The output place is instrumented with probes
 						// so produce tokens with timestamps
 						ProbeTimestamp[] outData = new ProbeTimestamp[prC];
 						// Iterate over all relevant probes of this place
 						for (int pr = 0; pr < prC; pr++) {
-							int probeIdx = pl.probeInstrumentations[c][pr];
+							probe = pl.probeInstrumentations[c][pr];
+							probeIdx = probe.id;
+							probeAction = pl.probeActions[c][probeIdx];
 							ProbeTimestamp timestamp = probeData[probeIdx];
-							if (timestamp == null) {
-								if (pl.probeStartOnEntry[c][probeIdx]) {
+							switch(probeAction) {
+							case Place.PROBE_ACTION_START_ON_ENTRY:
+							case Place.PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT:
+								if (timestamp == null) {
 									outData[pr] = new ProbeTimestamp(probeIdx, Simulator.clock);
 								}
-							} else if (pl.probeEndOnEntry[c][probeIdx]) {
-								pl.probes[probeIdx].probeStats.updateSojTimeStats(c, Simulator.clock - timestamp.timestamp);
-							} else {
+								break;
+							case Place.PROBE_ACTION_END_ON_ENTRY:
+							case Place.PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY:
+								probe.probeStats.updateSojTimeStats(c, Simulator.clock - timestamp.timestamp);
+								break;
+							default:
 								outData[pr] = timestamp;
+								break;
 							}
 						}
 						// Create tokens and put them in the token buffer
