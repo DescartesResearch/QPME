@@ -234,6 +234,7 @@ public class Probe {
 		if (markedPlaces.contains(end) && (!currentRoute.isEmpty())) {
 			// we reached a place that is either the start place or another one for which
 			// we already found a way to the start.
+			markedPlaces.addAll(currentRoute);
 			return MARK;
 		}
 		if (notMarkedPlaces.contains(end)) {
@@ -251,29 +252,38 @@ public class Probe {
 		Place[] possibleInPlaces = calculatePossibleInputPlaces(end);
 		int placesLeft = possibleInPlaces.length; // Number of input places that are still INDETERMINATE
 		while(placesLeft > 0) { // Iterate until all places are either MARK or NOT_MARK
+			int done = 0;
 			for (int i = 0; i < possibleInPlaces.length; i++) {
 				if (possibleInPlaces[i] != null) {
 					// Recursion
 					switch (markRoutesToEndPlace(possibleInPlaces[i], markedPlaces, notMarkedPlaces, currentRoute)) {
 					case MARK:
-						markedPlaces.add(end); // Note: add it already to the marked places, so that if this place is part of a cycle,  
-											   //       the cycle can be marked as well.
 						ret = MARK;
 						possibleInPlaces[i] = null;
 						placesLeft--;
+						done++;
 						break;
 					case NOT_MARK:
 						if (ret != MARK) ret = NOT_MARK;
 						possibleInPlaces[i] = null;
 						placesLeft--;
+						done++;
 						break;
 					case INDETERMINATE:
 						break;
 					}
 				}
 			}
-			if (ret == INDETERMINATE)
+			// Check that in the last iteration some routes were set to MARK or NOT_MARK. 
+			if (done == 0) {
+				markedPlaces.remove(end); // Maybe there was found a route to the start place. However we need to
+										  // repeat the search from this place again in order to solve the indeterminate
+										  // routes.
+				ret = INDETERMINATE; // We could not determine for all routes leading to this place whether they
+									 // come from the start place or not. So this place needs to be revisited later
+									 // when more parts of the net are finished.
 				break; // All input places are indeterminate
+			}
 		}
 		
 		currentRoute.remove(end);
