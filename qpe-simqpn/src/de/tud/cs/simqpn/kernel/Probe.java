@@ -42,6 +42,10 @@
 package de.tud.cs.simqpn.kernel;
 
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.dom4j.Element;
@@ -105,17 +109,52 @@ public class Probe {
 	 */
 	public void instrument() throws SimQPNException {
 		if (statsLevel >= 3) {
-			Set<Place> markedPlaces = new HashSet<Place>();
-			markedPlaces.add(startPlace);
+			Set<Place> visitedPlaces = new HashSet<Place>();
+			Map<Place, Integer> markings = new HashMap<Place, Integer>();
+			// The search for routes starts at the end place and goes back
+			// to the start place.
+			markings.put(startPlace, MARK);
+			visitedPlaces.add(startPlace);
 
-			int ret;
+			int result;
 			if ((startPlace == endPlace) && (startTrigger == ON_ENTRY) && (endTrigger == ON_EXIT)) {
 				// no search needed only one place needs to be instrumented
-				ret = MARK;
+				result = MARK;
 			} else {
-				ret = markRoutesToEndPlace(endPlace, markedPlaces, new HashSet<Place>(), new HashSet<Place>());
+				result = INDETERMINATE;				
+				
+				// List of all indeterminate places. Indeterminate places are places
+				// for which it has not been determined yet, whether it is possible
+				// to reach the target place (-> start place). At the beginning only
+				// the end place is in this list.
+				List<Place> indeterminatePlaces = new LinkedList<Place>();
+				indeterminatePlaces.add(endPlace);
+				
+				// Assumption: For all places it can be determined, whether the target can
+				//             place is reachable. However, it might require several attempts,
+				//             if cycles need to be resolved.
+				while (indeterminatePlaces.size() != 0) {
+					// Step 1: For each indeterminate place try to find a route to the target place.
+					for (Place curPlace : indeterminatePlaces) {					
+						int r = markRoutesToEndPlace(curPlace, markings, visitedPlaces, 0);
+						if((r == NOT_MARK && result == INDETERMINATE) || (r == MARK)) {
+							result = r;
+						}
+						visitedPlaces.clear();
+						visitedPlaces.add(startPlace);
+					}
+					
+					// Step 2: Collect all places that are still indeterminate
+					indeterminatePlaces.clear();
+					for (Entry<Place, Integer> mark : markings.entrySet()) {
+						if (mark.getValue() == INDETERMINATE) {
+							indeterminatePlaces.add(mark.getKey());
+						}
+					}
+				}				
+
 			}			
-			if (ret == MARK) {
+			if (result == MARK) {
 				Simulator.log(2, "probes[" + id + "].instrumentations = { ");
 				
 				// Instrument start place
@@ -146,11 +185,16 @@ public class Probe {
 					}
 				}
 				
+				int markingCount = 2;
 				// Instrument the places in between
-				for (Place pl : markedPlaces) {
+				for (Entry<Place, Integer> marking : markings.entrySet()) {
+					Place pl = marking.getKey();
 					if ((pl != startPlace) && (pl != endPlace)) {
-						pl.addProbe(this, Place.PROBE_ACTION_TRANSFER);
-						Simulator.log(2, pl.name + ", ");
+						if (marking.getValue() == MARK) {
+							pl.addProbe(this, Place.PROBE_ACTION_TRANSFER);
+							Simulator.log(2, pl.name + ", ");
+							markingCount++;
+						}
 					}
 				}
 				
@@ -163,6 +207,7 @@ public class Probe {
 					Simulator.log(2, endPlace.name + "(end_on_entry)");
 				}
 				Simulator.logln(2, " }");
+				Simulator.logln(2, "probes[" + id + "].instrumentations.count = " + markingCount);
 				
 			} else {
 				Simulator.logln("Error: start and end place of probe not connected.");
@@ -222,75 +267,53 @@ public class Probe {
 	 * Finds all possible routes between to places in the net.
 	 * 
 	 * @param end - end place
-	 * @param markedPlaces - all places that lie on a possible route (the start place must already be in this set).
-	 * @param notMarkedPlaces - all places that definitely not lie on a possible route
-	 * @param currentRoute - all places that lie on the currently followed route
+	 * @param markings - contains the result for all places. At the beginning at least the start place should be contained in the list.
+	 * @param visitedPlaces - all places that have already been visited.
+	 * @param flowLength - the current flow length (= 0 at start)
 	 * @return MARK, if a route exists, NOT_MARK, if no route exists, INDETERMINATE, if no route can be found because of cycle.
 	 * @throws SimQPNException
 	 */
-	private int markRoutesToEndPlace(Place end, Set<Place> markedPlaces, Set<Place> notMarkedPlaces, Set<Place> currentRoute) throws SimQPNException {
-		// Note: The search starts at the end place and traverses the net in direction of the start place.
+	private int markRoutesToEndPlace(Place end, Map<Place, Integer> markings, Set<Place> visitedPlaces, int flowLength) throws SimQPNException {
+		// Note: The deep search starts at the end place and traverses the net in direction of the start place.
 		
-		if (markedPlaces.contains(end) && (!currentRoute.isEmpty())) {
-			// we reached a place that is either the start place or another one for which
-			// we already found a way to the start.
-			markedPlaces.addAll(currentRoute);
-			return MARK;
-		}
-		if (notMarkedPlaces.contains(end)) {
-			// we reached a place for which we already determined that there is no way to
-			// the start
-			return NOT_MARK;
-		}		
-		if (currentRoute.contains(end)) {
-			// we reached a place we have already visited on the current route -> there is a cycle
-			return INDETERMINATE;
-		}
-		
-		currentRoute.add(end);
-		int ret = INDETERMINATE;
-		Place[] possibleInPlaces = calculatePossibleInputPlaces(end);
-		int placesLeft = possibleInPlaces.length; // Number of input places that are still INDETERMINATE
-		while(placesLeft > 0) { // Iterate until all places are either MARK or NOT_MARK
-			int done = 0;
-			for (int i = 0; i < possibleInPlaces.length; i++) {
-				if (possibleInPlaces[i] != null) {
-					// Recursion
-					switch (markRoutesToEndPlace(possibleInPlaces[i], markedPlaces, notMarkedPlaces, currentRoute)) {
-					case MARK:
-						ret = MARK;
-						possibleInPlaces[i] = null;
-						placesLeft--;
-						done++;
-						break;
-					case NOT_MARK:
-						if (ret != MARK) ret = NOT_MARK;
-						possibleInPlaces[i] = null;
-						placesLeft--;
-						done++;
-						break;
-					case INDETERMINATE:
-						break;
-					}
+		// Note: If startPlace == endPlace, the search should not return immediately. It should also
+		//		 look for a way to get from start to end in cycle including several intermediary places.
+		if (flowLength > 0) {
+			if (markings.containsKey(end)) {
+				int mark = markings.get(end);
+				if ((mark == MARK) || (mark == NOT_MARK)) {
+					return mark;
 				}
 			}
-			// Check that in the last iteration some routes were set to MARK or NOT_MARK. 
-			if (done == 0) {
-				markedPlaces.remove(end); // Maybe there was found a route to the start place. However we need to
-										  // repeat the search from this place again in order to solve the indeterminate
-										  // routes.
-				ret = INDETERMINATE; // We could not determine for all routes leading to this place whether they
-									 // come from the start place or not. So this place needs to be revisited later
-									 // when more parts of the net are finished.
-				break; // All input places are indeterminate
+			
+			if (visitedPlaces.contains(end)) {
+				return INDETERMINATE;
 			}
 		}
 		
-		currentRoute.remove(end);
+		visitedPlaces.add(end);
+		int ret = INDETERMINATE;
 		
-		if (ret == NOT_MARK) {
-			notMarkedPlaces.add(end);
+		Place[] possibleInPlaces = calculatePossibleInputPlaces(end);
+		if (possibleInPlaces.length == 0) {
+			markings.put(end, NOT_MARK);
+			return NOT_MARK;
 		}
+
+		for (int i = 0; i < possibleInPlaces.length; i++) {
+			// Recursion
+			switch (markRoutesToEndPlace(possibleInPlaces[i], markings, visitedPlaces, flowLength+1)) {
+			case MARK:
+				ret = MARK;
+				break;
+			case NOT_MARK:
+				if (ret != MARK) ret = NOT_MARK;
+				break;
+			case INDETERMINATE:
+				break;
+			}
+		}
+		markings.put(end, ret);
 		
 		return ret;
 	}

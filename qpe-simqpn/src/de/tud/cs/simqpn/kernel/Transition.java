@@ -387,7 +387,7 @@ public class Transition extends Node {
 											if (conflictWarnings) {
 												Simulator.logln("WARNING: Conflicting timestamps for probe " + probe.name + " at transition " + name + " and mode " + mode + ".");
 												Simulator.logln("         The minimum timestamp will be used. Other timestamps are dumped.");
-												Simulator.logln("         Further occurences of this warning are disabled.");
+												Simulator.logln("         Further occurences of this warning are disabled for this transition.");
 												conflictWarnings = false; // no further warnings for this mode
 											}
 										}
