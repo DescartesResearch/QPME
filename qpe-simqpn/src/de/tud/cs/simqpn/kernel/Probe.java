@@ -41,6 +41,7 @@
  */
 package de.tud.cs.simqpn.kernel;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -130,19 +131,25 @@ public class Probe {
 				List<Place> indeterminatePlaces = new LinkedList<Place>();
 				indeterminatePlaces.add(endPlace);
 				
-				// Assumption: For all places it can be determined, whether the target can
+				// Assumption: For all places it can be determined, whether the target
 				//             place is reachable. However, it might require several attempts,
 				//             if cycles need to be resolved.
 				while (indeterminatePlaces.size() != 0) {
+					int done = 0;
 					// Step 1: For each indeterminate place try to find a route to the target place.
 					for (Place curPlace : indeterminatePlaces) {					
 						int r = markRoutesToEndPlace(curPlace, markings, visitedPlaces, 0);
-						if((r == NOT_MARK && result == INDETERMINATE) || (r == MARK)) {
+						if (r != INDETERMINATE)
+							done++;
+
+						if ((r == NOT_MARK && result == INDETERMINATE) || (r == MARK)) {
 							result = r;
 						}
 						visitedPlaces.clear();
 						visitedPlaces.add(startPlace);
 					}
+					if (done == 0) 
+						break;
 					
 					// Step 2: Collect all places that are still indeterminate
 					indeterminatePlaces.clear();
