@@ -49,7 +49,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.dom4j.Element;
+
+import static de.tud.cs.simqpn.util.LogUtil.formatDetailMessage;
 
 /**
  * Class probe.
@@ -64,7 +67,9 @@ public class Probe {
 	
 	private static final int NOT_MARK = 0;
 	private static final int MARK = 1;
-	private static final int INDETERMINATE = 2;	
+	private static final int INDETERMINATE = 2;
+	
+	private static Logger log = Logger.getLogger(Probe.class);
 	
 	public final int      id;
 	public final String   xmlId;
@@ -162,33 +167,34 @@ public class Probe {
 
 			}			
 			if (result == MARK) {
-				Simulator.log(2, "probes[" + id + "].instrumentations = { ");
+				log.debug("probes[" + id + "].instrumentations = { ");
 				
 				// Instrument start place
 				if (startPlace == endPlace) {
 					if ((startTrigger == ON_ENTRY) && (endTrigger == ON_EXIT)) {
 						startPlace.addProbe(this, Place.PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT); 
-						Simulator.log(2, startPlace.name + "(start_on_entry), ");
+						log.debug(startPlace.name + "(start_on_entry), ");
 					} else if ((startTrigger == ON_EXIT) && (endTrigger == ON_ENTRY)) {
 						startPlace.addProbe(this, Place.PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY);
-						Simulator.log(2, startPlace.name + "(start_on_exit), ");
+						log.debug(startPlace.name + "(start_on_exit), ");
 					} else {
-						Simulator.logln("Error: illegal combination of start and end trigger.");
-						Simulator.logln("Details: ");
-						Simulator.logln("  probe-num           = " + id);
-						Simulator.logln("  probe.id            = " + xmlId);
-						Simulator.logln("  probe.name          = " + name);
-						Simulator.logln("  probe.start-trigger = " + startPlace.name);
-						Simulator.logln("  probe.end-trigger   = " + endPlace.name);
+						log.error(formatDetailMessage(
+								"Illegal combination of start and end trigger.",
+								"probe-num", Integer.toString(id),
+								"probe.id", xmlId,
+								"probe.name", name,
+								"probe.start-place", startPlace.name,
+								"probe.end-place", endPlace.name
+								));
 						throw new SimQPNException();
 					}
 				} else {
 					if (startTrigger == ON_ENTRY) {
 						startPlace.addProbe(this, Place.PROBE_ACTION_START_ON_ENTRY);
-						Simulator.log(2, startPlace.name + "(start_on_entry), ");
+						log.debug(startPlace.name + "(start_on_entry), ");
 					} else {
 						startPlace.addProbe(this, Place.PROBE_ACTION_START_ON_EXIT);
-						Simulator.log(2, startPlace.name + "(start_on_exit), ");
+						log.debug(startPlace.name + "(start_on_exit), ");
 					}
 				}
 				
@@ -199,7 +205,7 @@ public class Probe {
 					if ((pl != startPlace) && (pl != endPlace)) {
 						if (marking.getValue() == MARK) {
 							pl.addProbe(this, Place.PROBE_ACTION_TRANSFER);
-							Simulator.log(2, pl.name + ", ");
+							log.debug(pl.name + ", ");
 							markingCount++;
 						}
 					}
@@ -208,22 +214,23 @@ public class Probe {
 				// Instrument the end place
 				if (endTrigger == ON_EXIT) {
 					if (startPlace != endPlace) endPlace.addProbe(this, Place.PROBE_ACTION_END_ON_EXIT);
-					Simulator.log(2, endPlace.name + "(end_on_exit)");
+					log.debug(endPlace.name + "(end_on_exit)");
 				} else {
 					if (startPlace != endPlace) endPlace.addProbe(this, Place.PROBE_ACTION_END_ON_ENTRY);
-					Simulator.log(2, endPlace.name + "(end_on_entry)");
+					log.debug(endPlace.name + "(end_on_entry)");
 				}
-				Simulator.logln(2, " }");
-				Simulator.logln(2, "probes[" + id + "].instrumentations.count = " + markingCount);
+				log.debug(" }");
+				log.debug("probes[" + id + "].instrumentations.count = " + markingCount);
 				
 			} else {
-				Simulator.logln("Error: start and end place of probe not connected.");
-				Simulator.logln("Details: ");
-				Simulator.logln("  probe-num         = " + id);
-				Simulator.logln("  probe.id          = " + xmlId);
-				Simulator.logln("  probe.name        = " + name);
-				Simulator.logln("  probe.start-place = " + startPlace.name);
-				Simulator.logln("  probe.end-place   = " + endPlace.name);
+				log.error(formatDetailMessage(
+						"Start and end place of probe not connected.",
+						"probe-num", Integer.toString(id),
+						"probe.id", xmlId,
+						"probe.name", name,
+						"probe.start-place", startPlace.name,
+						"probe.end-place", endPlace.name
+						));
 				throw new SimQPNException();
 			}
 		}

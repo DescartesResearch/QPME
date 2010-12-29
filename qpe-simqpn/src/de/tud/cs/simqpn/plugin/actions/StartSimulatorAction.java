@@ -41,13 +41,12 @@
  */
 package de.tud.cs.simqpn.plugin.actions;
 
-import static de.tud.cs.simqpn.kernel.Simulator.logln;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
+import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
@@ -88,6 +87,9 @@ import de.tud.cs.simqpn.plugin.wiizard.RunSimulationWizard;
 
 public class StartSimulatorAction extends Action implements
 		IWorkbenchWindowActionDelegate {
+	
+	private static Logger log = Logger.getLogger(StartSimulatorAction.class);
+	
 	private IWorkbenchWindow window;
 
 	private Element net;
@@ -207,6 +209,7 @@ public class StartSimulatorAction extends Action implements
 	}
 
 	class Simulation implements IRunnableWithProgress, SimulatorProgress {
+		
 		protected Element net;
 		protected Display display;
 		private String configuration;
@@ -260,7 +263,7 @@ public class StartSimulatorAction extends Action implements
 			try {
 				monitor.subTask("Configure Simulator");
 				
-				Simulator.configure(net, configuration);
+				Simulator.configure(net, configuration, null);
 				net = Simulator.prepareNet(net, configuration);
 				Stats[] result = Simulator.execute(net, configuration, this);
 				
@@ -329,9 +332,7 @@ public class StartSimulatorAction extends Action implements
 		 */
 		@Override
 		public void finishSimulation() {
-			logln();
-			logln();
-			logln("Simulation finished.");
+			log.info("Simulation finished.");
 		}
 
 		/* (non-Javadoc)
@@ -339,8 +340,7 @@ public class StartSimulatorAction extends Action implements
 		 */
 		@Override
 		public void finishSimulationRun() {
-			logln("Simulation run finished.");
-			logln();
+			log.info("Simulation run finished.");
 		}
 
 		/* (non-Javadoc)
@@ -380,7 +380,7 @@ public class StartSimulatorAction extends Action implements
 		 */
 		@Override
 		public void startSimulationRun(int number) {
-			logln("Simulation run " + number + "/" + numRuns + " started.");
+			log.info("Simulation run " + number + "/" + numRuns + " started.");
 			this.currentRun = number;
 			this.lastProgress = 0;
 
@@ -435,7 +435,7 @@ public class StartSimulatorAction extends Action implements
 
 		@Override
 		public void warning(final String message) {
-			Simulator.logln("WARNING: " + message);
+			log.warn(message);
 			display.syncExec(new Runnable() {
 				@Override
 				public void run() {

@@ -72,15 +72,15 @@ public class ProbeStats extends PlaceStats {
 	 * @see de.tud.cs.simqpn.kernel.PlaceStats#printReportHeader()
 	 */
 	@Override
-	protected void printReportHeader() throws SimQPNException {
-		Simulator.logln("REPORT for Probe : " + name + "----------------------------------------");
+	protected void printReportHeader(StringBuilder report) throws SimQPNException {
+		report.append("REPORT for Probe : ").append(name).append("----------------------------------------\n");
 	}	
 
 	/* (non-Javadoc)
 	 * @see de.tud.cs.simqpn.kernel.PlaceStats#printColorPopulationStats(int)
 	 */
 	@Override
-	protected void printColorPopulationStats(int c) {
+	protected void printColorPopulationStats(StringBuilder report, int c) {
 		// Not stats collected
 	}
 
@@ -88,7 +88,7 @@ public class ProbeStats extends PlaceStats {
 	 * @see de.tud.cs.simqpn.kernel.PlaceStats#printPlaceStats()
 	 */
 	@Override
-	protected void printPlaceStats() {
+	protected void printPlaceStats(StringBuilder report) {
 		// Not stats collected
 	}
 

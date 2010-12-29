@@ -49,8 +49,12 @@ package de.tud.cs.simqpn.kernel;
 
 import java.util.Arrays;
 
+import org.apache.log4j.Logger;
+
 import cern.jet.random.Empirical;
 import cern.jet.random.EmpiricalWalker;
+
+import static de.tud.cs.simqpn.util.LogUtil.formatMultilineMessage;
 
 /**
  * Class Transition
@@ -60,6 +64,8 @@ import cern.jet.random.EmpiricalWalker;
  */
 
 public class Transition extends Node {
+	
+	private static Logger log = Logger.getLogger(Transition.class);
 
 	public int numModes;
 	public double transWeight;
@@ -385,9 +391,11 @@ public class Transition extends Node {
 											if (data.timestamp > curStamp.timestamp)
 												data = curStamp;
 											if (conflictWarnings) {
-												Simulator.logln("WARNING: Conflicting timestamps for probe " + probe.name + " at transition " + name + " and mode " + mode + ".");
-												Simulator.logln("         The minimum timestamp will be used. Other timestamps are dumped.");
-												Simulator.logln("         Further occurences of this warning are disabled for this transition.");
+												log.warn(formatMultilineMessage(
+														"Conflicting timestamps for probe " + probe.name + " at transition " + name + " and mode " + mode + ".",
+														"The minimum timestamp will be used. Other timestamps are dumped.",
+														"Further occurences of this warning are disabled for this transition."
+														));
 												conflictWarnings = false; // no further warnings for this mode
 											}
 										}

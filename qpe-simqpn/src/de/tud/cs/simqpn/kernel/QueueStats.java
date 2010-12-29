@@ -41,6 +41,10 @@
  */
 package de.tud.cs.simqpn.kernel;
 
+import org.apache.log4j.Logger;
+
+import de.tud.cs.simqpn.util.LogUtil.ReportLevel;
+
 /**
  * Class QueueStats
  *
@@ -51,6 +55,8 @@ package de.tud.cs.simqpn.kernel;
 
 public class QueueStats extends Stats implements java.io.Serializable {
 	private static final long serialVersionUID = 154545454L;
+	
+	private static Logger log = Logger.getLogger(QueueStats.class);
 
 	public int		queueDiscip;	// Queueing discipline.
 	public int		numServers;		// FCFS queues: Number of servers in queueing station.			
@@ -205,18 +211,25 @@ public class QueueStats extends Stats implements java.io.Serializable {
 	 */	
 	public void printReport() throws SimQPNException {		
 		if (!completed) {
-			Simulator.logln("QueueStats " + name + " Error: Attempting to access statistics before data collection has finished!");
+			log.error("QueueStats " + name + ": Attempting to access statistics before data collection has finished!");
 			throw new SimQPNException();
 		}		
-		Simulator.logln();
-		Simulator.logln();
-		Simulator.logln("REPORT for Queue : " + name + "----------------------------------------");
-		Simulator.logln();		
-		Simulator.logln("totArrivThrPut=" + totArrivThrPut + " totDeptThrPut=" + totDeptThrPut);					
+
+		StringBuilder report = new StringBuilder();
+			
+		report.append("for Queue : ").append(name).append("----------------------------------------\n");
+		report.append("\n");		
+		report.append("totArrivThrPut=").append(totArrivThrPut);
+		report.append(" totDeptThrPut=").append(totDeptThrPut).append("\n");					
 		if (statsLevel >= 2) 
-			Simulator.logln("meanTotTkPop=" + meanTotTkPop + " queueUtil=" + queueUtil);			
+			report.append("meanTotTkPop=").append(meanTotTkPop).append(" queueUtil=").append(queueUtil).append("\n");			
 		if (statsLevel >= 3)  
-			Simulator.logln("meanST=" + meanST);			 	
+			report.append("meanST=").append(meanST).append("\n");
+		
+		report.append("\n\n");
+		
+		//Output report
+		log.log(ReportLevel.REPORT, report);
 	}
 	
 }

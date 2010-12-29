@@ -85,14 +85,15 @@ package de.tud.cs.simqpn.kernel;
 // Please do not remove any comments! 
 // You can add your comments/answers with a "CHRIS" label.
  
+import static de.tud.cs.simqpn.util.LogUtil.formatDetailMessage;
+import static de.tud.cs.simqpn.util.LogUtil.formatMultilineMessage;
+
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -109,6 +110,9 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.dom4j.Attribute;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -138,6 +142,8 @@ import cern.jet.random.engine.DRand;
 import cern.jet.random.engine.MersenneTwister;
 import cern.jet.random.engine.RandomSeedGenerator;
 import cern.jet.random.engine.RandomSeedTable;
+import de.tud.cs.simqpn.util.LogUtil;
+import de.tud.cs.simqpn.util.LogUtil.ReportLevel;
 import edu.cornell.lassp.houle.RngPack.RandomElement;
 
 /**
@@ -155,6 +161,8 @@ public class Simulator {
 	//			 is correct
 	//
 	public static final String QPME_VERSION = "1.5.2";	
+	
+	private static Logger log = Logger.getLogger(Simulator.class);
 	
 	// Supported Run Modes
 	// SK-CD: Only consider run modes NORMAL and INIT_TRANS, ignore the rest!
@@ -191,7 +199,7 @@ public class Simulator {
 	public static int runMode;
 	public static int analMethod;				// Output data analysis method.
 	public static int stoppingRule;				// Simulation stopping criterion.
-	public static int debugLevel;				// Debug level - TODO: currently not used consistently!
+	private static int debugLevel;				// Debug level - TODO: currently not used consistently!
 	public static double rampUpLen;				// Duration of the ramp up period.
 	public static double totRunLen;				// Maximum total duration of the simulation run (incl. rampUpLen).
 	public static double timeBtwChkStops;		// Time between checks if stopping criterion is fulfilled. 
@@ -298,7 +306,6 @@ public class Simulator {
 	protected List queueList;
 	protected List probeList;
 	protected Map<String, Element> idToElementMap = new HashMap<String, Element>();
-	protected static PrintStream logPrintStream;
 
 	public Simulator(Element net, String configuration) {
 		this.configuration = configuration;
@@ -355,7 +362,7 @@ public class Simulator {
 		}
 	}
 
-	public static void configure(Element net, String configuration) throws SimQPNException {
+	public static void configure(Element net, String configuration, String logConfigFilename) throws SimQPNException {
 		// BEGIN-CONFIG
 		// ------------------------------------------------------------------------------------------------------
 
@@ -381,80 +388,92 @@ public class Simulator {
 		 */
 
 		// Initialize logging
-		XPath xpathSelector = DocumentHelper.createXPath("/net/meta-attributes/meta-attribute[@name = 'sim-qpn' and @configuration-name = '" + configuration + "']/@output-directory");
-		Attribute outputDirAttribute = (Attribute) xpathSelector.selectSingleNode(net);
-		String outputDirectory = outputDirAttribute.getStringValue();
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HHmmssS");
-		if(!outputDirectory.endsWith("\\"))	outputDirectory += "\\";
-		
-		String logFileName = outputDirectory + "SimQPN_Output_" + configuration + "_" + dateFormat.format(new Date()) + ".log";
-		try {
-			File logFile = new File(logFileName);
-			logln("Logging to " + logFile.getAbsolutePath());
-			logPrintStream = new PrintStream(logFile);
-		} catch (FileNotFoundException e) {
-			logln("Error: Cannot create simulation output log file! Please check output directory path.");
-			log(e);
-			throw new SimQPNException();
+		if (logConfigFilename != null) {
+			LogUtil.configureCustomLogging(logConfigFilename);
+		} else {
+			XPath xpathSelector = DocumentHelper.createXPath("/net/meta-attributes/meta-attribute[@name = 'sim-qpn' and @configuration-name = '" + configuration + "']/@output-directory");
+			Attribute outputDirAttribute = (Attribute) xpathSelector.selectSingleNode(net);
+			try {
+				LogUtil.configureDefaultLogging(outputDirAttribute.getStringValue(), "SimQPN_Output_" + configuration);
+			} catch (IOException e) {
+				log.error("Cannot create simulation output log file! Please check output directory path.", e);
+				throw new SimQPNException();
+			}
 		}
 		
 		Element simulatorSettings = getSettings(net, configuration);
 
-		if (simulatorSettings.attributeValue("verbosity-level") == null) {		
-			logln("Error: Configuration parameter \"verbosity-level\" is not configured!");					
-			logln("  configuration = " + configuration);
+		if (simulatorSettings.attributeValue("verbosity-level") == null) {
+			log.error(formatDetailMessage(
+					"Configuration parameter \"verbosity-level\" is not configured!",
+					"configuration", configuration
+					));
 			throw new SimQPNException();
 		}
 		debugLevel = Integer.parseInt(simulatorSettings.attributeValue("verbosity-level"));
-		logln(2, "debugLevel = " + debugLevel + ";");		
+		switch(debugLevel) {
+		case 0:
+			Logger.getRootLogger().setLevel(ReportLevel.REPORT);
+			break;
+		case 1:
+			Logger.getRootLogger().setLevel(Level.INFO);
+			break;
+		case 2:
+			Logger.getRootLogger().setLevel(Level.DEBUG);
+			break;
+		default:
+			Logger.getRootLogger().setLevel(Level.TRACE);
+			break;
+		}
+		log.debug("debugLevel = " + debugLevel + ";");
 		
 		// There are 3 possible scenarios (combinations of runMode and analMethod):
-		logln(2, "Scenario set to: " + simulatorSettings.attributeValue("scenario"));
+		log.debug("Scenario set to: " + simulatorSettings.attributeValue("scenario"));
 		switch (Integer.parseInt(simulatorSettings.attributeValue("scenario", "-1"))) {
 			// Scenario 1:
 			case 1: {
 				runMode = NORMAL;
 				analMethod = BATCH_MEANS;
-				logln(2, "-- runMode = NORMAL");
-				logln(2, "-- analMethod = BATCH_MEANS");				
+				log.debug("-- runMode = NORMAL");
+				log.debug("-- analMethod = BATCH_MEANS");				
 				break;
 			}
 			// Scenario 2:
 			case 2: {
 				runMode = NORMAL;
 				analMethod = REPL_DEL;
-				logln(2, "-- runMode = NORMAL");
-				logln(2, "-- analMethod = REPL_DEL");				
+				log.debug("-- runMode = NORMAL");
+				log.debug("-- analMethod = REPL_DEL");				
 				if(simulatorSettings.attributeValue("number-of-runs") == null) {
-					logln("ERROR: \"number-of-runs\" parameter for Replication/Deletion Method not specified!");					
+					log.error("\"number-of-runs\" parameter for Replication/Deletion Method not specified!");					
 					throw new SimQPNException();
 				}				
 				numRuns = Integer.parseInt(simulatorSettings.attributeValue("number-of-runs"));
-				logln(2, "-- numRuns = " + numRuns);
+				log.debug("-- numRuns = " + numRuns);
 				break;
 			}
 			// Scenario 3:
 			case 3: {
 				runMode = INIT_TRANS;
 				analMethod = WELCH;
-				logln(2, "-- runMode = INIT_TRANS");
-				logln(2, "-- analMethod = WELCH");				
+				log.debug("-- runMode = INIT_TRANS");
+				log.debug("-- analMethod = WELCH");				
 				if(simulatorSettings.attributeValue("number-of-runs") == null) {
-					logln("ERROR: \"number-of-runs\" parameter for Method of Welch not specified!");
+					log.error("\"number-of-runs\" parameter for Method of Welch not specified!");
 					throw new SimQPNException();
 				}				
 				numRuns = Integer.parseInt(simulatorSettings.attributeValue("number-of-runs"));
-				logln(2, "-- numRuns = " + numRuns);
+				log.debug("-- numRuns = " + numRuns);
 				break;
 			}
 			default: {	
-				logln("ERROR: Invalid analysis method (scenario) specified!");
+				log.error("Invalid analysis method (scenario) specified!");
 				throw new SimQPNException();
 			}
 		};
 		
 		statsDir = simulatorSettings.attributeValue("output-directory");
-		logln(2, "statsDir = " + statsDir);
+		log.debug("statsDir = " + statsDir);
 		
 		// END-CONFIG
 		// ------------------------------------------------------------------------------------------------------
@@ -496,8 +515,7 @@ public class Simulator {
 					}
 				}
 			} catch (Exception e) {
-				Simulator.logln("ERROR: Could not merge subnets into a flattened net.");
-				e.printStackTrace();
+				log.error("Could not merge subnets into a flattened net.", e);
 				throw new SimQPNException();
 			}
 		}			
@@ -558,22 +576,23 @@ public class Simulator {
 							aggrStats[i].printReport();
 					result = aggrStats;
 				} else {
-					logln("Error: Illegal analysis method specified!");
+					log.error("Illegal analysis method specified!");
 					throw new SimQPNException();				
 				}
 			} else if (runMode == INIT_TRANS) {
 				if (analMethod == WELCH) {
 					runWelchMtd(net, configuration, monitor);
 				} else {
-					logln("Error: Analysis method " + analMethod + " not supported in INIT_TRANS mode!");
+					log.error("Analysis method " + analMethod + " not supported in INIT_TRANS mode!");
 					throw new SimQPNException();
 				}
 			} else {
-				logln("Error: Invalid run mode specified!");				
+				log.error("Invalid run mode specified!");				
 				throw new SimQPNException();
 			}				
 		} finally {		
 			simRunning = false;	
+			LogManager.shutdown();
 		}
 		return result;
 	}
@@ -581,22 +600,22 @@ public class Simulator {
 	private static void validateInputNet(Element net) throws SimQPNException {
 		XPath xpathSelector = DocumentHelper.createXPath("//color-ref[@maximum-capacity > 0]");
 		if(xpathSelector.selectSingleNode(net) != null) {
-			logln("Error: Max population attribute currently not supported (Set to 0 for all places)");
+			log.error("Max population attribute currently not supported (Set to 0 for all places)");
 			throw new SimQPNException();
 		}		
 		xpathSelector = DocumentHelper.createXPath("//color-ref[@ranking > 0]");
 		if(xpathSelector.selectSingleNode(net) != null) {
-			logln("Error: Ranking attribute currently not supported (Set to 0 for all places)");
+			log.error("Ranking attribute currently not supported (Set to 0 for all places)");
 			throw new SimQPNException();
 		}
 		xpathSelector = DocumentHelper.createXPath("//color-ref[@priority > 0]");
 		if(xpathSelector.selectSingleNode(net) != null) {
-			logln("Error: Priority attribute currently not supported (Set to 0 for all places)");
+			log.error("Priority attribute currently not supported (Set to 0 for all places)");
 			throw new SimQPNException();
 		}
 		xpathSelector = DocumentHelper.createXPath("//transition[@priority > 0]");
 		if(xpathSelector.selectSingleNode(net) != null) {
-			logln("Error: Transition priorities currently not supported (Set to 0 for all places)");
+			log.error("Transition priorities currently not supported (Set to 0 for all places)");
 			throw new SimQPNException();
 		}
 	}
@@ -719,7 +738,7 @@ public class Simulator {
 	public static AggregateStats[] runMultRepl(Element net, String configuration, SimulatorProgress monitor) throws SimQPNException {
 
 		if (numRuns <= 1) {
-			logln("Error: numRuns should be > 1!");
+			log.error("numRuns should be > 1!");
 			throw new SimQPNException();
 		}	
 
@@ -779,35 +798,37 @@ public class Simulator {
 					Element element = getSettings(colorRef, configuration);						
 					if (pl instanceof QPlace) {													
 						if(element == null || element.attributeValue("queueSignLevAvgST") == null) {								
-							logln("Error: queueSignLevAvgST settings for the Replication/Deletion Method not found!");
-							logln("Details: ");
-							logln("   place.id           = " + place.attributeValue("id"));
-							logln("   place.name         = " + place.attributeValue("name")); 
-							logln("   color-num          = " + c);
-							logln("   colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("   colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+							log.error(formatDetailMessage(
+									"queueSignLevAvgST settings for the Replication/Deletion Method not found!",
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"), 
+									"color-num", Integer.toString(c),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
 							throw new SimQPNException();							
 						}								
 						aggrStats[p * 2].signLevAvgST[c] = Double.parseDouble(element.attributeValue("queueSignLevAvgST"));
-						logln(2, "aggrStats[" + p * 2 + "].signLevAvgST[" + c + "] = " + aggrStats[p * 2].signLevAvgST[c] + " (queue)");
+						log.debug("aggrStats[" + p * 2 + "].signLevAvgST[" + c + "] = " + aggrStats[p * 2].signLevAvgST[c] + " (queue)");
 					}
 					if (element == null || element.attributeValue("signLevAvgST") == null) {
-						logln("Error: signLevAvgST settings for the Replication/Deletion Method not found!");
-						logln("Details: ");
-						logln("   place.id           = " + place.attributeValue("id"));
-						logln("   place.name         = " + place.attributeValue("name")); 
-						logln("   color-num          = " + c);
-						logln("   colorRef.id        = " + colorRef.attributeValue("id"));
-						logln("   colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+						log.error(formatDetailMessage(
+								"signLevAvgST settings for the Replication/Deletion Method not found!",
+								"place.id", place.attributeValue("id"),
+								"place.name", place.attributeValue("name"), 
+								"color-num", Integer.toString(c),
+								"colorRef.id", colorRef.attributeValue("id"),
+								"colorRef.color-id", colorRef.attributeValue("color-id")
+								));
 						throw new SimQPNException();
 					}						
 					if (pl instanceof QPlace) {
 						aggrStats[(p * 2) + 1].signLevAvgST[c] = Double.parseDouble(element.attributeValue("signLevAvgST"));
-						logln(2, "aggrStats[" + (p * 2) + 1 + "].signLevAvgST[" + c + "] = " + aggrStats[(p * 2) + 1].signLevAvgST[c] + " (depository)");						
+						log.debug("aggrStats[" + (p * 2) + 1 + "].signLevAvgST[" + c + "] = " + aggrStats[(p * 2) + 1].signLevAvgST[c] + " (depository)");						
 					}
 					else {
 						aggrStats[p * 2].signLevAvgST[c] = Double.parseDouble(element.attributeValue("signLevAvgST"));
-						logln(2, "aggrStats[" + p * 2 + "].signLevAvgST[" + c + "] = " + aggrStats[p * 2].signLevAvgST[c] + " (ordinary place)");						
+						log.debug("aggrStats[" + p * 2 + "].signLevAvgST[" + c + "] = " + aggrStats[p * 2].signLevAvgST[c] + " (ordinary place)");						
 					}
 				}
 			}
@@ -863,8 +884,10 @@ public class Simulator {
 	public static AggregateStats[] runWelchMtd(Element net, String configuration, SimulatorProgress monitor) throws SimQPNException {
 
 		if (numRuns < 5) {
-			logln("Warning: Number of runs for the method of Welch should be at least 5!");
-			logln("         Setting numRuns to 5.");
+			log.warn(formatMultilineMessage(
+					"Number of runs for the method of Welch should be at least 5!",
+					"Setting numRuns to 5."
+					));
 			numRuns = 5;
 		}
 		
@@ -940,35 +963,37 @@ public class Simulator {
 						Element colorRef = (Element) colorRefIterator.next();
 						Element element = getSettings(colorRef, configuration);						
 						if (element == null || element.attributeValue("minObsrv") == null || element.attributeValue("maxObsrv") == null) {
-							logln("Error: minObsrv/maxObsrv settings for the Method of Welch not found!");
-							logln("Details: ");
-							logln("   place.id           = " + place.attributeValue("id"));
-							logln("   place.name         = " + place.attributeValue("name")); 
-							logln("   color-num          = " + c);
-							logln("   colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("   colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+							log.error(formatDetailMessage(
+									"minObsrv/maxObsrv settings for the Method of Welch not found!",
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"), 
+									"color-num", Integer.toString(c),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
 							throw new SimQPNException();
 						}						
 						pl.placeStats.minObsrvST[c] = Integer.parseInt(element.attributeValue("minObsrv")); 
 						pl.placeStats.maxObsrvST[c] = Integer.parseInt(element.attributeValue("maxObsrv")); 
-						logln(2, "pl.placeStats.minObsrvST[" + c + "] = " + pl.placeStats.minObsrvST[c]);
-						logln(2, "pl.placeStats.maxObsrvST[" + c + "] = " + pl.placeStats.maxObsrvST[c]);
+						log.debug("pl.placeStats.minObsrvST[" + c + "] = " + pl.placeStats.minObsrvST[c]);
+						log.debug("pl.placeStats.maxObsrvST[" + c + "] = " + pl.placeStats.maxObsrvST[c]);
 						if (pl instanceof QPlace) {
 							QPlace qPl = (QPlace) pl;							
 							if(element.attributeValue("queueMinObsrv") == null || element.attributeValue("queueMaxObsrv") == null) {								
-								logln("Error: queueMinObsrv/queueMaxObsrv settings for the Method of Welch not found!");
-								logln("Details: ");
-								logln("   place.id           = " + place.attributeValue("id"));
-								logln("   place.name         = " + place.attributeValue("name")); 
-								logln("   color-num          = " + c);
-								logln("   colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("   colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+								log.error(formatDetailMessage(
+										"queueMinObsrv/queueMaxObsrv settings for the Method of Welch not found!",
+										"place.id", place.attributeValue("id"),
+										"place.name", place.attributeValue("name"), 
+										"color-num", Integer.toString(c),
+										"colorRef.id", colorRef.attributeValue("id"),
+										"colorRef.color-id", colorRef.attributeValue("color-id")
+										));
 								throw new SimQPNException();							
 							}							
 							qPl.qPlaceQueueStats.minObsrvST[c] = Integer.parseInt(element.attributeValue("queueMinObsrv"));							
 							qPl.qPlaceQueueStats.maxObsrvST[c] = Integer.parseInt(element.attributeValue("queueMaxObsrv"));  
-							logln(2, "qPl.qPlaceQueueStats.minObsrvST[" + c + "] = " + qPl.qPlaceQueueStats.minObsrvST[c]);
-							logln(2, "qPl.qPlaceQueueStats.maxObsrvST[" + c + "] = " + qPl.qPlaceQueueStats.maxObsrvST[c]);
+							log.debug("qPl.qPlaceQueueStats.minObsrvST[" + c + "] = " + qPl.qPlaceQueueStats.minObsrvST[c]);
+							log.debug("qPl.qPlaceQueueStats.maxObsrvST[" + c + "] = " + qPl.qPlaceQueueStats.maxObsrvST[c]);
 						}
 					}
 				}
@@ -1363,7 +1388,7 @@ public class Simulator {
 				Element place = (Element) placeIterator.next();
 				Place pl = places[p];
 				if (pl.statsLevel >= 3) {
-					logln(2, "places[" + p + "]");
+					log.debug("places[" + p + "]");
 					XPath xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
 					Iterator colorRefIterator = xpathSelector.selectNodes(place).iterator();
 					for (int cr = 0; colorRefIterator.hasNext(); cr++) {
@@ -1372,167 +1397,178 @@ public class Simulator {
 						// Initialize Place (or Depository if pl is QPlace)
 						if (colorRefSettings != null) {
 							if (colorRefSettings.attributeValue("signLev") == null) {
-								logln("Error: Configuration parameter \"signLev\" for Batch Means Method is missing!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  place-num          = " + p);
-								logln("  place.id           = " + place.attributeValue("id"));
-								logln("  place.name         = " + place.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+								log.error(formatDetailMessage(
+										"Configuration parameter \"signLev\" for Batch Means Method is missing!",
+										"configuration", configuration,						
+										"place-num", Integer.toString(p),
+										"place.id", place.attributeValue("id"),
+										"place.name", place.attributeValue("name"),						
+										"colorRef-num", Integer.toString(cr),
+										"colorRef.id", colorRef.attributeValue("id"),
+										"colorRef.color-id", colorRef.attributeValue("color-id")
+										));
 								throw new SimQPNException();
 							}
 							pl.placeStats.signLevST[cr] = Double.parseDouble(colorRefSettings.attributeValue("signLev"));
-							logln(2, "-- placeStats.signLevST[" + cr + "] = " + pl.placeStats.signLevST[cr]);							
+							log.debug("-- placeStats.signLevST[" + cr + "] = " + pl.placeStats.signLevST[cr]);							
 
 							if (colorRefSettings.attributeValue("reqAbsPrc") == null) {
-								logln("Error: Configuration parameter \"reqAbsPrc\" for Batch Means Method is missing!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  place-num          = " + p);
-								logln("  place.id           = " + place.attributeValue("id"));
-								logln("  place.name         = " + place.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+								log.error(formatDetailMessage(
+										"Configuration parameter \"reqAbsPrc\" for Batch Means Method is missing!",
+										"configuration", configuration,
+										"place-num", Integer.toString(p),
+										"place.id", place.attributeValue("id"),
+										"place.name", place.attributeValue("name"),						
+										"colorRef-num", Integer.toString(cr),
+										"colorRef.id", colorRef.attributeValue("id"),
+										"colorRef.color-id", colorRef.attributeValue("color-id")
+										));
 								throw new SimQPNException();
 							}
 							pl.placeStats.reqAbsPrc[cr] = Double.parseDouble(colorRefSettings.attributeValue("reqAbsPrc"));
-							logln(2, "-- placeStats.reqAbsPrc[" + cr + "] = " + pl.placeStats.reqAbsPrc[cr]);
+							log.debug("-- placeStats.reqAbsPrc[" + cr + "] = " + pl.placeStats.reqAbsPrc[cr]);
 							
-							if (colorRefSettings.attributeValue("reqRelPrc") == null) {								
-								logln("Error: Configuration parameter \"reqRelPrc\" for Batch Means Method is missing!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  place-num          = " + p);
-								logln("  place.id           = " + place.attributeValue("id"));
-								logln("  place.name         = " + place.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+							if (colorRefSettings.attributeValue("reqRelPrc") == null) {
+								log.error(formatDetailMessage(
+										"Configuration parameter \"reqRelPrc\" for Batch Means Method is missing!",
+										"configuration", configuration,
+										"place-num", Integer.toString(p),
+										"place.id", place.attributeValue("id"),
+										"place.name", place.attributeValue("name"),
+										"colorRef-num", Integer.toString(cr),
+										"colorRef.id", colorRef.attributeValue("id"),
+										"colorRef.color-id", colorRef.attributeValue("color-id")
+										));
 								throw new SimQPNException();
 							}
 							pl.placeStats.reqRelPrc[cr] = Double.parseDouble(colorRefSettings.attributeValue("reqRelPrc"));
-							logln(2, "-- placeStats.reqRelPrc[" + cr + "] = " + pl.placeStats.reqRelPrc[cr]);
+							log.debug("-- placeStats.reqRelPrc[" + cr + "] = " + pl.placeStats.reqRelPrc[cr]);
 
 							if (colorRefSettings.attributeValue("batchSize") == null) {
-								logln("Error: Configuration parameter \"batchSize\" for Batch Means Method is missing!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  place-num          = " + p);
-								logln("  place.id           = " + place.attributeValue("id"));
-								logln("  place.name         = " + place.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));								
+								log.error(formatDetailMessage(
+										"Configuration parameter \"batchSize\" for Batch Means Method is missing!",
+										"configuration", configuration,
+										"place-num", Integer.toString(p),
+										"place.id", place.attributeValue("id"),
+										"place.name", place.attributeValue("name"),						
+										"colorRef-num", Integer.toString(cr),
+										"colorRef.id", colorRef.attributeValue("id"),
+										"colorRef.color-id", colorRef.attributeValue("color-id")
+										));								
 								throw new SimQPNException();
 							}
 							pl.placeStats.batchSizeST[cr] = Integer.parseInt(colorRefSettings.attributeValue("batchSize"));
-							logln(2, "-- placeStats.batchSizeST[" + cr + "] = " + pl.placeStats.batchSizeST[cr]);							
+							log.debug("-- placeStats.batchSizeST[" + cr + "] = " + pl.placeStats.batchSizeST[cr]);							
 
 							if (colorRefSettings.attributeValue("minBatches") == null) {
-								logln("Error: Configuration parameter \"minBatches\" for Batch Means Method is missing!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  place-num          = " + p);
-								logln("  place.id           = " + place.attributeValue("id"));
-								logln("  place.name         = " + place.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																
+								log.error(formatDetailMessage(
+										"Configuration parameter \"minBatches\" for Batch Means Method is missing!",
+										"configuration", configuration,
+										"place-num", Integer.toString(p),
+										"place.id", place.attributeValue("id"),
+										"place.name", place.attributeValue("name"),						
+										"colorRef-num", Integer.toString(cr),
+										"colorRef.id", colorRef.attributeValue("id"),
+										"colorRef.color-id", colorRef.attributeValue("color-id")
+										));
 								throw new SimQPNException();
 							}
 							pl.placeStats.minBatches[cr] = Integer.parseInt(colorRefSettings.attributeValue("minBatches"));
-							logln(2, "-- placeStats.minBatches[" + cr + "] = " + pl.placeStats.minBatches[cr]);							
+							log.debug("-- placeStats.minBatches[" + cr + "] = " + pl.placeStats.minBatches[cr]);							
 
 							if (colorRefSettings.attributeValue("numBMeansCorlTested") == null) {
-								logln("Error: Configuration parameter \"numBMeansCorlTested\" for Batch Means Method is missing!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  place-num          = " + p);
-								logln("  place.id           = " + place.attributeValue("id"));
-								logln("  place.name         = " + place.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
+								log.error(formatDetailMessage(
+										"Configuration parameter \"numBMeansCorlTested\" for Batch Means Method is missing!",
+										"configuration", configuration,
+										"place-num", Integer.toString(p),
+										"place.id", place.attributeValue("id"),
+										"place.name", place.attributeValue("name"),						
+										"colorRef-num", Integer.toString(cr),
+										"colorRef.id", colorRef.attributeValue("id"),
+										"colorRef.color-id", colorRef.attributeValue("color-id")
+										));																								
 								throw new SimQPNException();
 							}
 							pl.placeStats.numBMeansCorlTested[cr] = Integer.parseInt(colorRefSettings.attributeValue("numBMeansCorlTested"));
-							logln(2, "-- placeStats.numBMeansCorlTested[" + cr + "] = " + pl.placeStats.numBMeansCorlTested[cr]);
+							log.debug("-- placeStats.numBMeansCorlTested[" + cr + "] = " + pl.placeStats.numBMeansCorlTested[cr]);
 							
 							// Note that if (minBatches > 0 && numBMeansCorlTested[c] > 0),
 							// minBatches[c] must be > numBMeansCorlTested[c]!
 							if (pl.placeStats.minBatches[cr] > 0 && 
 								pl.placeStats.numBMeansCorlTested[cr] > 0 && 
 								!(pl.placeStats.minBatches[cr] > pl.placeStats.numBMeansCorlTested[cr])) {
-								logln("Error: Place.placeStats.minBatches[c] must be greater than Place.placeStats.numBMeansCorlTested[c]!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  place-num          = " + p);
-								logln("  place.id           = " + place.attributeValue("id"));
-								logln("  place.name         = " + place.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
+								log.error(formatDetailMessage(
+										"Place.placeStats.minBatches[c] must be greater than Place.placeStats.numBMeansCorlTested[c]!",
+										"configuration", configuration,
+										"place-num", Integer.toString(p),
+										"place.id", place.attributeValue("id"),
+										"place.name", place.attributeValue("name"),						
+										"colorRef-num", Integer.toString(cr),
+										"colorRef.id", colorRef.attributeValue("id"),
+										"colorRef.color-id", colorRef.attributeValue("color-id")
+										));																								
 								throw new SimQPNException();
 							}
 							// If (numBMeansCorlTested[c] <= 0) no correlation test is done!
 							// Note that numBMeansCorlTested must be even!
 							if (pl.placeStats.numBMeansCorlTested[cr] % 2 != 0) {
-								logln("Error: Place.placeStats.numBMeansCorlTested[c] must be even!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  place-num          = " + p);
-								logln("  place.id           = " + place.attributeValue("id"));
-								logln("  place.name         = " + place.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
+								log.error(formatDetailMessage(
+										"Place.placeStats.numBMeansCorlTested[c] must be even!",
+										"configuration", configuration,
+										"place-num", Integer.toString(p),
+										"place.id", place.attributeValue("id"),
+										"place.name", place.attributeValue("name"),						
+										"colorRef-num", Integer.toString(cr),
+										"colorRef.id", colorRef.attributeValue("id"),
+										"colorRef.color-id", colorRef.attributeValue("color-id")
+										));																								
 								throw new SimQPNException();
 							}
 
 							if (pl.statsLevel >= 4) {
 								if (colorRefSettings.attributeValue("bucketSize") == null) {
-									logln("Error: Configuration parameter \"bucketSize\" for Batch Means Method is missing!");
-									logln("Details:");
-									logln("  configuration = " + configuration);
-									logln("  place-num          = " + p);
-									logln("  place.id           = " + place.attributeValue("id"));
-									logln("  place.name         = " + place.attributeValue("name"));
-									logln("  colorRef-num       = " + cr);
-									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+									log.error(formatDetailMessage(
+											"Configuration parameter \"bucketSize\" for Batch Means Method is missing!",
+											"configuration", configuration,
+											"place-num", Integer.toString(p),
+											"place.id", place.attributeValue("id"),
+											"place.name", place.attributeValue("name"),
+											"colorRef-num", Integer.toString(cr),
+											"colorRef.id", colorRef.attributeValue("id"),
+											"colorRef.color-id", colorRef.attributeValue("color-id")
+											));
 									throw new SimQPNException();
 								}
 								pl.placeStats.histST[cr].setBucketSize(Double.parseDouble(colorRefSettings.attributeValue("bucketSize")));
-								logln(2, "-- placeStats.histST[" + cr + "].bucketSize = " + pl.placeStats.histST[cr].getBucketSize());
+								log.debug("-- placeStats.histST[" + cr + "].bucketSize = " + pl.placeStats.histST[cr].getBucketSize());
 
 								if(colorRefSettings.attributeValue("maxBuckets") == null) {
-									logln("Error: Configuration parameter \"maxBuckets\" for Batch Means Method is missing!");
-									logln("Details:");
-									logln("  configuration = " + configuration);
-									logln("  place-num          = " + p);
-									logln("  place.id           = " + place.attributeValue("id"));
-									logln("  place.name         = " + place.attributeValue("name"));
-									logln("  colorRef-num       = " + cr);
-									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+									log.error(formatDetailMessage(
+											"Configuration parameter \"maxBuckets\" for Batch Means Method is missing!",
+											"configuration", configuration,
+											"place-num", Integer.toString(p),
+											"place.id", place.attributeValue("id"),
+											"place.name", place.attributeValue("name"),
+											"colorRef-num", Integer.toString(cr),
+											"colorRef.id", colorRef.attributeValue("id"),
+											"colorRef.color-id", colorRef.attributeValue("color-id")
+											));
 									throw new SimQPNException();
 								}
 								pl.placeStats.histST[cr].setMaximumNumberOfBuckets(Integer.parseInt(colorRefSettings.attributeValue("maxBuckets")));
-								logln(2, "-- placeStats.histST[" + cr + "].maxBuckets = " + pl.placeStats.histST[cr].getMaximumNumberOfBuckets());
+								log.debug("-- placeStats.histST[" + cr + "].maxBuckets = " + pl.placeStats.histST[cr].getMaximumNumberOfBuckets());
 							}
-						} else {							
-							logln("Error: SimQPN configuration parameters for Batch Means Method are missing!");
-							logln("Details:");
-							logln("  configuration = " + configuration);						
-							logln("  place-num          = " + p);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + cr);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+						} else {
+							log.error(formatDetailMessage(
+									"SimQPN configuration parameters for Batch Means Method are missing!",
+									"configuration", configuration,						
+									"place-num", Integer.toString(p),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(cr),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
 							throw new SimQPNException();
 							/* ORIGINAL MANUAL CONFIGURATION
 							pl.placeStats.signLevST[cr] = 0.05;     // e.g. 0.05 ---> 95% c.i.; 0.1 ---> 90%
@@ -1560,165 +1596,176 @@ public class Simulator {
 							QPlace qpl = (QPlace) pl;
 							if (colorRefSettings != null) {
 								if (colorRefSettings.attributeValue("queueSignLev") == null) {
-									logln("Error: Configuration parameter \"queueSignLev\" for Batch Means Method is missing!");
-									logln("Details:");
-									logln("  configuration = " + configuration);						
-									logln("  place-num          = " + p);
-									logln("  place.id           = " + place.attributeValue("id"));
-									logln("  place.name         = " + place.attributeValue("name"));						
-									logln("  colorRef-num       = " + cr);
-									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
+									log.error(formatDetailMessage(
+											"Configuration parameter \"queueSignLev\" for Batch Means Method is missing!",
+											"configuration", configuration,						
+											"place-num", Integer.toString(p),
+											"place.id", place.attributeValue("id"),
+											"place.name", place.attributeValue("name"),						
+											"colorRef-num", Integer.toString(cr),
+											"colorRef.id", colorRef.attributeValue("id"),
+											"colorRef.color-id", colorRef.attributeValue("color-id")
+											));
 									throw new SimQPNException();
 								}								
 								qpl.qPlaceQueueStats.signLevST[cr] = Double.parseDouble(colorRefSettings.attributeValue("queueSignLev"));
-								logln(2, "-- qPlaceQueueStats.signLevST[" + cr + "] = " + qpl.qPlaceQueueStats.signLevST[cr]);
+								log.debug("-- qPlaceQueueStats.signLevST[" + cr + "] = " + qpl.qPlaceQueueStats.signLevST[cr]);
 
 								if (colorRefSettings.attributeValue("queueReqAbsPrc") == null) {
-									logln("Error: Configuration parameter \"queueReqAbsPrc\" for Batch Means Method is missing!");
-									logln("Details:");
-									logln("  configuration = " + configuration);						
-									logln("  place-num          = " + p);
-									logln("  place.id           = " + place.attributeValue("id"));
-									logln("  place.name         = " + place.attributeValue("name"));						
-									logln("  colorRef-num       = " + cr);
-									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
+									log.error(formatDetailMessage(
+											"Configuration parameter \"queueReqAbsPrc\" for Batch Means Method is missing!",
+											"configuration", configuration,						
+											"place-num", Integer.toString(p),
+											"place.id", place.attributeValue("id"),
+											"place.name", place.attributeValue("name"),						
+											"colorRef-num", Integer.toString(cr),
+											"colorRef.id", colorRef.attributeValue("id"),
+											"colorRef.color-id", colorRef.attributeValue("color-id")
+											));
 									throw new SimQPNException();
 								}
 								qpl.qPlaceQueueStats.reqAbsPrc[cr] = Double.parseDouble(colorRefSettings.attributeValue("queueReqAbsPrc"));
-								logln(2, "-- qPlaceQueueStats.reqAbsPrc[" + cr + "] = " + qpl.qPlaceQueueStats.reqAbsPrc[cr]);
+								log.debug("-- qPlaceQueueStats.reqAbsPrc[" + cr + "] = " + qpl.qPlaceQueueStats.reqAbsPrc[cr]);
 
 								if (colorRefSettings.attributeValue("queueReqRelPrc") == null) {
-									logln("Error: Configuration parameter \"queueReqRelPrc\" for Batch Means Method is missing!");
-									logln("Details:");
-									logln("  configuration = " + configuration);						
-									logln("  place-num          = " + p);
-									logln("  place.id           = " + place.attributeValue("id"));
-									logln("  place.name         = " + place.attributeValue("name"));						
-									logln("  colorRef-num       = " + cr);
-									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
+									log.error(formatDetailMessage(
+											"Configuration parameter \"queueReqRelPrc\" for Batch Means Method is missing!",
+											"configuration", configuration,						
+											"place-num", Integer.toString(p),
+											"place.id", place.attributeValue("id"),
+											"place.name", place.attributeValue("name"),						
+											"colorRef-num", Integer.toString(cr),
+											"colorRef.id", colorRef.attributeValue("id"),
+											"colorRef.color-id", colorRef.attributeValue("color-id")
+											));
 									throw new SimQPNException();
 								}
 								qpl.qPlaceQueueStats.reqRelPrc[cr] = Double.parseDouble(colorRefSettings.attributeValue("queueReqRelPrc"));
-								logln(2, "-- qPlaceQueueStats.reqRelPrc[" + cr + "] = " + qpl.qPlaceQueueStats.reqRelPrc[cr]);
+								log.debug("-- qPlaceQueueStats.reqRelPrc[" + cr + "] = " + qpl.qPlaceQueueStats.reqRelPrc[cr]);
 								
 								if (colorRefSettings.attributeValue("queueBatchSize") == null) {
-									logln("Error: Configuration parameter \"queueBatchSize\" for Batch Means Method is missing!");
-									logln("Details:");
-									logln("  configuration = " + configuration);						
-									logln("  place-num          = " + p);
-									logln("  place.id           = " + place.attributeValue("id"));
-									logln("  place.name         = " + place.attributeValue("name"));						
-									logln("  colorRef-num       = " + cr);
-									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
+									log.error(formatDetailMessage(
+											"Configuration parameter \"queueBatchSize\" for Batch Means Method is missing!",
+											"configuration", configuration,						
+											"place-num", Integer.toString(p),
+											"place.id", place.attributeValue("id"),
+											"place.name", place.attributeValue("name"),						
+											"colorRef-num", Integer.toString(cr),
+											"colorRef.id", colorRef.attributeValue("id"),
+											"colorRef.color-id", colorRef.attributeValue("color-id")
+											));
 									throw new SimQPNException();
 								}								
 								qpl.qPlaceQueueStats.batchSizeST[cr] = Integer.parseInt(colorRefSettings.attributeValue("queueBatchSize"));
-								logln(2, "-- qPlaceQueueStats.batchSizeST[" + cr + "] = " + qpl.qPlaceQueueStats.batchSizeST[cr]);
+								log.debug("-- qPlaceQueueStats.batchSizeST[" + cr + "] = " + qpl.qPlaceQueueStats.batchSizeST[cr]);
 
 								if(colorRefSettings.attributeValue("queueMinBatches") == null) {
-									logln("Error: Configuration parameter \"queueMinBatches\" for Batch Means Method is missing!");
-									logln("Details:");
-									logln("  configuration = " + configuration);						
-									logln("  place-num          = " + p);
-									logln("  place.id           = " + place.attributeValue("id"));
-									logln("  place.name         = " + place.attributeValue("name"));						
-									logln("  colorRef-num       = " + cr);
-									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
+									log.error(formatDetailMessage(
+											"Configuration parameter \"queueMinBatches\" for Batch Means Method is missing!",
+											"configuration", configuration,						
+											"place-num", Integer.toString(p),
+											"place.id", place.attributeValue("id"),
+											"place.name", place.attributeValue("name"),						
+											"colorRef-num", Integer.toString(cr),
+											"colorRef.id", colorRef.attributeValue("id"),
+											"colorRef.color-id", colorRef.attributeValue("color-id")
+											));																																
 									throw new SimQPNException();
 								}
 								qpl.qPlaceQueueStats.minBatches[cr] = Integer.parseInt(colorRefSettings.attributeValue("queueMinBatches"));
-								logln(2, "-- qPlaceQueueStats.minBatches[" + cr + "] = " + qpl.qPlaceQueueStats.minBatches[cr]);								
+								log.debug("-- qPlaceQueueStats.minBatches[" + cr + "] = " + qpl.qPlaceQueueStats.minBatches[cr]);								
 
 								if(colorRefSettings.attributeValue("queueNumBMeansCorlTested") == null) {
-									logln("Error: Configuration parameter \"queueNumBMeansCorlTested\" for Batch Means Method is missing!");
-									logln("Details:");
-									logln("  configuration = " + configuration);						
-									logln("  place-num          = " + p);
-									logln("  place.id           = " + place.attributeValue("id"));
-									logln("  place.name         = " + place.attributeValue("name"));						
-									logln("  colorRef-num       = " + cr);
-									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																																	
+									log.error(formatDetailMessage(
+											"Configuration parameter \"queueNumBMeansCorlTested\" for Batch Means Method is missing!",
+											"configuration", configuration,						
+											"place-num", Integer.toString(p),
+											"place.id", place.attributeValue("id"),
+											"place.name", place.attributeValue("name"),						
+											"colorRef-num", Integer.toString(cr),
+											"colorRef.id", colorRef.attributeValue("id"),
+											"colorRef.color-id", colorRef.attributeValue("color-id")
+											));	
 									throw new SimQPNException();
 								}								
 								qpl.qPlaceQueueStats.numBMeansCorlTested[cr] = Integer.parseInt(colorRefSettings.attributeValue("queueNumBMeansCorlTested"));
-								logln(2, "-- qPlaceQueueStats.numBMeansCorlTested[" + cr + "] = " + qpl.qPlaceQueueStats.numBMeansCorlTested[cr]);								
+								log.debug("-- qPlaceQueueStats.numBMeansCorlTested[" + cr + "] = " + qpl.qPlaceQueueStats.numBMeansCorlTested[cr]);								
 								
 								if (qpl.qPlaceQueueStats.minBatches[cr] > 0 && 
 									qpl.qPlaceQueueStats.numBMeansCorlTested[cr] > 0 && 
 									!(qpl.qPlaceQueueStats.minBatches[cr] > qpl.qPlaceQueueStats.numBMeansCorlTested[cr])) {
-									logln("Error: QPlace.qPlaceQueueStats.minBatches[c] must be greater than QPlace.qPlaceQueueStats.numBMeansCorlTested[c]!");
-									logln("Details:");
-									logln("  configuration = " + configuration);						
-									logln("  place-num          = " + p);
-									logln("  place.id           = " + place.attributeValue("id"));
-									logln("  place.name         = " + place.attributeValue("name"));						
-									logln("  colorRef-num       = " + cr);
-									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
+									log.error(formatDetailMessage(
+											"QPlace.qPlaceQueueStats.minBatches[c] must be greater than QPlace.qPlaceQueueStats.numBMeansCorlTested[c]!",
+											"configuration", configuration,						
+											"place-num", Integer.toString(p),
+											"place.id", place.attributeValue("id"),
+											"place.name", place.attributeValue("name"),						
+											"colorRef-num", Integer.toString(cr),
+											"colorRef.id", colorRef.attributeValue("id"),
+											"colorRef.color-id", colorRef.attributeValue("color-id")
+											));																								
 									throw new SimQPNException();
 								}
 								// If (numBMeansCorlTested[c] <= 0) no correlation test is done!								
 								// Note that numBMeansCorlTested must be even!
 								if (qpl.qPlaceQueueStats.numBMeansCorlTested[cr] % 2 != 0) {
-									logln("Error: QPlace.qPlaceQueueStats.numBMeansCorlTested[c] must be even!");
-									logln("Details:");
-									logln("  configuration = " + configuration);						
-									logln("  place-num          = " + p);
-									logln("  place.id           = " + place.attributeValue("id"));
-									logln("  place.name         = " + place.attributeValue("name"));						
-									logln("  colorRef-num       = " + cr);
-									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
+									log.error(formatDetailMessage(
+											"QPlace.qPlaceQueueStats.numBMeansCorlTested[c] must be even!",
+											"configuration", configuration,						
+											"place-num", Integer.toString(p),
+											"place.id", place.attributeValue("id"),
+											"place.name", place.attributeValue("name"),						
+											"colorRef-num", Integer.toString(cr),
+											"colorRef.id", colorRef.attributeValue("id"),
+											"colorRef.color-id", colorRef.attributeValue("color-id")
+											));																								
 									throw new SimQPNException();
 								}
 
 								if (pl.statsLevel >= 4) {
 									if (colorRefSettings.attributeValue("queueBucketSize") == null) {
-										logln("Error: Configuration parameter \"queueBucketSize\" for Batch Means Method is missing!");
-										logln("Details:");
-										logln("  configuration = " + configuration);
-										logln("  place-num          = " + p);
-										logln("  place.id           = " + place.attributeValue("id"));
-										logln("  place.name         = " + place.attributeValue("name"));
-										logln("  colorRef-num       = " + cr);
-										logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-										logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+										log.error(formatDetailMessage(
+												"Configuration parameter \"queueBucketSize\" for Batch Means Method is missing!",
+												"configuration", configuration,						
+												"place-num", Integer.toString(p),
+												"place.id", place.attributeValue("id"),
+												"place.name", place.attributeValue("name"),						
+												"colorRef-num", Integer.toString(cr),
+												"colorRef.id", colorRef.attributeValue("id"),
+												"colorRef.color-id", colorRef.attributeValue("color-id")
+												));	
 										throw new SimQPNException();
 									}
 									qpl.qPlaceQueueStats.histST[cr].setBucketSize(Double.parseDouble(colorRefSettings.attributeValue("queueBucketSize")));
-									logln(2, "-- qPlaceQueueStats.histST[" + cr + "].bucketSize = " + qpl.qPlaceQueueStats.histST[cr].getBucketSize());
+									log.debug("-- qPlaceQueueStats.histST[" + cr + "].bucketSize = " + qpl.qPlaceQueueStats.histST[cr].getBucketSize());
 
 									if(colorRefSettings.attributeValue("queueMaxBuckets") == null) {
-										logln("Error: Configuration parameter \"queueMaxBuckets\" for Batch Means Method is missing!");
-										logln("Details:");
-										logln("  configuration = " + configuration);
-										logln("  place-num          = " + p);
-										logln("  place.id           = " + place.attributeValue("id"));
-										logln("  place.name         = " + place.attributeValue("name"));
-										logln("  colorRef-num       = " + cr);
-										logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-										logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+										log.error(formatDetailMessage(
+												"Configuration parameter \"queueMaxBuckets\" for Batch Means Method is missing!",
+												"configuration", configuration,						
+												"place-num", Integer.toString(p),
+												"place.id", place.attributeValue("id"),
+												"place.name", place.attributeValue("name"),						
+												"colorRef-num", Integer.toString(cr),
+												"colorRef.id", colorRef.attributeValue("id"),
+												"colorRef.color-id", colorRef.attributeValue("color-id")
+												));
 										throw new SimQPNException();
 									}
 									qpl.qPlaceQueueStats.histST[cr].setMaximumNumberOfBuckets(Integer.parseInt(colorRefSettings.attributeValue("queueMaxBuckets")));
-									logln(2, "-- qPlaceQueueStats.histST[" + cr + "].maxBuckets = " + qpl.qPlaceQueueStats.histST[cr].getMaximumNumberOfBuckets());
+									log.debug("-- qPlaceQueueStats.histST[" + cr + "].maxBuckets = " + qpl.qPlaceQueueStats.histST[cr].getMaximumNumberOfBuckets());
 								}
 							} else {
-								logln("Error: SimQPN configuration parameters for Batch Means Method are missing!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  place-num          = " + p);
-								logln("  place.id           = " + place.attributeValue("id"));
-								logln("  place.name         = " + place.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+								log.error(formatDetailMessage(
+										"SimQPN configuration parameters for Batch Means Method are missing!",
+										"configuration", configuration,						
+										"place-num", Integer.toString(p),
+										"place.id", place.attributeValue("id"),
+										"place.name", place.attributeValue("name"),						
+										"colorRef-num", Integer.toString(cr),
+										"colorRef.id", colorRef.attributeValue("id"),
+										"colorRef.color-id", colorRef.attributeValue("color-id")
+										));
 								throw new SimQPNException();
 								/* ORIGINAL MANUAL CONFIGURATION
 								qpl.qPlaceQueueStats.signLevST[cr] = 0.05;		// e.g. 0.05 ---> 95% c.i.; 0.1 ---> 90%
@@ -1750,7 +1797,7 @@ public class Simulator {
 				Element probe = (Element) probeIterator.next();
 				Probe pr = probes[p];
 				if (pr.statsLevel >= 3) {
-					logln(2, "probes[" + p + "]");
+					log.debug("probes[" + p + "]");
 					XPath xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
 					Iterator colorRefIterator = xpathSelector.selectNodes(probe).iterator();
 					for (int cr = 0; colorRefIterator.hasNext(); cr++) {
@@ -1759,167 +1806,178 @@ public class Simulator {
 						// Initialize Probe
 						if (colorRefSettings != null) {
 							if (colorRefSettings.attributeValue("signLev") == null) {
-								logln("Error: Configuration parameter \"signLev\" for Batch Means Method is missing!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  probe-num          = " + p);
-								logln("  probe.id           = " + probe.attributeValue("id"));
-								logln("  probe.name         = " + probe.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+								log.error(formatDetailMessage(
+										"Configuration parameter \"signLev\" for Batch Means Method is missing!",
+										"configuration" + configuration,						
+										"probe-num" + Integer.toString(p),
+										"probe.id" + probe.attributeValue("id"),
+										"probe.name" + probe.attributeValue("name"),						
+										"colorRef-num" + Integer.toString(cr),
+										"colorRef.id" + colorRef.attributeValue("id"),
+										"colorRef.color-id" + colorRef.attributeValue("color-id")
+										));
 								throw new SimQPNException();
 							}
 							pr.probeStats.signLevST[cr] = Double.parseDouble(colorRefSettings.attributeValue("signLev"));
-							logln(2, "-- probeStats.signLevST[" + cr + "] = " + pr.probeStats.signLevST[cr]);							
+							log.debug("-- probeStats.signLevST[" + cr + "] = " + pr.probeStats.signLevST[cr]);							
 
 							if (colorRefSettings.attributeValue("reqAbsPrc") == null) {
-								logln("Error: Configuration parameter \"reqAbsPrc\" for Batch Means Method is missing!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  probe-num          = " + p);
-								logln("  probe.id           = " + probe.attributeValue("id"));
-								logln("  probe.name         = " + probe.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+								log.error(formatDetailMessage(
+										"Configuration parameter \"reqAbsPrc\" for Batch Means Method is missing!",
+										"configuration" + configuration,						
+										"probe-num" + Integer.toString(p),
+										"probe.id" + probe.attributeValue("id"),
+										"probe.name" + probe.attributeValue("name"),						
+										"colorRef-num" + Integer.toString(cr),
+										"colorRef.id" + colorRef.attributeValue("id"),
+										"colorRef.color-id" + colorRef.attributeValue("color-id")
+										));
 								throw new SimQPNException();
 							}
 							pr.probeStats.reqAbsPrc[cr] = Double.parseDouble(colorRefSettings.attributeValue("reqAbsPrc"));
-							logln(2, "-- probeStats.reqAbsPrc[" + cr + "] = " + pr.probeStats.reqAbsPrc[cr]);
+							log.debug("-- probeStats.reqAbsPrc[" + cr + "] = " + pr.probeStats.reqAbsPrc[cr]);
 							
 							if (colorRefSettings.attributeValue("reqRelPrc") == null) {								
-								logln("Error: Configuration parameter \"reqRelPrc\" for Batch Means Method is missing!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  probe-num          = " + p);
-								logln("  probe.id           = " + probe.attributeValue("id"));
-								logln("  probe.name         = " + probe.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+								log.error(formatDetailMessage(
+										"Configuration parameter \"reqRelPrc\" for Batch Means Method is missing!",
+										"configuration" + configuration,						
+										"probe-num" + Integer.toString(p),
+										"probe.id" + probe.attributeValue("id"),
+										"probe.name" + probe.attributeValue("name"),						
+										"colorRef-num" + Integer.toString(cr),
+										"colorRef.id" + colorRef.attributeValue("id"),
+										"colorRef.color-id" + colorRef.attributeValue("color-id")
+										));
 								throw new SimQPNException();
 							}
 							pr.probeStats.reqRelPrc[cr] = Double.parseDouble(colorRefSettings.attributeValue("reqRelPrc"));
-							logln(2, "-- probeStats.reqRelPrc[" + cr + "] = " + pr.probeStats.reqRelPrc[cr]);
+							log.debug("-- probeStats.reqRelPrc[" + cr + "] = " + pr.probeStats.reqRelPrc[cr]);
 
 							if (colorRefSettings.attributeValue("batchSize") == null) {
-								logln("Error: Configuration parameter \"batchSize\" for Batch Means Method is missing!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  probe-num          = " + p);
-								logln("  probe.id           = " + probe.attributeValue("id"));
-								logln("  probe.name         = " + probe.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));								
+								log.error(formatDetailMessage(
+										"Configuration parameter \"batchSize\" for Batch Means Method is missing!",
+										"configuration" + configuration,						
+										"probe-num" + Integer.toString(p),
+										"probe.id" + probe.attributeValue("id"),
+										"probe.name" + probe.attributeValue("name"),						
+										"colorRef-num" + Integer.toString(cr),
+										"colorRef.id" + colorRef.attributeValue("id"),
+										"colorRef.color-id" + colorRef.attributeValue("color-id")
+										));						
 								throw new SimQPNException();
 							}
 							pr.probeStats.batchSizeST[cr] = Integer.parseInt(colorRefSettings.attributeValue("batchSize"));
-							logln(2, "-- probeStats.batchSizeST[" + cr + "] = " + pr.probeStats.batchSizeST[cr]);							
+							log.debug("-- probeStats.batchSizeST[" + cr + "] = " + pr.probeStats.batchSizeST[cr]);							
 
 							if (colorRefSettings.attributeValue("minBatches") == null) {
-								logln("Error: Configuration parameter \"minBatches\" for Batch Means Method is missing!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  probe-num          = " + p);
-								logln("  probe.id           = " + probe.attributeValue("id"));
-								logln("  probe.name         = " + probe.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																
+								log.error(formatDetailMessage(
+										"Configuration parameter \"minBatches\" for Batch Means Method is missing!",
+										"configuration" + configuration,						
+										"probe-num" + Integer.toString(p),
+										"probe.id" + probe.attributeValue("id"),
+										"probe.name" + probe.attributeValue("name"),						
+										"colorRef-num" + Integer.toString(cr),
+										"colorRef.id" + colorRef.attributeValue("id"),
+										"colorRef.color-id" + colorRef.attributeValue("color-id")
+										));																
 								throw new SimQPNException();
 							}
 							pr.probeStats.minBatches[cr] = Integer.parseInt(colorRefSettings.attributeValue("minBatches"));
-							logln(2, "-- probeStats.minBatches[" + cr + "] = " + pr.probeStats.minBatches[cr]);							
+							log.debug("-- probeStats.minBatches[" + cr + "] = " + pr.probeStats.minBatches[cr]);							
 
 							if (colorRefSettings.attributeValue("numBMeansCorlTested") == null) {
-								logln("Error: Configuration parameter \"numBMeansCorlTested\" for Batch Means Method is missing!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  probe-num          = " + p);
-								logln("  probe.id           = " + probe.attributeValue("id"));
-								logln("  probe.name         = " + probe.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
+								log.error(formatDetailMessage(
+										"Configuration parameter \"numBMeansCorlTested\" for Batch Means Method is missing!",
+										"configuration" + configuration,						
+										"probe-num" + Integer.toString(p),
+										"probe.id" + probe.attributeValue("id"),
+										"probe.name" + probe.attributeValue("name"),						
+										"colorRef-num" + Integer.toString(cr),
+										"colorRef.id" + colorRef.attributeValue("id"),
+										"colorRef.color-id" + colorRef.attributeValue("color-id")
+										));																								
 								throw new SimQPNException();
 							}
 							pr.probeStats.numBMeansCorlTested[cr] = Integer.parseInt(colorRefSettings.attributeValue("numBMeansCorlTested"));
-							logln(2, "-- probeStats.numBMeansCorlTested[" + cr + "] = " + pr.probeStats.numBMeansCorlTested[cr]);
+							log.debug("-- probeStats.numBMeansCorlTested[" + cr + "] = " + pr.probeStats.numBMeansCorlTested[cr]);
 							
 							// Note that if (minBatches > 0 && numBMeansCorlTested[c] > 0),
 							// minBatches[c] must be > numBMeansCorlTested[c]!
 							if (pr.probeStats.minBatches[cr] > 0 && 
 								pr.probeStats.numBMeansCorlTested[cr] > 0 && 
 								!(pr.probeStats.minBatches[cr] > pr.probeStats.numBMeansCorlTested[cr])) {
-								logln("Error: Probe.probeStats.minBatches[c] must be greater than Probe.probeStats.numBMeansCorlTested[c]!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  probe-num          = " + p);
-								logln("  probe.id           = " + probe.attributeValue("id"));
-								logln("  probe.name         = " + probe.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
+								log.error(formatDetailMessage(
+										"Probe.probeStats.minBatches[c] must be greater than Probe.probeStats.numBMeansCorlTested[c]!",
+										"configuration" + configuration,						
+										"probe-num" + Integer.toString(p),
+										"probe.id" + probe.attributeValue("id"),
+										"probe.name" + probe.attributeValue("name"),						
+										"colorRef-num" + Integer.toString(cr),
+										"colorRef.id" + colorRef.attributeValue("id"),
+										"colorRef.color-id" + colorRef.attributeValue("color-id")
+										));																							
 								throw new SimQPNException();
 							}
 							// If (numBMeansCorlTested[c] <= 0) no correlation test is done!
 							// Note that numBMeansCorlTested must be even!
 							if (pr.probeStats.numBMeansCorlTested[cr] % 2 != 0) {
-								logln("Error: Probe.probeStats.numBMeansCorlTested[c] must be even!");
-								logln("Details:");
-								logln("  configuration = " + configuration);						
-								logln("  probe-num          = " + p);
-								logln("  probe.id           = " + probe.attributeValue("id"));
-								logln("  probe.name         = " + probe.attributeValue("name"));						
-								logln("  colorRef-num       = " + cr);
-								logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));																								
+								log.error(formatDetailMessage(
+										"Probe.probeStats.numBMeansCorlTested[c] must be even!",
+										"configuration" + configuration,						
+										"probe-num" + Integer.toString(p),
+										"probe.id" + probe.attributeValue("id"),
+										"probe.name" + probe.attributeValue("name"),						
+										"colorRef-num" + Integer.toString(cr),
+										"colorRef.id" + colorRef.attributeValue("id"),
+										"colorRef.color-id" + colorRef.attributeValue("color-id")
+										));																									
 								throw new SimQPNException();
 							}
 
 							if (pr.statsLevel >= 4) {
 								if (colorRefSettings.attributeValue("bucketSize") == null) {
-									logln("Error: Configuration parameter \"bucketSize\" for Batch Means Method is missing!");
-									logln("Details:");
-									logln("  configuration = " + configuration);
-									logln("  probe-num          = " + p);
-									logln("  probe.id           = " + probe.attributeValue("id"));
-									logln("  probe.name         = " + probe.attributeValue("name"));
-									logln("  colorRef-num       = " + cr);
-									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+									log.error(formatDetailMessage(
+											"Configuration parameter \"bucketSize\" for Batch Means Method is missing!",
+											"configuration" + configuration,						
+											"probe-num" + Integer.toString(p),
+											"probe.id" + probe.attributeValue("id"),
+											"probe.name" + probe.attributeValue("name"),						
+											"colorRef-num" + Integer.toString(cr),
+											"colorRef.id" + colorRef.attributeValue("id"),
+											"colorRef.color-id" + colorRef.attributeValue("color-id")
+											));	
 									throw new SimQPNException();
 								}
 								pr.probeStats.histST[cr].setBucketSize(Double.parseDouble(colorRefSettings.attributeValue("bucketSize")));
-								logln(2, "-- probeStats.histST[" + cr + "].bucketSize = " + pr.probeStats.histST[cr].getBucketSize());
+								log.debug("-- probeStats.histST[" + cr + "].bucketSize = " + pr.probeStats.histST[cr].getBucketSize());
 
 								if(colorRefSettings.attributeValue("maxBuckets") == null) {
-									logln("Error: Configuration parameter \"maxBuckets\" for Batch Means Method is missing!");
-									logln("Details:");
-									logln("  configuration = " + configuration);
-									logln("  probe-num          = " + p);
-									logln("  probe.id           = " + probe.attributeValue("id"));
-									logln("  probe.name         = " + probe.attributeValue("name"));
-									logln("  colorRef-num       = " + cr);
-									logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-									logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+									log.error(formatDetailMessage(
+											"Configuration parameter \"maxBuckets\" for Batch Means Method is missing!",
+											"configuration" + configuration,						
+											"probe-num" + Integer.toString(p),
+											"probe.id" + probe.attributeValue("id"),
+											"probe.name" + probe.attributeValue("name"),						
+											"colorRef-num" + Integer.toString(cr),
+											"colorRef.id" + colorRef.attributeValue("id"),
+											"colorRef.color-id" + colorRef.attributeValue("color-id")
+											));
 									throw new SimQPNException();
 								}
 								pr.probeStats.histST[cr].setMaximumNumberOfBuckets(Integer.parseInt(colorRefSettings.attributeValue("maxBuckets")));
-								logln(2, "-- probeStats.histST[" + cr + "].maxBuckets = " + pr.probeStats.histST[cr].getMaximumNumberOfBuckets());
+								log.debug("-- probeStats.histST[" + cr + "].maxBuckets = " + pr.probeStats.histST[cr].getMaximumNumberOfBuckets());
 							}
-						} else {							
-							logln("Error: SimQPN configuration parameters for Batch Means Method are missing!");
-							logln("Details:");
-							logln("  configuration = " + configuration);						
-							logln("  probe-num          = " + p);
-							logln("  probe.id           = " + probe.attributeValue("id"));
-							logln("  probe.name         = " + probe.attributeValue("name"));						
-							logln("  colorRef-num       = " + cr);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+						} else {
+							log.error(formatDetailMessage(
+									"SimQPN configuration parameters for Batch Means Method are missing!",
+									"configuration" + configuration,						
+									"probe-num" + Integer.toString(p),
+									"probe.id" + probe.attributeValue("id"),
+									"probe.name" + probe.attributeValue("name"),						
+									"colorRef-num" + Integer.toString(cr),
+									"colorRef.id" + colorRef.attributeValue("id"),
+									"colorRef.color-id" + colorRef.attributeValue("color-id")
+									));
 							throw new SimQPNException();
 						}
 					}
@@ -1929,66 +1987,78 @@ public class Simulator {
 	}
 
 	private void configureSimulatorSettings() throws SimQPNException {
-		logln(2, "\n/////////////////////////////////////////////");
-		logln(2, "// Misc settings");
+		log.debug("/////////////////////////////////////////////");
+		log.debug("// Misc settings");
 		Element simulatorSettings = getSettings(net, configuration);
 						
 		if ("RELPRC".equals(simulatorSettings.attributeValue("stopping-rule"))) {
 			stoppingRule = RELPRC;
-			logln(2, "stoppingRule = RELPRC;");			
+			log.debug("stoppingRule = RELPRC;");			
 		} else if ("ABSPRC".equals(simulatorSettings.attributeValue("stopping-rule"))) {
 			stoppingRule = ABSPRC;
-			logln(2, "stoppingRule = ABSPRC;");			
+			log.debug("stoppingRule = ABSPRC;");			
 		} else if ("FIXEDLEN".equals(simulatorSettings.attributeValue("stopping-rule"))) {
 			stoppingRule = FIXEDLEN;
-			logln(2, "stoppingRule = FIXEDLEN;");			
+			log.debug("stoppingRule = FIXEDLEN;");			
 		} else {
-			logln("Error: Configuration parameter \"stopping-rule\" not configured correctly!");					
-			logln("  configuration = " + configuration);
+			log.error(formatDetailMessage(
+					"Configuration parameter \"stopping-rule\" not configured correctly!",					
+					"configuration", configuration
+					));
 			throw new SimQPNException();
 		}
 		// Only for scenario 1 stopping-rule is set. For others it is set to FIXEDLEN.		
 		if (Integer.parseInt(simulatorSettings.attributeValue("scenario")) != 1 && stoppingRule != FIXEDLEN)  {
-			logln("Error: Stopping rule \"" + simulatorSettings.attributeValue("stopping-rule") + "\" is not supported for the chosen analysis method!");					
-			logln("  configuration = " + configuration);
+			log.error(formatDetailMessage(
+					"Stopping rule \"" + simulatorSettings.attributeValue("stopping-rule") + "\" is not supported for the chosen analysis method!",					
+					"configuration", configuration
+					));
 			throw new SimQPNException();
 		}
 
 		if (simulatorSettings.attributeValue("total-run-length") == null) {
-			logln("Error: Configuration parameter \"total-run-length\" is not configured!");					
-			logln("  configuration = " + configuration);
+			log.error(formatDetailMessage(
+					"Configuration parameter \"total-run-length\" is not configured!",					
+					"configuration", configuration
+					));
 			throw new SimQPNException();
 		}		
 		totRunLen = Double.parseDouble(simulatorSettings.attributeValue("total-run-length"));
-		logln(2, "totRunLen = " + totRunLen + ";");
+		log.debug("totRunLen = " + totRunLen + ";");
 		
 		if (Integer.parseInt(simulatorSettings.attributeValue("scenario")) != 3) {		
 			if (simulatorSettings.attributeValue("ramp-up-length") == null) {
-				logln("Error: Configuration parameter \"ramp-up-length\" is not configured!");					
-				logln("  configuration = " + configuration);
+				log.error(formatDetailMessage(
+						"Configuration parameter \"ramp-up-length\" is not configured!",					
+						"configuration", configuration
+						));
 				throw new SimQPNException();
 			}
 			rampUpLen = Double.parseDouble(simulatorSettings.attributeValue("ramp-up-length"));
-			logln(2, "rampUpLen = " + rampUpLen + ";");			
+			log.debug("rampUpLen = " + rampUpLen + ";");			
 		} else { // Method of Welch
 			rampUpLen = totRunLen; // Note: The method of Welch is currently run until rampUpLen is reached.
 		}
 						
 		if(stoppingRule != FIXEDLEN) {
 			if(simulatorSettings.attributeValue("time-between-stop-checks") == null) {						
-				logln("Error: Configuration parameter \"time-between-stop-checks\" is not configured!");					
-				logln("  configuration = " + configuration);			
+				log.error(formatDetailMessage(
+						"Configuration parameter \"time-between-stop-checks\" is not configured!",					
+						"configuration", configuration
+						));
 				throw new SimQPNException();
 			}		
 			timeBtwChkStops = Double.parseDouble(simulatorSettings.attributeValue("time-between-stop-checks"));
-			logln(2, "timeBtwChkStops = " + timeBtwChkStops + ";");			
+			log.debug("timeBtwChkStops = " + timeBtwChkStops + ";");			
 			if(simulatorSettings.attributeValue("seconds-between-stop-checks") == null) {						
-				logln("Error: Configuration parameter \"seconds-between-stop-checks\" is not configured!");					
-				logln("  configuration = " + configuration);			
+				log.error(formatDetailMessage(
+						"Configuration parameter \"seconds-between-stop-checks\" is not configured!",					
+						"configuration", configuration
+						));
 				throw new SimQPNException();
 			}		
 			secondsBtwChkStops = Double.parseDouble(simulatorSettings.attributeValue("seconds-between-stop-checks"));
-			logln(2, "secondsBtwChkStops = " + secondsBtwChkStops + ";");
+			log.debug("secondsBtwChkStops = " + secondsBtwChkStops + ";");
 		}
 		
 		/* ORIGINAL HEARTBEAT IMPLEMENTATION
@@ -2010,8 +2080,10 @@ public class Simulator {
 		*/
 		
 		if (analMethod != BATCH_MEANS && stoppingRule != FIXEDLEN) {
-			logln("Error: Stopping rule \"" + simulatorSettings.attributeValue("stopping-rule") + "\" is not supported for the batch means analysis method!");					
-			logln("  configuration = " + configuration);
+			log.error(formatDetailMessage(
+					"Stopping rule \"" + simulatorSettings.attributeValue("stopping-rule") + "\" is not supported for the batch means analysis method!",					
+					"configuration", configuration
+					));
 			throw new SimQPNException();
 		}
 		// CONFIG: Whether to use indirect estimators for FCFS queues
@@ -2019,14 +2091,14 @@ public class Simulator {
 			Place pl = places[p];
 			if (pl.statsLevel >= 3 && pl instanceof QPlace) {
 				((QPlace) pl).qPlaceQueueStats.indrStats = false;
-				logln(2, "places[" + p + "].qPlaceQueueStats.indrStats = false;");				
+				log.debug("places[" + p + "].qPlaceQueueStats.indrStats = false;");				
 			}
 		}
 	}
 
 	private void configureInitialMarking() throws SimQPNException {
-		logln(2, "\n/////////////////////////////////////////////");
-		logln(2, "// Configure Initial Marking");
+		log.debug("/////////////////////////////////////////////");
+		log.debug("// Configure Initial Marking");
 		Iterator placeIterator = placeList.iterator();
 		for (int i = 0; placeIterator.hasNext(); i++) {
 			Element place = (Element) placeIterator.next();
@@ -2035,17 +2107,19 @@ public class Simulator {
 			for (int j = 0; colorRefIterator.hasNext(); j++) {
 				Element colorRef = (Element) colorRefIterator.next();
 				if(colorRef.attributeValue("initial-population") == null) {
-					logln("Error: Queueing place' \"initial-population\" parameter not set!");					
-					logln("  place-num          = " + i);
-					logln("  place.id           = " + place.attributeValue("id"));
-					logln("  place.name         = " + place.attributeValue("name"));						
-					logln("  colorRef-num       = " + j);
-					logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-					logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 																											
+					log.error(formatDetailMessage(
+							"Queueing place' \"initial-population\" parameter not set!",					
+							"place-num", Integer.toString(i),
+							"place.id", place.attributeValue("id"),
+							"place.name", place.attributeValue("name"),						
+							"colorRef-num", Integer.toString(j),
+							"colorRef.id", colorRef.attributeValue("id"),
+							"colorRef.color-id", colorRef.attributeValue("color-id")
+							)); 																											
 					throw new SimQPNException();
 				}
 				places[i].tokenPop[j] = Integer.parseInt(colorRef.attributeValue("initial-population"));
-				logln(2, "places[" + i + "].tokenPop[" + j + "] = " + places[i].tokenPop[j] + ";");				
+				log.debug("places[" + i + "].tokenPop[" + j + "] = " + places[i].tokenPop[j] + ";");				
 			}
 		}
 	}
@@ -2082,8 +2156,8 @@ public class Simulator {
 		 * 
 		 */
 				
-		logln(2, "\n/////////////////////////////////////////////");
-		logln(2, "// Configure Queue Service Time Distributions (times in milliseconds)");
+		log.debug("/////////////////////////////////////////////");
+		log.debug("// Configure Queue Service Time Distributions (times in milliseconds)");
 		Iterator placeIterator = placeList.iterator();
 		for (int i = 0; placeIterator.hasNext(); i++) {
 			Element place = (Element) placeIterator.next();
@@ -2104,30 +2178,32 @@ public class Simulator {
 					Element colorRef = (Element) colorRefIterator.next();					
 					
 					if(colorRef.attributeValue("distribution-function") == null) {
-						logln("Error: Queueing place' \"distribution-function\" parameter not set!");
-						logln("Details: ");						
-						logln("  place-num          = " + i);
-						logln("  place.id           = " + place.attributeValue("id"));
-						logln("  place.name         = " + place.attributeValue("name"));						
-						logln("  colorRef-num       = " + j);
-						logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-						logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+						log.error(formatDetailMessage(
+								"Queueing place' \"distribution-function\" parameter not set!",
+								"place-num", Integer.toString(i),
+								"place.id", place.attributeValue("id"),
+								"place.name", place.attributeValue("name"),						
+								"colorRef-num", Integer.toString(j),
+								"colorRef.id", colorRef.attributeValue("id"),
+								"colorRef.color-id", colorRef.attributeValue("color-id")
+								)); 
 						throw new SimQPNException();
 					}
 					String distributionFunction = colorRef.attributeValue("distribution-function");
 										
 					if (qPl.queue.queueDiscip == Queue.PS && qPl.queue.expPS) {
-						logln("Info: expPS parameter of a queueing place with PS scheduling strategy set to true!");
+						log.info("expPS parameter of a queueing place with PS scheduling strategy set to true!");
 						if (!"Exponential".equals(distributionFunction)) {
-							logln("Error: Distribution function is configured as \"" + distributionFunction + "\"");							
-							logln("       Distribution function must be set to \"Exponential\" since (expPS == true) !");
-							logln("Details");
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+							log.error(formatDetailMessage(
+									"Distribution function is configured as \"" + distributionFunction + "\". " +							
+										"Distribution function must be set to \"Exponential\" since (expPS == true) !",
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									)); 
 							throw new SimQPNException();
 						}						
 					}				
@@ -2152,46 +2228,49 @@ public class Simulator {
 										
 					if("Beta".equals(distributionFunction)) {
 						if(colorRef.attributeValue("alpha") == null || colorRef.attributeValue("beta") == null) {
-							logln("ERROR: Parameter \"alpha\" or \"beta\" of Beta distribution function not set!");
-							logln("Details: ");							
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+							log.error(formatDetailMessage(
+									"Parameter \"alpha\" or \"beta\" of Beta distribution function not set!",
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
 							throw new SimQPNException();																					
 						}
 						double alpha = Double.parseDouble(colorRef.attributeValue("alpha"));
 						double beta = Double.parseDouble(colorRef.attributeValue("beta"));						
 						// Validate input parameters
 						if (!(alpha > 0 && beta > 0))  {
-							logln("ERROR: Invalid \"alpha\" or \"beta\" parameter of Beta distribution!");
-							logln("Details: ");							
-							logln("  alpha, beta        = " + alpha + ", " + beta);
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+							log.error(formatDetailMessage(
+									"Invalid \"alpha\" or \"beta\" parameter of Beta distribution!",
+									"alpha, beta", alpha + ", " + beta,
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
 							throw new SimQPNException();																												
 						}						
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new Beta(alpha, beta, Simulator.nextRandNumGen());
-						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Beta(" + alpha + ", " + beta + ", Simulator.nextRandNumGen())");						
+						log.debug("((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Beta(" + alpha + ", " + beta + ", Simulator.nextRandNumGen())");						
 						qPl.meanServTimes[j] = (double) alpha / (alpha + beta);
-						logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = alpha / (alpha + beta) = " + qPl.meanServTimes[j]);													
+						log.debug("((QPlace) places[" + i + "]).meanServTimes[" + j + "] = alpha / (alpha + beta) = " + qPl.meanServTimes[j]);													
 					} else if("BreitWigner".equals(distributionFunction)) {						
 						if(colorRef.attributeValue("mean") == null || colorRef.attributeValue("gamma") == null || colorRef.attributeValue("cut") == null) {						
-							logln("ERROR: Parameter \"mean\", \"gamma\" or \"cut\" of BreitWigner distribution function not set!");
-							logln("Details:");
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+							log.error(formatDetailMessage(
+									"Parameter \"mean\", \"gamma\" or \"cut\" of BreitWigner distribution function not set!",
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
 							throw new SimQPNException();
 						}
 						double mean = Double.parseDouble(colorRef.attributeValue("mean"));
@@ -2199,31 +2278,33 @@ public class Simulator {
 						double cut = Double.parseDouble(colorRef.attributeValue("cut"));						
 						// Validate input parameters
 						if (gamma <= 0)  {
-							logln("ERROR: Invalid \"gamma\" parameter of BreitWigner distribution!");
-							logln("Details: ");							
-							logln("  gamma              = " + gamma);
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+							log.error(formatDetailMessage(
+									"Invalid \"gamma\" parameter of BreitWigner distribution!",
+									"gamma", Double.toString(gamma),
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									)); 
 							throw new SimQPNException();																												
 						}												
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new BreitWigner(mean, gamma, cut, Simulator.nextRandNumGen());
-						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new BreitWigner(" + mean + ", " + gamma + ", " + cut + ", Simulator.nextRandNumGen())");
+						log.debug("((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new BreitWigner(" + mean + ", " + gamma + ", " + cut + ", Simulator.nextRandNumGen())");
 						// NOTE: BreitWigner does not have a mean value! It is undefined. 
 					} else if("BreitWignerMeanSquare".equals(distributionFunction)) {
 						if(colorRef.attributeValue("mean") == null || colorRef.attributeValue("gamma") == null || colorRef.attributeValue("cut") == null) {
-							logln("ERROR: Parameter \"mean\", \"gamma\" or \"cut\" of BreitWignerMeanSquare distribution function not set!");
-							logln("Details:");
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+							log.error(formatDetailMessage(
+									"Parameter \"mean\", \"gamma\" or \"cut\" of BreitWignerMeanSquare distribution function not set!",
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
 							throw new SimQPNException();
 						}
 						double mean = Double.parseDouble(colorRef.attributeValue("mean"));
@@ -2231,405 +2312,429 @@ public class Simulator {
 						double cut = Double.parseDouble(colorRef.attributeValue("cut"));						
 						// Validate input parameters
 						if (gamma <= 0)  {
-							logln("ERROR: Invalid \"gamma\" parameter of BreitWignerMeanSquare distribution!");
-							logln("Details: ");							
-							logln("  gamma              = " + gamma);
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+							log.error(formatDetailMessage(
+									"Invalid \"gamma\" parameter of BreitWignerMeanSquare distribution!",
+									"gamma", Double.toString(gamma),
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									)); 
 							throw new SimQPNException();																												
 						}																		
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new BreitWignerMeanSquare(mean, gamma, cut, Simulator.nextRandNumGen());
-						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new BreitWignerMeanSquare(" + mean + ", " + gamma + ", " + cut + ", Simulator.nextRandNumGen())");
+						log.debug("((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new BreitWignerMeanSquare(" + mean + ", " + gamma + ", " + cut + ", Simulator.nextRandNumGen())");
 						// NOTE: BreitWigner does not have a mean value! It is undefined.
 					} else if("ChiSquare".equals(distributionFunction)) {
 						if(colorRef.attributeValue("freedom") == null) {
-							logln("ERROR: Parameter \"freedom\" of ChiSquare distribution function not set!");
-							logln("Details:");
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 							
+							log.error(formatDetailMessage(
+									"Parameter \"freedom\" of ChiSquare distribution function not set!",
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
 							throw new SimQPNException();
 						}
 						double freedom = Double.parseDouble(colorRef.attributeValue("freedom"));
 						// Validate input parameters
 						if (!(freedom > 0))  {
-							logln("ERROR: Invalid \"freedom\" parameter of ChiSquare distribution!");
-							logln("Details: ");							
-							logln("  freedom            = " + freedom);
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+							log.error(formatDetailMessage(
+									"Invalid \"freedom\" parameter of ChiSquare distribution!",
+									"freedom", Double.toString(freedom),
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
 							throw new SimQPNException();																												
 						}						
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new ChiSquare(freedom, Simulator.nextRandNumGen());
-						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new ChiSquare(" + freedom + ", Simulator.nextRandNumGen())");
+						log.debug("((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new ChiSquare(" + freedom + ", Simulator.nextRandNumGen())");
 						qPl.meanServTimes[j] = freedom;
-						logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = freedom = " + qPl.meanServTimes[j]);													
+						log.debug("((QPlace) places[" + i + "]).meanServTimes[" + j + "] = freedom = " + qPl.meanServTimes[j]);													
 					} else if("Gamma".equals(distributionFunction)) {
 						if(colorRef.attributeValue("alpha") == null || colorRef.attributeValue("lambda") == null) {
-							logln("ERROR: Parameter \"alpha\" or \"lambda\" of Gamma distribution function not set!");
-							logln("Details:");
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 														
+							log.error(formatDetailMessage(
+									"Parameter \"alpha\" or \"lambda\" of Gamma distribution function not set!",
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
 							throw new SimQPNException();
 						}
 						double alpha = Double.parseDouble(colorRef.attributeValue("alpha"));
 						double lambda = Double.parseDouble(colorRef.attributeValue("lambda"));
 						// Validate input parameters
-						if (!(alpha > 0 && lambda > 0))  {
-							logln("ERROR: Invalid \"alpha\" or \"lambda\" parameter of Gamma distribution!");
-							logln("Details: ");							
-							logln("  alpha, lambda      = " + alpha + ", " + lambda);
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+						if (!(alpha > 0 && lambda > 0)) {
+							log.error(formatDetailMessage(
+									"Invalid \"alpha\" or \"lambda\" parameter of Gamma distribution!",
+									"alpha, lambda", alpha + ", " + lambda,
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
 							throw new SimQPNException();																												
 						}						
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new Gamma(alpha, lambda, Simulator.nextRandNumGen());
-						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Gamma(" + alpha + ", " + lambda + ", Simulator.nextRandNumGen())");
+						log.debug("((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Gamma(" + alpha + ", " + lambda + ", Simulator.nextRandNumGen())");
 						qPl.meanServTimes[j] = alpha * lambda;
-						logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = alpha * lambda = " + qPl.meanServTimes[j]);													
+						log.debug("((QPlace) places[" + i + "]).meanServTimes[" + j + "] = alpha * lambda = " + qPl.meanServTimes[j]);													
 					} else if("Hyperbolic".equals(distributionFunction)) {
 						if(colorRef.attributeValue("alpha") == null || colorRef.attributeValue("beta") == null) {
-							logln("ERROR: Parameter \"alpha\" or \"beta\" of Hyperbolic distribution function not set!");
-							logln("Details:");
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 																					
+							log.error(formatDetailMessage(
+									"Parameter \"alpha\" or \"beta\" of Hyperbolic distribution function not set!",
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));																					
 							throw new SimQPNException(); 
 						}
 						double alpha = Double.parseDouble(colorRef.attributeValue("alpha"));
 						double beta = Double.parseDouble(colorRef.attributeValue("beta"));
 						// Validate input parameters
 						if (!(alpha > 0 && beta > 0))  {
-							logln("ERROR: Invalid \"alpha\" or \"beta\" parameter of Hyperbolic distribution!");
-							logln("Details:");
-							logln("  alpha, beta        = " + alpha + ", " + beta);
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+							log.error(formatDetailMessage(
+									"Invalid \"alpha\" or \"beta\" parameter of Hyperbolic distribution!",
+									"alpha, beta", alpha + ", " + beta,
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
 							throw new SimQPNException();																												
 						}						
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new Hyperbolic(alpha, beta, Simulator.nextRandNumGen());
-						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Hyperbolic(" + alpha + ", " + beta + ", Simulator.nextRandNumGen())");																		
+						log.debug("((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Hyperbolic(" + alpha + ", " + beta + ", Simulator.nextRandNumGen())");																		
 						//SDK-TODO: find out how meanServTimes is computed?						
 						//qPl.meanServTimes[j] = (double) ???;
 						//logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = ??? = " + qPl.meanServTimes[j]);
-						logln("WARNING: meanServTimes for Hyperbolic distribution not initialized!");
-						logln("         Might experience problems if indrStats is set to true!");						
-						logln("Details:");
-						logln("  place-num          = " + i);
-						logln("  place.id           = " + place.attributeValue("id"));
-						logln("  place.name         = " + place.attributeValue("name"));						
-						logln("  colorRef-num       = " + j);
-						logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-						logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+						log.warn(formatDetailMessage(
+								"meanServTimes for Hyperbolic distribution not initialized! Might experience problems if indrStats is set to true!",
+								"place-num", Integer.toString(i),
+								"place.id", place.attributeValue("id"),
+								"place.name", place.attributeValue("name"),						
+								"colorRef-num", Integer.toString(j),
+								"colorRef.id", colorRef.attributeValue("id"),
+								"colorRef.color-id", colorRef.attributeValue("color-id")
+								));
 					} else if("Exponential".equals(distributionFunction)) {
-						if(colorRef.attributeValue("lambda") == null) {						
-							logln("ERROR: Parameter \"lambda\" of Exponential distribution function not set!");
-							logln("Details:");
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+						if(colorRef.attributeValue("lambda") == null) {
+							log.error(formatDetailMessage(
+									"Parameter \"lambda\" of Exponential distribution function not set!",
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
 							throw new SimQPNException();																					
 						}
 						double lambda = Double.parseDouble(colorRef.attributeValue("lambda"));
 						// Validate input parameters
 						if (!(lambda > 0))  {
-							logln("ERROR: Invalid \"lambda\" parameter of Exponential distribution!");
-							logln("Details:");
-							logln("  lambda             = " + lambda);
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+							log.error(formatDetailMessage(
+									"Invalid \"lambda\" parameter of Exponential distribution!",
+									"lambda", Double.toString(lambda),
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
 							throw new SimQPNException();																												
 						}						
 						// Initialize random number generator and meanServTimes						
 						if (!(qPl.queue.queueDiscip == Queue.PS && qPl.queue.expPS))  {
 							qPl.randServTimeGen[j] = new Exponential(lambda, Simulator.nextRandNumGen());
-							logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Exponential(" + lambda + ", Simulator.nextRandNumGen())");							
+							log.debug("((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Exponential(" + lambda + ", Simulator.nextRandNumGen())");							
 						}
 						qPl.meanServTimes[j] = (double) 1 / lambda;
-						logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = 1 / lambda = " + qPl.meanServTimes[j]);													
+						log.debug("((QPlace) places[" + i + "]).meanServTimes[" + j + "] = 1 / lambda = " + qPl.meanServTimes[j]);													
 					} else if("ExponentialPower".equals(distributionFunction)) {
 						if(colorRef.attributeValue("tau") == null) {
-							logln("ERROR: Parameter \"tau\" of ExponentialPower distribution function not set!");
-							logln("Details:");
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+							log.error(formatDetailMessage(
+									"Parameter \"tau\" of ExponentialPower distribution function not set!",
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
 							throw new SimQPNException();																					
 						}
 						double tau = Double.parseDouble(colorRef.attributeValue("tau"));
 						// Validate input parameters
 						if (!(tau >= 1))  {
-							logln("ERROR: Invalid \"tau\" parameter of ExponentialPower distribution!");
-							logln("Details:");
-							logln("  tau                = " + tau);
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+							log.error(formatDetailMessage(
+									"Invalid \"tau\" parameter of ExponentialPower distribution!",
+									"tau", Double.toString(tau),
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									)); 
 							throw new SimQPNException();																												
 						}						
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new ExponentialPower(tau, Simulator.nextRandNumGen());
-						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new ExponentialPower(" + tau + ", Simulator.nextRandNumGen())");
+						log.debug("((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new ExponentialPower(" + tau + ", Simulator.nextRandNumGen())");
 						//SDK-TODO: find out how meanServTimes is computed?						
 						//qPl.meanServTimes[j] = (double) ???;
 						//logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = ??? = " + qPl.meanServTimes[j]);													
-						logln("WARNING: meanServTimes for ExponentialPower distribution not initialized!");
-						logln("         Might experience problems if indrStats is set to true!");						
-						logln("Details:");
-						logln("  place-num          = " + i);
-						logln("  place.id           = " + place.attributeValue("id"));
-						logln("  place.name         = " + place.attributeValue("name"));						
-						logln("  colorRef-num       = " + j);
-						logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-						logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+						log.warn(formatDetailMessage(
+								"meanServTimes for ExponentialPower distribution not initialized! Might experience problems if indrStats is set to true!",
+								"place-num", Integer.toString(i),
+								"place.id", place.attributeValue("id"),
+								"place.name", place.attributeValue("name"),						
+								"colorRef-num", Integer.toString(j),
+								"colorRef.id", colorRef.attributeValue("id"),
+								"colorRef.color-id", colorRef.attributeValue("color-id")
+								));
 					} else if("Logarithmic".equals(distributionFunction)) {
-						if(colorRef.attributeValue("p") == null) {
-							logln("ERROR: Parameter \"p\" of Logarithmic distribution function not set!");
-							logln("Details:");
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+						if(colorRef.attributeValue("p") == null) {							
+							log.error(formatDetailMessage(
+									"Parameter \"p\" of Logarithmic distribution function not set!",
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
 							throw new SimQPNException();
 						}						
 						double p = Double.parseDouble(colorRef.attributeValue("p"));
 						// Validate input parameters
-						if (!(0 < p && p < 1))  {
-							logln("ERROR: Invalid \"p\" parameter of Logarithmic distribution!");
-							logln("Details:");
-							logln("  p                  = " + p);
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+						if (!(0 < p && p < 1)) {							
+							log.error(formatDetailMessage(
+									"Invalid \"p\" parameter of Logarithmic distribution!",
+									"p", Double.toString(p),
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
 							throw new SimQPNException();																												
 						}						
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new Logarithmic(p, Simulator.nextRandNumGen());
-						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Logarithmic(" + p + ", Simulator.nextRandNumGen())");						 						
+						log.debug("((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Logarithmic(" + p + ", Simulator.nextRandNumGen())");						 						
 						qPl.meanServTimes[j] = (double) ((-1) * p) / (Math.log(1-p) * (1-p));
-						logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = ((-1) * p) / (Math.log(1-p) * (1-p)) = " + qPl.meanServTimes[j]);													
+						log.debug("((QPlace) places[" + i + "]).meanServTimes[" + j + "] = ((-1) * p) / (Math.log(1-p) * (1-p)) = " + qPl.meanServTimes[j]);													
 					} else if("Normal".equals(distributionFunction)) {
 						if(colorRef.attributeValue("mean") == null || colorRef.attributeValue("stdDev") == null) {
-							logln("ERROR: Parameter \"mean\" or \"stdDev\" of Normal distribution function not set!");
-							logln("Details:");
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 																					
+							log.error(formatDetailMessage(
+									"Parameter \"mean\" or \"stdDev\" of Normal distribution function not set!",
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									)); 																					
 							throw new SimQPNException();
 						}
 						double mean = Double.parseDouble(colorRef.attributeValue("mean"));
 						double stdDev = Double.parseDouble(colorRef.attributeValue("stdDev"));
 						// Validate input parameters
 						if (!(stdDev > 0))  {
-							logln("ERROR: Invalid \"stdDev\" parameter of Normal distribution!");
-							logln("Details:");
-							logln("  stdDev             = " + stdDev);
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+							log.error(formatDetailMessage(
+									"Invalid \"stdDev\" parameter of Normal distribution!",
+									"stdDev", Double.toString(stdDev),
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
 							throw new SimQPNException();																												
 						}						
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new Normal(mean, stdDev, Simulator.nextRandNumGen());																									
-						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Normal(" + mean + ", " + stdDev + ", Simulator.nextRandNumGen())");
+						log.debug("((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Normal(" + mean + ", " + stdDev + ", Simulator.nextRandNumGen())");
 						qPl.meanServTimes[j] = mean;
-						logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = mean = " + qPl.meanServTimes[j]);													
+						log.debug("((QPlace) places[" + i + "]).meanServTimes[" + j + "] = mean = " + qPl.meanServTimes[j]);													
 					} else if("StudentT".equals(distributionFunction)) {
 						if(colorRef.attributeValue("freedom") == null) {
-							logln("ERROR: Parameter \"freedom\" of StudentT distribution function not set!");
-							logln("Details:");
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 														
+							log.error(formatDetailMessage(
+									"Parameter \"freedom\" of StudentT distribution function not set!",
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));														
 							throw new SimQPNException();
 						}
 						double freedom = Double.parseDouble(colorRef.attributeValue("freedom"));
 						// Validate input parameters
 						if (!(freedom > 0))  {
-							logln("ERROR: Invalid \"freedom\" parameter of StudentT distribution!");
-							logln("Details:");
-							logln("  freedom            = " + freedom);
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+							log.error(formatDetailMessage(
+									"Invalid \"freedom\" parameter of StudentT distribution!",
+									"freedom", Double.toString(freedom),
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
 							throw new SimQPNException();																												
 						}						
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new StudentT(freedom, Simulator.nextRandNumGen());																									
-						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new StudentT(" + freedom + ", Simulator.nextRandNumGen())");
+						log.debug("((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new StudentT(" + freedom + ", Simulator.nextRandNumGen())");
 						//NOTE: The mean of the StudentT distribution is 0 for freedom > 1, otherwise it is undefined.												
 						if (freedom > 1) {
 							qPl.meanServTimes[j] = 0;
-							logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = " + qPl.meanServTimes[j]);													
+							log.debug("((QPlace) places[" + i + "]).meanServTimes[" + j + "] = " + qPl.meanServTimes[j]);													
 						}
 						else {
-							logln("WARNING: meanServTimes for StudentT distribution not initialized!");
-							logln("         Might experience problems if indrStats is set to true!");						
-							logln("Details:");
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+							log.warn(formatDetailMessage(
+									"meanServTimes for StudentT distribution not initialized! Might experience problems if indrStats is set to true!",
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									)); 
 						}							
 					} else if("Uniform".equals(distributionFunction)) {
 						if(colorRef.attributeValue("min") == null || colorRef.attributeValue("max") == null) {
-							logln("ERROR: Parameter \"min\" or \"max\" of Uniform distribution function not set!");
-							logln("Details:");
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 																					
+							log.error(formatDetailMessage(
+									"Parameter \"min\" or \"max\" of Uniform distribution function not set!",
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));																					
 							throw new SimQPNException();
 						}
 						double min = Double.parseDouble(colorRef.attributeValue("min"));
 						double max = Double.parseDouble(colorRef.attributeValue("max"));		
 						if (!(min < max))  {
-							logln("ERROR: Invalid \"min\" or \"max\" parameter of Uniform distribution!");
-							logln("Details:");
-							logln("  min,max            = " + min + "," + max);
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+							log.error(formatDetailMessage(
+									"Invalid \"min\" or \"max\" parameter of Uniform distribution!",
+									"min,max", min + "," + max,
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
 							throw new SimQPNException();																												
 						}						
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new Uniform(min, max, Simulator.nextRandNumGen());																									
-						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Uniform(" + min + ", " + max + ", Simulator.nextRandNumGen())");						
+						log.debug("((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Uniform(" + min + ", " + max + ", Simulator.nextRandNumGen())");						
 						qPl.meanServTimes[j] = (double) (min + max) / 2;
-						logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = (min + max) / 2 = " + qPl.meanServTimes[j]);
+						log.debug("((QPlace) places[" + i + "]).meanServTimes[" + j + "] = (min + max) / 2 = " + qPl.meanServTimes[j]);
 					} else if("VonMises".equals(distributionFunction)) {
 						if(colorRef.attributeValue("freedom") == null) {
-							logln("ERROR: Parameter \"freedom\" of VonMises distribution function not set!");
-							logln("Details:");
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 														
+							log.error(formatDetailMessage(
+									"Parameter \"freedom\" of VonMises distribution function not set!",
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));														
 							throw new SimQPNException();
 						}
 						double freedom = Double.parseDouble(colorRef.attributeValue("freedom"));
 						if (!(freedom > 0))  {
-							logln("ERROR: Invalid \"k\" parameter of VonMises distribution!");
-							logln("Details:");
-							logln("  k                  = " + freedom);
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id"));
+							log.error(formatDetailMessage(
+									"Invalid \"k\" parameter of VonMises distribution!",
+									"k", Double.toString(freedom),
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
 							throw new SimQPNException();																												
 						}
 						//TODO: Check parameters. Rename "freedom" to "k" to avoid confusion.						
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new VonMises(freedom, Simulator.nextRandNumGen());																									
-						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new VonMises(" + freedom + ", Simulator.nextRandNumGen())");
+						log.debug("((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new VonMises(" + freedom + ", Simulator.nextRandNumGen())");
 						//SDK-TODO: find out how meanServTimes is computed?						
 						//qPl.meanServTimes[j] = (double) ???;
 						//logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = ??? = " + qPl.meanServTimes[j]);
-						logln("WARNING: meanServTimes for VonMises distribution not initialized!");
-						logln("         Might experience problems if indrStats is set to true!");						
-						logln("Details:");
-						logln("  place-num          = " + i);
-						logln("  place.id           = " + place.attributeValue("id"));
-						logln("  place.name         = " + place.attributeValue("name"));						
-						logln("  colorRef-num       = " + j);
-						logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-						logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+						
+						log.warn(formatDetailMessage(
+								" meanServTimes for VonMises distribution not initialized! Might experience problems if indrStats is set to true!",
+								"place-num", Integer.toString(i),
+								"place.id", place.attributeValue("id"),
+								"place.name", place.attributeValue("name"),						
+								"colorRef-num", Integer.toString(j),
+								"colorRef.id", colorRef.attributeValue("id"),
+								"colorRef.color-id", colorRef.attributeValue("color-id")
+								)); 
 					} else if("Empirical".equals(distributionFunction)) {
 						if (colorRef.attributeValue("pdf_filename") == null) {
-							logln("ERROR: Parameter \"pdf_filename\" of Empirical distribution function not set!");
-							logln("Details:");
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 																					
+							log.error(formatDetailMessage(
+									"Parameter \"pdf_filename\" of Empirical distribution function not set!",
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));																					
 							throw new SimQPNException();
 						}
 						String pdf_filename = colorRef.attributeValue("pdf_filename");
 						double[] pdf;						
 						File pdfFile = new File(pdf_filename);
-						if (!pdfFile.exists()) {							
-							logln("ERROR: PDF file of Empirical distribution does not exist!");
-							logln("Details:");
-							logln("  place-num              = " + i);
-							logln("  place.id               = " + place.attributeValue("id"));
-							logln("  place.name             = " + place.attributeValue("name"));						
-							logln("  colorRef-num           = " + j);
-							logln("  colorRef.id            = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id      = " + colorRef.attributeValue("color-id"));
-							logln("  colorRef.pdf_filename  = " + pdf_filename);							
+						if (!pdfFile.exists()) {
+							log.error(formatDetailMessage(
+									"PDF file of Empirical distribution does not exist!",
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id"),
+									"colorRef.pdf_filename", pdf_filename
+									));							
 							throw new SimQPNException();													
 						}						
 						BufferedReader input = null;
@@ -2637,15 +2742,16 @@ public class Simulator {
 							input = new BufferedReader(new FileReader(pdfFile));
 							String line = null;
 							if ((line = input.readLine()) == null) {
-								logln("ERROR: Invalid PDF file of Empirical distribution!");
-								logln("Details:");
-								logln("  place-num              = " + i);
-								logln("  place.id               = " + place.attributeValue("id"));
-								logln("  place.name             = " + place.attributeValue("name"));						
-								logln("  colorRef-num           = " + j);
-								logln("  colorRef.id            = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id      = " + colorRef.attributeValue("color-id"));
-								logln("  colorRef.pdf_filename  = " + pdf_filename);							
+								log.error(formatDetailMessage(
+										"Invalid PDF file of Empirical distribution!",
+										"place-num", Integer.toString(i),
+										"place.id", place.attributeValue("id"),
+										"place.name", place.attributeValue("name"),						
+										"colorRef-num", Integer.toString(j),
+										"colorRef.id", colorRef.attributeValue("id"),
+										"colorRef.color-id", colorRef.attributeValue("color-id"),
+										"colorRef.pdf_filename", pdf_filename
+										));							
 								throw new SimQPNException();													
 							}					      
 							//SDK-TODO: See if it would be better to have values on separate lines?
@@ -2655,16 +2761,16 @@ public class Simulator {
 								pdf[x] = Double.parseDouble(params[x]);							
 						}
 						catch (IOException ex) {
-							logln("ERROR: Invalid PDF file of Empirical distribution!");
-							logln("Details:");
-							logln("  place-num              = " + i);
-							logln("  place.id               = " + place.attributeValue("id"));
-							logln("  place.name             = " + place.attributeValue("name"));						
-							logln("  colorRef-num           = " + j);
-							logln("  colorRef.id            = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id      = " + colorRef.attributeValue("color-id"));
-							logln("  colorRef.pdf_filename  = " + pdf_filename);
-							log(ex);
+							log.error(formatDetailMessage(
+									"Invalid PDF file of Empirical distribution!",
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id"),
+									"colorRef.pdf_filename", pdf_filename
+									), ex);
 							throw new SimQPNException();													
 						}
 						finally {
@@ -2673,57 +2779,58 @@ public class Simulator {
 									input.close();								
 							}
 							catch (IOException ex) {
-								logln("ERROR: Cannot close PDF file " + pdf_filename);
-								log(ex);
+								log.error("ERROR: Cannot close PDF file " + pdf_filename, ex);
 								throw new SimQPNException();
 							}
 						}
 						// Initialize random number generator and meanServTimes
 						qPl.randServTimeGen[j] = new Empirical(pdf, cern.jet.random.Empirical.LINEAR_INTERPOLATION, Simulator.nextRandNumGen());
-						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Empirical(" + pdf_filename + ", LINEAR_INTERPOLATION, Simulator.nextRandNumGen())");
+						log.debug("((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Empirical(" + pdf_filename + ", LINEAR_INTERPOLATION, Simulator.nextRandNumGen())");
 						//SDK-TODO: find out how meanServTimes is computed?						
 						//qPl.meanServTimes[j] = (double) ???;
 						//logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = ??? = " + qPl.meanServTimes[j]);
-						logln("WARNING: meanServTimes for Empirical distribution not initialized!");
-						logln("         Might experience problems if indrStats is set to true!");						
-						logln("Details:");
-						logln("  place-num          = " + i);
-						logln("  place.id           = " + place.attributeValue("id"));
-						logln("  place.name         = " + place.attributeValue("name"));						
-						logln("  colorRef-num       = " + j);
-						logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-						logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+						log.warn(formatDetailMessage(
+								"meanServTimes for Empirical distribution not initialized! Might experience problems if indrStats is set to true!",
+								"place-num", Integer.toString(i),
+								"place.id", place.attributeValue("id"),
+								"place.name", place.attributeValue("name"),						
+								"colorRef-num", Integer.toString(j),
+								"colorRef.id", colorRef.attributeValue("id"),
+								"colorRef.color-id", colorRef.attributeValue("color-id")
+								));
 					} else if("Deterministic".equals(distributionFunction)) {
-						if(colorRef.attributeValue("p1") == null) {						
-							logln("ERROR: Parameter \"p1\" of Deterministic distribution function not set!");
-							logln("Details:");
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+						if(colorRef.attributeValue("p1") == null) {
+							log.error(formatDetailMessage(
+									"Parameter \"p1\" of Deterministic distribution function not set!",
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
 							throw new SimQPNException();																					
 						}
 						double p1 = Double.parseDouble(colorRef.attributeValue("p1"));
 						// Validate input parameters
 						if (!(p1 >= 0))  {
-							logln("ERROR: Invalid \"p1\" parameter of Exponential distribution!");
-							logln("Details:");
-							logln("  p1             	= " + p1);
-							logln("  place-num          = " + i);
-							logln("  place.id           = " + place.attributeValue("id"));
-							logln("  place.name         = " + place.attributeValue("name"));						
-							logln("  colorRef-num       = " + j);
-							logln("  colorRef.id        = " + colorRef.attributeValue("id"));
-							logln("  colorRef.color-id  = " + colorRef.attributeValue("color-id")); 
+							log.error(formatDetailMessage(
+									"Invalid \"p1\" parameter of Exponential distribution!",
+									"p1", Double.toString(p1),
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),						
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
 							throw new SimQPNException();																												
 						}						
 
 						qPl.randServTimeGen[j] = new Deterministic(p1);
-						logln(2, "((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Deterministic(" + p1 + ")");
+						log.debug("((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new Deterministic(" + p1 + ")");
 						qPl.meanServTimes[j] = p1;
-						logln(2, "((QPlace) places[" + i + "]).meanServTimes[" + j + "] = p1 = " + qPl.meanServTimes[j]);	
+						log.debug("((QPlace) places[" + i + "]).meanServTimes[" + j + "] = p1 = " + qPl.meanServTimes[j]);	
 					}
 				}
 			}
@@ -2737,8 +2844,8 @@ public class Simulator {
 		 * respective place are destroyed/created.
 		 */
 
-		logln(2, "\n/////////////////////////////////////////////");
-		logln(2, "// Configure transition input/output functions [mode, inPlace, color]");
+		log.debug("/////////////////////////////////////////////");
+		log.debug("// Configure transition input/output functions [mode, inPlace, color]");
 		// trans[{transition-number}].inFunc[{place-number}][{color-ref-number}][{mode-number}]
 		// = {number-of-tokens};
 		
@@ -2762,7 +2869,7 @@ public class Simulator {
 					// Allocate an array saving the number of tokens for each color-ref to the current mode for the
 					// current input place. If there is no connection, then this value is 0.
 					trans[t].inFunc[m][p] = new int[colorRefs.size()];
-					logln(2, "trans[" + t + "].inFunc[" + m + "][" + p + "] = new int[" + colorRefs.size() + "];");					
+					log.debug("trans[" + t + "].inFunc[" + m + "][" + p + "] = new int[" + colorRefs.size() + "];");					
 
 					Iterator colorRefIterator = colorRefs.iterator();
 					for (int con = 0; colorRefIterator.hasNext(); con++) {
@@ -2775,41 +2882,43 @@ public class Simulator {
 						Element connection = (Element) xpathSelector.selectSingleNode(transition);
 						if (connection != null) {
 							if(connection.attributeValue("count") == null) {
-								logln("ERROR: incidence function connection' \"count\" (arc weight) attribute not set!");
-								logln("Details: ");
-								logln("  transition-num    = " + t);
-								logln("  transition.id     = " + transition.attributeValue("id"));
-								logln("  transition.name   = " + transition.attributeValue("name"));
-								logln("  mode-num          = " + m);
-								logln("  mode.id           = " + ((Element) modes.get(m)).attributeValue("id"));
-								logln("  mode.name         = " + ((Element) modes.get(m)).attributeValue("name"));																
-								logln("  inPlace.id        = " + inputPlace.attributeValue("id"));
-								logln("  inPlace.name      = " + inputPlace.attributeValue("name"));								
-								logln("  colorRef.id       = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id = " + colorRef.attributeValue("color-id"));
+								log.error(formatDetailMessage(
+										"Incidence function connection' \"count\" (arc weight) attribute not set!",
+										"transition-num", Integer.toString(t),
+										"transition.id", transition.attributeValue("id"),
+										"transition.name", transition.attributeValue("name"),
+										"mode-num", Integer.toString(m),
+										"mode.id", ((Element) modes.get(m)).attributeValue("id"),
+										"mode.name", ((Element) modes.get(m)).attributeValue("name"),																
+										"inPlace.id", inputPlace.attributeValue("id"),
+										"inPlace.name", inputPlace.attributeValue("name"),								
+										"colorRef.id", colorRef.attributeValue("id"),
+										"colorRef.color-id", colorRef.attributeValue("color-id")
+										));
 								throw new SimQPNException();
 							}
 							int numTokens = Integer.parseInt(connection.attributeValue("count"));
 							//SDK-DEBUG: Attribute "count" is usually missing in the XML file.
 							//CHRIS: fixed that.
 							trans[t].inFunc[m][p][con] = numTokens;							
-							logln(2, "trans[" + t + "].inFunc[" + m + "][" + p + "][" + con +"] = " + numTokens);
+							log.debug("trans[" + t + "].inFunc[" + m + "][" + p + "][" + con +"] = " + numTokens);
 							numInputTokens += numTokens;
 						} else {							
 							trans[t].inFunc[m][p][con] = 0;
-							logln(2, "trans[" + t + "].inFunc[" + m + "][" + p + "][" + con +"] = 0");
+							log.debug("trans[" + t + "].inFunc[" + m + "][" + p + "][" + con +"] = 0");
 						}
 					}
 				}
 				if(numInputTokens == 0) {
-					logln("ERROR: an immediate transition with a mode that requires no input tokens found! This would cause a simulation deadlock.");
-					logln("Details: ");
-					logln("  transition-num    = " + t);
-					logln("  transition.id     = " + transition.attributeValue("id"));
-					logln("  transition.name   = " + transition.attributeValue("name"));
-					logln("  mode-num          = " + m);
-					logln("  mode.id           = " + ((Element) modes.get(m)).attributeValue("id"));
-					logln("  mode.name         = " + ((Element) modes.get(m)).attributeValue("name"));																
+					log.error(formatDetailMessage(
+							"An immediate transition with a mode that requires no input tokens found! This would cause a simulation deadlock.",
+							"transition-num" + Integer.toString(t),
+							"transition.id" + transition.attributeValue("id"),
+							"transition.name" + transition.attributeValue("name"),
+							"mode-num" + Integer.toString(m),
+							"mode.id" + ((Element) modes.get(m)).attributeValue("id"),
+							"mode.name" + ((Element) modes.get(m)).attributeValue("name")
+							));																
 					throw new SimQPNException();
 				}
 
@@ -2823,7 +2932,7 @@ public class Simulator {
 					// Allocate an array saving the number of tokens for each color-ref to mode connection. 
 					// If there is no connection, then this value is 0.
 					trans[t].outFunc[m][p] = new int[colorRefs.size()];					
-					logln(2, "trans[" + t + "].outFunc[" + m + "][" + p +"] = new int[" + colorRefs.size() + "];");
+					log.debug("trans[" + t + "].outFunc[" + m + "][" + p +"] = new int[" + colorRefs.size() + "];");
 						
 					Iterator colorRefIterator = colorRefs.iterator();
 					for (int con = 0; colorRefIterator.hasNext(); con++) {
@@ -2836,26 +2945,27 @@ public class Simulator {
 						Element connection = (Element) xpathSelector.selectSingleNode(transition);
 						if (connection != null) {
 							if(connection.attributeValue("count") == null) {
-								logln("ERROR: incidence function connection' \"count\" (arc weight) attribute not set!");
-								logln("Details: ");
-								logln("  transition-num    = " + t);
-								logln("  transition.id     = " + transition.attributeValue("id"));
-								logln("  transition.name   = " + transition.attributeValue("name"));
-								logln("  mode-num          = " + m);
-								logln("  mode.id           = " + ((Element) modes.get(m)).attributeValue("id"));
-								logln("  mode.name         = " + ((Element) modes.get(m)).attributeValue("name"));																
-								logln("  outPlace.id       = " + outputPlace.attributeValue("id"));
-								logln("  outPlace.name     = " + outputPlace.attributeValue("name"));								
-								logln("  colorRef.id       = " + colorRef.attributeValue("id"));
-								logln("  colorRef.color-id = " + colorRef.attributeValue("color-id"));
+								log.error(formatDetailMessage(
+										"Incidence function connection \"count\" (arc weight) attribute not set!",
+										"transition-num", Integer.toString(t),
+										"transition.id", transition.attributeValue("id"),
+										"transition.name", transition.attributeValue("name"),
+										"mode-num", Integer.toString(m),
+										"mode.id", ((Element) modes.get(m)).attributeValue("id"),
+										"mode.name", ((Element) modes.get(m)).attributeValue("name"),																
+										"outPlace.id", outputPlace.attributeValue("id"),
+										"outPlace.name", outputPlace.attributeValue("name"),
+										"colorRef.id", colorRef.attributeValue("id"),
+										"colorRef.color-id", colorRef.attributeValue("color-id")
+										));
 								throw new SimQPNException();								
 							}
 							int numTokens = Integer.parseInt(connection.attributeValue("count"));
 							trans[t].outFunc[m][p][con] = numTokens;
-							logln(2, "trans[" + t + "].outFunc[" + m + "][" + p + "][" + con + "] = " + numTokens + ";");							
+							log.debug("trans[" + t + "].outFunc[" + m + "][" + p + "][" + con + "] = " + numTokens + ";");							
 						} else {
 							trans[t].outFunc[m][p][con] = 0;
-							logln(2, "trans[" + t + "].outFunc[" + m + "][" + p + "][" + con + "] = 0;");							
+							log.debug("trans[" + t + "].outFunc[" + m + "][" + p + "][" + con + "] = 0;");							
 						}
 					}
 				}
@@ -2864,8 +2974,8 @@ public class Simulator {
 	}
 
 	private void configureTransitionModeWeights() throws SimQPNException {
-		logln(2, "\n/////////////////////////////////////////////");
-		logln(2, "// Configure transition mode weights");
+		log.debug("/////////////////////////////////////////////");
+		log.debug("// Configure transition mode weights");
 		Iterator transitionIterator = transitionList.iterator();
 		for (int i = 0; transitionIterator.hasNext(); i++) {
 			Element transition = (Element) transitionIterator.next();
@@ -2874,25 +2984,26 @@ public class Simulator {
 			for (int j = 0; modeIterator.hasNext(); j++) {
 				Element mode = (Element) modeIterator.next();
 				if(mode.attributeValue("firing-weight") == null) {
-					logln("Error: transition mode' \"firing-weight\" not set");
-					logln("Details: ");
-					logln("  transition-num   = " + i);
-					logln("  transition.id    = " + transition.attributeValue("id"));
-					logln("  transition.name  = " + transition.attributeValue("name"));
-					logln("  mode-num         = " + j);
-					logln("  mode.id          = " + mode.attributeValue("id"));
-					logln("  mode.name        = " + mode.attributeValue("name"));					
+					log.error(formatDetailMessage(
+							"Transition mode' \"firing-weight\" not set",
+							"transition-num", Integer.toString(i),
+							"transition.id", transition.attributeValue("id"),
+							"transition.name", transition.attributeValue("name"),
+							"mode-num", Integer.toString(j),
+							"mode.id", mode.attributeValue("id"),
+							"mode.name", mode.attributeValue("name")
+							));					
 					throw new SimQPNException();										
 				}				
 				trans[i].modeWeights[j] = Double.parseDouble(mode.attributeValue("firing-weight"));
-				logln(2, "trans[" + i + "].modeWeights[" + j + "] = " + trans[i].modeWeights[j]);				
+				log.debug("trans[" + i + "].modeWeights[" + j + "] = " + trans[i].modeWeights[j]);				
 			}
 		}
 	}
 
 	private void configureInputOutputRelationships() {
-		logln(2, "\n/////////////////////////////////////////////");
-		logln(2, "// Configure input/output relationships");
+		log.debug("/////////////////////////////////////////////");
+		log.debug("// Configure input/output relationships");
 		// Initialize the place-transition and transition-place connections.
 		XPath xpathSelector = DocumentHelper.createXPath("/net/connections/connection");
 		Iterator connectionIterator = xpathSelector.selectNodes(net).iterator();
@@ -2917,7 +3028,7 @@ public class Simulator {
 				for (int ot = 0; ot < places[p].outTrans.length; ot++) {
 					if (places[p].outTrans[ot] == null) {
 						places[p].outTrans[ot] = trans[t];
-						logln(2, "places[" + p + "].outTrans[" + ot
+						log.debug("places[" + p + "].outTrans[" + ot
 								+ "] = trans[" + t + "];");
 						break;
 					}
@@ -2925,7 +3036,7 @@ public class Simulator {
 				for (int ip = 0; ip < trans[t].inPlaces.length; ip++) {
 					if (trans[t].inPlaces[ip] == null) {
 						trans[t].inPlaces[ip] = places[p];
-						logln(2, "trans[" + t + "].inPlaces[" + ip
+						log.debug("trans[" + t + "].inPlaces[" + ip
 								+ "] = places[" + p + "];");
 						break;
 					}
@@ -2944,7 +3055,7 @@ public class Simulator {
 				for (int op = 0; op < trans[t].outPlaces.length; op++) {
 					if (trans[t].outPlaces[op] == null) {
 						trans[t].outPlaces[op] = places[p];
-						logln(2, "trans[" + t + "].outPlaces[" + op
+						log.debug("trans[" + t + "].outPlaces[" + op
 								+ "] = places[" + p + "];");
 						break;
 					}
@@ -2952,7 +3063,7 @@ public class Simulator {
 				for (int it = 0; it < places[p].inTrans.length; it++) {
 					if (places[p].inTrans[it] == null) {
 						places[p].inTrans[it] = trans[t];
-						logln(2, "places[" + p + "].inTrans[" + it
+						log.debug("places[" + p + "].inTrans[" + it
 								+ "] = trans[" + t + "];");
 						break;
 					}
@@ -2981,10 +3092,10 @@ public class Simulator {
 		 * 
 		 */
 
-		logln(2, "\n/////////////////////////////////////////////");
-		logln(2, "// Create transitions");
+		log.debug("/////////////////////////////////////////////");
+		log.debug("// Create transitions");
 		// Allocate an array able to contain the transitions.
-		logln(2, "trans = new Transition[" + numTrans + "];");
+		log.debug("trans = new Transition[" + numTrans + "];");
 		trans = new Transition[numTrans];
 		// Set for checking the uniqueness of transition names
 		HashSet<String> transNames = new HashSet<String>();
@@ -2996,35 +3107,37 @@ public class Simulator {
 			
 			String name = transition.attributeValue("name");
 			if (transNames.contains(name)) {
-				logln("ERROR: Another transition with the same name does already exist!");				
-				logln("Details: ");
-				logln("  transition-num   = " + i);
-				logln("  transition.id    = " + transition.attributeValue("id"));
-				logln("  transition.name  = " + transition.attributeValue("name"));
+				log.error(formatDetailMessage(
+						"Another transition with the same name does already exist!",
+						"transition-num", Integer.toString(i),
+						"transition.id", transition.attributeValue("id"),
+						"transition.name", transition.attributeValue("name")
+						));
 				throw new SimQPNException();
 			} else {
 				transNames.add(name);
 			}
 			
 			if(!"immediate-transition".equals(transition.attributeValue("type"))) {
-				logln("ERROR: Invalid or missing transition type setting!");
-				logln("       Only \"immediate-transition\" is currently supported.");				
-				logln("Details: ");
-				logln("  transition-num   = " + i);
-				logln("  transition.id    = " + transition.attributeValue("id"));
-				logln("  transition.name  = " + transition.attributeValue("name"));
-				logln("  transition.type  = " + transition.attributeValue("type"));
+				log.error(formatDetailMessage(
+						"Invalid or missing transition type setting! Only \"immediate-transition\" is currently supported.",
+						"transition-num", Integer.toString(i),
+						"transition.id", transition.attributeValue("id"),
+						"transition.name", transition.attributeValue("name"),
+						"transition.type", transition.attributeValue("type")
+						));
 				throw new SimQPNException();
 			}
 			XPath xpathSelector = DocumentHelper.createXPath("modes/mode");
 			int numModes = xpathSelector.selectNodes(transition).size();
 			if(numModes == 0) {
-				logln("Error: incidence function not defined!");
-				logln("Details: ");
-				logln("  transition-num   = " + i);
-				logln("  transition.id    = " + transition.attributeValue("id"));
-				logln("  transition.name  = " + transition.attributeValue("name"));
-				logln("  transition.type  = " + transition.attributeValue("type"));				
+				log.error(formatDetailMessage(
+						"Incidence function not defined!",
+						"transition-num", Integer.toString(i),
+						"transition.id", transition.attributeValue("id"),
+						"transition.name", transition.attributeValue("name"),
+						"transition.type", transition.attributeValue("type")
+						));			
 				throw new SimQPNException();
 			}
 			
@@ -3032,12 +3145,13 @@ public class Simulator {
 			int numIncomingConnections = getNumConnectionsWithTargetId(transition.attributeValue("id"));
 			
 			if(transition.attributeValue("weight") == null) {
-				logln("Error: transition weight not set!");
-				logln("Details: ");
-				logln("  transition-num   = " + i);
-				logln("  transition.id    = " + transition.attributeValue("id"));
-				logln("  transition.name  = " + transition.attributeValue("name"));
-				logln("  transition.type  = " + transition.attributeValue("type"));				
+				log.error(formatDetailMessage(
+						"Transition weight not set!",
+						"transition-num", Integer.toString(i),
+						"transition.id", transition.attributeValue("id"),
+						"transition.name", transition.attributeValue("name"),
+						"transition.type", transition.attributeValue("type")
+						));					
 				throw new SimQPNException();
 			}
 			double transitionWeight = Double.parseDouble(transition.attributeValue("weight"));
@@ -3051,13 +3165,16 @@ public class Simulator {
 					numProbes,
 					transitionWeight);														// transition weight
 			transitionToIndexMap.put(transition, i);
-			logln(2, "trans[" + i + "] = new Transition(" 
-					+ i + ", '" 
-					+ transition.attributeValue("name") + "', " 
-					+ numModes + ", " 
-					+ numIncomingConnections + ", " 
-					+ numOutgoingConnections + ", " 
-					+ transitionWeight + ");       transition-element = " + transition);									
+			if (log.isDebugEnabled()) {
+				log.debug("trans[" + i + "] = new Transition("
+						+ i + ", '"
+						+ transition.attributeValue("name") + "', "
+						+ numModes + ", "
+						+ numIncomingConnections + ", "
+						+ numOutgoingConnections + ", "
+						+ transitionWeight + ");       transition-element = " + transition
+						);
+			}
 		}
 	}
 
@@ -3103,10 +3220,10 @@ public class Simulator {
 		 *   that would be quite slim) ;)  
 		 */
 		
-		logln(2, "\n/////////////////////////////////////////////");
-		logln(2, "// Create places");
+		log.debug("/////////////////////////////////////////////");
+		log.debug("// Create places");
 		// Allocate an array able to contain the places.
-		logln(2, "places = new Place[" + numPlaces + "];");
+		log.debug("places = new Place[" + numPlaces + "];");
 		places = new Place[numPlaces];
 		queues = new Queue[numQueues];
 		// Set for checking the uniqueness of queue names
@@ -3120,11 +3237,12 @@ public class Simulator {
 			
 			String name = queue.attributeValue("name");
 			if (queueNames.contains(name)) {
-				logln("ERROR: Another queue definition with the same name does already exist!");
-				logln("Details: ");
-				logln("  queue-num      = " + i);
-				logln("  queue.id       = " + queue.attributeValue("id"));
-				logln("  queue.name     = " + name);
+				log.error(formatDetailMessage(
+						"Another queue definition with the same name does already exist!",
+						"queue-num", Integer.toString(i),
+						"queue.id", queue.attributeValue("id"),
+						"queue.name", name
+						));
 				throw new SimQPNException();
 			} else {
 				queueNames.add(name);
@@ -3138,21 +3256,23 @@ public class Simulator {
 					queueingStrategy = Queue.FCFS; 
 				} else if ("PS".equals(queue.attributeValue("strategy"))) {
 					queueingStrategy = Queue.PS; 
-				} else {						
-					logln("ERROR: Invalid or missing \"strategy\" (queueing discipline) setting!");
-					logln("Details: ");
-					logln("  queue-num      = " + i);
-					logln("  queue.id       = " + queue.attributeValue("id"));
-					logln("  queue.name     = " + queue.attributeValue("name"));
-					logln("  queue.strategy = " + queue.attributeValue("strategy"));
+				} else {
+					log.error(formatDetailMessage(
+							"Invalid or missing \"strategy\" (queueing discipline) setting!",
+							"queue-num", Integer.toString(i),
+							"queue.id", queue.attributeValue("id"),
+							"queue.name", name,
+							"queue.strategy", queue.attributeValue("strategy")
+							));
 					throw new SimQPNException();
 				}
 				if (queue.attributeValue("number-of-servers") == null) {
-					logln("ERROR: \"number-of-servers\" parameter not set!");
-					logln("Details: ");
-					logln("  queue-num   = " + i);
-					logln("  queue.id    = " + queue.attributeValue("id"));
-					logln("  queue.name  = " + queue.attributeValue("name"));												
+					log.error(formatDetailMessage(
+							"\"number-of-servers\" parameter not set!",
+							"queue-num", Integer.toString(i),
+							"queue.id", queue.attributeValue("id"),
+							"queue.name", name
+							));												
 					throw new SimQPNException();
 				}
 				numberOfServers = Integer.parseInt(queue.attributeValue("number-of-servers"));
@@ -3166,11 +3286,14 @@ public class Simulator {
 					numberOfServers	 											// # servers
 					);
 			queueToIndexMap.put(queue, i);
-			logln(2, "queues[" + i + "] = new Queue(" 
-					+ i + ", '" 
-					+ queue.attributeValue("name") + "', " 
-					+ queueingStrategy + ", " 
-					+ numberOfServers + ")");					
+			if(log.isDebugEnabled()) {
+				log.debug("queues[" + i + "] = new Queue("
+						+ i + ", '"
+						+ queue.attributeValue("name") + "', "
+						+ queueingStrategy + ", "
+						+ numberOfServers + ")"
+						);
+			}			
 		}
 
 
@@ -3184,11 +3307,12 @@ public class Simulator {
 			
 			String name = place.attributeValue("name");
 			if (placeNames.contains(name)) {
-				logln("Error: Another place with the same name does already exist!");
-				logln("Details: ");
-				logln("  place-num   = " + i);
-				logln("  place.id    = " + place.attributeValue("id"));
-				logln("  place.name  = " + name);								
+				log.error(formatDetailMessage(
+						"Another place with the same name does already exist!",
+						"place-num", Integer.toString(i),
+						"place.id", place.attributeValue("id"),
+						"place.name", name
+						));								
 				throw new SimQPNException();
 			} else {
 				placeNames.add(name);
@@ -3207,11 +3331,12 @@ public class Simulator {
 			Element metaAttribute = getSettings(place, configuration);
 			// Stats-level should be configurable as above.
 			if (metaAttribute.attributeValue("statsLevel") == null) {
-				logln("Error: statsLevel parameter not set!");
-				logln("Details: ");
-				logln("  place-num   = " + i);
-				logln("  place.id    = " + place.attributeValue("id"));
-				logln("  place.name  = " + place.attributeValue("name"));								
+				log.error(formatDetailMessage(
+						"statsLevel parameter not set!",
+						"place-num", Integer.toString(i),
+						"place.id", place.attributeValue("id"),
+						"place.name", place.attributeValue("name")
+						));
 				throw new SimQPNException();
 			}
 			int statsLevel = Integer.parseInt(metaAttribute.attributeValue("statsLevel"));
@@ -3220,11 +3345,12 @@ public class Simulator {
 			
 			// This is a user-defined config-parameter for both ordinary- and queueing-place.			
 			if (place.attributeValue("departure-discipline") == null) {
-				logln("ERROR: departure-discipline parameter not set!");
-				logln("Details: ");
-				logln("  place-num   = " + i);
-				logln("  place.id    = " + place.attributeValue("id"));
-				logln("  place.name  = " + place.attributeValue("name"));								
+				log.error(formatDetailMessage(
+						"departure-discipline parameter not set!",
+						"place-num", Integer.toString(i),
+						"place.id", place.attributeValue("id"),
+						"place.name", place.attributeValue("name")
+						));
 				throw new SimQPNException();
 			}			
 			if ("NORMAL".equals(place.attributeValue("departure-discipline"))) {
@@ -3232,12 +3358,13 @@ public class Simulator {
 			} else if ("FIFO".equals(place.attributeValue("departure-discipline"))) {
 				dDis = Place.FIFO;
 			} else {
-				logln("ERROR: Invalid departure-discipline setting!");
-				logln("Details: ");				
-				logln("  place-num                  = " + i);
-				logln("  place.id                   = " + place.attributeValue("id"));
-				logln("  place.name                 = " + place.attributeValue("name"));
-				logln("  place.departure-discipline = " + place.attributeValue("departure-discipline"));
+				log.error(formatDetailMessage(
+						"Invalid departure-discipline setting!",
+						"place-num", Integer.toString(i),
+						"place.id", place.attributeValue("id"),
+						"place.name", place.attributeValue("name"),
+						"place.departure-discipline", place.attributeValue("departure-discipline")
+						));
 				throw new SimQPNException();				
 			}
 			/* 
@@ -3261,22 +3388,24 @@ public class Simulator {
 			// Extract the names of the colors that can reside in this place
 			Element colorRefsElem = place.element("color-refs");
 			if (colorRefsElem == null) {
-				logln("ERROR: Missing color references!");
-				logln("Details: ");				
-				logln("  place-num                  = " + i);
-				logln("  place.id                   = " + place.attributeValue("id"));
-				logln("  place.name                 = " + place.attributeValue("name"));
-				logln("  place.departure-discipline = " + place.attributeValue("departure-discipline"));
+				log.error(formatDetailMessage(
+						"Missing color references!",
+						"place-num", Integer.toString(i),
+						"place.id", place.attributeValue("id"),
+						"place.name", place.attributeValue("name"),
+						"place.departure-discipline", place.attributeValue("departure-discipline")
+						));
 				throw new SimQPNException();
 			}
 			List colorRefs = colorRefsElem.elements("color-ref");
 			if (colorRefs.size() == 0) {
-				logln("ERROR: Missing color references!");
-				logln("Details: ");				
-				logln("  place-num                  = " + i);
-				logln("  place.id                   = " + place.attributeValue("id"));
-				logln("  place.name                 = " + place.attributeValue("name"));
-				logln("  place.departure-discipline = " + place.attributeValue("departure-discipline"));
+				log.error(formatDetailMessage(
+						"Missing color references!",
+						"place-num", Integer.toString(i),
+						"place.id", place.attributeValue("id"),
+						"place.name", place.attributeValue("name"),
+						"place.departure-discipline", place.attributeValue("departure-discipline")
+						));
 				throw new SimQPNException();
 			}
 			String[] colors = new String[colorRefs.size()];			
@@ -3300,15 +3429,18 @@ public class Simulator {
 						dDis, 																// departure discipline
 						place);																// Reference to the place' XML element
 				placeToIndexMap.put(place, i);
-				logln(2, "places[" + i + "] = new Place(" 
-						+ i + ", '" 
-						+ place.attributeValue("name") + "', " 
-						+ colors + ", " 
-						+ numIncomingConnections + ", " 
-						+ numOutgoingConnections + ", " 
-						+ statsLevel + ", " 
-						+ dDis + ", " 
-						+ place + ")"); 												
+				if (log.isDebugEnabled()) {
+					log.debug("places[" + i + "] = new Place("
+							+ i + ", '"
+							+ place.attributeValue("name") + "', "
+							+ colors + ", "
+							+ numIncomingConnections + ", "
+							+ numOutgoingConnections + ", "
+							+ statsLevel + ", "
+							+ dDis + ", "
+							+ place + ")"
+							);
+				}
 			} else if ("queueing-place".equals(place.attributeValue("type"))) {
 				try {
 					String queueRef = place.attributeValue("queue-ref");
@@ -3325,34 +3457,38 @@ public class Simulator {
 							queue,													// Reference to the integrated Queue										
 							place);																// Reference to the place' XML element		
 					placeToIndexMap.put(place, i);
-					logln(2, "places[" + i + "] = new QPlace(" 
-							+ i + ", '" 
-							+ place.attributeValue("name") + "', " 
-							+ colors + ", " 
-							+ numIncomingConnections + ", " 
-							+ numOutgoingConnections + ", " 
-							+ statsLevel + ", " 
-							+ dDis + ", " 
-							+ queue + ", "  
-							+ place + ")"); 								
+					if (log.isDebugEnabled()) {
+						log.debug("places[" + i + "] = new QPlace("
+								+ i + ", '"
+								+ place.attributeValue("name") + "', "
+								+ colors + ", "
+								+ numIncomingConnections + ", "
+								+ numOutgoingConnections + ", "
+								+ statsLevel + ", "
+								+ dDis + ", "
+								+ queue + ", "
+								+ place + ")"
+								);
+					}
 					queue.addQPlace((QPlace) places[i]);				
 				} catch(NoSuchElementException ex) {
-					logln("ERROR: No queue defined!");
-					logln("Details: ");
-					logln("  place-num   = " + i);
-					logln("  place.id    = " + place.attributeValue("id"));
-					logln("  place.name  = " + place.attributeValue("name"));
-					logln("  place.type  = " + place.attributeValue("type"));
+					log.error(formatDetailMessage(
+							"No queue defined!",
+							"place-num", Integer.toString(i),
+							"place.id", place.attributeValue("id"),
+							"place.name", place.attributeValue("name"),
+							"place.type", place.attributeValue("type")
+							));
 					throw new SimQPNException();
 				}
 			} else {
-				logln("ERROR: Invalid or missing place type setting!");
-				logln("       Currently only 'ordinary-place' and 'queueing-place' are supported.");
-				logln("Details: ");
-				logln("  place-num   = " + i);
-				logln("  place.id    = " + place.attributeValue("id"));
-				logln("  place.name  = " + place.attributeValue("name"));
-				logln("  place.type  = " + place.attributeValue("type"));
+				log.error(formatDetailMessage(
+						"Invalid or missing place type setting! Currently only 'ordinary-place' and 'queueing-place' are supported.",
+						"place-num", Integer.toString(i),
+						"place.id", place.attributeValue("id"),
+						"place.name", place.attributeValue("name"),
+						"place.type", place.attributeValue("type")
+						));
 				throw new SimQPNException();
 			}
 		}
@@ -3361,10 +3497,10 @@ public class Simulator {
 	private void createProbes() throws SimQPNException {
 		XPath xpathSelector;
 		
-		logln(2, "\n/////////////////////////////////////////////");
-		logln(2, "// Create probes");
+		log.debug("/////////////////////////////////////////////");
+		log.debug("// Create probes");
 		// Allocate an array able to contain the places.
-		logln(2, "probes = new Probe[" + numProbes + "];");
+		log.debug("probes = new Probe[" + numProbes + "];");
 		probes = new Probe[numProbes];
 		
 		for (int i = 0; i < numProbes; i++) {
@@ -3373,20 +3509,22 @@ public class Simulator {
 			// Extract the names of the colors that are tracked by this probe
 			Element colorRefsElem = probe.element("color-refs");
 			if (colorRefsElem == null) {
-				logln("ERROR: Missing color references!");
-				logln("Details: ");				
-				logln("  probe-num                  = " + i);
-				logln("  probe.id                   = " + probe.attributeValue("id"));
-				logln("  probe.name                 = " + probe.attributeValue("name"));
+				log.error(formatDetailMessage(
+						"Missing color references!",			
+						"probe-num", Integer.toString(i),
+						"probe.id", probe.attributeValue("id"),
+						"probe.name", probe.attributeValue("name")
+						));
 				throw new SimQPNException();
 			}
 			List colorRefs = colorRefsElem.elements("color-ref");
 			if (colorRefs.size() == 0) {
-				logln("ERROR: Missing color references!");
-				logln("Details: ");				
-				logln("  probe-num                  = " + i);
-				logln("  probe.id                   = " + probe.attributeValue("id"));
-				logln("  probe.name                 = " + probe.attributeValue("name"));
+				log.error(formatDetailMessage(
+						"Missing color references!",			
+						"probe-num", Integer.toString(i),
+						"probe.id", probe.attributeValue("id"),
+						"probe.name", probe.attributeValue("name")
+						));
 				throw new SimQPNException();
 			}
 			String[] colors = new String[colorRefs.size()];
@@ -3402,11 +3540,12 @@ public class Simulator {
 			xpathSelector = DocumentHelper.createXPath("//place[@id = '" + probe.attributeValue("start-place-id") + "']");
 			Element startElement = (Element) xpathSelector.selectSingleNode(net);
 			if (startElement == null) {
-				logln("ERROR: Start place reference invalid!");
-				logln("Details: ");				
-				logln("  probe-num                  = " + i);
-				logln("  probe.id                   = " + probe.attributeValue("id"));
-				logln("  probe.name                 = " + probe.attributeValue("name"));
+				log.error(formatDetailMessage(
+						"Start place reference invalid!",			
+						"probe-num", Integer.toString(i),
+						"probe.id", probe.attributeValue("id"),
+						"probe.name", probe.attributeValue("name")
+						));
 				throw new SimQPNException();
 			}
 			Place startPlace = null;
@@ -3420,13 +3559,14 @@ public class Simulator {
 				startTrigger = Probe.ON_ENTRY;
 			} else if ("exit".equals(probe.attributeValue("start-trigger"))) {
 				startTrigger = Probe.ON_EXIT; 
-			} else {						
-				logln("ERROR: Invalid or missing \"start-trigger\" setting!");
-				logln("Details: ");
-				logln("  probe-num           = " + i);
-				logln("  probe.id            = " + probe.attributeValue("id"));
-				logln("  probe.name          = " + probe.attributeValue("name"));
-				logln("  probe.start-trigger = " + probe.attributeValue("start-trigger"));
+			} else {
+				log.error(formatDetailMessage(
+						"Invalid or missing 'start-trigger' setting!",			
+						"probe-num", Integer.toString(i),
+						"probe.id", probe.attributeValue("id"),
+						"probe.name", probe.attributeValue("name"),
+						"probe.start-trigger", probe.attributeValue("start-trigger")
+						));
 				throw new SimQPNException();
 			}
 			
@@ -3434,11 +3574,12 @@ public class Simulator {
 			xpathSelector = DocumentHelper.createXPath("//place[@id = '" + probe.attributeValue("end-place-id") + "']");
 			Element endElement = (Element) xpathSelector.selectSingleNode(net);
 			if (endElement == null) {
-				logln("ERROR: End place reference invalid!");
-				logln("Details: ");				
-				logln("  probe-num                  = " + i);
-				logln("  probe.id                   = " + probe.attributeValue("id"));
-				logln("  probe.name                 = " + probe.attributeValue("name"));
+				log.error(formatDetailMessage(
+						"End place reference invalid!",			
+						"probe-num", Integer.toString(i),
+						"probe.id", probe.attributeValue("id"),
+						"probe.name", probe.attributeValue("name")
+						));
 				throw new SimQPNException();
 			}
 			Place endPlace = null;
@@ -3452,13 +3593,14 @@ public class Simulator {
 				endTrigger = Probe.ON_ENTRY;
 			} else if ("exit".equals(probe.attributeValue("end-trigger"))) {
 				endTrigger = Probe.ON_EXIT; 
-			} else {						
-				logln("ERROR: Invalid or missing \"end-trigger\" setting!");
-				logln("Details: ");
-				logln("  probe-num           = " + i);
-				logln("  probe.id            = " + probe.attributeValue("id"));
-				logln("  probe.name          = " + probe.attributeValue("name"));
-				logln("  probe.end-trigger = " + probe.attributeValue("end-trigger"));
+			} else {
+				log.error(formatDetailMessage(
+						"Invalid or missing \"end-trigger\" setting!",			
+						"probe-num", Integer.toString(i),
+						"probe.id", probe.attributeValue("id"),
+						"probe.name", probe.attributeValue("name"),
+						"probe.end-trigger", probe.attributeValue("end-trigger")
+						));
 				throw new SimQPNException();
 			}
 			
@@ -3466,20 +3608,22 @@ public class Simulator {
 			int statsLevel = 0;
 			if (metaAttribute != null) {
 				if (metaAttribute.attributeValue("statsLevel") == null) {
-					logln("Error: statsLevel parameter not set!");
-					logln("Details: ");
-					logln("  probe-num   = " + i);
-					logln("  probe.id    = " + probe.attributeValue("id"));
-					logln("  probe.name  = " + probe.attributeValue("name"));								
+					log.error(formatDetailMessage(
+							"statsLevel parameter not set!",			
+							"probe-num", Integer.toString(i),
+							"probe.id", probe.attributeValue("id"),
+							"probe.name", probe.attributeValue("name")
+							));							
 					throw new SimQPNException();
 				}
 				statsLevel = Integer.parseInt(metaAttribute.attributeValue("statsLevel"));
 			} else {
-				logln("Error: meta-attribute element not set!");
-				logln("Details: ");
-				logln("  probe-num   = " + i);
-				logln("  probe.id    = " + probe.attributeValue("id"));
-				logln("  probe.name  = " + probe.attributeValue("name"));								
+				log.error(formatDetailMessage(
+						"meta-attribute element not set!",			
+						"probe-num", Integer.toString(i),
+						"probe.id", probe.attributeValue("id"),
+						"probe.name", probe.attributeValue("name")
+						));									
 				throw new SimQPNException();
 			}
 			
@@ -3495,16 +3639,19 @@ public class Simulator {
 					statsLevel,
 					probe
 					);
-			logln(2, "probes[" + i + "] = new Probe(" 
-					+ i + ", '" 
-					+ probe.attributeValue("name") + "', "
-					+ colors + ", "
-					+ startPlace.name + ", "
-					+ startTrigger + ", "
-					+ endPlace.name + ", "
-					+ endTrigger + ", "
-					+ statsLevel + ", "
-					+ probe + ")");
+			if (log.isDebugEnabled()) {
+				log.debug("probes[" + i + "] = new Probe("
+						+ i + ", '"
+						+ probe.attributeValue("name") + "', "
+						+ colors + ", "
+						+ startPlace.name + ", "
+						+ startTrigger + ", "
+						+ endPlace.name + ", "
+						+ endTrigger + ", "
+						+ statsLevel + ", "
+						+ probe + ")"
+						);
+			}
 		}
 	}
 	
@@ -3537,11 +3684,12 @@ public class Simulator {
 			
 			String name = col.attributeValue("name");
 			if (colorNames.contains(name)) {
-				logln("ERROR: Another color definition with the same name does already exist!");
-				logln("Details: ");
-				logln("  color-num      = " + i);
-				logln("  color.id       = " + col.attributeValue("id"));
-				logln("  color.name     = " + name);
+				log.error(formatDetailMessage(
+						"Another color definition with the same name does already exist!",
+						"color-num", Integer.toString(i),
+						"color.id", col.attributeValue("id"),
+						"color.name", name
+						));
 				throw new SimQPNException();
 			} else {
 				colorNames.add(name);
@@ -3616,7 +3764,7 @@ public class Simulator {
 				randomElement = new MersenneTwister(nextSeed);
 			}
 		} else {
-			logln("Error: Invalid randGenClass setting!");
+			log.error("Invalid randGenClass setting!");
 			throw new SimQPNException();
 		}
 		return randomElement;
@@ -3842,7 +3990,7 @@ public class Simulator {
 					}
 				}
 			} else {
-				logln("Error: QPN is not live.");
+				log.error("QPN is not live.");
 				throw new SimQPNException();
 			}
 
@@ -3959,7 +4107,7 @@ public class Simulator {
 							+ "The required precision may not have been reached!");
 				}
 				else
-					logln("Info: STOPPING because max totalRunLen is reached!");
+					log.info("STOPPING because max totalRunLen is reached!");
 			}
 		}
 		
@@ -3968,7 +4116,7 @@ public class Simulator {
 		endRunWallClock = System.currentTimeMillis();
 		runWallClockTime = (endRunWallClock - beginRunWallClock) / 1000;	// total time elapsed in seconds 
 		
-		logln("  msrmPrdLen= " + msrmPrdLen + " totalRunLen= " + endRunClock + " runWallClockTime=" + (int) (runWallClockTime / 60) + " min (=" + runWallClockTime + " sec)");
+		log.info("msrmPrdLen= " + msrmPrdLen + " totalRunLen= " + endRunClock + " runWallClockTime=" + (int) (runWallClockTime / 60) + " min (=" + runWallClockTime + " sec)");
 
 		
 		// Complete statistics collection (make sure this is done AFTER the above statements)
@@ -3989,47 +4137,5 @@ public class Simulator {
 		Element elementSettings = (Element) xpathSelector.selectSingleNode(element);
 		return elementSettings;
 	}
-
-	public static void logln() {
-		if(logPrintStream != null)
-			logPrintStream.println();
-		System.out.println();
-	}
-
-	public static void logln(String msg) {
-		if(logPrintStream != null)
-			logPrintStream.println(msg);
-		System.out.println(msg);
-	}
-	
-	public static void logln(int debugLev, String msg) {
-		if(debugLevel >= debugLev) {
-			if(logPrintStream != null) 
-				logPrintStream.println(msg);
-			System.out.println(msg);
-		}
-	}
-	
-	public static void log(String msg) {
-		if(logPrintStream != null)
-			logPrintStream.print(msg);
-		System.out.print(msg);
-	}
-		
-	public static void log(int debugLev, String msg) {
-		if(debugLevel >= debugLev) {
-			if(logPrintStream != null)
-				logPrintStream.print(msg);
-			System.out.print(msg);
-		}
-	}
-
-	public static void log(Throwable exception) {
-		if(logPrintStream != null)
-			exception.printStackTrace(logPrintStream);
-		System.out.print(exception.getMessage());
-		exception.printStackTrace();
-	}
-
 
 } // end of Class Simulator

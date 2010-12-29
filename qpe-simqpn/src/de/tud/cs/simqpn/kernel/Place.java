@@ -59,6 +59,7 @@ package de.tud.cs.simqpn.kernel;
 import java.util.Arrays;
 import java.util.LinkedList;
 
+import org.apache.log4j.Logger;
 import org.dom4j.Element;
  
 /**
@@ -83,6 +84,8 @@ public class Place extends Node {
 	public static final int PROBE_ACTION_END_ON_EXIT = 5;
 	public static final int PROBE_ACTION_END_ON_ENTRY = 6;
 	public static final int PROBE_ACTION_TRANSFER = 7;
+	
+	private static Logger log = Logger.getLogger(Place.class);
 	
 	public int				numColors;
 	public String[]			colors;			// Names of the colors that can reside in this Place.
@@ -208,7 +211,7 @@ public class Place extends Node {
 			}
 		}
 		else {
-			Simulator.logln("Error: Invalid depDiscip specified for place " + name);
+			log.error("Invalid depDiscip specified for place " + name);
 			throw new SimQPNException();
 		}
 		 			
@@ -294,7 +297,7 @@ public class Place extends Node {
 	@SuppressWarnings("unchecked")
 	public void addTokens(int color, int count, Token[] tokensToBeAdded) throws SimQPNException {
 		if (count <= 0) { // DEBUG
-			Simulator.logln("Error: Attempted to add nonpositive number of tokens to place " + name);
+			log.error("Attempted to add nonpositive number of tokens to place " + name);
 			throw new SimQPNException();
 		}
 				
@@ -310,7 +313,7 @@ public class Place extends Node {
 		tokenPop[color] += count;
 		if(individualTokens[color]) {
 			if (tokensToBeAdded == null) { // DEBUG
-				Simulator.logln("Error: Cannot add tokens to place " + name);
+				log.error("Cannot add tokens to place " + name);
 				throw new SimQPNException();
 			}
 			
@@ -339,7 +342,7 @@ public class Place extends Node {
 			}
 		}
 		else {
-			Simulator.logln("Error: Invalid depDiscip specified for place " + name);
+			log.error("Invalid depDiscip specified for place " + name);
 			throw new SimQPNException();
 		}
 	}
@@ -378,7 +381,7 @@ public class Place extends Node {
 		tokenPop[color] -= count;
 		if (individualTokens[color]) {
 			if (returnBuffer.length < count) {
-				Simulator.logln("Error: Return buffer for removed tokens too small.");
+				log.error("Return buffer for removed tokens too small.");
 				throw new SimQPNException();
 			}
 			for (int i = 0; i < count; i++) {
@@ -404,7 +407,7 @@ public class Place extends Node {
 			else depReady = false;
 		}
 		else {
-			Simulator.logln("Error: Invalid depDiscip specified for place " + name);
+			log.error("Invalid depDiscip specified for place " + name);
 			throw new SimQPNException();
 		}
 		

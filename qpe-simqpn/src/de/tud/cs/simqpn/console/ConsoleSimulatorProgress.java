@@ -43,7 +43,10 @@
 package de.tud.cs.simqpn.console;
 
 import static de.tud.cs.simqpn.kernel.Simulator.WELCH;
-import static de.tud.cs.simqpn.kernel.Simulator.logln;
+import static de.tud.cs.simqpn.util.LogUtil.formatMultilineMessage;
+
+import org.apache.log4j.Logger;
+
 import de.tud.cs.simqpn.kernel.Simulator;
 import de.tud.cs.simqpn.kernel.SimulatorProgress;
 
@@ -51,6 +54,8 @@ import de.tud.cs.simqpn.kernel.SimulatorProgress;
  * Prints the simulation progress on the console. Used in standalone simulation mode.
  */
 public class ConsoleSimulatorProgress implements SimulatorProgress {
+	
+	private static Logger log = Logger.getLogger(ConsoleSimulatorProgress.class);
 
 	private int numRuns;
 	
@@ -61,19 +66,29 @@ public class ConsoleSimulatorProgress implements SimulatorProgress {
 	public void startSimulation() {
 		this.numRuns = (Simulator.analMethod == Simulator.BATCH_MEANS) ? 1 :Simulator.numRuns;
 
-		logln("---------------------------------------------");
 		switch(Simulator.analMethod) {
 		case Simulator.BATCH_MEANS:
-			logln(" Starting Batch Means Method");
+			log.info(formatMultilineMessage(
+					"---------------------------------------------",
+					" Starting Batch Means Method",
+					"---------------------------------------------"
+					));
 			break;
 		case Simulator.REPL_DEL:
-			logln(" Starting Multiple Replications (numRuns = " + numRuns + ")");
+			log.info(formatMultilineMessage(
+					"---------------------------------------------",
+					" Starting Multiple Replications (numRuns = " + numRuns + ")",
+					"---------------------------------------------"
+					));
 			break;
 		case Simulator.WELCH:
-			logln(" Starting Method of Welch (numRuns = " + numRuns + ")");
+			log.info(formatMultilineMessage(
+					"---------------------------------------------",
+					" Starting Method of Welch (numRuns = " + numRuns + ")",
+					"---------------------------------------------"
+					));
 			break;
 		}
-		logln("---------------------------------------------");
 	}
 
 	/* (non-Javadoc)
@@ -81,7 +96,7 @@ public class ConsoleSimulatorProgress implements SimulatorProgress {
 	 */
 	@Override
 	public void startSimulationRun(int number) {
-		logln("Simulation run " + number + "/" + numRuns + " started.");
+		log.info("Simulation run " + number + "/" + numRuns + " started.");
 	}
 
 	/* (non-Javadoc)
@@ -89,7 +104,7 @@ public class ConsoleSimulatorProgress implements SimulatorProgress {
 	 */
 	@Override
 	public void updateSimulationProgress(double progress, long elapsedTime) {
-		logln("Progress: " + Math.round(progress) + "%");
+		log.info("Progress: " + Math.round(progress) + "%");
 	}
 
 	/* (non-Javadoc)
@@ -98,7 +113,7 @@ public class ConsoleSimulatorProgress implements SimulatorProgress {
 	@Override
 	public void finishWarmUp() {
 		if(Simulator.analMethod != WELCH) {
-			logln("Warm up finished. Starting steady state analysis...");
+			log.info("Warm up finished. Starting steady state analysis...");
 		}
 	}
 
@@ -107,8 +122,7 @@ public class ConsoleSimulatorProgress implements SimulatorProgress {
 	 */
 	@Override
 	public void finishSimulationRun() {
-		logln("Simulation run finished.");
-		logln();
+		log.info("Simulation run finished.");
 	}
 
 	/* (non-Javadoc)
@@ -116,9 +130,7 @@ public class ConsoleSimulatorProgress implements SimulatorProgress {
 	 */
 	@Override
 	public void finishSimulation() {
-		logln();
-		logln();
-		logln("Simulation finished.");
+		log.info("Simulation finished.");
 	}
 
 	/* (non-Javadoc)
@@ -157,6 +169,6 @@ public class ConsoleSimulatorProgress implements SimulatorProgress {
 	 */
 	@Override
 	public void warning(String message) {
-		logln("WARNING: " + message);
+		log.warn(message);
 	}
 }

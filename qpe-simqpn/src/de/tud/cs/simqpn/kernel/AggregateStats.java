@@ -49,11 +49,16 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.LinkedList;
 
+import org.apache.log4j.Logger;
+
 import cern.colt.list.AbstractDoubleList;
 import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
 import cern.jet.stat.Probability;
+import de.tud.cs.simqpn.util.LogUtil.ReportLevel;
 import drasys.or.prob.FDistribution;
+
+import static de.tud.cs.simqpn.util.LogUtil.formatMultilineMessage;
 
 /**
  * Class AggregateStats 
@@ -69,6 +74,8 @@ import drasys.or.prob.FDistribution;
 
 public class AggregateStats extends Stats implements java.io.Serializable {	
 	private static final long serialVersionUID = 166L;
+	
+	private static Logger log = Logger.getLogger(AggregateStats.class);
 
 	public int 			numRepls;				// Number of replications used for replication/deletion method or coverage analysis (these are runs actually used in the analysis).			
 	public int 			numTooShortRepls;		// Number of replications that were discarded because of being too short.
@@ -288,15 +295,13 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 					else if (type == QUE_PLACE_QUEUE)
 						fileName = statsDir + fileSep + "ReplicationStats-que_place_queue" + id + "-col" + c + "-ST.txt";
 					else {
-						Simulator.logln("Error: Internal error in AggregateStats of place " + name);
+						log.error("Internal error in AggregateStats of place " + name);
 						throw new SimQPNException();
 					}
 					this.fileST[c] = new PrintStream(new FileOutputStream(fileName));
 				}				
 				catch (FileNotFoundException ex)  {
-					Simulator.logln("Error - cannot open file: " + fileName);
-					Simulator.logln();					
-					Simulator.log(ex);					
+					log.error("Cannot open file: " + fileName, ex);										
 					throw new SimQPNException();
 				}
 			}													
@@ -316,17 +321,23 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 				int numObsrv = stats.obsrvST[c].size();				
 				if (numObsrv < stats.minObsrvST[c])  {					
 					if (type == ORD_PLACE) 
-						Simulator.log("Error: In place " + name);
+						log.error(formatMultilineMessage(
+								"In place " + name + " only " + numObsrv + " observations collected for color " + c + "!",
+								"Need at least " + stats.minObsrvST[c] + ". Please increase Simulator.rampUpLen or lower minObsrvST[c]."
+								));
 					else if (type == QUE_PLACE_QUEUE)
-						Simulator.log("Error: In queue of place " + name);
+						log.error(formatMultilineMessage(
+								"In queue of place " + name + " only " + numObsrv + " observations collected for color " + c + "!",
+								"Need at least " + stats.minObsrvST[c] + ". Please increase Simulator.rampUpLen or lower minObsrvST[c]."
+								));
 					else if (type == QUE_PLACE_DEP)
-						Simulator.log("Error: In depository of place " + name);
+						log.error(formatMultilineMessage(
+								"In depository of place " + name + " only " + numObsrv + " observations collected for color " + c + "!",
+								"Need at least " + stats.minObsrvST[c] + ". Please increase Simulator.rampUpLen or lower minObsrvST[c]."
+								));
 					else {
-						Simulator.logln("Error: Internal error in AggregateStats of place " + name);
-						throw new SimQPNException();
+						log.error("Internal error in AggregateStats of place " + name);
 					}					
-					Simulator.logln(" only " + numObsrv + " observations collected for color " + c + "!");
-					Simulator.logln("       Need at least " + stats.minObsrvST[c] + ". Please increase Simulator.rampUpLen or lower minObsrvST[c].");
 					throw new SimQPNException();					
 				}								
 				if (numRepls == 0) sumKthObsrvST[c] = stats.obsrvST[c];
@@ -347,7 +358,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 		// Make sure the run was long enough
 		if (Simulator.useStdStateStats && (!stats.stdStateStatsAv))  {
 			numTooShortRepls++;
-			Simulator.logln("Replication skipped, since it was too short and no steady state data was available.");
+			log.info("Replication skipped, since it was too short and no steady state data was available.");
 			return;
 		} 								
 		if (Simulator.runMode == Simulator.CVRG_EST && statsLevel >= 3 && (!enghBadCIs))  {
@@ -421,7 +432,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 		double r1	= 2 * (n - np + 1);  
 		double r2	= 2 * np;	
 		if (r1 < 1.0 || r2 < 1.0) 		
-			Simulator.logln("place=" + name + "; type=" + type + "; np=" + np + "; n=" + n + "; r1=" + r1 + "; r2=" + r2);
+			log.debug("place=" + name + "; type=" + type + "; np=" + np + "; n=" + n + "; r1=" + r1 + "; r2=" + r2);
 		double Fq	= (new FDistribution(r1, r2)).inverseCdf(1 - (signLevCvrg / 2));	
 		return np / (np + (n - np + 1) * Fq);
 	}
@@ -442,7 +453,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 		double r3	= 2 * (np + 1);  
 		double r4	= 2 * (n - np);						
 		if (r3 < 1.0 || r4 < 1.0) 		
-			Simulator.logln("place=" + name + "; type=" + type + "; np=" + np + "; n=" + n + "; r3=" + r3 + "; r4=" + r4);		
+			log.debug("place=" + name + "; type=" + type + "; np=" + np + "; n=" + n + "; r3=" + r3 + "; r4=" + r4);		
 		double Fq	= (new FDistribution(r3, r4)).inverseCdf(1 - (signLevCvrg / 2));		
 		return ((np + 1) * Fq) / ((n - np) + (np + 1) * Fq);		
 	}
@@ -464,7 +475,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 		}		
 		if (enghBadCIs)  { // threshold reached
 			// DEBUG:			
-			Simulator.logln("minBadCIs reached for " + name + " of type " + type + "***********************************");
+			log.debug("minBadCIs reached for " + name + " of type " + type + "***********************************");
 			// Remove runs that were too short			
 			avgRunLen	= sumRunLen / numSavedRepls;
 			stDevRunLen	= Math.sqrt(Descriptive.sampleVariance(numSavedRepls, sumRunLen, sumSqRunLen));					
@@ -591,7 +602,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 			else if (type == QUE_PLACE_DEP)
 				fileName = statsDir + fileSep + "WelchMovAvgST-que_place_dep" + name + "-col" + color + "-win" + win + ".txt";
 			else {
-				Simulator.logln("Error: Internal error in AggregateStats of place " + name);
+				log.error("Internal error in AggregateStats of place " + name);
 				throw new SimQPNException();
 			}
 			PrintStream fileST = new PrintStream(new FileOutputStream(fileName));
@@ -614,10 +625,8 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 			
 			fileST.close();
 		}				
-		catch (FileNotFoundException ex)  {											
-			Simulator.logln("Error: Cannot open file: " + fileName);
-			Simulator.logln();
-			Simulator.log(ex);
+		catch (FileNotFoundException ex)  {
+			log.error("Cannot open file: " + fileName, ex);
 			throw new SimQPNException();	
 		}
 	}
@@ -703,61 +712,70 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 	public void printReport() throws SimQPNException {
 		//...
 		if (!completed) {
-			Simulator.logln("AggregateStats " + name + " Error: Attempting to access statistics before data collection has finished!");
+			log.error("AggregateStats " + name + ": Attempting to access statistics before data collection has finished!");
 			throw new SimQPNException();
 		}
 		
-		Simulator.logln();
-		Simulator.logln();
+		StringBuilder report = new StringBuilder();
+		
 		if (type == ORD_PLACE)						
-			Simulator.logln("REPORT for Ordinary Place: " + name + "----------------------------------------");			
+			report.append("for Ordinary Place: ").append(name).append("----------------------------------------\n");			
 		else if (type == QUE_PLACE_DEP)
-			Simulator.logln("REPORT for Depository of Queueing Place: " + name + "----------------------------------------");
+			report.append("for Depository of Queueing Place: ").append(name).append("----------------------------------------\n");
 		else if (type == QUE_PLACE_QUEUE)
-			Simulator.logln("REPORT for Queue of Queueing Place: " + name + "----------------------------------------");
+			report.append("for Queue of Queueing Place: ").append(name).append("----------------------------------------\n");
 		else {
-			Simulator.logln("Error: Internal error in AggregateStats of place " + name);
+			log.error("Internal error in AggregateStats of place " + name);
 			throw new SimQPNException();
 		}
-		Simulator.logln("numReplicationsUsed = " + numRepls + " numTooShortRepls = " + numTooShortRepls); 				
-		Simulator.logln("minRunLen=" + minRunLen + " maxRunLen=" + maxRunLen + " avgRunLen=" + avgRunLen + " stDevRunLen=" + stDevRunLen);
-		Simulator.logln("avgWallClockTime=" + avgWallClockTime + " stDevWallClockTime=" + stDevWallClockTime);
+		report.append("numReplicationsUsed = ").append(numRepls);
+		report.append(" numTooShortRepls = ").append(numTooShortRepls).append("\n"); 				
+		report.append("minRunLen=").append(minRunLen);
+		report.append(" maxRunLen=").append(maxRunLen);
+		report.append(" avgRunLen=").append(avgRunLen);
+		report.append(" stDevRunLen=").append(stDevRunLen).append("\n");
+		report.append("avgWallClockTime=").append(avgWallClockTime);
+		report.append(" stDevWallClockTime=").append(stDevWallClockTime).append("\n");
 						
 		if (statsLevel >= 2 && type == QUE_PLACE_QUEUE) 
-			Simulator.logln("meanQueueUtilQPl=" + meanQueueUtilQPl + " stDevQueueUtilQPl=" + stDevQueueUtilQPl);					
+			report.append("meanQueueUtilQPl=").append(meanQueueUtilQPl).append(" stDevQueueUtilQPl=").append(stDevQueueUtilQPl).append("\n");					
 			
 		for (int c = 0; c < numColors; c++) {
-			Simulator.logln();				
-			Simulator.logln("------------------ Color=" + c + " --------------------");				
-			Simulator.logln("meanArrivThrPut[c]=" + meanArrivThrPut[c] + " meanDeptThrPut[c]=" + meanDeptThrPut[c]);
-			Simulator.logln("stDevArrivThrPut[c]=" + stDevArrivThrPut[c] + " stDevDeptThrPut[c]=" + stDevDeptThrPut[c]);				
+			report.append("\n");				
+			report.append("------------------ Color=" + c + " --------------------");				
+			report.append("meanArrivThrPut[c]=").append(meanArrivThrPut[c]);
+			report.append(" meanDeptThrPut[c]=").append(meanDeptThrPut[c]).append("\n");
+			report.append("stDevArrivThrPut[c]=").append(stDevArrivThrPut[c]);
+			report.append(" stDevDeptThrPut[c]=").append(stDevDeptThrPut[c]).append("\n");				
 											
 			if (statsLevel >= 2) {				
-				Simulator.logln("minAvgTkPop[c]=" + minAvgTkPop[c] + " maxAvgTkPop[c]=" + maxAvgTkPop[c]);
-				Simulator.logln("meanAvgTkPop[c]=" + meanAvgTkPop[c] + " meanTkColOcp[c]=" + meanTkColOcp[c]);
-				Simulator.logln("stDevAvgTkPop[c]=" + stDevAvgTkPop[c] + " stDevTkColOcp[c]=" + stDevTkColOcp[c]);
+				report.append("minAvgTkPop[c]=").append(minAvgTkPop[c]).append(" maxAvgTkPop[c]=").append(maxAvgTkPop[c]).append("\n");
+				report.append("meanAvgTkPop[c]=").append(meanAvgTkPop[c]).append(" meanTkColOcp[c]=").append(meanTkColOcp[c]).append("\n");
+				report.append("stDevAvgTkPop[c]=").append(stDevAvgTkPop[c]).append(" stDevTkColOcp[c]=").append(stDevTkColOcp[c]).append("\n");
 			}
 			if (statsLevel >= 3) {												
-				Simulator.logln("-----");
+				report.append("-----\n");
 				if (Simulator.analMethod == Simulator.BATCH_MEANS && Simulator.useStdStateStats)					
-					Simulator.logln("avgBatchSizeST[c]=" + avgBatchSizeST[c] + " avgNumBatchesST[c]=" + avgNumBatchesST[c]);				
-				Simulator.logln("meanAvgST[c]=" + meanAvgST[c] + " stDevAvgST[c]=" + stDevAvgST[c]);					
-				Simulator.logln();																																							
-				Simulator.logln(confLevelAvgST[c] + "% c.i. = " + meanAvgST[c] + " +/- " + ciHalfLenAvgST[c]);			
+					report.append("avgBatchSizeST[c]=").append(avgBatchSizeST[c]).append(" avgNumBatchesST[c]=").append(avgNumBatchesST[c]).append("\n");				
+				report.append("meanAvgST[c]=").append(meanAvgST[c]).append(" stDevAvgST[c]=").append(stDevAvgST[c]).append("\n");					
+				report.append("\n");																																							
+				report.append(confLevelAvgST[c]).append("% c.i. = ").append(meanAvgST[c]).append(" +/- ").append(ciHalfLenAvgST[c]).append("\n");			
 				if (Simulator.runMode == Simulator.CVRG_EST && trueAvgST[c] >= 0) {					
-					Simulator.logln("trueAvgST[c]=" + trueAvgST[c] + " estCvrg[c]=" + estCvrg[c]);					
+					report.append("trueAvgST[c]=").append(trueAvgST[c]).append(" estCvrg[c]=").append(estCvrg[c]).append("\n");					
 					int confLevelCvrg	= (int) (100 * (1 - signLevCvrg));					
-					Simulator.logln(confLevelCvrg + "% c.i. (from F-distr.) = [" + trCvrgLowerLimit[c] + ", " + trCvrgUpperLimit[c] + "]");
-					Simulator.logln(confLevelCvrg + "% c.i. (from N-distr.) = " + estCvrg[c] + " +/- " + ciHalfLenTrCvrg[c]);
-					Simulator.logln("n * p = " + numRepls * estCvrg[c] + "; This should be >= 10 for the above c.i. to be valid!"); // see p.215 in Jain
-					Simulator.logln("n * p * (1 - p) = " + numRepls * estCvrg[c] * (1 - estCvrg[c]) + "; For a 95% c.i. this should be >= 10; For 99% c.i. it should be >= 35."); // See p.385 in "Applied Statistics" from Revine, Ramsey, Smidt.										 					
-					Simulator.logln();					 																																							
+					report.append(confLevelCvrg).append("% c.i. (from F-distr.) = [").append(trCvrgLowerLimit[c]).append(", ").append(trCvrgUpperLimit[c]).append("]\n");
+					report.append(confLevelCvrg).append("% c.i. (from N-distr.) = ").append(estCvrg[c]).append(" +/- ").append(ciHalfLenTrCvrg[c]).append("\n");
+					report.append("n * p = ").append(numRepls * estCvrg[c]).append("; This should be >= 10 for the above c.i. to be valid!\n"); // see p.215 in Jain
+					report.append("n * p * (1 - p) = ").append(numRepls * estCvrg[c] * (1 - estCvrg[c])).append("; For a 95% c.i. this should be >= 10; For 99% c.i. it should be >= 35.\n"); // See p.385 in "Applied Statistics" from Revine, Ramsey, Smidt.										 					
+					report.append("\n");					 																																							
 				}														
 			}
 			if (statsLevel >= 5) {
-				Simulator.logln("Token sojourn times dumped in " + statsDir);
+				report.append("Token sojourn times dumped in ").append(statsDir).append("\n");
 			}															
-		}					
+		}
+		
+		log.log(ReportLevel.REPORT, report);
 	}
 				
 }

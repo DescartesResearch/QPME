@@ -72,6 +72,7 @@ public class SimQPN {
 		Document netDocument = null;
 		String configuration = null;
 		String outputFilename = null;
+		String logConfigFilename = null;
 		boolean listConfigurations = false;
 		boolean runSimulation = false;
 		boolean validConfig = false;
@@ -85,6 +86,8 @@ public class SimQPN {
 					configuration = args[++x];
 				} else if ("-o".equals(args[x])) {
 					outputFilename = args[++x];
+				} else if ("-v".equals(args[x])) { 
+					logConfigFilename = args[++x];
 				} else if (x == (args.length - 1)) {
 					SAXReader xmlReader = new SAXReader();
 					netDocument = xmlReader.read(args[x]);
@@ -93,11 +96,11 @@ public class SimQPN {
 
 			if ((listConfigurations || runSimulation) == false) {
 				System.out.println();
-				System.out.println("Syntax: Commandline [-l] [-r \"configuration name\"] [-o \"output-filename\"] qpn-file");
+				System.out.println("Syntax: Commandline [-l] [-r \"configuration name\"] [-o \"output-filename\"] [-v \"log-configuration\"] qpn-file");
 				System.out.println("Error: At least one of the switches '-l' or '-r' must be specified!");
 			} else if (netDocument == null) {
 				System.out.println();
-				System.out.println("Syntax: Commandline [-l] [-r \"configuration name\"] [-o \"output-filename\"] qpn-file");
+				System.out.println("Syntax: Commandline [-l] [-r \"configuration name\"] [-o \"output-filename\"] [-v \"log-configuration\"] qpn-file");
 			} else {
 				System.out.println();
 				if (listConfigurations == true) {
@@ -129,7 +132,7 @@ public class SimQPN {
 						System.out.println();
 						try {
 							runSimulatorOnDocument(netDocument, configuration,
-									outputFilename, new ConsoleSimulatorProgress());
+									outputFilename, logConfigFilename, new ConsoleSimulatorProgress());
 						} catch (SimQPNException e) {
 							e.printStackTrace();
 						}
@@ -141,23 +144,10 @@ public class SimQPN {
 		}
 	}
 
-	public static void runSimulator(String inputFilename, String configuration,
-			String outputFilename, SimulatorProgress progress) {
-		try {
-			SAXReader xmlReader = new SAXReader();
-			Document inputDoc = xmlReader.read(inputFilename);
-
-			runSimulatorOnDocument(inputDoc, configuration, outputFilename,
-					progress);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 	private static void runSimulatorOnDocument(Document netDocument,
-			String configuration, String outputFilename, SimulatorProgress progress) throws SimQPNException {
+			String configuration, String outputFilename, String logConfigFilename, SimulatorProgress progress) throws SimQPNException {
 		Element net = netDocument.getRootElement();
-		Simulator.configure(net, configuration);							
+		Simulator.configure(net, configuration, logConfigFilename);
 		Stats[] result = Simulator.execute(net, configuration, progress);
 		// Skip stats document generation for WELCH and REPL_DEL since the 
 		// document builder does not support these methods yet.

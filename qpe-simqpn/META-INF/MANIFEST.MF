@@ -121,5 +121,6 @@ Bundle-ClassPath: lib/colt.jar,
  lib/dom4j-1.6.1.jar,
  lib/jaxen-1.1-beta-6.jar,
  lib/or124.jar,
+ lib/log4j-1.2.16.jar,
  QPE_SimQPN.jar
 Bundle-Vendor: Descartes Research Group

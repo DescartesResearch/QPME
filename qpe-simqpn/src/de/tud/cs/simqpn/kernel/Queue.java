@@ -51,6 +51,8 @@ package de.tud.cs.simqpn.kernel;
 
 import java.util.LinkedList;
 
+import org.apache.log4j.Logger;
+
 import cern.jet.random.AbstractContinousDistribution;
 import cern.jet.random.Empirical;
 import cern.jet.random.EmpiricalWalker;
@@ -71,7 +73,9 @@ public class Queue {
 	// Supported Queueing Disciplines:	
 	public static final int IS = 0;
 	public static final int FCFS = 1;
-	public static final int PS = 2;	
+	public static final int PS = 2;
+	
+	private static Logger log = Logger.getLogger(Queue.class);
 
 	public int 			id;					// Global id of the queue.
 	public String		xmlId;				// XML ID 
@@ -181,7 +185,7 @@ public class Queue {
 		statsLevel = 10; 
 		
 		if (qPlaces == null) {
-			Simulator.logln("ERROR: No qplaces associated with queue " + name);
+			log.error("No qplaces associated with queue " + name);
 			throw new SimQPNException();
 		}
 		
@@ -318,7 +322,7 @@ public class Queue {
 					}
 				}				
 				if (minRST == -1)  { // DEBUG
-					Simulator.logln("Error: Illegal state in queue " + name);
+					log.error("Illegal state in queue " + name);
 					throw new SimQPNException();
 				}				
 				double servTime = minRST * totQueTokCnt;  // Default for "-/G/1-PS" queue 								
@@ -355,7 +359,7 @@ public class Queue {
 		 * On old JVMs that do not have the above bug fixed, if two events have the exact same time, the wrong one might be removed!   
 		 */
 		if (!Simulator.eventList.remove(nextEvent))  {		
-			Simulator.logln("Error: Failed to remove scheduled event from event list!");
+			log.error("Failed to remove scheduled event from event list!");
 			throw new SimQPNException();
 		}			
 		eventScheduled = false;
@@ -535,7 +539,7 @@ public class Queue {
 			eventsUpToDate = false;
 		}
 		else {
-			Simulator.logln("Error: Invalid queueing discipline for QPlace " + name);
+			log.error("Invalid queueing discipline for QPlace " + name);
 			throw new SimQPNException();
 		}		
 	}
@@ -584,7 +588,7 @@ public class Queue {
 			eventsUpToDate = false;			
 		} 
 		else {
-			Simulator.logln("Error: Invalid queueing discipline for QPlace " + name);
+			log.error("Invalid queueing discipline for QPlace " + name);
 			throw new SimQPNException();
 		}		
 	}

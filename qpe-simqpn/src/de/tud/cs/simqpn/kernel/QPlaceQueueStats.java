@@ -60,8 +60,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
+import org.apache.log4j.Logger;
+
 import cern.jet.stat.Descriptive;
 import cern.jet.stat.Probability;
+import de.tud.cs.simqpn.util.LogUtil.ReportLevel;
 
 /**
  * Class QPlaceQueueStats
@@ -73,6 +76,8 @@ import cern.jet.stat.Probability;
 
 public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable {
 	private static final long serialVersionUID = 3L;
+	
+	private static Logger log = Logger.getLogger(QPlaceQueueStats.class);
 
 	// NOTE: The following data is duplicated here to make Stats objects self-contained. 
 	public int			queueDiscip;	// Queueing discipline
@@ -153,10 +158,8 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 						fileName = statsDir + fileSep + "RunStats-queue" + id + "-col" + c + "-ST.txt";											
 					this.fileST[c] = new PrintStream(new FileOutputStream(fileName));
 				}				
-				catch (FileNotFoundException ex) {											
-					Simulator.logln("Error - cannot open file: " + fileName);
-					Simulator.logln();
-					Simulator.log(ex);
+				catch (FileNotFoundException ex) {
+					log.error("Cannot open file: " + fileName, ex);
 					throw new SimQPNException(); 	
 				}
 			}													
@@ -267,83 +270,104 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	public void printReport() throws SimQPNException {
 		
 		if (!completed) {
-			Simulator.logln("QPlaceQueueStats " + name + " Error: Attempting to access statistics before data collection has finished!");
+			log.error("QPlaceQueueStats " + name + ": Attempting to access statistics before data collection has finished!");
 			throw new SimQPNException();
 		}
 		
-		Simulator.logln();
-		Simulator.logln();
-		Simulator.logln("REPORT for Queue of Queueing Place : " + name + "----------------------------------------");
-		Simulator.logln();
+		StringBuilder report = new StringBuilder();
+
+		report.append("for Queue of Queueing Place : ").append(name).append("----------------------------------------\n");
+		report.append("\n");
 		if (statsLevel >= 2) 
-			Simulator.logln("queueUtilQPl=" + queueUtilQPl); 
+			report.append("queueUtilQPl=").append(queueUtilQPl).append("\n"); 
 											
 		for (int c = 0; c < numColors; c++) {
-			Simulator.logln();
-			Simulator.logln("------------------ Color = " + colors[c] + " --------------------");				
-			Simulator.logln("arrivCnt=" + arrivCnt[c] + " deptCnt=" + deptCnt[c]);			
-			Simulator.logln("arrivThrPut=" + arrivThrPut[c] + " deptThrPut=" + deptThrPut[c]);											
+			report.append("\n");
+			report.append("------------------ Color = ").append(colors[c]).append(" --------------------\n");
+			
+			report.append("arrivCnt=").append(arrivCnt[c]);
+			report.append(" deptCnt=").append(deptCnt[c]).append("\n");	
+			
+			report.append("arrivThrPut=").append(arrivThrPut[c]);
+			report.append(" deptThrPut=").append(deptThrPut[c]).append("\n");											
 			if (statsLevel >= 2) {				
 //				Simulator.logln("minTkPop=" + minTkPop[c] + " maxTkPop=" + maxTkPop[c]);
-				Simulator.logln("meanTkPop=" + meanTkPop[c] + " tkColOcp=" + tkColOcp[c]);				
+				report.append("meanTkPop=").append(meanTkPop[c]);
+				report.append(" tkColOcp=").append(tkColOcp[c]).append("\n");				
 			}
 			if (statsLevel >= 3) {																			
 				if (!indrStats) {										
-					Simulator.logln("-----");
+					report.append("-----\n");
 //					Simulator.logln("numST=" + numST[c] + " minST=" + minST[c] + " maxST=" + maxST[c]);										
-					Simulator.logln("meanST=" + meanST[c] + " stDevST=" + stDevST[c]);				
+					report.append("meanST=").append(meanST[c]);
+					report.append(" stDevST=").append(stDevST[c]).append("\n");				
 					if (Simulator.analMethod == Simulator.BATCH_MEANS && minBatches[c] > 0)  {	
-						Simulator.logln();
-						Simulator.logln("Steady State Statistics: ");
+						report.append("\n");
+						report.append("Steady State Statistics: ");
 						if (numBatchesST[c] >= minBatches[c])  {											 													
-							Simulator.logln("numBatchesST=" + numBatchesST[c] + " batchSizeST=" + batchSizeST[c] + " stDevStdStateMeanST=" + stDevStdStateMeanST[c]);										
-							Simulator.logln(confLevelST[c] + "% c.i. = " + stdStateMeanST[c] + " +/- " + ciHalfLenST[c]);
+							report.append("numBatchesST=").append(numBatchesST[c]);
+							report.append(" batchSizeST=").append(batchSizeST[c]);
+							report.append(" stDevStdStateMeanST=").append(stDevStdStateMeanST[c]).append("\n");
+							
+							report.append(confLevelST[c]).append("% c.i. = ").append(stdStateMeanST[c])
+								.append(" +/- ").append(ciHalfLenST[c]).append("\n");
 						}
 						else {													
-							Simulator.logln("Only " + numBatchesST[c] + " batches collected!");
-							Simulator.logln("Need at least " + minBatches[c] + " for steady state statistics.");
+							report.append("Only ").append(numBatchesST[c]).append(" batches collected!\n");
+							report.append("Need at least ").append(minBatches[c]).append(" for steady state statistics.\n");
 						} 
 					}
 				}
 				else {
-					Simulator.logln("-----");
+					report.append("-----\n");
 					//Note: DT = delay time in the waiting area of the queue 
 //					Simulator.logln("numDT=" + numST[c] + " minDT=" + minST[c] + " maxDT=" + maxST[c]);															
 					double thrPut = deptThrPut[c];	// We assume steady state					 
-					Simulator.logln("meanDT=" + meanDT[c] + " stDevDT=" + stDevDT[c]);															
-					Simulator.logln("Indirect estimate of meanST=" + meanST[c]);			
-					Simulator.logln("Indirect estimate of meanTkPop=" + thrPut * meanST[c]);					
+					report.append("meanDT=").append(meanDT[c]).append(" stDevDT=").append(stDevDT[c]).append("\n");															
+					report.append("Indirect estimate of meanST=").append(meanST[c]).append("\n");			
+					report.append("Indirect estimate of meanTkPop=").append(thrPut * meanST[c]).append("\n");					
 					if (Simulator.analMethod == Simulator.BATCH_MEANS && minBatches[c] > 0)  {					
-						Simulator.logln();
-						Simulator.logln("Steady State Statistics: ");
+						report.append("\n");
+						report.append("Steady State Statistics: \n");
 						if (numBatchesST[c] >= minBatches[c])  {																									
-							Simulator.logln("numBatchesDT=" + numBatchesST[c] + " batchSizeDT=" + batchSizeST[c] + " stDevStdStateMeanDT=" + stDevStdStateMeanDT[c]);																								
-							Simulator.logln(confLevelST[c] + "% c.i.DT = " + stdStateMeanDT[c] + " +/- " + ciHalfLenDT[c]);						
-							Simulator.logln("Indirect Estimates: ");						
-							Simulator.logln(confLevelST[c] + "% c.i.ST = " + stdStateMeanST[c] + " +/- " + ciHalfLenST[c]);
-							Simulator.logln("meanTkPop=" + thrPut * stdStateMeanST[c]);
+							report.append("numBatchesDT=").append(numBatchesST[c]);
+							report.append(" batchSizeDT=").append(batchSizeST[c]);
+							report.append(" stDevStdStateMeanDT=").append(stDevStdStateMeanDT[c]).append("\n");
+							
+							report.append(confLevelST[c]).append("% c.i.DT = ").append(stdStateMeanDT[c])
+									.append(" +/- ").append(ciHalfLenDT[c]).append("\n");						
+							report.append("Indirect Estimates: \n");						
+							report.append(confLevelST[c]).append("% c.i.ST = ").append(stdStateMeanST[c])
+									.append(" +/- ").append(ciHalfLenST[c]).append("\n");
+							
+							report.append("meanTkPop=").append(thrPut * stdStateMeanST[c]).append("\n");
 						}
 						else {							
-							Simulator.logln("Only " + numBatchesST[c] + " batches collected!");
-							Simulator.logln("Need at least " + minBatches[c] + " for steady state statistics.");
+							report.append("Only ").append(numBatchesST[c]).append(" batches collected!\n");
+							report.append("Need at least ").append(minBatches[c]).append(" for steady state statistics.\n");
 						}
 					}
 				}												
 			}
 			if (statsLevel >= 4) {
-				Simulator.logln("-----");
-				Simulator.logln("Histogram Data");
+				report.append("-----\n");
+				report.append("Histogram Data\n");
 				for (int i = 1; i < 10; i++) 
-					Simulator.logln("   " + i*10 + "% percentile=" +  histST[c].getPercentile((double) i / 10));
-				Simulator.logln("   histogramMean=" + histST[c].getMean());				
+					report.append("   ").append(i*10).append("% percentile=").append(histST[c].getPercentile((double) i / 10)).append("\n");
+				report.append("   histogramMean=").append(histST[c].getMean()).append("\n");				
 			}			
 			if (statsLevel >= 5) {
 				if (!indrStats)
-					Simulator.logln("Token sojourn times dumped in " + statsDir);
+					report.append("Token sojourn times dumped in ").append(statsDir).append("\n");
 				else 
-					Simulator.logln("Token delay times dumped in " + statsDir);
+					report.append("Token delay times dumped in ").append(statsDir).append("\n");
 			}
 		}
+		
+		report.append("\n\n");
+		
+		// Output report
+		log.log(ReportLevel.REPORT, report);
 	}
 	
 }

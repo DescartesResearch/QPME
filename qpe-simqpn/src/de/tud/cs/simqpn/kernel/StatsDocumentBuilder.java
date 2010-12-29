@@ -45,6 +45,7 @@ package de.tud.cs.simqpn.kernel;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.DocumentFactory;
 import org.dom4j.DocumentHelper;
@@ -54,6 +55,9 @@ import org.dom4j.XPath;
 public class StatsDocumentBuilder {
 
 	private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HHmmssS");
+	
+	private static Logger log = Logger.getLogger(StatsDocumentBuilder.class);
+	
 	private final Stats[] data;
 	private Document doc;
 	private final Element net;
@@ -78,7 +82,7 @@ public class StatsDocumentBuilder {
 		for (Stats stats : this.data) {
 			if (stats != null) {
 				if (!stats.completed) {
-					Simulator.logln("AggregateStats " + stats.name + " Error: Attempting to access statistics before data collection has finished!");
+					log.error("AggregateStats " + stats.name + " Error: Attempting to access statistics before data collection has finished!");
 					throw new SimQPNException();
 				}
 				addStats(stats, this.doc.getRootElement());

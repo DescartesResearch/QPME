@@ -62,6 +62,7 @@ package de.tud.cs.simqpn.kernel;
 
 import java.util.ArrayList;
 
+import org.apache.log4j.Logger;
 import org.dom4j.Element;
 
 import cern.colt.list.AbstractDoubleList;
@@ -78,7 +79,10 @@ import cern.jet.random.AbstractContinousDistribution;
  * @version %I%, %G%
  */
 
-public class QPlace extends Place {	
+public class QPlace extends Place {
+	
+	private Logger log = Logger.getLogger(QPlace.class);
+	
 	public Queue		queue;					// Queue of the queueing place.
 	
 	public double[]		meanServTimes;			// Mean token service times at the queueing station (all times usually in milliseconds)
@@ -148,7 +152,7 @@ public class QPlace extends Place {
 			for (int c = 0; c < numColors; c++) 
 				// Make sure that all meanServTimes have been initialized
 				if (meanServTimes[c] < 0) {
-					Simulator.logln("Error: meanServTimes[" + c + "] has not been initialized for QPlace " + name);
+					log.error("meanServTimes[" + c + "] has not been initialized for QPlace " + name);
 					throw new SimQPNException(); 
 				}
 		}
@@ -215,7 +219,7 @@ public class QPlace extends Place {
 	@Override
 	public void addTokens(int color, int count, Token[] tokensToBeAdded) throws SimQPNException {	
 		if (count <= 0) { // DEBUG
-			Simulator.logln("Error: Attempted to add nonpositive number of tokens to queue " + name);
+			log.error("Attempted to add nonpositive number of tokens to queue " + name);
 			throw new SimQPNException();
 		}
 		
@@ -241,7 +245,7 @@ public class QPlace extends Place {
 	 */
 	public void completeService(Token token) throws SimQPNException {
 		if (queueTokenPop[token.color] < 1) {
-			Simulator.logln("Error: Attempted to remove a token from queue " + name + " which is empty!");
+			log.error("Attempted to remove a token from queue " + name + " which is empty!");
 			throw new SimQPNException();
 		}
 
