@@ -148,6 +148,7 @@ public class SimQPN {
 			String configuration, String outputFilename, String logConfigFilename, SimulatorProgress progress) throws SimQPNException {
 		Element net = netDocument.getRootElement();
 		Simulator.configure(net, configuration, logConfigFilename);
+		net = Simulator.prepareNet(net, configuration);
 		Stats[] result = Simulator.execute(net, configuration, progress);
 		// Skip stats document generation for WELCH and REPL_DEL since the 
 		// document builder does not support these methods yet.
