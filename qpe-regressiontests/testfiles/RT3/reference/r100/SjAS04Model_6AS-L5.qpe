@@ -1009,6 +1009,6 @@
     <connection source-id="1291196834100" target-id="1156606473679" id="1291196834103"/> 
   </connections>  
   <meta-attributes> 
-    <meta-attribute name="sim-qpn" scenario="1" id="1157198811876" time-before-initial-heart-beat="100000" seconds-between-heart-beats="60" stopping-rule="RELPRC" ramp-up-length="5E6" total-run-length="100E7" time-between-stop-checks="60000" configuration-name="example_config" seconds-between-stop-checks="0" output-directory="." verbosity-level="1"/> 
+    <meta-attribute name="sim-qpn" scenario="1" id="1157198811876" time-before-initial-heart-beat="100000" seconds-between-heart-beats="60" stopping-rule="RELPRC" ramp-up-length="5E6" total-run-length="15E7" time-between-stop-checks="60000" configuration-name="example_config" seconds-between-stop-checks="0" output-directory="." verbosity-level="1"/> 
   </meta-attributes> 
 </net>

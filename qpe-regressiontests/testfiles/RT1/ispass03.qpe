@@ -2,7 +2,7 @@
 
 <net qpme-version="1.5.2"> 
   <queues> 
-    <queue id="q0" name="Q0" strategy="IS" number-of-servers="1"/>  
+    <queue id="q0" name="Q0" strategy="IS" number-of-servers="1"/> 
     <queue id="q1" name="Q1" strategy="PS" number-of-servers="1"/>  
     <queue id="q2" name="Q2" strategy="PS" number-of-servers="1"/>  
     <queue id="q3" name="Q3" strategy="FCFS" number-of-servers="1"/> 

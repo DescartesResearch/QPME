@@ -1,57 +1,67 @@
 package de.tud.cs.simqpn.rt.tests;
 
+import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertFlowEquilibrium;
+import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertNoErrors;
+import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertNoWarnings;
 import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertPlaceCount;
 import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertQueueCount;
 import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertRelativePrecision;
 import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertResults;
-
-import java.io.File;
+import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertRunLengthLessOrEqual;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.tud.cs.simqpn.rt.framework.SimulationResults;
 import de.tud.cs.simqpn.rt.framework.SimulationTest;
+import de.tud.cs.simqpn.rt.framework.results.Statistics.ElementType;
+import de.tud.cs.simqpn.rt.framework.run.SimulationRunner.AnalysisMode;
+import de.tud.cs.simqpn.rt.framework.run.SimulationRunner.Revision;
+import de.tud.cs.simqpn.rt.framework.run.SimulationRunner.StoppingRule;
 
 
 public class RT2 extends SimulationTest {
 	
 	@BeforeClass
 	public static void init() throws Exception {
-		initTest("RT2", "pepsy-bcmp2.qpe", "example_config");
+		initTest("RT2", "pepsy-bcmp2.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.RELATIVE_PRECISION);
 	}
 	
 	@Test
-	public void checkCount() {
+	public void checkIntegrity() {
+		
+		assertRunLengthLessOrEqual(32E8, results);
+		
+		assertNoErrors(results);
+		assertNoWarnings(results);
+		
 		assertPlaceCount(10, results);
 		assertQueueCount(5, results);
 	}
 	
 	@Test
+	public void checkStability() {
+		assertFlowEquilibrium(results);
+	}
+	
+	@Test
 	public void checkPrecision() {
-		assertRelativePrecision(0.05, results, "qplace:depository", "CPU");
-		assertRelativePrecision(0.05, results, "qplace:queue", "CPU");
-		assertRelativePrecision(0.05, results, "qplace:depository", "Disk 1");
-		assertRelativePrecision(0.05, results, "qplace:queue", "Disk 1");
-		assertRelativePrecision(0.05, results, "qplace:depository", "Disk 2");
-		assertRelativePrecision(0.05, results, "qplace:queue", "Disk 2");
-		assertRelativePrecision(0.05, results, "qplace:depository", "Disk 3");
-		assertRelativePrecision(0.05, results, "qplace:queue", "Disk 3");
+		assertRelativePrecision(0.05, results, ElementType.QPLACE_DEPOSITORY, "CPU");
+		assertRelativePrecision(0.05, results, ElementType.QPLACE_QUEUE, "CPU");
+		assertRelativePrecision(0.05, results, ElementType.QPLACE_DEPOSITORY, "Disk 1");
+		assertRelativePrecision(0.05, results, ElementType.QPLACE_QUEUE, "Disk 1");
+		assertRelativePrecision(0.05, results, ElementType.QPLACE_DEPOSITORY, "Disk 2");
+		assertRelativePrecision(0.05, results, ElementType.QPLACE_QUEUE, "Disk 2");
+		assertRelativePrecision(0.05, results, ElementType.QPLACE_DEPOSITORY, "Disk 3");
+		assertRelativePrecision(0.05, results, ElementType.QPLACE_QUEUE, "Disk 3");
 	}
 	
 	@Test
 	public void checkR100() throws Exception {		
-		SimulationResults r100ref = new SimulationResults();
-		r100ref.load(new File("testfiles/RT2/reference/r100/reference-testdata.xml"));
-		
-		assertResults(report, r100ref, results);
+		assertResults(report, loadReferenceData(Revision.R100), results);
 	}
 	
 	@Test
 	public void checkR162() throws Exception {		
-		SimulationResults r162ref = new SimulationResults();
-		r162ref.load(new File("testfiles/RT2/reference/r162/reference-testdata.xml"));
-		
-		assertResults(report, r162ref, results);
+		assertResults(report, loadReferenceData(Revision.R162), results);
 	}
 }

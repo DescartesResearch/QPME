@@ -46,7 +46,7 @@
         <color-ref id="1156184916313" color-id="1156184916278" initial-population="40"/> 
       </color-refs> 
     </place>  
-    <place id="1156184916282" departure-discipline="NORMAL" type="ordinary-place" name="DBS-Process-Pool"> 
+    <place id="1156184916282" departure-discipline="NORMAL" type="ordinary-place" name="DBS.DBS-Process-Pool"> 
       <meta-attributes> 
         <meta-attribute name="location" location-x="591" location-y="428"/>  
         <meta-attribute name="sim-qpn" configuration-name="example_config" id="1156184916344" statsLevel="2"/> 
@@ -68,7 +68,7 @@
         </color-ref> 
       </color-refs> 
     </place>  
-    <place id="1156184916285" departure-discipline="NORMAL" type="ordinary-place" name="DBS-PQ"> 
+    <place id="1156184916285" departure-discipline="NORMAL" type="ordinary-place" name="DBS.DBS-PQ"> 
       <meta-attributes> 
         <meta-attribute name="location" location-x="351" location-y="267"/>  
         <meta-attribute name="sim-qpn" configuration-name="example_config" id="1156184916346" statsLevel="1"/> 
@@ -77,7 +77,7 @@
         <color-ref color-id="1156184916275" id="1156184916316" initial-population="0"/> 
       </color-refs> 
     </place>  
-    <place id="1156184916286" departure-discipline="NORMAL" type="queueing-place" name="DBS-CPU" strategy="PS" number-of-servers="1"> 
+    <place id="1156184916286" departure-discipline="NORMAL" type="queueing-place" name="DBS.DBS-CPU" strategy="PS" number-of-servers="1"> 
       <meta-attributes> 
         <meta-attribute name="location" location-x="554" location-y="269"/>  
         <meta-attribute name="sim-qpn" configuration-name="example_config" id="1156184916347" statsLevel="3"/> 
@@ -90,7 +90,7 @@
         </color-ref> 
       </color-refs> 
     </place>  
-    <place id="1156184916287" departure-discipline="NORMAL" type="queueing-place" name="DBS-I/O" strategy="FCFS" number-of-servers="1"> 
+    <place id="1156184916287" departure-discipline="NORMAL" type="queueing-place" name="DBS.DBS-I/O" strategy="FCFS" number-of-servers="1"> 
       <meta-attributes> 
         <meta-attribute name="location" location-x="753" location-y="270"/>  
         <meta-attribute name="sim-qpn" configuration-name="example_config" id="1156184916348" statsLevel="3"/> 

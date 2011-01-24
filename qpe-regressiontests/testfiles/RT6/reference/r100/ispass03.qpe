@@ -32,7 +32,7 @@
       <color-refs> 
         <color-ref color-id="1156184916275" id="1156184916314" initial-population="80" distribution-function="Exponential" maximum-capacity="0" ranking="0" priority="0" lambda="0.0050"> 
           <meta-attributes> 
-            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1156184916349" reqRelPrc="0.05" batchSize="200" queueReqRelPrc="0.05" queueBatchSize="200" queueReqAbsPrc="10.0" reqAbsPrc="10.0" numBMeansCorlTested="200" queueNumBMeansCorlTested="200" minBatches="201" queueMinBatches="201" signLev="0.05" queueSignLev="0.05"/> 
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1156184916349" reqRelPrc="0.05" batchSize="200" queueReqRelPrc="0.05" queueBatchSize="200" reqAbsPrc="10.0" numBMeansCorlTested="200" queueNumBMeansCorlTested="200" signLev="0.05" queueSignLev="0.05" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000" minBatches="201" queueMinBatches="201" queueReqAbsPrc="1.5"/> 
           </meta-attributes> 
         </color-ref> 
       </color-refs> 
@@ -63,7 +63,7 @@
       <color-refs> 
         <color-ref color-id="1156184916275" id="1156184916315" distribution-function="Exponential" initial-population="0" maximum-capacity="0" ranking="0" priority="0" input-file="" lambda="0.0142857"> 
           <meta-attributes> 
-            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1156184916350" reqRelPrc="0.05" batchSize="200" queueReqRelPrc="0.05" queueBatchSize="200" numBMeansCorlTested="0" reqAbsPrc="20.0" minBatches="30" queueReqAbsPrc="20.0" queueNumBMeansCorlTested="200" queueMinBatches="201" signLev="0.05" queueSignLev="0.05"/> 
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1156184916350" reqRelPrc="0.05" batchSize="200" queueReqRelPrc="0.05" queueBatchSize="200" numBMeansCorlTested="0" reqAbsPrc="1E-20" queueNumBMeansCorlTested="200" signLev="0.05" queueSignLev="0.05" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000" minBatches="30" queueMinBatches="201" queueReqAbsPrc="40.0"/> 
           </meta-attributes> 
         </color-ref> 
       </color-refs> 
@@ -85,7 +85,7 @@
       <color-refs> 
         <color-ref color-id="1156184916275" id="1156184916317" distribution-function="Exponential" input-file="" lambda="0.0188679" priority="0" ranking="0" maximum-capacity="0" initial-population="0"> 
           <meta-attributes> 
-            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1156184916351" reqRelPrc="0.05" batchSize="200" queueReqRelPrc="0.05" queueBatchSize="200" reqAbsPrc="10.0" minBatches="30" numBMeansCorlTested="0" queueReqAbsPrc="10.0" queueNumBMeansCorlTested="200" queueMinBatches="201" signLev="0.05" queueSignLev="0.05"/> 
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1156184916351" reqRelPrc="0.05" batchSize="200" queueReqRelPrc="0.05" queueBatchSize="200" reqAbsPrc="1E-20" numBMeansCorlTested="0" queueReqAbsPrc="10.0" queueNumBMeansCorlTested="200" signLev="0.05" queueSignLev="0.05" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000" minBatches="30" queueMinBatches="201"/> 
           </meta-attributes> 
         </color-ref> 
       </color-refs> 
@@ -98,7 +98,7 @@
       <color-refs> 
         <color-ref color-id="1156184916275" id="1156184916318" distribution-function="Exponential" initial-population="0" maximum-capacity="0" ranking="0" priority="0" lambda="0.0833333"> 
           <meta-attributes> 
-            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1156184916352" reqRelPrc="0.05" batchSize="200" queueReqRelPrc="0.05" queueBatchSize="200" reqAbsPrc="10.0" minBatches="30" numBMeansCorlTested="0" queueReqAbsPrc="10.0" queueNumBMeansCorlTested="200" queueMinBatches="201" signLev="0.05" queueSignLev="0.05"/> 
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1156184916352" reqRelPrc="0.05" batchSize="200" queueReqRelPrc="0.05" queueBatchSize="200" reqAbsPrc="1E-20" numBMeansCorlTested="0" queueNumBMeansCorlTested="200" signLev="0.05" queueSignLev="0.05" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000" minBatches="30" queueMinBatches="201" queueReqAbsPrc="1.0"/> 
           </meta-attributes> 
         </color-ref> 
       </color-refs> 
@@ -191,6 +191,6 @@
     <connection source-id="1156184916280" target-id="1156184916293" id="1156184916310"/> 
   </connections>  
   <meta-attributes> 
-    <meta-attribute name="sim-qpn" configuration-name="example_config" scenario="1" id="1156184916340" seconds-between-heart-beats="60" stopping-rule="ABSPRC" time-between-stop-checks="60000" ramp-up-length="6E6" total-run-length="100E6" time-before-initial-heart-beat="30000" seconds-between-stop-checks="0" output-directory="." verbosity-level="1"/> 
+    <meta-attribute name="sim-qpn" configuration-name="example_config" scenario="1" id="1156184916340" seconds-between-heart-beats="60" time-between-stop-checks="60000" ramp-up-length="6E6" time-before-initial-heart-beat="30000" seconds-between-stop-checks="0" output-directory="." verbosity-level="1" total-run-length="50E6" stopping-rule="ABSPRC"/> 
   </meta-attributes> 
 </net>

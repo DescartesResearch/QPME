@@ -1,36 +1,47 @@
 package de.tud.cs.simqpn.rt.tests;
 
+import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertFlowEquilibrium;
+import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertNoErrors;
+import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertNoWarnings;
 import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertPlaceCount;
 import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertQueueCount;
 import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertResults;
-
-import java.io.File;
+import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertRunLength;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.tud.cs.simqpn.rt.framework.SimulationResults;
 import de.tud.cs.simqpn.rt.framework.SimulationTest;
+import de.tud.cs.simqpn.rt.framework.run.SimulationRunner.AnalysisMode;
+import de.tud.cs.simqpn.rt.framework.run.SimulationRunner.Revision;
+import de.tud.cs.simqpn.rt.framework.run.SimulationRunner.StoppingRule;
 
 public class RT4 extends SimulationTest {
 	
 	@BeforeClass
 	public static void init() throws Exception {
-		initTest("RT4", "SPECjms2007Model.qpe", "example_config");
+		initTest("RT4", "SPECjms2007Model.qpe", "new configuration", AnalysisMode.BATCH_MEANS, StoppingRule.FIXED_LENGTH);
 	}
 	
 	@Test
-	public void checkCount() {
+	public void checkIntegrity() {
+		
+		assertRunLength(1320, results);
+		
+		assertNoErrors(results);
+		
 		assertPlaceCount(120, results);
 		assertQueueCount(23, results);
 	}
 	
+//	@Test
+//	public void checkStability() {
+//		assertFlowEquilibrium(results);
+//	}
+	
 	@Test
 	public void checkR162() throws Exception {		
-		SimulationResults r162ref = new SimulationResults();
-		r162ref.load(new File("testfiles/RT4/reference/r162/reference-testdata.xml"));
-		
-		assertResults(report, r162ref, results);
+		assertResults(report, loadReferenceData(Revision.R162), results);
 	}
 
 }

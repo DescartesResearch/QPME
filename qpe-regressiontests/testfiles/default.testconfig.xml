@@ -1,0 +1,105 @@
+<?xml version="1.0" ?>
+<test-configuration>
+	<metrics>
+		<substitutions>
+			<substitute name="Overall Queue Util" with="tkOcp" />
+			<substitute name="queueUtilQPl" with="tkOcp" />
+			<substitute name="colUtil" with="tkColOcp" />
+			<substitute name="meanColUtil[c]" with="meanTkColOcp[c]" />
+			<substitute name="stDevColUtil[c]" with="stDevTkColOcp[c]" />
+			<substitute name="meanQueueUtil" with="meanQueueUtilQPl" />
+			<substitute name="stDevQueueUtil" with="stDevQueueUtilQPl" />
+		</substitutions>
+		<ignores>
+			<ignore metric="arrivCnt" />
+			<ignore metric="deptCnt" />
+			<ignore metric="numBatchesST" />
+			<ignore metric="batchSizeST" />
+			<ignore metric="stDevStdStateMeanST" />
+			<ignore metric="ciHalfLenST" />
+			<ignore metric="stDevST" />
+			<ignore metric="minST" />
+			<ignore metric="maxST" />
+			<ignore metric="minTkPop" />
+			<ignore metric="maxTkPop" />
+
+			<ignore metric="minRunLen" />
+			<ignore metric="maxRunLen" />
+			<ignore metric="avgRunLen" />
+			<ignore metric="stDevRunLen" />
+			<ignore metric="avgWallClockTime" />
+			<ignore metric="stDevWallClockTime" />
+			<ignore metric="stDevQueueUtilQPl" />
+			<ignore metric="stDevArrivThrPut[c]" />
+			<ignore metric="stDevDeptThrPut[c]" />
+			<ignore metric="stDevAvgTkPop[c]" />
+			<ignore metric="stDevTkColOcp[c]" />
+			<ignore metric="stDevAvgST[c]" />
+			<ignore metric="minAvgTkPop[c]" />
+			<ignore metric="maxAvgTkPop[c]" />
+		</ignores>
+		<checks>
+			<check metric="tkOcp" type="mean" />
+			<check metric="arrivThrPut" type="mean" />
+			<check metric="deptThrPut" type="mean" />
+			<check metric="meanTkPop" type="mean" />
+			<check metric="tkColOcp" type="mean" />
+			<check metric="meanST" type="mean" />
+			<check metric="stdStateMeanST" type="mean" />
+			<check metric="confLevelST" type="mean" />
+			<check metric="totArrivThrPut" type="mean" />
+			<check metric="totDeptThrPut" type="mean" />
+			<check metric="meanTotTkPop" type="mean" />
+			<check metric="queueUtil" type="mean" />
+			<check metric="histST" type="mean" />
+
+			<check metric="numReplicationsUsed" type="mean" />
+			<check metric="numTooShortRepls" type="mean" />
+			<check metric="meanQueueUtilQPl" type="mean" />
+			<check metric="meanArrivThrPut[c]" type="mean" />
+			<check metric="meanDeptThrPut[c]" type="mean" />
+			<check metric="meanAvgTkPop[c]" type="mean" />
+			<check metric="meanTkColOcp[c]" type="mean" />
+			<check metric="meanAvgST[c]" type="mean" />
+			
+			<check metric="movAvgST" type="mean" />
+		</checks>
+	</metrics>
+	<tests>
+		<test name="RT1" test-runs="10" accuracy="0.02" />
+		<test name="RT2" test-runs="5" accuracy="0.02" />
+		<test name="RT3" test-runs="6" accuracy="0.05">
+			<skips>
+				<skip place="qplace:queue:B1" color="l" />
+				<skip place="qplace:queue:B2" color="l" />
+				<skip place="qplace:queue:A1" color="l" />
+				<skip place="qplace:queue:A2" color="l" />
+				<skip place="qplace:queue:A3" color="l" />
+				<skip place="qplace:queue:A4" color="l" />
+				<skip place="qplace:queue:A5" color="l" />
+				<skip place="qplace:queue:A6" color="l" />
+			</skips>
+		</test>
+		<test name="RT4" test-runs="2" accuracy="0.1">
+			<skips>
+				<skip place="qplace:queue:I1_Trigger_100" />
+				<skip place="qplace:depository:I1_Trigger_100" />
+				<skip place="queue:I1_Trigger_100" />
+				<skip place="qplace:queue:I4_Trigger_100" />
+				<skip place="qplace:depository:I4_Trigger_100" />
+				<skip place="queue:I4_Trigger_100" />
+				<skip place="qplace:queue:I5_Trigger_100" />
+				<skip place="qplace:depository:I5_Trigger_100" />
+				<skip place="queue:I5_Trigger_100" />
+			</skips>
+		</test>
+		<test name="RT5" test-runs="10" accuracy="0.02" />
+		<test name="RT6" test-runs="10" accuracy="0.02" />
+		<test name="RT7" test-runs="1" accuracy="0.02" />
+		<test name="RT8" test-runs="1" accuracy="0.02" />
+		<test name="RT9" test-runs="10" accuracy="0.02" />
+		<test name="RT10" test-runs="1" accuracy="0.01" />
+		<test name="RT11" test-runs="10" accuracy="0.02" />
+		<test name="RT12" test-runs="10" accuracy="0.02" />
+	</tests>
+</test-configuration>

@@ -1,3 +1,45 @@
+/* ==============================================
+ * QPME : Queueing Petri net Modeling Environment
+ * ==============================================
+ *
+ * (c) Copyright 2003-2011, by Samuel Kounev and Contributors.
+ * 
+ * Project Info:   http://descartes.ipd.kit.edu/projects/qpme/
+ *                 http://www.descartes-research.net/
+ *    
+ * All rights reserved. This software is made available under the terms of the 
+ * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * This software is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the Eclipse Public License (EPL)
+ * for more details.
+ *
+ * You should have received a copy of the Eclipse Public License (EPL)
+ * along with this software; if not visit http://www.eclipse.org or write to
+ * Eclipse Foundation, Inc., 308 SW First Avenue, Suite 110, Portland, 97204 USA
+ * Email: license (at) eclipse.org 
+ *  
+ * [Java is a trademark or registered trademark of Sun Microsystems, Inc.
+ * in the United States and other countries.]
+ *                                
+ * =============================================
+ *
+ * Original Author(s):  Simon Spinner
+ * Contributor(s):   
+ * 
+ * NOTE: The above list of contributors lists only the people that have
+ * contributed to this source file - for a list of ALL contributors to 
+ * the project, please see the README.txt file.
+ * 
+ *  History:
+ *  Date        ID                Description
+ *  ----------  ----------------  ----------------------------------------------------------------------------------
+ *  2011/01/21  Simon Spinner     Created.         
+ * 
+ */
+
 package de.tud.cs.simqpn.rt.framework;
 
 import java.io.File;
@@ -7,18 +49,28 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import de.tud.cs.simqpn.rt.framework.stats.Metric;
+import de.tud.cs.simqpn.rt.framework.results.Metric;
+import de.tud.cs.simqpn.rt.framework.results.Statistics.ElementType;
 
 
 public class TestReport {
 	
+	private String testName;
 	
 	private String queue = null;
 	private String place = null;
-	private String placeType = null;
+	private ElementType placeType = null;
 	private String color = null;
 	
 	private XMLStreamWriter writer;
+	
+	public TestReport(String testName) {
+		this.testName = testName;
+	}
+	
+	public String getTestName() {
+		return testName;
+	}
 	
 	public void startReport(File reportFile) {
 		XMLOutputFactory factory = XMLOutputFactory.newInstance();
@@ -66,7 +118,7 @@ public class TestReport {
 		this.queue = null;
 	}
 	
-	public void startPlaceAssert(String place, String placeType) {
+	public void startPlaceAssert(String place, ElementType placeType) {
 		this.place = place;
 		this.placeType = placeType;
 		
@@ -166,6 +218,30 @@ public class TestReport {
 		}
 	}
 	
+	public void ignored(Metric expected) {
+		try {
+			writer.writeStartElement("tr");	
+			writer.writeStartElement("td");
+			writer.writeCharacters(" ");
+			writer.writeEndElement();
+			writer.writeStartElement("td");
+			writer.writeAttribute("width", "60");
+			writer.writeCharacters(" ");
+			writer.writeEndElement();
+			writer.writeStartElement("td");
+			writer.writeCharacters(expected.getName());
+			writer.writeEndElement();
+			writer.writeStartElement("td");
+			writer.writeAttribute("colspan", "3");
+			writer.writeAttribute("style", "color: grey;");
+			writer.writeCharacters("ignored");
+			writer.writeEndElement();		
+			writer.writeEndElement();
+		} catch(Exception ex) {
+			ex.printStackTrace();
+		}	
+	}
+	
 	public void failure(String message) {
 		try {
 			writer.writeStartElement("tr");	
@@ -251,6 +327,5 @@ public class TestReport {
 		} catch (XMLStreamException e) {
 			e.printStackTrace();
 		}		
-	}
-	
+	}	
 }
