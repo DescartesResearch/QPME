@@ -64,11 +64,11 @@ public class SimulationTest {
 	protected static SimulationResults results;
 	protected static TestReport report;
 	
-	public static void initTest(String name, String modelFile, String configuration, AnalysisMode analysisMode, StoppingRule stoppingRule) throws Exception {
-		initTest(name, modelFile, configuration, analysisMode, stoppingRule, false);
+	public static void initTest(String name, String modelFile, String configuration, AnalysisMode analysisMode, StoppingRule stoppingRule, String comments) throws Exception {
+		initTest(name, modelFile, configuration, analysisMode, stoppingRule, false, comments);
 	}
 
-	public static void initTest(String name, String model, String configuration, AnalysisMode analysisMode, StoppingRule stoppingRule, boolean expectError) throws Exception {		
+	public static void initTest(String name, String model, String configuration, AnalysisMode analysisMode, StoppingRule stoppingRule, boolean expectError, String comments) throws Exception {		
 		log.info("Start test " + name);
 		
 		testName = name;
@@ -79,16 +79,25 @@ public class SimulationTest {
 		}
 		
 		SimulationRunner runner = new SimulationRunner(Revision.TRUNK, testName);
+		int repeats = TestConfig.getInstance().getTestRuns(testName);
 		RunConfig config = new RunConfig();
 		config.setModel(modelFile);
 		config.setConfigurationName(configuration);
 		config.setAnalysisMode(analysisMode);
 		config.setStoppingRule(stoppingRule);
-		config.setRepeats(TestConfig.getInstance().getTestRuns(testName));
+		config.setRepeats(repeats);
 		config.setExpectError(expectError);
 		results = runner.run(config);
 		
-		report = new TestReport(testName);
+		
+		String description = "<b>Model: </b> " + model + "<br />"
+								+ "<b>Configuration: </b> " + configuration + "<br />"
+								+ "<b>Analysis Mode: </b> " + analysisMode + "<br />"
+								+ "<b>Stopping Rule: </b> " + stoppingRule + "<br />"
+								+ "<b>Repeats: </b>" + repeats + "<br />"
+								+ "<b>T-test Significance Level: </b>" + TestConfig.getInstance().getTestSignificaneLevel(name) + "<br />"
+								+ "<b>Comments: </b>" + comments + "<br />";
+		report = new TestReport(testName, description);
 		File reportDir = new File("reports/" + testName);
 		reportDir.mkdirs();
 		report.startReport(new File(reportDir, "latest.html"));
@@ -99,11 +108,5 @@ public class SimulationTest {
 		if (report != null) {
 			report.endReport();
 		}
-	}
-	
-	public static SimulationResults loadReferenceData(Revision rev) throws Exception {
-		SimulationResults ref = new SimulationResults();
-		ref.load(new File("testfiles/" + testName + "/reference/" + rev.toString().toLowerCase() + "/reference-testdata.xml"));
-		return ref;
 	}
 }

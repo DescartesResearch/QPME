@@ -101,10 +101,9 @@ public class SimulationRunner {
 		
 		File tmpDir = createTmpDir();		
 		SimulationResults results = initResults(config.getModel(), config.getAnalysisMode());		
-		ShutdownHookProcessDestroyer processDestroyer = new ShutdownHookProcessDestroyer();
 		
 		ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-		ArrayList<Run> runs = initRuns(config, tmpDir, processDestroyer);
+		ArrayList<Run> runs = initRuns(config, tmpDir);
 		
 		try {
 			List<Future<RunInfo>> futures = service.invokeAll(runs);
@@ -163,6 +162,7 @@ public class SimulationRunner {
 			WelchDumpImport welchImport = new WelchDumpImport();
 			
 			for (RunInfo info : results.getRunInfos()) {
+				results.getWallClockTime().addSample(info.getWallClockTime());
 				welchImport.execute(info, results);
 			}
 		} else if ((mode == AnalysisMode.BATCH_MEANS) &&
@@ -170,6 +170,7 @@ public class SimulationRunner {
 			SimQPNResultFileImport resultImport = new SimQPNResultFileImport();
 			
 			for (RunInfo info : results.getRunInfos()) {
+				results.getWallClockTime().addSample(info.getWallClockTime());
 				try {
 					FileFilter simqpnFilter = new SuffixFileFilter(".simqpn");
 					File[] resultFiles = info.getRunDirectory().listFiles(simqpnFilter);
@@ -191,13 +192,13 @@ public class SimulationRunner {
 			ConsoleLogImport consoleImport = new ConsoleLogImport();
 			
 			for (RunInfo info : results.getRunInfos()) {
+				results.getWallClockTime().addSample(info.getWallClockTime());
 				consoleImport.execute(info, results);
 			}
 		}
 	}
 
-	private ArrayList<Run> initRuns(RunConfig config, File tmpDir,
-			ShutdownHookProcessDestroyer processDestroyer) {
+	private ArrayList<Run> initRuns(RunConfig config, File tmpDir) {
 		ArrayList<Run> runs = new ArrayList<Run>(config.getRepeats());	
 		for (int i = 0; i < config.getRepeats(); i++) {
 			
@@ -209,13 +210,13 @@ public class SimulationRunner {
 			}
 			switch(revisionToRun) {
 			case R100:				
-				runs.add(new HistoricRun(i, new File(HISTORIC_EXECUTABLE_R100), config, runDir, processDestroyer));
+				runs.add(new HistoricRun(i, new File(HISTORIC_EXECUTABLE_R100), config, runDir));
 				break;
 			case R162:
-				runs.add(new HistoricRun(i, new File(HISTORIC_EXECUTABLE_R162), config, runDir, processDestroyer));
+				runs.add(new HistoricRun(i, new File(HISTORIC_EXECUTABLE_R162), config, runDir));
 				break;
 			case TRUNK:
-				runs.add(new TrunkRun(i, config, runDir, processDestroyer));
+				runs.add(new TrunkRun(i, config, runDir));
 				break;
 			}
 		}

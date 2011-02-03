@@ -15,7 +15,7 @@ public class RT9 extends SimulationTest {
 	
 	@BeforeClass
 	public static void init() throws Exception {
-		initTest("RT9", "ispass03_probes.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.RELATIVE_PRECISION);
+		initTest("RT9", "ispass03_probes.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.RELATIVE_PRECISION, "Probes");
 	}
 	
 	@Test

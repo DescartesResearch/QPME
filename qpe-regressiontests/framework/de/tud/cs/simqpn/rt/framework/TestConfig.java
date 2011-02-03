@@ -72,15 +72,15 @@ import de.tud.cs.simqpn.rt.framework.results.Metric;
 
 public class TestConfig {
 	
-	public static enum CheckConfig {
-		MIN_CHECK, MAX_CHECK, MEAN_CHECK;
+	private static enum MetricConfig {
+		SKIP, IGNORE, TEST 
 	}
 	
 	
 	private static class TestDefinition {
 		public String name;
 		public int runs;
-		public double accuracy;
+		public double signLevel;
 		public Set<String> skippedElements = new HashSet<String>();
 	}
 	
@@ -89,8 +89,7 @@ public class TestConfig {
 	private static TestConfig instance = null;
 
 	private Map<String, String> substitutions = new HashMap<String, String>();
-	private Set<String> ignores = new HashSet<String>();
-	private Map<String, CheckConfig> checks = new HashMap<String, CheckConfig>();
+	private Map<String, MetricConfig> metrics = new HashMap<String, MetricConfig>();
 	private Map<String, TestDefinition> tests = new HashMap<String, TestDefinition>();
 
 	private TestConfig() {
@@ -149,29 +148,23 @@ public class TestConfig {
 				Element elem = (Element)list.item(i);
 				substitutions.put(elem.getAttribute("name"), elem.getAttribute("with"));
 			}
-						
-			list = (NodeList)xpath.evaluate("//ignore", doc, XPathConstants.NODESET);
-			for (int i = 0; i < list.getLength(); i++) {
-				Element elem = (Element)list.item(i);
-				ignores.add(elem.getAttribute("metric"));
-			}
 			
-			list = (NodeList)xpath.evaluate("//check", doc, XPathConstants.NODESET);
+			list = (NodeList)xpath.evaluate("//metric", doc, XPathConstants.NODESET);
 			for (int i = 0; i < list.getLength(); i++) {
 				Element elem = (Element)list.item(i);
-				String type = elem.getAttribute("type").toLowerCase();
-				CheckConfig check;
-				if (type.equals("mean")) {
-					check = CheckConfig.MEAN_CHECK;
-				} else if (type.equals("max")) {
-					check = CheckConfig.MAX_CHECK;
-				} else if (type.equals("min")) {
-					check = CheckConfig.MIN_CHECK;
+				String status = elem.getAttribute("status").toLowerCase();
+				MetricConfig metric;
+				if (status.equals("skip")) {
+					metric = MetricConfig.SKIP;
+				} else if (status.equals("ignore-result")) {
+					metric = MetricConfig.IGNORE;
+				} else if (status.equals("check")) {
+					metric = MetricConfig.TEST;
 				} else {
-					log.error("Unkown check type: " + type);
+					log.error("Unkown metric status: " + status);
 					throw new RuntimeException();
 				}				
-				checks.put(elem.getAttribute("metric"), check);
+				metrics.put(elem.getAttribute("name"), metric);
 			}
 			
 			list = (NodeList)xpath.evaluate("//test", doc, XPathConstants.NODESET);
@@ -180,7 +173,7 @@ public class TestConfig {
 				TestDefinition def = new TestDefinition();
 				def.name = elem.getAttribute("name");
 				def.runs = Integer.parseInt(elem.getAttribute("test-runs"));
-				def.accuracy = Double.parseDouble(elem.getAttribute("accuracy"));
+				def.signLevel = Double.parseDouble(elem.getAttribute("significance-level"));
 				
 				NodeList skips = elem.getElementsByTagName("skip");
 				for (int j = 0; j < skips.getLength(); j++) {
@@ -213,12 +206,16 @@ public class TestConfig {
 	}
 	
 	public boolean isIgnored(Metric metric) {
-		return ignores.contains(metric.getName());
+		return (getMetricConfig(metric) == MetricConfig.IGNORE);
+	}
+	
+	public boolean isSkipped(Metric metric) {
+		return (getMetricConfig(metric) == MetricConfig.SKIP);
 	}
 
-	public CheckConfig getCheckConfig(Metric expected) {
+	private MetricConfig getMetricConfig(Metric expected) {
 		String name = expected.getName();
-		CheckConfig c = checks.get(name.split(":")[0]);
+		MetricConfig c = metrics.get(name.split(":")[0]);
 		if (c == null) {
 			throw new RuntimeException("Missing check configuration for metric " + expected.getName() + ".");
 		}
@@ -229,8 +226,8 @@ public class TestConfig {
 		return getDefinition(testName).runs;
 	}
 	
-	public double getTestAccuracy(String testName) {
-		return getDefinition(testName).accuracy;
+	public double getTestSignificaneLevel(String testName) {
+		return getDefinition(testName).signLevel;
 	}
 	
 	public boolean isSkipped(String testName, String place, String color) {

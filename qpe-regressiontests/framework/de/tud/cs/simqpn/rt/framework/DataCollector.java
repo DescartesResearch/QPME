@@ -63,20 +63,20 @@ public class DataCollector {
 	public static void main(String[] args) {
 //		collectReferenceData("RT1", Revision.R100, "ispass03.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.RELATIVE_PRECISION, 30);
 //		collectReferenceData("RT1", Revision.R162, "ispass03.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.RELATIVE_PRECISION, 30);
-//		collectReferenceData("RT2", Revision.R100, "pepsy-bcmp2.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.RELATIVE_PRECISION, 30);
-//		collectReferenceData("RT2", Revision.R162, "pepsy-bcmp2.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.RELATIVE_PRECISION, 30);
+//		collectReferenceData("RT2", Revision.R100, "pepsy-bcmp2.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.RELATIVE_PRECISION, 100);
+//		collectReferenceData("RT2", Revision.R162, "pepsy-bcmp2.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.RELATIVE_PRECISION, 100);
 //		collectReferenceData("RT3", Revision.R100, "SjAS04Model_6AS-L5.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.RELATIVE_PRECISION, 30);
 //		collectReferenceData("RT3", Revision.R162, "SjAS04Model_6AS-L5.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.RELATIVE_PRECISION, 30);
-//		collectReferenceData("RT4", Revision.R162, "SPECjms2007Model.qpe", "new configuration", AnalysisMode.BATCH_MEANS, StoppingRule.FIXED_LENGTH, 30);
-//		collectReferenceData("RT5", Revision.R100, "ispass03.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.RELATIVE_PRECISION, 30);
-//		collectReferenceData("RT5", Revision.R162, "ispass03.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.RELATIVE_PRECISION, 30);
-//		collectReferenceData("RT6", Revision.R100, "ispass03.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.ABSOLUTE_PRECISION, 30);
-//		collectReferenceData("RT6", Revision.R162, "ispass03.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.ABSOLUTE_PRECISION, 30);
-//		collectReferenceData("RT7", Revision.R100, "pepsy-bcmp2.qpe", "example_config", AnalysisMode.REPLICATION_DELETION, StoppingRule.FIXED_LENGTH, 1);
-//		collectReferenceData("RT7", Revision.R162, "pepsy-bcmp2.qpe", "example_config", AnalysisMode.REPLICATION_DELETION, StoppingRule.FIXED_LENGTH, 1);
-//		collectReferenceData("RT8", Revision.R100, "pepsy-bcmp2.qpe", "example_config", AnalysisMode.WELCH, StoppingRule.FIXED_LENGTH, 1);
-//		collectReferenceData("RT8", Revision.R162, "pepsy-bcmp2.qpe", "example_config", AnalysisMode.WELCH, StoppingRule.FIXED_LENGTH, 1);
-//		collectReferenceData("RT12", Revision.R162, "ispass03.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.RELATIVE_PRECISION, 30);
+//		collectReferenceData("RT4", Revision.R162, "SPECjms2007Model.qpe", "new configuration", AnalysisMode.BATCH_MEANS, StoppingRule.FIXED_LENGTH, 15);
+//		collectReferenceData("RT5", Revision.R100, "ispass03.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.RELATIVE_PRECISION, 100);
+//		collectReferenceData("RT5", Revision.R162, "ispass03.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.RELATIVE_PRECISION, 100);
+//		collectReferenceData("RT6", Revision.R100, "ispass03.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.ABSOLUTE_PRECISION, 100);
+//		collectReferenceData("RT6", Revision.R162, "ispass03.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.ABSOLUTE_PRECISION, 100);
+//		collectReferenceData("RT7", Revision.R100, "pepsy-bcmp2.qpe", "example_config", AnalysisMode.REPLICATION_DELETION, StoppingRule.FIXED_LENGTH, 4);
+//		collectReferenceData("RT7", Revision.R162, "pepsy-bcmp2.qpe", "example_config", AnalysisMode.REPLICATION_DELETION, StoppingRule.FIXED_LENGTH, 4);
+//		collectReferenceData("RT8", Revision.R100, "pepsy-bcmp2.qpe", "example_config", AnalysisMode.WELCH, StoppingRule.FIXED_LENGTH, 4);
+//		collectReferenceData("RT8", Revision.R162, "pepsy-bcmp2.qpe", "example_config", AnalysisMode.WELCH, StoppingRule.FIXED_LENGTH, 4);
+//		collectReferenceData("RT12", Revision.R162, "ispass03.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.RELATIVE_PRECISION, 100);
 	}
 
 	public static void collectReferenceData(String test, Revision revision,

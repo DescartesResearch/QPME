@@ -47,12 +47,17 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import de.tud.cs.simqpn.rt.framework.TestConfig.CheckConfig;
+
+import java.io.File;
+
+import org.apache.commons.math.stat.inference.TestUtils;
+
 import de.tud.cs.simqpn.rt.framework.results.Metric;
 import de.tud.cs.simqpn.rt.framework.results.RunInfo;
 import de.tud.cs.simqpn.rt.framework.results.SimulationResults;
 import de.tud.cs.simqpn.rt.framework.results.Statistics;
 import de.tud.cs.simqpn.rt.framework.results.Statistics.ElementType;
+import de.tud.cs.simqpn.rt.framework.run.SimulationRunner.Revision;
 
 /**
  * Static assert methods to check results of simulation tests.
@@ -376,11 +381,19 @@ public class SimulationAssert {
 	}
 
 	public static void assertResults(TestReport report,
-			SimulationResults expected, SimulationResults actual) {
+			Revision comparedRevision, SimulationResults actual)
+			throws Exception {
 		try {
 			boolean success = true;
 
-			report.startAssertSet();
+			SimulationResults expected = new SimulationResults();
+			expected.load(new File("testfiles/" + report.getTestName()
+					+ "/reference/" + comparedRevision.toString().toLowerCase()
+					+ "/reference-testdata.xml"));
+
+			report.startReferenceSet(comparedRevision.toString());
+			
+			assertMetric(report, expected.getWallClockTime(), actual.getWallClockTime());
 
 			for (Statistics expectedPlace : expected.getPlaceStats()) {
 				Statistics actualPlace = actual.getStatistics(
@@ -388,7 +401,7 @@ public class SimulationAssert {
 				report.startPlaceAssert(expectedPlace.getName(),
 						expectedPlace.getType());
 				if (actualPlace == null) {
-					report.failure("Missing place in actual results.");
+					report.error("Missing place in actual results.");
 					success = false;
 				} else {
 					boolean a = assertPlace(report, expectedPlace, actualPlace);
@@ -402,7 +415,7 @@ public class SimulationAssert {
 						expectedQueue.getName(), ElementType.QUEUE);
 				report.startQueueAssert(expectedQueue.getName());
 				if (actualQueue == null) {
-					report.failure("Missing queue in actual results.");
+					report.error("Missing queue in actual results.");
 					success = false;
 				} else {
 					boolean a = assertQueue(report, expectedQueue, actualQueue);
@@ -416,7 +429,7 @@ public class SimulationAssert {
 			}
 
 		} finally {
-			report.endAssertSet();
+			report.endReferenceSet();
 		}
 	}
 
@@ -437,7 +450,7 @@ public class SimulationAssert {
 		}
 
 		if (expected.getChildStats().size() != actual.getChildStats().size()) {
-			report.failure("Different number of colors: expected <"
+			report.error("Different number of colors: expected <"
 					+ expected.getChildStats().size() + ">, actual <"
 					+ actual.getChildStats().size());
 			return false;
@@ -453,7 +466,7 @@ public class SimulationAssert {
 					Statistics.getId(expected.getName(), expected.getType()),
 					expectedColor.getName())) {
 				if (!actualColor.getName().equals(expectedColor.getName())) {
-					report.failure("Different actual color name: "
+					report.error("Different actual color name: "
 							+ actualColor.getName());
 					result = false;
 				} else {
@@ -497,58 +510,35 @@ public class SimulationAssert {
 
 	public static boolean assertMetric(TestReport report, Metric expected,
 			Metric actual) {
-		if (TestConfig.getInstance().isIgnored(expected)) {
+		if (TestConfig.getInstance().isSkipped(expected)) {
 			return true;
 		}
 		if (actual == null) {
-			report.failure("Metric " + expected.getName() + " is missing.");
+			report.error(expected, "Metric " + expected.getName()
+					+ " is missing.");
 			return false;
 		}
 
 		try {
-			boolean result = false;
-
-			CheckConfig configuredCheck = TestConfig.getInstance()
-					.getCheckConfig(expected);
-			switch (configuredCheck) {
-			case MIN_CHECK:
-				result = (actual.getMean() >= 0.5 * expected.getMean());
-				break;
-			case MAX_CHECK:
-				result = (actual.getMean() <= 2 * expected.getMean());
-				break;
-			case MEAN_CHECK: {
-				if (actual.getSampleCount() == 0) {
-					report.failure("No actual samples.");
+			boolean result = !TestUtils.tTest(expected.getSamples(), actual.getSamples(), TestConfig.getInstance().getTestSignificaneLevel(report.getTestName()));
+			
+			if (result == true) {
+				report.success(expected, actual, !result);
+				return true;
+			} else {
+				if (TestConfig.getInstance().isIgnored(expected)) {
+					report.highlight(expected, actual, !result);
+					return true;
+				} else {
+					report.failure(expected, actual, !result);
 					return false;
 				}
-				if (expected.getSampleCount() > 0) {
-					if (expected.getMean() == 0.0) {
-						result = (actual.getMean() == 0.0);
-					} else if (Double.compare(expected.getMean(), Double.NaN) == 0) {
-						result = (Double.compare(actual.getMean(), Double.NaN) == 0);
-					} else {
-						result = (TestConfig.getInstance().getTestAccuracy(
-								report.getTestName()) >= (Math.abs(expected
-								.getMean() - actual.getMean()) / Math
-								.abs(expected.getMean())));
-					}
-				}
-				break;
 			}
-			}
-
-			if (result == true) {
-				report.success(expected, actual);
-			} else {
-				report.failure(expected, actual);
-			}
-			return result;
 		} catch (IllegalArgumentException e) {
-			report.failure(e.getMessage());
+			report.error(expected, e.getMessage());
 			return false;
 		} catch (Exception e) {
-			report.failure(e.getMessage());
+			report.error(expected, e.getMessage());
 			return false;
 		}
 	}

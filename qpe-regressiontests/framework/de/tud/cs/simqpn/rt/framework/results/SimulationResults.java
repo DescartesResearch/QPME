@@ -63,6 +63,7 @@ import de.tud.cs.simqpn.rt.framework.results.Statistics.ElementType;
 public class SimulationResults {
 
 	private List<RunInfo> infos = new ArrayList<RunInfo>();
+	private Metric wallClockTime = new Metric(Metric.WALL_CLOCK_TIME);
 	private Map<String, Statistics> stats = new HashMap<String, Statistics>();
 
 	public SimulationResults() {
@@ -70,6 +71,10 @@ public class SimulationResults {
 
 	public List<RunInfo> getRunInfos() {
 		return infos;
+	}
+	
+	public Metric getWallClockTime() {
+		return wallClockTime;
 	}
 
 	public void addStatistics(Statistics s) {
@@ -129,9 +134,12 @@ public class SimulationResults {
 			writer.writeStartDocument();
 			writer.writeStartElement("test-data");
 
+			writeMetricElement(wallClockTime, writer);
+			
 			for (Statistics place : stats.values()) {
 				writeDataSetElement(place, writer);
 			}
+			
 			writer.writeEndElement();
 			writer.writeEndDocument();
 		} finally {
@@ -203,6 +211,14 @@ public class SimulationResults {
 		while (reader.hasNext()) {
 			reader.next();
 
+			if (reader.isStartElement()
+					&& reader.getName().equals(new QName("metric"))) {
+				Metric metric = readMetricElement(reader);
+				if (metric.getName().equals(Metric.WALL_CLOCK_TIME)) {
+					this.wallClockTime = metric;
+				}
+			}
+			
 			if (reader.isStartElement() && reader.getName().equals(new QName("dataset"))) {
 				addStatistics(readDataSetElement(reader));
 			}

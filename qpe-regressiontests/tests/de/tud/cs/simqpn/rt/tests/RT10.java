@@ -13,7 +13,7 @@ public class RT10 extends SimulationTest {
 	
 	@BeforeClass
 	public static void init() throws Exception {
-		initTest("RT10", "overflow.qpe", "test_config", AnalysisMode.BATCH_MEANS, StoppingRule.FIXED_LENGTH, true);
+		initTest("RT10", "overflow.qpe", "test_config", AnalysisMode.BATCH_MEANS, StoppingRule.FIXED_LENGTH, true, "Overflow expected");
 	}
 	
 	@Test

@@ -47,6 +47,8 @@ import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
 
 public class Metric {
 	
+	public static final String WALL_CLOCK_TIME = "wallClockTime";
+	
 	///////////////////////////////////////////////////////////
 	// Batch Mean metrics
 	public static final String TK_OCP = "tkOcp";

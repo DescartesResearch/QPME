@@ -6,6 +6,7 @@ import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertPlaceCount;
 import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertResults;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import de.tud.cs.simqpn.rt.framework.SimulationTest;
@@ -17,7 +18,7 @@ public class RT8 extends SimulationTest {
 
 	@BeforeClass
 	public static void init() throws Exception {
-		initTest("RT8", "pepsy-bcmp2.qpe", "example_config", AnalysisMode.WELCH, StoppingRule.FIXED_LENGTH);
+		initTest("RT8", "pepsy-bcmp2.qpe", "example_config", AnalysisMode.WELCH, StoppingRule.FIXED_LENGTH, "");
 	}
 	
 	@Test
@@ -31,11 +32,11 @@ public class RT8 extends SimulationTest {
 	
 	@Test
 	public void checkR100() throws Exception {		
-		assertResults(report, loadReferenceData(Revision.R100), results);
+		assertResults(report, Revision.R100, results);
 	}
 	
 	@Test
 	public void checkR162() throws Exception {		
-		assertResults(report, loadReferenceData(Revision.R162), results);
+		assertResults(report, Revision.R162, results);
 	}
 }

@@ -23,7 +23,7 @@ public class RT2 extends SimulationTest {
 	
 	@BeforeClass
 	public static void init() throws Exception {
-		initTest("RT2", "pepsy-bcmp2.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.RELATIVE_PRECISION);
+		initTest("RT2", "pepsy-bcmp2.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.RELATIVE_PRECISION, "");
 	}
 	
 	@Test
@@ -57,11 +57,11 @@ public class RT2 extends SimulationTest {
 	
 	@Test
 	public void checkR100() throws Exception {		
-		assertResults(report, loadReferenceData(Revision.R100), results);
+		assertResults(report, Revision.R100, results);
 	}
 	
 	@Test
 	public void checkR162() throws Exception {		
-		assertResults(report, loadReferenceData(Revision.R162), results);
+		assertResults(report, Revision.R162, results);
 	}
 }

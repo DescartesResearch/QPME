@@ -21,7 +21,7 @@ public class RT12 extends SimulationTest {
 	
 	@BeforeClass
 	public static void init() throws Exception {
-		initTest("RT12", "ispass03.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.RELATIVE_PRECISION);
+		initTest("RT12", "ispass03.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.RELATIVE_PRECISION, "statsLevel=4");
 	}
 	
 	@Test
@@ -43,6 +43,6 @@ public class RT12 extends SimulationTest {
 	
 	@Test
 	public void checkR162() throws Exception {		
-		assertResults(report, loadReferenceData(Revision.R162), results);
+		assertResults(report, Revision.R162, results);
 	}
 }

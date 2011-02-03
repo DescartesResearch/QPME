@@ -3865,7 +3865,6 @@
     <connection source-id="1231240109172" target-id="1239806330090" id="1240060057261"/> 
   </connections>  
   <meta-attributes> 
-    <meta-attribute name="sim-qpn" configuration-name="new configuration" scenario="1" id="1231095669343" seconds-between-heart-beats="60" number-of-runs="1" configuration-description="" time-before-initial-heart-beat="10" stopping-rule="FIXEDLEN" verbosity-level="1" ramp-up-length="120" total-run-length="1320" output-directory="."/>  
-    <meta-attribute name="sim-qpn" configuration-name="new configuration 1" scenario="1" id="1238081384525" stopping-rule="FIXEDLEN" verbosity-level="0" time-before-initial-heart-beat="10" seconds-between-heart-beats="30" output-directory="C:\pubsub" number-of-runs="1" ramp-up-length="30" configuration-description="" total-run-length="100"/> 
+    <meta-attribute name="sim-qpn" configuration-name="new configuration" scenario="1" id="1231095669343" seconds-between-heart-beats="60" number-of-runs="1" configuration-description="" time-before-initial-heart-beat="10" stopping-rule="FIXEDLEN" verbosity-level="1" ramp-up-length="120" output-directory="." total-run-length="1820"/>   
   </meta-attributes> 
 </net>

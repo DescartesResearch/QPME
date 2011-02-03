@@ -22,7 +22,7 @@ public class RT5 extends SimulationTest {
 	
 	@BeforeClass
 	public static void init() throws Exception {
-		initTest("RT5", "ispass03_hierarchical.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.RELATIVE_PRECISION);
+		initTest("RT5", "ispass03_hierarchical.qpe", "example_config", AnalysisMode.BATCH_MEANS, StoppingRule.RELATIVE_PRECISION, "HQPN");
 	}
 	
 	@Test
@@ -56,11 +56,11 @@ public class RT5 extends SimulationTest {
 	
 	@Test
 	public void checkR100() throws Exception {		
-		assertResults(report, loadReferenceData(Revision.R100), results);
+		assertResults(report, Revision.R100, results);
 	}
 	
 	@Test
 	public void checkR162() throws Exception {		
-		assertResults(report, loadReferenceData(Revision.R162), results);
+		assertResults(report, Revision.R162, results);
 	}
 }

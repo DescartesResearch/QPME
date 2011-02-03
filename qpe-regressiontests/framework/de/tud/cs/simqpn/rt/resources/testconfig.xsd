@@ -3,6 +3,7 @@
 
     <xs:complexType name="testConfigurationType">
     	<xs:sequence>
+    	    <xs:element ref="substitutions" maxOccurs="1" minOccurs="1"></xs:element>
     		<xs:element ref="metrics" maxOccurs="1" minOccurs="1"></xs:element>
     		<xs:element ref="tests" maxOccurs="1" minOccurs="1"></xs:element>
     	</xs:sequence>
@@ -17,42 +18,24 @@
 
     <xs:complexType name="metricsType">
     	<xs:sequence>
-    	    <xs:element ref="substitutions" maxOccurs="1" minOccurs="0"></xs:element>
-    	        		<xs:element ref="ignores" maxOccurs="1" minOccurs="0"></xs:element>
-    		<xs:element ref="checks" maxOccurs="1" minOccurs="0"></xs:element>
+    		<xs:element ref="metric" maxOccurs="unbounded" minOccurs="0"></xs:element>
     	</xs:sequence>
     </xs:complexType>
 
     <xs:element name="substitutions" type="substitutionsType"></xs:element>
     
-    <xs:element name="ignores" type="ignoresType"></xs:element>
     
-    <xs:element name="checks" type="checksType"></xs:element>
     
-    <xs:complexType name="checksType">
-    	<xs:sequence>
-    		<xs:element ref="check" maxOccurs="unbounded" minOccurs="0"></xs:element>
-    	</xs:sequence>
-    </xs:complexType>
     
-    <xs:element name="check" type="checkType"></xs:element>
+    <xs:element name="metric" type="metricType"></xs:element>
     
-    <xs:complexType name="checkType">
-    	<xs:attribute name="metric" type="xs:string"></xs:attribute>
-    	<xs:attribute name="type" type="xs:string"></xs:attribute>
+    <xs:complexType name="metricType">
+    	<xs:attribute name="name" type="xs:string"></xs:attribute>
+    	<xs:attribute name="status" type="xs:string"></xs:attribute>
     </xs:complexType>
 
-    <xs:element name="ignore" type="ignoreType"></xs:element>
     
-    <xs:complexType name="ignoresType">
-    	<xs:sequence>
-    		<xs:element ref="ignore" maxOccurs="unbounded" minOccurs="0"></xs:element>
-    	</xs:sequence>
-    </xs:complexType>
 
-    <xs:complexType name="ignoreType">
-    	<xs:attribute name="metric" type="xs:string"></xs:attribute>
-    </xs:complexType>
 
     <xs:element name="substitute" type="substituteType"></xs:element>
     
@@ -76,7 +59,7 @@
     	</xs:sequence>
     	<xs:attribute name="name" type="xs:string"></xs:attribute>
     	<xs:attribute name="test-runs" type="xs:int"></xs:attribute>
-    	<xs:attribute name="accuracy" type="xs:double"></xs:attribute>
+    	<xs:attribute name="significance-level" type="xs:double"></xs:attribute>
     </xs:complexType>
 
 

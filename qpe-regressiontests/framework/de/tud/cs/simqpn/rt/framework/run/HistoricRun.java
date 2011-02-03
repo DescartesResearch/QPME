@@ -47,32 +47,56 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.ProcessDestroyer;
 import org.apache.log4j.LogMF;
 import org.apache.log4j.Logger;
 
+/**
+ * Starts a simulation run with an historic version of SimQPN. The *.jar file of
+ * this version must exist in the folder ./historic-executables. A compliant
+ * *.jar of a historic version is created by checking out the version in eclipse
+ * and exporting the QPE-SimQPN project as a runnable jar (dependent libraries
+ * should be extracted into the jar)
+ * 
+ * @author Simon Spinner
+ * 
+ */
 public class HistoricRun extends Run {
-	
+
 	private static final Logger log = Logger.getLogger(HistoricRun.class);
-	
+
 	private File binaryFile;
 
-	public HistoricRun(int index, File binaryFile, RunConfig config, File tmpDir, ProcessDestroyer destroyer) {
-		super(index, config, tmpDir, destroyer);
+	/**
+	 * @param index - The position in a sequence of repeated runs.
+	 * @param binaryFile - References the *.jar-file of the historic version.
+	 * @param config - Run configuration.
+	 * @param tmpDir - Directory where temporary files are stored in.
+	 */
+	public HistoricRun(int index, File binaryFile, RunConfig config,
+			File tmpDir) {
+		super(index, config, tmpDir);
 		this.binaryFile = binaryFile;
 	}
+
 	
+	/* (non-Javadoc)
+	 * @see de.tud.cs.simqpn.rt.framework.run.Run#prepareEnvironment(java.util.Map)
+	 */
 	@Override
 	protected void prepareEnvironment(Map<String, Object> substitutions)
 			throws IOException {
 		super.prepareEnvironment(substitutions);
-		
-		if(!binaryFile.exists()) {
-			LogMF.error(log, "Could not find the simqpn binary: {0}", new Object[] { binaryFile.getAbsolutePath() });
+
+		if (!binaryFile.exists()) {
+			LogMF.error(log, "Could not find the simqpn binary: {0}",
+					new Object[] { binaryFile.getAbsolutePath() });
 		}
 		substitutions.put("binaryFile", binaryFile);
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see de.tud.cs.simqpn.rt.framework.run.Run#createCommandLine()
+	 */
 	@Override
 	protected CommandLine createCommandLine() {
 		CommandLine cmd = super.createCommandLine();

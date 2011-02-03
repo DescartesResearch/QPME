@@ -16,17 +16,17 @@
     <place id="1156337226547" departure-discipline="NORMAL" type="queueing-place" name="Terminals" queue-ref="q0"> 
       <meta-attributes> 
         <meta-attribute name="location" location-x="80" location-y="253"/>  
-        <meta-attribute name="sim-qpn" id="1295877645173" configuration-name="example_config" statsLevel="3"/>
+        <meta-attribute name="sim-qpn" id="1295877645173" configuration-name="example_config" statsLevel="3"/> 
       </meta-attributes>  
       <color-refs> 
         <color-ref color-id="1156337226576" id="1156337226578" maximum-capacity="0" ranking="0" priority="0" distribution-function="Exponential" lambda="1.0E-4" initial-population="10"> 
           <meta-attributes> 
-            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645180" minObsrv="500" maxObsrv="10000" queueMinObsrv="500" queueMaxObsrv="10000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/>
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645180" minObsrv="500" maxObsrv="10000" queueMinObsrv="500" queueMaxObsrv="10000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/> 
           </meta-attributes> 
         </color-ref>  
         <color-ref color-id="1156337226577" id="1156337226579" maximum-capacity="0" ranking="0" priority="0" distribution-function="Exponential" lambda="1.0E-4" initial-population="12"> 
           <meta-attributes> 
-            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645181" minObsrv="500" maxObsrv="10000" queueMinObsrv="500" queueMaxObsrv="10000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/>
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645181" minObsrv="500" maxObsrv="10000" queueMinObsrv="500" queueMaxObsrv="10000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/> 
           </meta-attributes> 
         </color-ref> 
       </color-refs> 
@@ -34,17 +34,17 @@
     <place id="1156337226548" departure-discipline="NORMAL" type="queueing-place" name="CPU" queue-ref="q1"> 
       <meta-attributes> 
         <meta-attribute name="location" location-x="342" location-y="251"/>  
-        <meta-attribute name="sim-qpn" id="1295877645174" configuration-name="example_config" statsLevel="3"/>
+        <meta-attribute name="sim-qpn" id="1295877645174" configuration-name="example_config" statsLevel="3"/> 
       </meta-attributes>  
       <color-refs> 
         <color-ref color-id="1156337226576" id="1156337226580" initial-population="0" maximum-capacity="0" ranking="0" priority="0" distribution-function="Exponential" lambda="0.0050"> 
           <meta-attributes> 
-            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645178" minObsrv="500" maxObsrv="10000" queueMinObsrv="500" queueMaxObsrv="10000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/>
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645178" minObsrv="500" maxObsrv="10000" queueMinObsrv="500" queueMaxObsrv="10000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/> 
           </meta-attributes> 
         </color-ref>  
         <color-ref color-id="1156337226577" id="1156337226581" initial-population="0" maximum-capacity="0" ranking="0" priority="0" distribution-function="Exponential" lambda="0.0040"> 
           <meta-attributes> 
-            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645179" minObsrv="500" maxObsrv="10000" queueMinObsrv="500" queueMaxObsrv="10000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/>
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645179" minObsrv="500" maxObsrv="10000" queueMinObsrv="500" queueMaxObsrv="10000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/> 
           </meta-attributes> 
         </color-ref> 
       </color-refs> 
@@ -52,17 +52,17 @@
     <place id="1156337226549" departure-discipline="NORMAL" type="queueing-place" name="Disk 1" queue-ref="q2"> 
       <meta-attributes> 
         <meta-attribute name="location" location-x="658" location-y="22"/>  
-        <meta-attribute name="sim-qpn" id="1295877645175" configuration-name="example_config" statsLevel="3"/>
+        <meta-attribute name="sim-qpn" id="1295877645175" configuration-name="example_config" statsLevel="3"/> 
       </meta-attributes>  
       <color-refs> 
         <color-ref color-id="1156337226576" id="1156337226582" initial-population="0" maximum-capacity="0" ranking="0" priority="0" distribution-function="Exponential" lambda="0.0010"> 
           <meta-attributes> 
-            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645182" minObsrv="500" maxObsrv="10000" queueMinObsrv="500" queueMaxObsrv="10000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/>
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645182" minObsrv="500" maxObsrv="10000" queueMinObsrv="500" queueMaxObsrv="10000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/> 
           </meta-attributes> 
         </color-ref>  
         <color-ref color-id="1156337226577" id="1156337226583" initial-population="0" maximum-capacity="0" ranking="0" priority="0" distribution-function="Exponential" lambda="0.0010"> 
           <meta-attributes> 
-            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645183" minObsrv="500" maxObsrv="10000" queueMinObsrv="500" queueMaxObsrv="10000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/>
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645183" minObsrv="500" maxObsrv="10000" queueMinObsrv="500" queueMaxObsrv="10000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/> 
           </meta-attributes> 
         </color-ref> 
       </color-refs> 
@@ -70,17 +70,17 @@
     <place id="1156337226550" departure-discipline="NORMAL" type="queueing-place" name="Disk 2" queue-ref="q3"> 
       <meta-attributes> 
         <meta-attribute name="location" location-x="651" location-y="141"/>  
-        <meta-attribute name="sim-qpn" id="1295877645176" configuration-name="example_config" statsLevel="3"/>
+        <meta-attribute name="sim-qpn" id="1295877645176" configuration-name="example_config" statsLevel="3"/> 
       </meta-attributes>  
       <color-refs> 
         <color-ref color-id="1156337226576" id="1156337226584" initial-population="0" maximum-capacity="0" ranking="0" priority="0" distribution-function="Exponential" lambda="0.0020"> 
           <meta-attributes> 
-            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645184" minObsrv="500" maxObsrv="10000" queueMinObsrv="500" queueMaxObsrv="10000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/>
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645184" minObsrv="500" maxObsrv="10000" queueMinObsrv="500" queueMaxObsrv="10000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/> 
           </meta-attributes> 
         </color-ref>  
         <color-ref color-id="1156337226577" id="1156337226585" maximum-capacity="0" ranking="0" priority="0" distribution-function="Exponential" lambda="0.0020" initial-population="0"> 
           <meta-attributes> 
-            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645185" minObsrv="500" maxObsrv="10000" queueMinObsrv="500" queueMaxObsrv="10000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/>
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645185" minObsrv="500" maxObsrv="10000" queueMinObsrv="500" queueMaxObsrv="10000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/> 
           </meta-attributes> 
         </color-ref> 
       </color-refs> 
@@ -88,17 +88,17 @@
     <place id="1156337226551" departure-discipline="NORMAL" type="queueing-place" name="Disk 3" queue-ref="q4"> 
       <meta-attributes> 
         <meta-attribute name="location" location-x="657" location-y="330"/>  
-        <meta-attribute name="sim-qpn" id="1295877645177" configuration-name="example_config" statsLevel="3"/>
+        <meta-attribute name="sim-qpn" id="1295877645177" configuration-name="example_config" statsLevel="3"/> 
       </meta-attributes>  
       <color-refs> 
         <color-ref color-id="1156337226576" id="1156337226586" initial-population="0" maximum-capacity="0" ranking="0" priority="0" distribution-function="Exponential" lambda="5.0E-5"> 
           <meta-attributes> 
-            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645186" minObsrv="500" maxObsrv="2000" queueMinObsrv="500" queueMaxObsrv="2000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/>
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645186" minObsrv="500" maxObsrv="2000" queueMinObsrv="500" queueMaxObsrv="2000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/> 
           </meta-attributes> 
         </color-ref>  
         <color-ref color-id="1156337226577" id="1156337226587" initial-population="0" maximum-capacity="0" ranking="0" priority="0" distribution-function="Exponential" lambda="5.0E-5"> 
           <meta-attributes> 
-            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645187" minObsrv="500" maxObsrv="2000" queueMinObsrv="500" queueMaxObsrv="2000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/>
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645187" minObsrv="500" maxObsrv="2000" queueMinObsrv="500" queueMaxObsrv="2000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/> 
           </meta-attributes> 
         </color-ref> 
       </color-refs> 
@@ -245,6 +245,6 @@
     <connection source-id="1156337226558" target-id="1156337226548" id="1156337226575"/> 
   </connections>  
   <meta-attributes> 
-    <meta-attribute name="sim-qpn" scenario="3" id="1295877645172" total-run-length="80000000" stopping-rule="FIXEDLEN" time-before-initial-heart-beat="100000" seconds-between-heart-beats="60" verbosity-level="0" configuration-name="example_config" output-directory="." number-of-runs="50"/>
+    <meta-attribute name="sim-qpn" scenario="3" id="1295877645172" total-run-length="80000000" stopping-rule="FIXEDLEN" time-before-initial-heart-beat="100000" seconds-between-heart-beats="60" verbosity-level="0" configuration-name="example_config" output-directory="." number-of-runs="50"/> 
   </meta-attributes> 
 </net>

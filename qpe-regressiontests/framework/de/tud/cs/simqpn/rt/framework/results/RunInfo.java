@@ -54,6 +54,7 @@ public class RunInfo {
 	private List<String> errors = new ArrayList<String>();
 	private List<String> warnings = new ArrayList<String>();
 	private double runLength;
+	private double wallClockTime;
 	private boolean overflowFlag;
 
 	public void addErrorMessage(String message) {
@@ -110,5 +111,13 @@ public class RunInfo {
 	
 	public boolean getOverflowFlag() {
 		return overflowFlag;
+	}
+
+	public void setWallClockTime(double wallClockTime) {
+		this.wallClockTime = wallClockTime;		
+	}
+	
+	public double getWallClockTime() {
+		return this.wallClockTime;
 	}
 }

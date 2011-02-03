@@ -55,7 +55,6 @@ import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteWatchdog;
-import org.apache.commons.exec.ProcessDestroyer;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.log4j.LogMF;
 import org.apache.log4j.Logger;
@@ -64,117 +63,196 @@ import de.tud.cs.simqpn.rt.framework.results.RunInfo;
 import de.tud.cs.simqpn.rt.framework.run.SimulationRunner.AnalysisMode;
 import de.tud.cs.simqpn.rt.framework.run.SimulationRunner.StoppingRule;
 
+/**
+ * Starts and controls the execution of a simulation run.
+ * 
+ * @author Simon Spinner
+ * 
+ */
 public abstract class Run implements Callable<RunInfo> {
-	
+
 	private static final Logger log = Logger.getLogger(Run.class);
-	
+
 	private static final int MAX_RETRIES = 5;
-	
+
 	protected int index;
 	protected RunConfig config;
 	protected File tmpDir;
-	private ProcessDestroyer destroyer;
-	
-	public Run(int index, RunConfig config, File tmpDir, ProcessDestroyer destroyer) {
+
+	/**
+	 * @param index
+	 *            - The position in a sequence of repeated runs.
+	 * @param config
+	 *            - Run configuration.
+	 * @param tmpDir
+	 *            - Directory where temporary files are stored in.
+	 */
+	public Run(int index, RunConfig config, File tmpDir) {
 		super();
 		this.index = index;
 		this.config = config;
 		this.tmpDir = tmpDir;
-		this.destroyer = destroyer;
 	}
-	
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.util.concurrent.Callable#call()
+	 */
 	@Override
 	public RunInfo call() throws Exception {
 		LogMF.info(log, "Start simulation run {0}", index);
-		
+
 		RunInfo info = new RunInfo();
 		info.setRunDirectory(tmpDir);
 		info.setModelFile(config.getModel());
-		
+
 		int retries = 0;
 		Map<String, Object> substitutions = new HashMap<String, Object>();
 		prepareEnvironment(substitutions);
 		CommandLine cmd = createCommandLine();
 		cmd.setSubstitutionMap(substitutions);
-		
-		while(true) {
+
+		while (true) {
 			try {
 				if (retries >= MAX_RETRIES) {
-					log.error("Maximum number of retries reached. Run " + index + " failed!");
+					log.error("Maximum number of retries reached. Run " + index
+							+ " failed!");
 					fail();
 				}
 				retries++;
-				
-				// No previous simqpn files should be lying around in the directory
+
+				// No previous simqpn files should be lying around in the
+				// directory
 				// otherwise the wrong results might be taken in later steps
-				FileFilter simqpnFilter = new SuffixFileFilter(".simqpn");
-				for (File f : tmpDir.listFiles(simqpnFilter)) {
-					if (!f.delete()) {
-						LogMF.error(log, "Could not delete simqpn file: {0}", new Object[] { f.getName() });
-						fail();
-					}
-				}
-				
-				ExecuteWatchdog watchdog = new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
-				DefaultExecutor executor = new DefaultExecutor();
-				executor.setWatchdog(watchdog);
-				executor.setWorkingDirectory(tmpDir);
-				
-				File consoleLog = new File(tmpDir, "consoleOutputRun" + index + ".log");
+				deleteSimqpnResultFiles();
+
+				DefaultExecutor executor = createExecutor();
+
+				File consoleLog = new File(tmpDir, "consoleOutputRun" + index
+						+ ".log");
 				info.setConsoleLogFile(consoleLog);
-				RunStreamHandler streamHandler;
-				if (config.getAnalysisMode() == AnalysisMode.BATCH_MEANS) {
-					if (config.getStoppingRule() == StoppingRule.FIXED_LENGTH) {
-						streamHandler = new RunStreamHandler(consoleLog, false, true, watchdog);
-					} else {
-						streamHandler = new RunStreamHandler(consoleLog, true, true, watchdog);
-					}
-				} else {
-					streamHandler = new RunStreamHandler(consoleLog, false, false, watchdog);
-				}
-				executor.setStreamHandler(streamHandler);
-				executor.setProcessDestroyer(destroyer);
+
+				RunStreamHandler streamHandler = createStreamHandler(
+						consoleLog, executor);
 
 				try {
-					int exitCode = executor.execute(cmd);					
-	
+
+					long start = System.currentTimeMillis();
+					int exitCode = executor.execute(cmd);
+					info.setWallClockTime((double) (System.currentTimeMillis() - start));
+
 					if (executor.isFailure(exitCode)) {
-						LogMF.error(log, "Simulation exited with code: {0}", new Object[] { exitCode });
+						LogMF.error(log, "Simulation exited with code: {0}",
+								new Object[] { exitCode });
 						continue;
 					}
-					
+
 					if (config.isExpectError()) {
 						fail("Error expected, but simulation finished correctly.");
 					}
-				} catch(ExecuteException ex) {
+				} catch (ExecuteException ex) {
 					if (!config.isExpectError()) {
 						log.error("Simulation exited with error.", ex);
 					}
 				}
-				
+
 				if (!streamHandler.isPrecisionReached()) {
-					LogMF.warn(log, "Simulation run {0} skipped to due insufficient precision. Retry...", index);
+					LogMF.warn(
+							log,
+							"Simulation run {0} skipped to due insufficient precision. Retry...",
+							index);
 					continue;
-				}				
+				}
 				info.setRunLength(streamHandler.getTotalRunLength());
 				info.setOverflowFlag(streamHandler.hasOverflowOccurred());
-				
+
 				break;
-			} catch(IOException ex) {
+			} catch (IOException ex) {
 				log.error("Error running simulation.", ex);
 				fail();
 			}
 		}
-		
+
 		LogMF.info(log, "Simulation run {0} finished", index);
 		return info;
 	}
-	
-	protected void prepareEnvironment(Map<String, Object> files) throws IOException {
+
+	/**
+	 * Deletes all *.simqpn files in the temporary directory.
+	 */
+	private void deleteSimqpnResultFiles() {
+		FileFilter simqpnFilter = new SuffixFileFilter(".simqpn");
+		for (File f : tmpDir.listFiles(simqpnFilter)) {
+			if (!f.delete()) {
+				LogMF.error(log, "Could not delete simqpn file: {0}",
+						new Object[] { f.getName() });
+				fail();
+			}
+		}
+	}
+
+	/**
+	 * Creates an executor that can be used to spawn a process.
+	 * @return DefaultExecutor
+	 */
+	private DefaultExecutor createExecutor() {
+		ExecuteWatchdog watchdog = new ExecuteWatchdog(
+				ExecuteWatchdog.INFINITE_TIMEOUT);
+		DefaultExecutor executor = new DefaultExecutor();
+		executor.setWatchdog(watchdog);
+		executor.setWorkingDirectory(tmpDir);
+		return executor;
+	}
+
+	/**
+	 * Creates a stream handler that captures the output of the given executor
+	 * and writes it to the specified log file.
+	 * 
+	 * @param consoleLog - File where the output of the process should be stored in.
+	 * @param executor - The process that will be executed.
+	 * @return newly created stream handler.
+	 */
+	private RunStreamHandler createStreamHandler(File consoleLog,
+			DefaultExecutor executor) {
+		RunStreamHandler streamHandler;
+		if (config.getAnalysisMode() == AnalysisMode.BATCH_MEANS) {
+			if (config.getStoppingRule() == StoppingRule.FIXED_LENGTH) {
+				streamHandler = new RunStreamHandler(consoleLog, false, true,
+						executor.getWatchdog());
+			} else {
+				streamHandler = new RunStreamHandler(consoleLog, true, true,
+						executor.getWatchdog());
+			}
+		} else {
+			streamHandler = new RunStreamHandler(consoleLog, false, false,
+					executor.getWatchdog());
+		}
+		executor.setStreamHandler(streamHandler);
+		return streamHandler;
+	}
+
+	/**
+	 * Initializes variables for the creation of the command line.
+	 * 
+	 * @param files
+	 *            - Map containing variable names and values.
+	 * @throws IOException
+	 */
+	protected void prepareEnvironment(Map<String, Object> files)
+			throws IOException {
 		files.put("modelFile", config.getModel());
 	}
-	
-	protected CommandLine createCommandLine() { 
-		return new CommandLine("java.exe");
+
+	/**
+	 * Create the command line used for calling SimQPN.
+	 * 
+	 * @return CommandLine
+	 */
+	protected CommandLine createCommandLine() {
+		CommandLine cmd = new CommandLine(
+				"C:\\Program Files\\Java\\jdk1.6.0_18\\bin\\java.exe");
+		cmd.addArgument("-server");
+		return cmd;
 	}
 }

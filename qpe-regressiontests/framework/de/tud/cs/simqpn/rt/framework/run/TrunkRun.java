@@ -50,44 +50,84 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.ProcessDestroyer;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 
+/**
+ * Starts a simulation run with the most current version of SimQPN. The binaries
+ * in the current Eclipse workspace are used for this run.
+ * 
+ * @author Simon Spinner
+ * 
+ */
 public class TrunkRun extends Run {
 
-
-	public TrunkRun(int index, RunConfig config, File tmpDir, ProcessDestroyer destroyer) {
-		super(index, config, tmpDir, destroyer);
+	/**
+	 * @param index - The position in a sequence of repeated runs.
+	 * @param config - The run configuration.
+	 * @param tmpDir - Directory where temporary files are stored in.
+	 */
+	public TrunkRun(int index, RunConfig config, File tmpDir) {
+		super(index, config, tmpDir);
 	}
-	
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * de.tud.cs.simqpn.rt.framework.run.Run#prepareEnvironment(java.util.Map)
+	 */
 	@Override
-	protected void prepareEnvironment(Map<String, Object> substitutions) throws IOException {
+	protected void prepareEnvironment(Map<String, Object> substitutions)
+			throws IOException {
 		super.prepareEnvironment(substitutions);
 		substitutions.put("classPath", createClassPath());
-		substitutions.put("logConfigFile", createLogConfiguration());		
+		substitutions.put("logConfigFile", createLogConfiguration());
 	}
-	
+
+	/**
+	 * Creates a log configuration file in the tmp directory. The template in
+	 * de/tud/cs/simqpn/rt/resources/log4jTemplate.properties is used for this.
+	 * 
+	 * @return path to the created log configuration file.
+	 * @throws IOException
+	 */
 	private File createLogConfiguration() throws IOException {
 		Properties logConfig = new Properties();
-		File runLogConfig = new File(tmpDir, "log4j.properties");				
-		logConfig.load(this.getClass().getResourceAsStream("/de/tud/cs/simqpn/rt/resources/log4jTemplate.properties"));
+		File runLogConfig = new File(tmpDir, "log4j.properties");
+		logConfig.load(this.getClass().getResourceAsStream(
+				"/de/tud/cs/simqpn/rt/resources/log4jTemplate.properties"));
 		logConfig.store(new FileOutputStream(runLogConfig), null);
 		return runLogConfig;
 	}
-	
+
+	/**
+	 * Creates a classpath consisting of all *.jar-files in the directory "lib"
+	 * in the QPE-SimQPN project and the compiled classes in the directory
+	 * "bin/classes" of the same project.
+	 * 
+	 * @return list of paths separated by the platform-specific path separator.
+	 * @throws IOException
+	 */
 	private String createClassPath() throws IOException {
 		StringBuilder classPath = new StringBuilder("");
-		
+
 		File libDir = new File("../QPE-SimQPN/lib");
 		FileFilter filter = new SuffixFileFilter(".jar");
 		for (File lib : libDir.listFiles(filter)) {
 			classPath.append(lib.getCanonicalPath()).append(File.pathSeparator);
 		}
-		classPath.append(new File("../QPE-SimQPN/bin/classes").getCanonicalPath());		
-		
+
+		classPath.append(new File("../QPE-SimQPN/bin/classes")
+				.getCanonicalPath());
+
 		return classPath.toString();
 	}
-			
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.tud.cs.simqpn.rt.framework.run.Run#createCommandLine()
+	 */
 	@Override
 	protected CommandLine createCommandLine() {
 		CommandLine cmd = super.createCommandLine();
