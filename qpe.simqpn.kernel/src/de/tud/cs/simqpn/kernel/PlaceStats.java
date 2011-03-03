@@ -55,6 +55,8 @@
  */
 package de.tud.cs.simqpn.kernel;
 
+import static de.tud.cs.simqpn.util.LogUtil.formatMultilineMessage;
+
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
@@ -70,11 +72,7 @@ import cern.colt.list.AbstractDoubleList;
 import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
 import cern.jet.stat.Probability;
-import de.tud.cs.qpe.model.DocumentManager;
-import de.tud.cs.simqpn.util.LogUtil;
 import de.tud.cs.simqpn.util.LogUtil.ReportLevel;
-
-import static de.tud.cs.simqpn.util.LogUtil.formatMultilineMessage;
 
 /**
  * Class PlaceStats
@@ -1001,11 +999,11 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			Element oldMetaAttribute = (Element) xpathSelector
 					.selectSingleNode(metaAttributeContainer);
 			if (oldMetaAttribute != null) {
-				DocumentManager.removeElement(oldMetaAttribute);
+				metaAttributeContainer.remove(oldMetaAttribute);
 			}
 			
 			// Add the new meta-attribute.
-			DocumentManager.addChild(metaAttributeContainer, metaAttribute);
+			metaAttributeContainer.add(metaAttribute);
 		}
 	}
 	

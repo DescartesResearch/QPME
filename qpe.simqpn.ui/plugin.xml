@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            id="qpe.simqpn.ui.actionSet"
+            label="SimQPN Action Set"
+            visible="true">
+         <action
+               id="qpe.simqpn.ui.actions.StartSimulatorAction"
+               label="SimQPN"
+               menubarPath="qpeTools/SimQPNGroup"
+               tooltip="SimQPN Plugin for QPE">
+         </action>
+      </actionSet>
+   </extension>
+
+</plugin>
