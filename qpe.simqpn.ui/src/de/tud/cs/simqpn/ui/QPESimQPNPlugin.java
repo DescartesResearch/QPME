@@ -39,7 +39,7 @@
  *  2006        Christofer Dutz   Created.
  * 
  */
-package de.tud.cs.simqpn.plugin;
+package de.tud.cs.simqpn.ui;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;

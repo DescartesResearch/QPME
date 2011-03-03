@@ -39,7 +39,7 @@
  *  2006        Christofer Dutz   Created.
  * 
  */
-package de.tud.cs.simqpn.plugin.wiizard.page;
+package de.tud.cs.simqpn.ui.wiizard.page;
 
 import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
@@ -84,7 +84,7 @@ import org.eclipse.ui.PlatformUI;
 
 import de.tud.cs.qpe.model.DocumentManager;
 import de.tud.cs.qpe.utils.IntegerCellEditor;
-import de.tud.cs.simqpn.plugin.dialog.AnalysisMethodSelectionDialog;
+import de.tud.cs.simqpn.ui.dialog.AnalysisMethodSelectionDialog;
 
 public class Page1ConfigurationSelectionWizardPage extends BaseWizardPage {
 	public static final String PROP_CONFIGURATION_CHANGED = "wizard.configuration";

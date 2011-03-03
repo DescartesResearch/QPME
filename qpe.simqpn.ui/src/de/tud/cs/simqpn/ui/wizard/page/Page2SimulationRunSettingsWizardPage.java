@@ -39,7 +39,7 @@
  *  2006        Christofer Dutz   Created.
  * 
  */
-package de.tud.cs.simqpn.plugin.wiizard.page;
+package de.tud.cs.simqpn.ui.wiizard.page;
 
 import java.beans.PropertyChangeEvent;
 import java.io.File;

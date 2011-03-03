@@ -41,7 +41,7 @@
  *  2010/15/01  Philipp Meier     Automatically open .simqpn file in query edtior after completion.
  * 
  */
-package de.tud.cs.simqpn.plugin.wiizard;
+package de.tud.cs.simqpn.ui.wiizard;
 
 import org.dom4j.Element;
 import org.eclipse.jface.viewers.ISelection;
@@ -50,10 +50,10 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
 
-import de.tud.cs.simqpn.plugin.wiizard.page.BaseWizardPage;
-import de.tud.cs.simqpn.plugin.wiizard.page.Page1ConfigurationSelectionWizardPage;
-import de.tud.cs.simqpn.plugin.wiizard.page.Page2SimulationRunSettingsWizardPage;
-import de.tud.cs.simqpn.plugin.wiizard.page.Page3PlaceConfigurationParametersWizardPage;
+import de.tud.cs.simqpn.ui.wiizard.page.BaseWizardPage;
+import de.tud.cs.simqpn.ui.wiizard.page.Page1ConfigurationSelectionWizardPage;
+import de.tud.cs.simqpn.ui.wiizard.page.Page2SimulationRunSettingsWizardPage;
+import de.tud.cs.simqpn.ui.wiizard.page.Page3PlaceConfigurationParametersWizardPage;
 
 public class RunSimulationWizard extends Wizard {
 	private BaseWizardPage configurationSelectionPage;

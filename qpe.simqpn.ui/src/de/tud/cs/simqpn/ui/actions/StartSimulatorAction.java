@@ -39,7 +39,7 @@
  *  2006        Christofer Dutz   Created.
  *  2010/04/17	Simon Spinner	  Progress dialog added.
  */
-package de.tud.cs.simqpn.plugin.actions;
+package de.tud.cs.simqpn.ui.actions;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -83,7 +83,7 @@ import de.tud.cs.simqpn.kernel.Simulator;
 import de.tud.cs.simqpn.kernel.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.Stats;
 import de.tud.cs.simqpn.kernel.StatsDocumentBuilder;
-import de.tud.cs.simqpn.plugin.wiizard.RunSimulationWizard;
+import de.tud.cs.simqpn.ui.wiizard.RunSimulationWizard;
 
 public class StartSimulatorAction extends Action implements
 		IWorkbenchWindowActionDelegate {

@@ -39,7 +39,7 @@
  *  2006        Christofer Dutz   Created.
  * 
  */
-package de.tud.cs.simqpn.plugin.dialog;
+package de.tud.cs.simqpn.ui.dialog;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;

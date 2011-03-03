@@ -40,7 +40,7 @@
  *  2008/05/05  Frederik Zipp     Set max statsLevel to 5.
  *  2010/04/17	Simon Spinner     Make numBuckets and bucketSize configurable. 
  */
-package de.tud.cs.simqpn.plugin.wiizard.page;
+package de.tud.cs.simqpn.ui.wiizard.page;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
