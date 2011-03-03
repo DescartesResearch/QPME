@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<net> 
+  <queues> 
+    <queue id="q0" name="Q0" strategy="IS" number-of-servers="1"/>  
+    <queue id="q1" name="Q1" strategy="PS" number-of-servers="1"/>  
+    <queue id="q2" name="Q2" strategy="PS" number-of-servers="1"/>  
+    <queue id="q3" name="Q3" strategy="FCFS" number-of-servers="1"/> 
+  </queues>  
+  <colors> 
+    <color real-color="#8f780b" id="1156184916275" name="x1" description="NewOrder Request"/>  
+    <color real-color="#df0a03" id="1156184916276" name="x2" description="ChangeOrder Request"/>  
+    <color real-color="#3d4e34" id="1156184916277" name="t" description="WLS Thread"/>  
+    <color real-color="#16d392" id="1156184916278" name="c" description="DB Connection"/>  
+    <color real-color="#9773d8" id="1156184916279" name="p" description="DBS Process"/> 
+  </colors>  
+  <places> 
+    <place id="1156184916274" departure-discipline="NORMAL" type="ordinary-place" name="WLS-Thread-Pool"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="422" location-y="31"/>  
+        <meta-attribute name="sim-qpn" configuration-name="example_config" id="1156184916341" statsLevel="2"/> 
+      </meta-attributes>  
+      <color-refs> 
+        <color-ref id="1156184916311" color-id="1156184916277" initial-population="60"/> 
+      </color-refs> 
+    </place>  
+    <place id="1156184916280" departure-discipline="NORMAL" type="queueing-place" name="Client" strategy="IS" number-of-servers="1"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="651" location-y="667"/>  
+        <meta-attribute name="sim-qpn" configuration-name="example_config" id="1156184916342" statsLevel="3"/> 
+      </meta-attributes>  
+      <color-refs> 
+        <color-ref color-id="1156184916275" id="1156184916314" initial-population="80" distribution-function="Exponential" maximum-capacity="0" ranking="0" priority="0" lambda="0.0050"> 
+          <meta-attributes> 
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1156184916349" reqRelPrc="0.05" batchSize="200" queueReqRelPrc="0.05" queueBatchSize="200" queueReqAbsPrc="10.0" reqAbsPrc="10.0" numBMeansCorlTested="200" queueNumBMeansCorlTested="200" minBatches="201" queueMinBatches="201" signLev="0.05" queueSignLev="0.05"/> 
+          </meta-attributes> 
+        </color-ref> 
+      </color-refs> 
+    </place>  
+    <place id="1156184916281" departure-discipline="NORMAL" type="ordinary-place" name="DBS-Conn-Pool"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="604" location-y="557"/>  
+        <meta-attribute name="sim-qpn" configuration-name="example_config" id="1156184916343" statsLevel="2"/> 
+      </meta-attributes>  
+      <color-refs> 
+        <color-ref id="1156184916313" color-id="1156184916278" initial-population="40"/> 
+      </color-refs> 
+    </place>  
+    <place id="1156184916282" departure-discipline="NORMAL" type="ordinary-place" name="DBS.DBS-Process-Pool"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="591" location-y="428"/>  
+        <meta-attribute name="sim-qpn" configuration-name="example_config" id="1156184916344" statsLevel="2"/> 
+      </meta-attributes>  
+      <color-refs> 
+        <color-ref id="1156184916312" color-id="1156184916279" initial-population="30"/> 
+      </color-refs> 
+    </place>  
+    <place id="1156184916283" departure-discipline="NORMAL" type="queueing-place" name="WLS-CPU" strategy="PS" number-of-servers="1"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="120" location-y="268"/>  
+        <meta-attribute name="sim-qpn" configuration-name="example_config" id="1156184916345" statsLevel="3"/> 
+      </meta-attributes>  
+      <color-refs> 
+        <color-ref color-id="1156184916275" id="1156184916315" distribution-function="Exponential" initial-population="0" maximum-capacity="0" ranking="0" priority="0" input-file="" lambda="0.0142857"> 
+          <meta-attributes> 
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1156184916350" reqRelPrc="0.05" batchSize="200" queueReqRelPrc="0.05" queueBatchSize="200" numBMeansCorlTested="0" reqAbsPrc="10.0" minBatches="30" queueReqAbsPrc="10.0" queueNumBMeansCorlTested="200" queueMinBatches="201" signLev="0.05" queueSignLev="0.05"/> 
+          </meta-attributes> 
+        </color-ref> 
+      </color-refs> 
+    </place>  
+    <place id="1156184916285" departure-discipline="NORMAL" type="ordinary-place" name="DBS.DBS-PQ"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="351" location-y="267"/>  
+        <meta-attribute name="sim-qpn" configuration-name="example_config" id="1156184916346" statsLevel="1"/> 
+      </meta-attributes>  
+      <color-refs> 
+        <color-ref color-id="1156184916275" id="1156184916316" initial-population="0"/> 
+      </color-refs> 
+    </place>  
+    <place id="1156184916286" departure-discipline="NORMAL" type="queueing-place" name="DBS.DBS-CPU" strategy="PS" number-of-servers="1"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="554" location-y="269"/>  
+        <meta-attribute name="sim-qpn" configuration-name="example_config" id="1156184916347" statsLevel="3"/> 
+      </meta-attributes>  
+      <color-refs> 
+        <color-ref color-id="1156184916275" id="1156184916317" distribution-function="Exponential" input-file="" lambda="0.0188679" priority="0" ranking="0" maximum-capacity="0" initial-population="0"> 
+          <meta-attributes> 
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1156184916351" reqRelPrc="0.05" batchSize="200" queueReqRelPrc="0.05" queueBatchSize="200" reqAbsPrc="10.0" minBatches="30" numBMeansCorlTested="0" queueReqAbsPrc="10.0" queueNumBMeansCorlTested="200" queueMinBatches="201" signLev="0.05" queueSignLev="0.05"/> 
+          </meta-attributes> 
+        </color-ref> 
+      </color-refs> 
+    </place>  
+    <place id="1156184916287" departure-discipline="NORMAL" type="queueing-place" name="DBS.DBS-I/O" strategy="FCFS" number-of-servers="1"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="753" location-y="270"/>  
+        <meta-attribute name="sim-qpn" configuration-name="example_config" id="1156184916348" statsLevel="3"/> 
+      </meta-attributes>  
+      <color-refs> 
+        <color-ref color-id="1156184916275" id="1156184916318" distribution-function="Exponential" initial-population="0" maximum-capacity="0" ranking="0" priority="0" lambda="0.0833333"> 
+          <meta-attributes> 
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1156184916352" reqRelPrc="0.05" batchSize="200" queueReqRelPrc="0.05" queueBatchSize="200" reqAbsPrc="10.0" minBatches="30" numBMeansCorlTested="0" queueReqAbsPrc="10.0" queueNumBMeansCorlTested="200" queueMinBatches="201" signLev="0.05" queueSignLev="0.05"/> 
+          </meta-attributes> 
+        </color-ref> 
+      </color-refs> 
+    </place> 
+  </places>  
+  <transitions> 
+    <transition id="1156184916289" priority="0" type="immediate-transition" weight="1.0" name="t2"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="239" location-y="267"/> 
+      </meta-attributes>  
+      <modes> 
+        <mode name="mode 1" real-color="#7c6c43" firing-weight="1.0" id="1156184916320"/> 
+      </modes>  
+      <connections> 
+        <connection source-id="1156184916315" target-id="1156184916320" count="1" id="1156184916327"/>  
+        <connection source-id="1156184916313" target-id="1156184916320" count="1" id="1156184916328"/>  
+        <connection source-id="1156184916320" target-id="1156184916316" count="1" id="1156184916329"/> 
+      </connections> 
+    </transition>  
+    <transition id="1156184916290" priority="0" type="immediate-transition" weight="1.0" name="t3"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="462" location-y="268"/> 
+      </meta-attributes>  
+      <modes> 
+        <mode name="mode 1" real-color="#744be4" firing-weight="1.0" id="1156184916321"/> 
+      </modes>  
+      <connections> 
+        <connection source-id="1156184916316" target-id="1156184916321" count="1" id="1156184916330"/>  
+        <connection source-id="1156184916312" target-id="1156184916321" count="1" id="1156184916331"/>  
+        <connection source-id="1156184916321" target-id="1156184916317" count="1" id="1156184916332"/> 
+      </connections> 
+    </transition>  
+    <transition id="1156184916291" priority="0" type="immediate-transition" weight="1.0" name="t4"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="661" location-y="269"/> 
+      </meta-attributes>  
+      <modes> 
+        <mode name="mode 1" real-color="#15c156" firing-weight="1.0" id="1156184916322"/> 
+      </modes>  
+      <connections> 
+        <connection source-id="1156184916317" target-id="1156184916322" count="1" id="1156184916333"/>  
+        <connection source-id="1156184916322" target-id="1156184916318" count="1" id="1156184916334"/> 
+      </connections> 
+    </transition>  
+    <transition id="1156184916292" priority="0" type="immediate-transition" weight="1.0" name="t5"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="891" location-y="269"/> 
+      </meta-attributes>  
+      <modes> 
+        <mode name="mode 1" real-color="#26eb53" firing-weight="1.0" id="1156184916323"/> 
+      </modes>  
+      <connections> 
+        <connection source-id="1156184916318" target-id="1156184916323" count="1" id="1156184916335"/>  
+        <connection source-id="1156184916323" target-id="1156184916311" count="1" id="1156184916336"/>  
+        <connection source-id="1156184916323" target-id="1156184916312" count="1" id="1156184916337"/>  
+        <connection source-id="1156184916323" target-id="1156184916313" count="1" id="1156184916338"/>  
+        <connection source-id="1156184916323" target-id="1156184916314" count="1" id="1156184916339"/> 
+      </connections> 
+    </transition>  
+    <transition id="1156184916293" priority="0" type="immediate-transition" weight="1.0" name="t1"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="-19" location-y="267"/> 
+      </meta-attributes>  
+      <modes> 
+        <mode name="mode 1" real-color="#c0e34c" firing-weight="1.0" id="1156184916319"/> 
+      </modes>  
+      <connections> 
+        <connection source-id="1156184916311" target-id="1156184916319" count="1" id="1156184916324"/>  
+        <connection source-id="1156184916314" target-id="1156184916319" count="1" id="1156184916325"/>  
+        <connection source-id="1156184916319" target-id="1156184916315" count="1" id="1156184916326"/> 
+      </connections> 
+    </transition> 
+  </transitions>  
+  <connections> 
+    <connection source-id="1156184916292" target-id="1156184916274" id="1156184916294"/>  
+    <connection source-id="1156184916274" target-id="1156184916293" id="1156184916295"/>  
+    <connection source-id="1156184916293" target-id="1156184916283" id="1156184916296"/>  
+    <connection source-id="1156184916283" target-id="1156184916289" id="1156184916297"/>  
+    <connection source-id="1156184916289" target-id="1156184916285" id="1156184916298"/>  
+    <connection source-id="1156184916285" target-id="1156184916290" id="1156184916299"/>  
+    <connection source-id="1156184916290" target-id="1156184916286" id="1156184916300"/>  
+    <connection source-id="1156184916286" target-id="1156184916291" id="1156184916301"/>  
+    <connection source-id="1156184916291" target-id="1156184916287" id="1156184916302"/>  
+    <connection source-id="1156184916287" target-id="1156184916292" id="1156184916303"/>  
+    <connection source-id="1156184916292" target-id="1156184916282" id="1156184916304"/>  
+    <connection source-id="1156184916282" target-id="1156184916290" id="1156184916306"/>  
+    <connection source-id="1156184916292" target-id="1156184916281" id="1156184916307"/>  
+    <connection source-id="1156184916281" target-id="1156184916289" id="1156184916308"/>  
+    <connection source-id="1156184916292" target-id="1156184916280" id="1156184916309"/>  
+    <connection source-id="1156184916280" target-id="1156184916293" id="1156184916310"/> 
+  </connections>  
+  <meta-attributes> 
+    <meta-attribute name="sim-qpn" configuration-name="example_config" scenario="1" id="1156184916340" seconds-between-heart-beats="60" stopping-rule="RELPRC" time-between-stop-checks="60000" ramp-up-length="6E6" total-run-length="50E6" time-before-initial-heart-beat="30000" seconds-between-stop-checks="0" output-directory="." verbosity-level="1"/> 
+  </meta-attributes> 
+</net>

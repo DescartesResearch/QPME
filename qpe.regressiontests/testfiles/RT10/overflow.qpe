@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<net qpme-version="1.5.2">
+  <colors>
+    <color name="new color" real-color="#f61307" id="1295192130805"/>
+  </colors>
+  <queues>
+    <queue strategy="FCFS" number-of-servers="1" id="1295192130806" name="Q0"/>
+    <queue strategy="FCFS" number-of-servers="1" id="1295192130807" name="Q1"/>
+  </queues>
+  <places>
+    <place id="1295192130797" departure-discipline="NORMAL" type="queueing-place" name="new place 1" queue-ref="1295192130807">
+      <meta-attributes>
+        <meta-attribute name="location" location-x="658" location-y="203"/>
+        <meta-attribute name="sim-qpn" id="1295192130817" statsLevel="1" configuration-name="test_config"/>
+      </meta-attributes>
+      <color-refs>
+        <color-ref color-id="1295192130805" initial-population="0" maximum-capacity="0" ranking="0" priority="0" distribution-function="Exponential" lambda="1" id="1295192130809"/>
+      </color-refs>
+    </place>
+    <place id="1295192130798" departure-discipline="NORMAL" type="queueing-place" name="new place 2" queue-ref="1295192130806">
+      <meta-attributes>
+        <meta-attribute name="location" location-x="288" location-y="172"/>
+        <meta-attribute name="sim-qpn" id="1295192130818" statsLevel="1" configuration-name="test_config"/>
+      </meta-attributes>
+      <color-refs>
+        <color-ref color-id="1295192130805" maximum-capacity="0" ranking="0" priority="0" distribution-function="Exponential" id="1295192130808" initial-population="1" lambda="1000.0"/>
+      </color-refs>
+    </place>
+  </places>
+  <transitions>
+    <transition id="1295192130799" priority="0" type="immediate-transition" weight="1.0" name="new transition">
+      <meta-attributes>
+        <meta-attribute name="location" location-x="483" location-y="86"/>
+      </meta-attributes>
+      <modes>
+        <mode name="mode 1" real-color="#def80b" firing-weight="1.0" id="1295192130810"/>
+      </modes>
+      <connections>
+        <connection source-id="1295192130808" target-id="1295192130810" count="1" id="1295192130811"/>
+        <connection source-id="1295192130810" target-id="1295192130809" id="1295192130812" count="2"/>
+      </connections>
+    </transition>
+    <transition id="1295192130800" priority="0" type="immediate-transition" weight="1.0" name="new transition 1">
+      <meta-attributes>
+        <meta-attribute name="location" location-x="429" location-y="287"/>
+      </meta-attributes>
+      <modes>
+        <mode name="mode 1" real-color="#9701d9" firing-weight="1.0" id="1295192130813"/>
+      </modes>
+      <connections>
+        <connection source-id="1295192130809" target-id="1295192130813" count="1" id="1295192130814"/>
+        <connection source-id="1295192130813" target-id="1295192130808" count="1" id="1295192130815"/>
+      </connections>
+    </transition>
+  </transitions>
+  <connections>
+    <connection source-id="1295192130798" target-id="1295192130799" id="1295192130801"/>
+    <connection source-id="1295192130799" target-id="1295192130797" id="1295192130802"/>
+    <connection source-id="1295192130797" target-id="1295192130800" id="1295192130803"/>
+    <connection source-id="1295192130800" target-id="1295192130798" id="1295192130804"/>
+  </connections>
+  <meta-attributes>
+    <meta-attribute name="sim-qpn" scenario="1" id="1295192130816" ramp-up-length="1000000" total-run-length="10000000" stopping-rule="FIXEDLEN" time-before-initial-heart-beat="100000" seconds-between-heart-beats="60" verbosity-level="0" configuration-name="test_config" output-directory="."/>
+  </meta-attributes>
+</net>

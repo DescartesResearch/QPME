@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<net qpme-version="1.5.2"> 
+  <queues> 
+    <queue id="q0" name="Q0" strategy="IS" number-of-servers="1"/>  
+    <queue id="q1" name="Q1" strategy="PS" number-of-servers="1"/>  
+    <queue id="q2" name="Q2" strategy="FCFS" number-of-servers="1"/>  
+    <queue id="q3" name="Q3" strategy="FCFS" number-of-servers="2"/>  
+    <queue id="q4" name="Q4" strategy="FCFS" number-of-servers="3"/> 
+  </queues>  
+  <colors> 
+    <color real-color="#c1574f" id="1156337226576" name="class 1"/>  
+    <color real-color="#4e474f" id="1156337226577" name="class 2"/> 
+  </colors>  
+  <places> 
+    <place id="1156337226547" departure-discipline="NORMAL" type="queueing-place" name="Terminals" queue-ref="q0"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="80" location-y="253"/>  
+        <meta-attribute name="sim-qpn" id="1295877645173" configuration-name="example_config" statsLevel="3"/>
+      </meta-attributes>  
+      <color-refs> 
+        <color-ref color-id="1156337226576" id="1156337226578" maximum-capacity="0" ranking="0" priority="0" distribution-function="Exponential" lambda="1.0E-4" initial-population="10"> 
+          <meta-attributes> 
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645180" minObsrv="500" maxObsrv="10000" queueMinObsrv="500" queueMaxObsrv="10000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/>
+          </meta-attributes> 
+        </color-ref>  
+        <color-ref color-id="1156337226577" id="1156337226579" maximum-capacity="0" ranking="0" priority="0" distribution-function="Exponential" lambda="1.0E-4" initial-population="12"> 
+          <meta-attributes> 
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645181" minObsrv="500" maxObsrv="10000" queueMinObsrv="500" queueMaxObsrv="10000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/>
+          </meta-attributes> 
+        </color-ref> 
+      </color-refs> 
+    </place>  
+    <place id="1156337226548" departure-discipline="NORMAL" type="queueing-place" name="CPU" queue-ref="q1"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="342" location-y="251"/>  
+        <meta-attribute name="sim-qpn" id="1295877645174" configuration-name="example_config" statsLevel="3"/>
+      </meta-attributes>  
+      <color-refs> 
+        <color-ref color-id="1156337226576" id="1156337226580" initial-population="0" maximum-capacity="0" ranking="0" priority="0" distribution-function="Exponential" lambda="0.0050"> 
+          <meta-attributes> 
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645178" minObsrv="500" maxObsrv="10000" queueMinObsrv="500" queueMaxObsrv="10000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/>
+          </meta-attributes> 
+        </color-ref>  
+        <color-ref color-id="1156337226577" id="1156337226581" initial-population="0" maximum-capacity="0" ranking="0" priority="0" distribution-function="Exponential" lambda="0.0040"> 
+          <meta-attributes> 
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645179" minObsrv="500" maxObsrv="10000" queueMinObsrv="500" queueMaxObsrv="10000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/>
+          </meta-attributes> 
+        </color-ref> 
+      </color-refs> 
+    </place>  
+    <place id="1156337226549" departure-discipline="NORMAL" type="queueing-place" name="Disk 1" queue-ref="q2"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="658" location-y="22"/>  
+        <meta-attribute name="sim-qpn" id="1295877645175" configuration-name="example_config" statsLevel="3"/>
+      </meta-attributes>  
+      <color-refs> 
+        <color-ref color-id="1156337226576" id="1156337226582" initial-population="0" maximum-capacity="0" ranking="0" priority="0" distribution-function="Exponential" lambda="0.0010"> 
+          <meta-attributes> 
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645182" minObsrv="500" maxObsrv="10000" queueMinObsrv="500" queueMaxObsrv="10000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/>
+          </meta-attributes> 
+        </color-ref>  
+        <color-ref color-id="1156337226577" id="1156337226583" initial-population="0" maximum-capacity="0" ranking="0" priority="0" distribution-function="Exponential" lambda="0.0010"> 
+          <meta-attributes> 
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645183" minObsrv="500" maxObsrv="10000" queueMinObsrv="500" queueMaxObsrv="10000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/>
+          </meta-attributes> 
+        </color-ref> 
+      </color-refs> 
+    </place>  
+    <place id="1156337226550" departure-discipline="NORMAL" type="queueing-place" name="Disk 2" queue-ref="q3"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="651" location-y="141"/>  
+        <meta-attribute name="sim-qpn" id="1295877645176" configuration-name="example_config" statsLevel="3"/>
+      </meta-attributes>  
+      <color-refs> 
+        <color-ref color-id="1156337226576" id="1156337226584" initial-population="0" maximum-capacity="0" ranking="0" priority="0" distribution-function="Exponential" lambda="0.0020"> 
+          <meta-attributes> 
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645184" minObsrv="500" maxObsrv="10000" queueMinObsrv="500" queueMaxObsrv="10000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/>
+          </meta-attributes> 
+        </color-ref>  
+        <color-ref color-id="1156337226577" id="1156337226585" maximum-capacity="0" ranking="0" priority="0" distribution-function="Exponential" lambda="0.0020" initial-population="0"> 
+          <meta-attributes> 
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645185" minObsrv="500" maxObsrv="10000" queueMinObsrv="500" queueMaxObsrv="10000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/>
+          </meta-attributes> 
+        </color-ref> 
+      </color-refs> 
+    </place>  
+    <place id="1156337226551" departure-discipline="NORMAL" type="queueing-place" name="Disk 3" queue-ref="q4"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="657" location-y="330"/>  
+        <meta-attribute name="sim-qpn" id="1295877645177" configuration-name="example_config" statsLevel="3"/>
+      </meta-attributes>  
+      <color-refs> 
+        <color-ref color-id="1156337226576" id="1156337226586" initial-population="0" maximum-capacity="0" ranking="0" priority="0" distribution-function="Exponential" lambda="5.0E-5"> 
+          <meta-attributes> 
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645186" minObsrv="500" maxObsrv="2000" queueMinObsrv="500" queueMaxObsrv="2000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/>
+          </meta-attributes> 
+        </color-ref>  
+        <color-ref color-id="1156337226577" id="1156337226587" initial-population="0" maximum-capacity="0" ranking="0" priority="0" distribution-function="Exponential" lambda="5.0E-5"> 
+          <meta-attributes> 
+            <meta-attribute name="sim-qpn" configuration-name="example_config" id="1295877645187" minObsrv="500" maxObsrv="2000" queueMinObsrv="500" queueMaxObsrv="2000" bucketSize="100.0" maxBuckets="1000" queueBucketSize="100.0" queueMaxBuckets="1000"/>
+          </meta-attributes> 
+        </color-ref> 
+      </color-refs> 
+    </place> 
+  </places>  
+  <transitions> 
+    <transition id="1156337226552" priority="0" type="immediate-transition" weight="1.0" name="t0"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="231" location-y="252"/> 
+      </meta-attributes>  
+      <modes> 
+        <mode name="mode 1" real-color="#cb8816" firing-weight="1.0" id="1156337226588"/>  
+        <mode name="mode 2" real-color="#07f1b9" firing-weight="1.0" id="1156337226591"/> 
+      </modes>  
+      <connections> 
+        <connection source-id="1156337226578" target-id="1156337226588" count="1" id="1156337226589"/>  
+        <connection source-id="1156337226588" target-id="1156337226580" count="1" id="1156337226590"/>  
+        <connection source-id="1156337226579" target-id="1156337226591" count="1" id="1156337226592"/>  
+        <connection source-id="1156337226591" target-id="1156337226581" count="1" id="1156337226593"/> 
+      </connections> 
+    </transition>  
+    <transition id="1156337226553" priority="0" type="immediate-transition" name="t1" weight="4"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="509" location-y="23"/> 
+      </meta-attributes>  
+      <modes> 
+        <mode name="mode 1" real-color="#3b93cb" firing-weight="1.0" id="1156337226600"/>  
+        <mode name="mode 2" real-color="#89500b" firing-weight="1.0" id="1156337226601"/> 
+      </modes>  
+      <connections> 
+        <connection source-id="1156337226580" target-id="1156337226600" count="1" id="1156337226602"/>  
+        <connection source-id="1156337226600" target-id="1156337226582" count="1" id="1156337226603"/>  
+        <connection source-id="1156337226581" target-id="1156337226601" count="1" id="1156337226604"/>  
+        <connection source-id="1156337226601" target-id="1156337226583" count="1" id="1156337226605"/> 
+      </connections> 
+    </transition>  
+    <transition id="1156337226554" priority="0" type="immediate-transition" name="t2" weight="5"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="512" location-y="141"/> 
+      </meta-attributes>  
+      <modes> 
+        <mode name="mode 1" real-color="#b76aaf" firing-weight="1.0" id="1156337226606"/>  
+        <mode name="mode 2" real-color="#329ebc" firing-weight="1.0" id="1156337226607"/> 
+      </modes>  
+      <connections> 
+        <connection source-id="1156337226580" target-id="1156337226606" count="1" id="1156337226608"/>  
+        <connection source-id="1156337226581" target-id="1156337226607" count="1" id="1156337226609"/>  
+        <connection source-id="1156337226606" target-id="1156337226584" count="1" id="1156337226610"/>  
+        <connection source-id="1156337226607" target-id="1156337226585" count="1" id="1156337226611"/> 
+      </connections> 
+    </transition>  
+    <transition id="1156337226555" priority="0" type="immediate-transition" name="t3" weight="1"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="515" location-y="330"/> 
+      </meta-attributes>  
+      <modes> 
+        <mode name="mode 1" real-color="#51e4db" firing-weight="1.0" id="1156337226612"/>  
+        <mode name="mode 2" real-color="#52698c" firing-weight="1.0" id="1156337226613"/> 
+      </modes>  
+      <connections> 
+        <connection source-id="1156337226580" target-id="1156337226612" count="1" id="1156337226614"/>  
+        <connection source-id="1156337226612" target-id="1156337226586" count="1" id="1156337226615"/>  
+        <connection source-id="1156337226581" target-id="1156337226613" count="1" id="1156337226616"/>  
+        <connection source-id="1156337226613" target-id="1156337226587" count="1" id="1156337226617"/> 
+      </connections> 
+    </transition>  
+    <transition id="1156337226556" priority="0" type="immediate-transition" weight="1.0" name="t5"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="813" location-y="22"/> 
+      </meta-attributes>  
+      <modes> 
+        <mode name="mode 1" real-color="#15a092" firing-weight="1.0" id="1156337226618"/>  
+        <mode name="mode 2" real-color="#4f0f23" firing-weight="1.0" id="1156337226619"/> 
+      </modes>  
+      <connections> 
+        <connection source-id="1156337226582" target-id="1156337226618" count="1" id="1156337226620"/>  
+        <connection source-id="1156337226618" target-id="1156337226580" count="1" id="1156337226621"/>  
+        <connection source-id="1156337226583" target-id="1156337226619" count="1" id="1156337226622"/>  
+        <connection source-id="1156337226619" target-id="1156337226581" count="1" id="1156337226623"/> 
+      </connections> 
+    </transition>  
+    <transition id="1156337226557" priority="0" type="immediate-transition" weight="1.0" name="t6"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="809" location-y="141"/> 
+      </meta-attributes>  
+      <modes> 
+        <mode name="mode 1" real-color="#4af892" firing-weight="1.0" id="1156337226624"/>  
+        <mode name="mode 2" real-color="#b71ea8" firing-weight="1.0" id="1156337226625"/> 
+      </modes>  
+      <connections> 
+        <connection source-id="1156337226584" target-id="1156337226624" count="1" id="1156337226626"/>  
+        <connection source-id="1156337226624" target-id="1156337226580" count="1" id="1156337226627"/>  
+        <connection source-id="1156337226585" target-id="1156337226625" count="1" id="1156337226628"/>  
+        <connection source-id="1156337226625" target-id="1156337226581" count="1" id="1156337226629"/> 
+      </connections> 
+    </transition>  
+    <transition id="1156337226558" priority="0" type="immediate-transition" weight="1.0" name="t7"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="811" location-y="331"/> 
+      </meta-attributes>  
+      <modes> 
+        <mode name="mode 1" real-color="#9d5607" firing-weight="1.0" id="1156337226630"/>  
+        <mode name="mode 2" real-color="#c6edfc" firing-weight="1.0" id="1156337226631"/> 
+      </modes>  
+      <connections> 
+        <connection source-id="1156337226586" target-id="1156337226630" count="1" id="1156337226632"/>  
+        <connection source-id="1156337226630" target-id="1156337226580" count="1" id="1156337226633"/>  
+        <connection source-id="1156337226587" target-id="1156337226631" count="1" id="1156337226634"/>  
+        <connection source-id="1156337226631" target-id="1156337226581" count="1" id="1156337226635"/> 
+      </connections> 
+    </transition>  
+    <transition id="1156337226559" priority="0" type="immediate-transition" name="t4" weight="10"> 
+      <meta-attributes> 
+        <meta-attribute name="location" location-x="196" location-y="457"/> 
+      </meta-attributes>  
+      <modes> 
+        <mode name="mode 1" real-color="#9d299b" firing-weight="1.0" id="1156337226594"/>  
+        <mode name="mode 2" real-color="#ed24d6" firing-weight="1.0" id="1156337226595"/> 
+      </modes>  
+      <connections> 
+        <connection source-id="1156337226580" target-id="1156337226594" count="1" id="1156337226596"/>  
+        <connection source-id="1156337226581" target-id="1156337226595" count="1" id="1156337226597"/>  
+        <connection source-id="1156337226594" target-id="1156337226578" count="1" id="1156337226598"/>  
+        <connection source-id="1156337226595" target-id="1156337226579" count="1" id="1156337226599"/> 
+      </connections> 
+    </transition> 
+  </transitions>  
+  <connections> 
+    <connection source-id="1156337226547" target-id="1156337226552" id="1156337226560"/>  
+    <connection source-id="1156337226552" target-id="1156337226548" id="1156337226561"/>  
+    <connection source-id="1156337226548" target-id="1156337226553" id="1156337226562"/>  
+    <connection source-id="1156337226548" target-id="1156337226554" id="1156337226563"/>  
+    <connection source-id="1156337226548" target-id="1156337226555" id="1156337226564"/>  
+    <connection source-id="1156337226553" target-id="1156337226549" id="1156337226565"/>  
+    <connection source-id="1156337226554" target-id="1156337226550" id="1156337226566"/>  
+    <connection source-id="1156337226555" target-id="1156337226551" id="1156337226567"/>  
+    <connection source-id="1156337226549" target-id="1156337226556" id="1156337226568"/>  
+    <connection source-id="1156337226550" target-id="1156337226557" id="1156337226569"/>  
+    <connection source-id="1156337226551" target-id="1156337226558" id="1156337226570"/>  
+    <connection source-id="1156337226548" target-id="1156337226559" id="1156337226571"/>  
+    <connection source-id="1156337226559" target-id="1156337226547" id="1156337226572"/>  
+    <connection source-id="1156337226556" target-id="1156337226548" id="1156337226573"/>  
+    <connection source-id="1156337226557" target-id="1156337226548" id="1156337226574"/>  
+    <connection source-id="1156337226558" target-id="1156337226548" id="1156337226575"/> 
+  </connections>  
+  <meta-attributes> 
+    <meta-attribute name="sim-qpn" scenario="3" id="1295877645172" total-run-length="80000000" stopping-rule="FIXEDLEN" time-before-initial-heart-beat="100000" seconds-between-heart-beats="60" verbosity-level="0" configuration-name="example_config" output-directory="." number-of-runs="50"/>
+  </meta-attributes> 
+</net>
