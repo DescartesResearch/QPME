@@ -14,9 +14,9 @@ import org.junit.Test;
 
 import de.tud.cs.simqpn.rt.framework.SimulationTest;
 import de.tud.cs.simqpn.rt.framework.results.Statistics.ElementType;
-import de.tud.cs.simqpn.rt.framework.run.SimulationRunner.AnalysisMode;
-import de.tud.cs.simqpn.rt.framework.run.SimulationRunner.Revision;
-import de.tud.cs.simqpn.rt.framework.run.SimulationRunner.StoppingRule;
+import de.tud.cs.simqpn.rt.framework.run.RunConfig.AnalysisMode;
+import de.tud.cs.simqpn.rt.framework.run.RunConfig.Revision;
+import de.tud.cs.simqpn.rt.framework.run.RunConfig.StoppingRule;
 
 public class RT1 extends SimulationTest {
 	

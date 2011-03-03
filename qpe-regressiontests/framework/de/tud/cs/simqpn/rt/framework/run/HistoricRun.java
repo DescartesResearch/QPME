@@ -98,7 +98,7 @@ public class HistoricRun extends Run {
 	 * @see de.tud.cs.simqpn.rt.framework.run.Run#createCommandLine()
 	 */
 	@Override
-	protected CommandLine createCommandLine() {
+	protected CommandLine createCommandLine() throws IOException {
 		CommandLine cmd = super.createCommandLine();
 		cmd.addArgument("-jar");
 		cmd.addArgument("${binaryFile}");

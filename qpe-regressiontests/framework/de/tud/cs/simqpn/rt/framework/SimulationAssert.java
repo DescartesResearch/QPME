@@ -57,7 +57,7 @@ import de.tud.cs.simqpn.rt.framework.results.RunInfo;
 import de.tud.cs.simqpn.rt.framework.results.SimulationResults;
 import de.tud.cs.simqpn.rt.framework.results.Statistics;
 import de.tud.cs.simqpn.rt.framework.results.Statistics.ElementType;
-import de.tud.cs.simqpn.rt.framework.run.SimulationRunner.Revision;
+import de.tud.cs.simqpn.rt.framework.run.RunConfig.Revision;
 
 /**
  * Static assert methods to check results of simulation tests.

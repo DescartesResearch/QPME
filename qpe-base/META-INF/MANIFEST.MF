@@ -4,7 +4,7 @@ Bundle-Name: QPE-Base Plug-in
 Bundle-SymbolicName: QPE_Base; singleton:=true
 Bundle-Version: 1.5.2
 Bundle-Activator: de.tud.cs.qpe.QPEBasePlugin
-Bundle-Vendor: Samuel Kounev
+Bundle-Vendor: Descartes Research Group
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
@@ -99,3 +99,4 @@ Bundle-ClassPath: lib/dom4j-1.6.1.jar,
  lib/jfreechart-1.0.12.jar,
  lib/swtgraphics2d.jar,
  lib/JRI.jar
+Bundle-RequiredExecutionEnvironment: J2SE-1.5

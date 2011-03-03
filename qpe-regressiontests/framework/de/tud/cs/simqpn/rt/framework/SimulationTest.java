@@ -42,19 +42,19 @@
 
 package de.tud.cs.simqpn.rt.framework;
 
-import java.io.File;
-
 import static org.junit.Assert.fail;
+
+import java.io.File;
 
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 
 import de.tud.cs.simqpn.rt.framework.results.SimulationResults;
 import de.tud.cs.simqpn.rt.framework.run.RunConfig;
+import de.tud.cs.simqpn.rt.framework.run.RunConfig.AnalysisMode;
+import de.tud.cs.simqpn.rt.framework.run.RunConfig.Revision;
+import de.tud.cs.simqpn.rt.framework.run.RunConfig.StoppingRule;
 import de.tud.cs.simqpn.rt.framework.run.SimulationRunner;
-import de.tud.cs.simqpn.rt.framework.run.SimulationRunner.AnalysisMode;
-import de.tud.cs.simqpn.rt.framework.run.SimulationRunner.Revision;
-import de.tud.cs.simqpn.rt.framework.run.SimulationRunner.StoppingRule;
 
 public class SimulationTest {
 	

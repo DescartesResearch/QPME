@@ -75,5 +75,6 @@
 		<test name="RT10" test-runs="1" significance-level="0.02" />
 		<test name="RT11" test-runs="30" significance-level="0.02" />
 		<test name="RT12" test-runs="30" significance-level="0.02" />
+		<test name="RT13" test-runs="10" significance-level="0.01" />
 	</tests>
 </test-configuration>

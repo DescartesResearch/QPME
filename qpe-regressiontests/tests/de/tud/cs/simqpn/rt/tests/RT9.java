@@ -1,6 +1,13 @@
 package de.tud.cs.simqpn.rt.tests;
 
-import static de.tud.cs.simqpn.rt.framework.SimulationAssert.*;
+import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertFlowEquilibrium;
+import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertNoErrors;
+import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertNoWarnings;
+import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertPlaceCount;
+import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertProbeCount;
+import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertProbeResults;
+import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertQueueCount;
+import static de.tud.cs.simqpn.rt.framework.SimulationAssert.assertRunLengthLessOrEqual;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -8,8 +15,8 @@ import org.junit.Test;
 import de.tud.cs.simqpn.rt.framework.SimulationTest;
 import de.tud.cs.simqpn.rt.framework.results.Statistics;
 import de.tud.cs.simqpn.rt.framework.results.Statistics.ElementType;
-import de.tud.cs.simqpn.rt.framework.run.SimulationRunner.AnalysisMode;
-import de.tud.cs.simqpn.rt.framework.run.SimulationRunner.StoppingRule;
+import de.tud.cs.simqpn.rt.framework.run.RunConfig.AnalysisMode;
+import de.tud.cs.simqpn.rt.framework.run.RunConfig.StoppingRule;
 
 public class RT9 extends SimulationTest {
 	

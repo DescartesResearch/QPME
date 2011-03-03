@@ -55,7 +55,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.apache.commons.exec.ShutdownHookProcessDestroyer;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.log4j.LogMF;
@@ -68,46 +67,57 @@ import de.tud.cs.simqpn.rt.framework.SimQPNResultFileImport;
 import de.tud.cs.simqpn.rt.framework.WelchDumpImport;
 import de.tud.cs.simqpn.rt.framework.results.RunInfo;
 import de.tud.cs.simqpn.rt.framework.results.SimulationResults;
+import de.tud.cs.simqpn.rt.framework.run.RunConfig.AnalysisMode;
+import de.tud.cs.simqpn.rt.framework.run.RunConfig.Revision;
 
+/**
+ * Performs a number of repeated simulation runs parses their logs and collect
+ * the results of each run.
+ * 
+ * @author Simon Spinner
+ * 
+ */
 public class SimulationRunner {
-	
+
+	private static final String RUN_DIR_PREFIX = "Run";
+
+	private static final String TMP_BASE_DIR = "./tmp/";
+
 	private static final String HISTORIC_EXECUTABLE_R162 = "./historic-executables/simqpn-base-r162.jar";
 
 	private static final String HISTORIC_EXECUTABLE_R100 = "./historic-executables/simqpn-base-r100.jar";
 
-	public enum Revision {
-		TRUNK, R100, R162
-	}
-	
-	public enum AnalysisMode {
-		BATCH_MEANS, REPLICATION_DELETION, WELCH
-	}
-	
-	public enum StoppingRule {
-		FIXED_LENGTH, ABSOLUTE_PRECISION, RELATIVE_PRECISION
-	}
-	
 	private static final Logger log = Logger.getLogger(SimulationRunner.class);
-	
+
 	private Revision revisionToRun;
 	private String testName;
-	
+
 	public SimulationRunner(Revision revisionToRun, String testName) {
 		this.revisionToRun = revisionToRun;
 		this.testName = testName;
 	}
-	
+
+	/**
+	 * Starts the configured number of simulation runs in parallel.
+	 * 
+	 * @param config - Describing the simulation run configuration.
+	 * @return simulation results of the simulation runs.
+	 */
 	public SimulationResults run(RunConfig config) {
-		
-		File tmpDir = createTmpDir();		
-		SimulationResults results = initResults(config.getModel(), config.getAnalysisMode());		
-		
-		ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
+		File tmpDir = createTmpDir();
+		SimulationResults results = initResults(config.getModel(),
+				config.getAnalysisMode());
+
+		// Distribute the simulation runs among the available processors/cores.
+		ExecutorService service = Executors.newFixedThreadPool(Runtime
+				.getRuntime().availableProcessors());
 		ArrayList<Run> runs = initRuns(config, tmpDir);
-		
+
+		// Start simulation runs in parallel.
 		try {
 			List<Future<RunInfo>> futures = service.invokeAll(runs);
-			for(Future<RunInfo> f : futures) {
+			for (Future<RunInfo> f : futures) {
 				RunInfo info = f.get();
 				results.getRunInfos().add(info);
 			}
@@ -115,34 +125,47 @@ public class SimulationRunner {
 			log.error("Error running simulation.", e1);
 		} catch (ExecutionException e) {
 			log.error("Error running simulation.", e);
-		}		
+		}
 		service.shutdownNow();
-		
+
+		// Collect results
 		parseLogs(results);
-		
+
 		if (!config.isExpectError()) {
 			parseResults(results, config.getAnalysisMode());
 		}
-		
-//		cleanTmpDir(tmpDir);
-		
+
+		// cleanTmpDir(tmpDir);
+
 		return results;
 	}
 
+	/**
+	 * Delete all temporary files of the simulation runs.
+	 * 
+	 * @param tmpDir
+	 */
 	private void cleanTmpDir(File tmpDir) {
-		FileFilter filter = new WildcardFileFilter(new String[] { "*.properties", "*.xml", "SimQPN_Output_*.log" });
+		FileFilter filter = new WildcardFileFilter(new String[] {
+				"*.properties", "*.xml", "SimQPN_Output_*.log" });
 		for (File f : tmpDir.listFiles(filter)) {
 			f.delete();
 		}
 	}
-	
+
+	/**
+	 * Parses the log files of all simulation runs for errors and warnings.
+	 * 
+	 * @param results
+	 */
 	private void parseLogs(SimulationResults results) {
 		if (revisionToRun == Revision.TRUNK) {
 			Log4jXmlLogImport logImport = new Log4jXmlLogImport();
-			
+
 			for (RunInfo info : results.getRunInfos()) {
 				try {
-					File xmlLog = new File(info.getRunDirectory(), "errorLog.xml");
+					File xmlLog = new File(info.getRunDirectory(),
+							"errorLog.xml");
 					if (xmlLog.exists()) {
 						logImport.execute(xmlLog, info);
 					} else {
@@ -152,28 +175,41 @@ public class SimulationRunner {
 				} catch (Exception e) {
 					log.error("Error reading xml log file.", e);
 					fail();
-				} 
+				}
 			}
-		}		
+		}
 	}
 
+	/**
+	 * Parse the results files of all simulation runs and add them to the
+	 * SimulationResults object.
+	 * 
+	 * @param results
+	 * @param mode
+	 */
 	private void parseResults(SimulationResults results, AnalysisMode mode) {
 		if (mode == AnalysisMode.WELCH) {
+			// The method of welch dumps its results in a number of files. These
+			// files are read here.
 			WelchDumpImport welchImport = new WelchDumpImport();
-			
+
 			for (RunInfo info : results.getRunInfos()) {
 				results.getWallClockTime().addSample(info.getWallClockTime());
 				welchImport.execute(info, results);
 			}
-		} else if ((mode == AnalysisMode.BATCH_MEANS) &&
-				((revisionToRun == Revision.R162) || (revisionToRun == Revision.TRUNK))) {
+		} else if ((mode == AnalysisMode.BATCH_MEANS)
+				&& ((revisionToRun == Revision.R162) || (revisionToRun == Revision.TRUNK))) {
+			// *.simqpn files are only generated when using BATCHMEANS with
+			// newer versions
+			// of the simulator (Revision >= R162)
 			SimQPNResultFileImport resultImport = new SimQPNResultFileImport();
-			
+
 			for (RunInfo info : results.getRunInfos()) {
 				results.getWallClockTime().addSample(info.getWallClockTime());
 				try {
 					FileFilter simqpnFilter = new SuffixFileFilter(".simqpn");
-					File[] resultFiles = info.getRunDirectory().listFiles(simqpnFilter);
+					File[] resultFiles = info.getRunDirectory().listFiles(
+							simqpnFilter);
 					if (resultFiles.length < 1) {
 						log.error("Simqpn result file not found.");
 						fail();
@@ -189,8 +225,9 @@ public class SimulationRunner {
 				}
 			}
 		} else {
+			// Otherwise parse results from the console output.
 			ConsoleLogImport consoleImport = new ConsoleLogImport();
-			
+
 			for (RunInfo info : results.getRunInfos()) {
 				results.getWallClockTime().addSample(info.getWallClockTime());
 				consoleImport.execute(info, results);
@@ -198,22 +235,36 @@ public class SimulationRunner {
 		}
 	}
 
+	/**
+	 * Initialize a list of simulation runs.
+	 * 
+	 * @param config
+	 *            - Describes the configuration of the run.
+	 * @param tmpDir
+	 *            - Base temporary directory.
+	 * @return list of run objects.
+	 */
 	private ArrayList<Run> initRuns(RunConfig config, File tmpDir) {
-		ArrayList<Run> runs = new ArrayList<Run>(config.getRepeats());	
+		ArrayList<Run> runs = new ArrayList<Run>(config.getRepeats());
 		for (int i = 0; i < config.getRepeats(); i++) {
-			
-			//Create a separate tmp dir for each run, in order to be able to distingiush between files of different runs
-			File runDir = new File(tmpDir, "Run" + i);
+
+			// Create a separate tmp dir for each run, in order to be able to
+			// distingiush between files of different runs
+			File runDir = new File(tmpDir, RUN_DIR_PREFIX + i);
 			if (!runDir.mkdir()) {
-				LogMF.error(log, "Could not create temporary run directory for run {0}", new Object[] { i });
+				LogMF.error(log,
+						"Could not create temporary run directory for run {0}",
+						new Object[] { i });
 				fail();
 			}
-			switch(revisionToRun) {
-			case R100:				
-				runs.add(new HistoricRun(i, new File(HISTORIC_EXECUTABLE_R100), config, runDir));
+			switch (revisionToRun) {
+			case R100:
+				runs.add(new HistoricRun(i, new File(HISTORIC_EXECUTABLE_R100),
+						config, runDir));
 				break;
 			case R162:
-				runs.add(new HistoricRun(i, new File(HISTORIC_EXECUTABLE_R162), config, runDir));
+				runs.add(new HistoricRun(i, new File(HISTORIC_EXECUTABLE_R162),
+						config, runDir));
 				break;
 			case TRUNK:
 				runs.add(new TrunkRun(i, config, runDir));
@@ -223,9 +274,22 @@ public class SimulationRunner {
 		return runs;
 	}
 
+	/**
+	 * Initializes the simulation results container with the structure of the
+	 * net model if necessary.
+	 * 
+	 * @param modelFile
+	 *            - QPN model file.
+	 * @param mode
+	 *            - Analysis mode.
+	 * @return Newly created simulation results container.
+	 */
 	private SimulationResults initResults(File modelFile, AnalysisMode mode) {
 		SimulationResults results = new SimulationResults();
-		if ((revisionToRun == Revision.R100) || (mode != AnalysisMode.BATCH_MEANS)) {
+		if ((revisionToRun == Revision.R100)
+				|| (mode != AnalysisMode.BATCH_MEANS)) {
+			// Import of the model structure is only necessary if parsing the
+			// results from the console.
 			ModelImport extractor = new ModelImport();
 			try {
 				extractor.initWithModelStructure(results, modelFile);
@@ -237,10 +301,18 @@ public class SimulationRunner {
 		return results;
 	}
 
+	
+	/**
+	 * Creates a new base temporary directory.
+	 * 
+	 * @return Reference to the created temporary directory.
+	 */
 	private File createTmpDir() {
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HHmmssSSS");
-		File tmpDir = new File("./tmp/" + dateFormat.format(new Date()) + "/" + testName);
-		if(!tmpDir.mkdirs()) {
+		SimpleDateFormat dateFormat = new SimpleDateFormat(
+				"yyyy-MM-dd_HHmmssSSS");
+		File tmpDir = new File(TMP_BASE_DIR + dateFormat.format(new Date())
+				+ File.separator + testName);
+		if (!tmpDir.mkdirs()) {
 			log.error("Could not create temporary directory");
 			fail();
 		}

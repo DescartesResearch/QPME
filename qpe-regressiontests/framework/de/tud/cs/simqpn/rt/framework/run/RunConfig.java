@@ -44,9 +44,6 @@ package de.tud.cs.simqpn.rt.framework.run;
 
 import java.io.File;
 
-import de.tud.cs.simqpn.rt.framework.run.SimulationRunner.AnalysisMode;
-import de.tud.cs.simqpn.rt.framework.run.SimulationRunner.StoppingRule;
-
 /**
  * Contains the information required to do a simulation run.
  * 
@@ -54,6 +51,18 @@ import de.tud.cs.simqpn.rt.framework.run.SimulationRunner.StoppingRule;
  *
  */
 public class RunConfig {
+	
+	public enum Revision {
+		TRUNK, R100, R162
+	}
+	
+	public enum AnalysisMode {
+		BATCH_MEANS, REPLICATION_DELETION, WELCH
+	}
+	
+	public enum StoppingRule {
+		FIXED_LENGTH, ABSOLUTE_PRECISION, RELATIVE_PRECISION
+	}
 
 	private File model;
 	private String configurationName;

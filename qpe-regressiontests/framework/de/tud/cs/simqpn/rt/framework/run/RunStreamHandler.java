@@ -57,49 +57,66 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.log4j.Logger;
 
+/**
+ * Processes the output and error stream of a forked simulation process.
+ * 
+ * @author Simon Spinner
+ *
+ */
 public class RunStreamHandler implements ExecuteStreamHandler {
-	
+
+	/**
+	 * Thread that reads process output from a stream and checks for specific
+	 * messages. It also writes all the output to a file.
+	 */
 	private class OutputFilter extends Thread {
-		
+
 		public volatile boolean stop = false;
 		public volatile boolean precessionReached = true;
 		public volatile double runLength = 0.0;
 		public volatile boolean overflow = false;
-		
+
 		public InputStream source;
 		public PrintStream target;
-				
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see java.lang.Thread#run()
+		 */
 		@Override
 		public void run() {
 			try {
-				LineIterator lines = new LineIterator(new InputStreamReader(source));
+				LineIterator lines = new LineIterator(new InputStreamReader(
+						source));
 				try {
 					while (!stop && lines.hasNext()) {
 						String currentLine = lines.nextLine();
-						
-						if (currentLine.contains("is exceedingly growing. An overflow might occur.")) {
+
+						if (checkForOverflow(currentLine)) {
 							overflow = true;
 							processWatchdog.destroyProcess();
 							return;
 						}
-						
+
 						if (checkPrecision) {
-							if (currentLine.contains("The simulation was stopped because of reaching max totalRunLen") 
-									|| currentLine.contains("STOPPING because max totalRunLen is reached!")) {
+							if (checkIfPrecisionReached(currentLine)) {
 								precessionReached = false;
 							}
 						}
-						
+
 						if (parseRunLength) {
-							if (currentLine.contains("totalRunLen= ")) {
-								Pattern runLengthPattern = Pattern.compile(".*totalRunLen= ([0-9Ee\\-\\.]*).*");
-								Matcher m = runLengthPattern.matcher(currentLine);
-								if (m.matches()){
+							if (checkForRunSummaryLine(currentLine)) {
+								Pattern runLengthPattern = Pattern
+										.compile(".*totalRunLen= ([0-9Ee\\-\\.]*).*");
+								Matcher m = runLengthPattern
+										.matcher(currentLine);
+								if (m.matches()) {
 									runLength = Double.parseDouble(m.group(1));
 								}
 							}
 						}
-						
+
 						synchronized (target) {
 							target.println(currentLine);
 							target.flush();
@@ -108,63 +125,96 @@ public class RunStreamHandler implements ExecuteStreamHandler {
 				} finally {
 					LineIterator.closeQuietly(lines);
 				}
-			} catch(IllegalStateException ex) {
+			} catch (IllegalStateException ex) {
 				log.error("Error pumping output.", ex);
 			}
 		}
+
+		private boolean checkForRunSummaryLine(String currentLine) {
+			return currentLine.contains("totalRunLen= ");
+		}
+
+		private boolean checkIfPrecisionReached(String currentLine) {
+			return currentLine
+					.contains("The simulation was stopped because of reaching max totalRunLen")
+					|| currentLine
+							.contains("STOPPING because max totalRunLen is reached!");
+		}
+
+		private boolean checkForOverflow(String currentLine) {
+			return currentLine
+					.contains("is exceedingly growing. An overflow might occur.");
+		}
 	}
-	
+
 	public static final Logger log = Logger.getLogger(RunStreamHandler.class);
-	
+
 	private OutputFilter outFilter;
 	private OutputFilter errFilter;
-	
+
 	private PrintStream file;
 	private File logFile;
-	
+
 	private InputStream out;
 	private InputStream err;
-	
+
 	private boolean checkPrecision;
 	private boolean parseRunLength;
-	
+
 	private ExecuteWatchdog processWatchdog;
-	
-	public RunStreamHandler(File logFile, boolean checkPrecision, boolean parseRunLength, ExecuteWatchdog processWatchdog) {
+
+	public RunStreamHandler(File logFile, boolean checkPrecision,
+			boolean parseRunLength, ExecuteWatchdog processWatchdog) {
 		this.logFile = logFile;
 		this.processWatchdog = processWatchdog;
 		this.checkPrecision = checkPrecision;
 		this.parseRunLength = parseRunLength;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.apache.commons.exec.ExecuteStreamHandler#setProcessErrorStream(java.io.InputStream)
+	 */
 	@Override
 	public void setProcessErrorStream(InputStream err) throws IOException {
 		this.err = err;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.apache.commons.exec.ExecuteStreamHandler#setProcessInputStream(java.io.OutputStream)
+	 */
 	@Override
-	public void setProcessInputStream(OutputStream in) throws IOException {	}
+	public void setProcessInputStream(OutputStream in) throws IOException {
+	}
 
+	/* (non-Javadoc)
+	 * @see org.apache.commons.exec.ExecuteStreamHandler#setProcessOutputStream(java.io.InputStream)
+	 */
 	@Override
 	public void setProcessOutputStream(InputStream out) throws IOException {
 		this.out = out;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.apache.commons.exec.ExecuteStreamHandler#start()
+	 */
 	@Override
 	public void start() throws IOException {
 		file = new PrintStream(logFile);
-		
+
 		outFilter = new OutputFilter();
 		outFilter.source = out;
 		outFilter.target = file;
 		errFilter = new OutputFilter();
 		errFilter.source = err;
 		errFilter.target = file;
-		
+
 		outFilter.start();
 		errFilter.start();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.apache.commons.exec.ExecuteStreamHandler#stop()
+	 */
 	@Override
 	public void stop() {
 		if (outFilter != null) {
@@ -174,28 +224,37 @@ public class RunStreamHandler implements ExecuteStreamHandler {
 			} catch (InterruptedException e) {
 			}
 		}
-		
+
 		if (errFilter != null) {
 			errFilter.stop = true;
 			try {
 				errFilter.join();
-			} catch(InterruptedException e) {
+			} catch (InterruptedException e) {
 			}
 		}
-		
+
 		if (file != null) {
 			IOUtils.closeQuietly(file);
 		}
 	}
-	
+
+	/**
+	 * @return flag indicating whether an overflow has occurred during the simulation run.
+	 */
 	public boolean hasOverflowOccurred() {
 		return outFilter.overflow || errFilter.overflow;
 	}
-	
+
+	/**
+	 * @return flag indicating whether the precision was reached in this simulation run.
+	 */
 	public boolean isPrecisionReached() {
 		return outFilter.precessionReached && errFilter.precessionReached;
 	}
-	
+
+	/**
+	 * @return total run length in simulation time of the simulation run.
+	 */
 	public double getTotalRunLength() {
 		return outFilter.runLength;
 	}

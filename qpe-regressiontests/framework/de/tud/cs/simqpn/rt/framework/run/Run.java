@@ -46,9 +46,11 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.exec.CommandLine;
@@ -60,8 +62,8 @@ import org.apache.log4j.LogMF;
 import org.apache.log4j.Logger;
 
 import de.tud.cs.simqpn.rt.framework.results.RunInfo;
-import de.tud.cs.simqpn.rt.framework.run.SimulationRunner.AnalysisMode;
-import de.tud.cs.simqpn.rt.framework.run.SimulationRunner.StoppingRule;
+import de.tud.cs.simqpn.rt.framework.run.RunConfig.AnalysisMode;
+import de.tud.cs.simqpn.rt.framework.run.RunConfig.StoppingRule;
 
 /**
  * Starts and controls the execution of a simulation run.
@@ -71,9 +73,17 @@ import de.tud.cs.simqpn.rt.framework.run.SimulationRunner.StoppingRule;
  */
 public abstract class Run implements Callable<RunInfo> {
 
+	private static final String JAVA_EXECUTABLE_PROPERTY = "java.executable";
+
+	private static final String JAVA_ARGS_PROPERTY = "java.args";
+
+	private static final String JAVA_PROPERTIES_FILENAME = "java.properties";
+
 	private static final Logger log = Logger.getLogger(Run.class);
 
 	private static final int MAX_RETRIES = 5;
+
+	private static Properties javaProps = null;
 
 	protected int index;
 	protected RunConfig config;
@@ -194,6 +204,7 @@ public abstract class Run implements Callable<RunInfo> {
 
 	/**
 	 * Creates an executor that can be used to spawn a process.
+	 * 
 	 * @return DefaultExecutor
 	 */
 	private DefaultExecutor createExecutor() {
@@ -209,8 +220,10 @@ public abstract class Run implements Callable<RunInfo> {
 	 * Creates a stream handler that captures the output of the given executor
 	 * and writes it to the specified log file.
 	 * 
-	 * @param consoleLog - File where the output of the process should be stored in.
-	 * @param executor - The process that will be executed.
+	 * @param consoleLog
+	 *            - File where the output of the process should be stored in.
+	 * @param executor
+	 *            - The process that will be executed.
 	 * @return newly created stream handler.
 	 */
 	private RunStreamHandler createStreamHandler(File consoleLog,
@@ -248,11 +261,27 @@ public abstract class Run implements Callable<RunInfo> {
 	 * Create the command line used for calling SimQPN.
 	 * 
 	 * @return CommandLine
+	 * @throws IOException
 	 */
-	protected CommandLine createCommandLine() {
-		CommandLine cmd = new CommandLine(
-				"C:\\Program Files\\Java\\jdk1.6.0_18\\bin\\java.exe");
-		cmd.addArgument("-server");
+	protected CommandLine createCommandLine() throws IOException {
+		Properties props = loadJavaProperties();
+
+		CommandLine cmd = new CommandLine(props.getProperty(JAVA_EXECUTABLE_PROPERTY,
+				"java.exe"));
+		cmd.addArguments(props.getProperty(JAVA_ARGS_PROPERTY, "").split(" "));
 		return cmd;
+	}
+
+	/**
+	 * @return a list of properties configuring the parameters for creating
+	 *         child java vms.
+	 * @throws IOException
+	 */
+	private static Properties loadJavaProperties() throws IOException {
+		if (javaProps == null) {
+			javaProps = new Properties();
+			javaProps.load(new FileReader(JAVA_PROPERTIES_FILENAME));
+		}
+		return javaProps;
 	}
 }
