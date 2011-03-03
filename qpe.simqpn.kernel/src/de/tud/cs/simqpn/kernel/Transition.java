@@ -47,14 +47,14 @@
  */
 package de.tud.cs.simqpn.kernel;
 
+import static de.tud.cs.simqpn.util.LogUtil.formatMultilineMessage;
+
 import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 
 import cern.jet.random.Empirical;
 import cern.jet.random.EmpiricalWalker;
-
-import static de.tud.cs.simqpn.util.LogUtil.formatMultilineMessage;
 
 /**
  * Class Transition

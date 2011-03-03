@@ -54,8 +54,6 @@
  *******************************************************************************/
 package de.tud.cs.qpe.editors.incidence;
 
-import java.io.File;
-
 import org.dom4j.Element;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.draw2d.AbstractRouter;
@@ -69,16 +67,15 @@ import org.eclipse.gef.MouseWheelHandler;
 import org.eclipse.gef.MouseWheelZoomHandler;
 import org.eclipse.gef.dnd.TemplateTransferDragSourceListener;
 import org.eclipse.gef.dnd.TemplateTransferDropTargetListener;
-import org.eclipse.gef.editparts.ScalableFreeformRootEditPart;
 import org.eclipse.gef.editparts.ScalableRootEditPart;
 import org.eclipse.gef.editparts.ZoomManager;
 import org.eclipse.gef.palette.PaletteRoot;
 import org.eclipse.gef.requests.CreationFactory;
 import org.eclipse.gef.ui.actions.ZoomInAction;
 import org.eclipse.gef.ui.actions.ZoomOutAction;
+import org.eclipse.gef.ui.palette.FlyoutPaletteComposite.FlyoutPreferences;
 import org.eclipse.gef.ui.palette.PaletteViewer;
 import org.eclipse.gef.ui.palette.PaletteViewerProvider;
-import org.eclipse.gef.ui.palette.FlyoutPaletteComposite.FlyoutPreferences;
 import org.eclipse.gef.ui.parts.GraphicalEditorWithFlyoutPalette;
 import org.eclipse.gef.ui.parts.GraphicalViewerKeyHandler;
 import org.eclipse.jface.action.IAction;

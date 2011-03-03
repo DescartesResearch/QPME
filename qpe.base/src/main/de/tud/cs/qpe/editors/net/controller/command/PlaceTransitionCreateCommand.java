@@ -59,7 +59,6 @@ import java.util.Iterator;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.XPath;
-import org.dom4j.tree.DefaultElement;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.commands.Command;
 

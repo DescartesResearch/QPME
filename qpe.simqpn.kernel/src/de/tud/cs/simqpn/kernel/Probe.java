@@ -41,6 +41,8 @@
  */
 package de.tud.cs.simqpn.kernel;
 
+import static de.tud.cs.simqpn.util.LogUtil.formatDetailMessage;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -51,8 +53,6 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.dom4j.Element;
-
-import static de.tud.cs.simqpn.util.LogUtil.formatDetailMessage;
 
 /**
  * Class probe.

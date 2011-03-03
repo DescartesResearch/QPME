@@ -57,8 +57,6 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 
-import de.tud.cs.qpe.editors.net.controller.editpart.editor.PlaceTransitionEditPart;
-import de.tud.cs.qpe.editors.net.controller.editpart.outline.NetTreeEditPart;
 import de.tud.cs.qpe.editors.net.gef.property.place.OrdinaryPlacePropertyComposite;
 import de.tud.cs.qpe.editors.net.gef.property.place.QueueingPlacePropertyComposite;
 import de.tud.cs.qpe.editors.net.gef.property.place.SubnetPlacePropertyComposite;
@@ -171,11 +169,13 @@ public class PlaceTransitionPropertyPage implements IPropertySheetPage {
 						} else {
 							stackLayout.topControl = emptyProperties;
 						}
-
-						// Set the new property change listener.
-						PlaceTransitionPropertyComposite newPropetyComposite = (PlaceTransitionPropertyComposite) stackLayout.topControl;
-						newPropetyComposite.setModel(newModel);
-						newPropetyComposite.activate();
+						
+						if (stackLayout.topControl != emptyProperties) {
+							// Set the new property change listener.
+							PlaceTransitionPropertyComposite newPropetyComposite = (PlaceTransitionPropertyComposite) stackLayout.topControl;
+							newPropetyComposite.setModel(newModel);
+							newPropetyComposite.activate();
+						}
 					} else {
 						stackLayout.topControl = emptyProperties;
 					}

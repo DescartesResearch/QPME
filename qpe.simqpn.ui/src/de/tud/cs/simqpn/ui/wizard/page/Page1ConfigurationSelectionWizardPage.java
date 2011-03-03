@@ -39,7 +39,7 @@
  *  2006        Christofer Dutz   Created.
  * 
  */
-package de.tud.cs.simqpn.ui.wiizard.page;
+package de.tud.cs.simqpn.ui.wizard.page;
 
 import java.beans.PropertyChangeSupport;
 import java.util.HashMap;

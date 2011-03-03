@@ -41,10 +41,8 @@
  */
 package de.tud.cs.qpe.model;
 
-import java.util.Iterator;
 import java.util.List;
 
-import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 
 public class NetHelper extends XPathHelper {

@@ -14,7 +14,7 @@
       </extension>
       <extension id="QPE" point="org.eclipse.core.runtime.products">
             <product
-                  application="QPE_Base.qpe.application"
+                  application="qpe.base.qpe.application"
                   name="QPME">
                <property
                      name="windowImages"
@@ -24,21 +24,35 @@
                      value="QPME"/>
                <property
                      name="aboutImage"
-                     value="QPME-AboutImage.gif"/>
+                     value="/qpe-base/QPME-AboutImage.gif"/>
                <property
                      name="aboutText"
                      value="Copyright 2010"/>
             </product>
       </extension>
       <extension point="org.eclipse.ui.intro">
-            <intro class="org.eclipse.ui.intro.config.CustomizableIntroPart" id="qPE_Base.introID"> </intro>
-            <introProductBinding introId="qPE_Base.introID" productId="QPE_Base.QPE"/> 
+            <intro
+                  class="org.eclipse.ui.intro.config.CustomizableIntroPart"
+                  id="qpe.base.intro">
+            </intro>
+            <introProductBinding
+                  introId="qpe.base.intro"
+                  productId="qpe.base.QPE">
+            </introProductBinding> 
       </extension>
       <extension point="org.eclipse.ui.intro.config">
-            <config introId="qPE_Base.introID" content="introContent.xml" id="QPE_Base.configId">
-                  <presentation home-page-id="root">
-                        <implementation kind="html" os="win32,linux,macosx"> </implementation>
-                  </presentation>
+            <config
+                  content="introContent.xml"
+                  id="qpe.base.introConfigId"
+                  introId="qpe.base.intro">
+               <presentation
+                     home-page-id="root">
+                  <implementation
+                        kind="html"
+                        os="win32,linux,macosx"
+                        style="content/shared.css">
+                  </implementation>
+               </presentation>
             </config>
       </extension>
       <extension point="org.eclipse.ui.intro.configExtension">

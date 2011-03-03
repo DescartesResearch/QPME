@@ -52,15 +52,10 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.ISelectionListener;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
 import de.tud.cs.qpe.model.DocumentManager;

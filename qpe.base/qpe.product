@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="QPME" uid="QPE_Base" id="QPE_Base.QPE" application="QPE_Base.qpe.application" version="1.5.2" useFeatures="false" includeLaunchers="true">
+<product name="QPME" uid="qpe.base" id="qpe.base.QPE" application="qpe.base.qpe.application" version="1.5.2" useFeatures="false" includeLaunchers="true">
 
    <aboutInfo>
       <image path="/qpe-base/QPME-AboutImage.gif"/>
@@ -14,13 +14,12 @@
    </configIni>
 
    <launcherArgs>
-      <vmArgs>-server</vmArgs>
    </launcherArgs>
 
-   <windowImages i16="images/QPME-Icon16.gif" i32="images/QPME-Icon32.gif"/>
+   <windowImages i16="/qpe.base/images/QPME-Icon16.gif" i32="/qpe.base/images/QPME-Icon32.gif"/>
 
    <splash
-      location="QPE_Base" />
+      location="qpe.base" />
    <launcher name="QPME">
       <solaris/>
       <win useIco="false">
@@ -28,8 +27,10 @@
       </win>
    </launcher>
 
+   <intro introId="qpe.base.intro"/>
 
    <vm>
+      <windows include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5</windows>
    </vm>
 
    <license>
@@ -126,9 +127,9 @@ This Agreement is governed by the laws of the State of New York and the intellec
    </license>
 
    <plugins>
-      <plugin id="QPE_Base"/>
-      <plugin id="QPE_SimQPN"/>
       <plugin id="com.ibm.icu"/>
+      <plugin id="org.apache.log4j"/>
+      <plugin id="org.dom4j"/>
       <plugin id="org.eclipse.ant.core"/>
       <plugin id="org.eclipse.compare.core"/>
       <plugin id="org.eclipse.core.commands"/>
@@ -143,7 +144,6 @@ This Agreement is governed by the laws of the State of New York and the intellec
       <plugin id="org.eclipse.core.net"/>
       <plugin id="org.eclipse.core.net.win32.x86" fragment="true"/>
       <plugin id="org.eclipse.core.resources"/>
-      <plugin id="org.eclipse.core.resources.compatibility" fragment="true"/>
       <plugin id="org.eclipse.core.resources.win32.x86" fragment="true"/>
       <plugin id="org.eclipse.core.runtime"/>
       <plugin id="org.eclipse.core.runtime.compatibility"/>
@@ -192,6 +192,11 @@ This Agreement is governed by the laws of the State of New York and the intellec
       <plugin id="org.eclipse.update.core"/>
       <plugin id="org.eclipse.update.core.win32" fragment="true"/>
       <plugin id="org.eclipse.update.ui"/>
+      <plugin id="org.jfreechart"/>
+      <plugin id="org.rosuda.JRI"/>
+      <plugin id="qpe.base"/>
+      <plugin id="qpe.simqpn.kernel"/>
+      <plugin id="qpe.simqpn.ui"/>
    </plugins>
 
 

@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: SimQPN Plug-in for QPE
-Bundle-SymbolicName: QPE_SimQPN; singleton:=true
+Bundle-SymbolicName: qpe.simqpn.kernel;singleton:=true
 Bundle-Version: 1.5.2
 Bundle-Localization: plugin
 Eclipse-AutoStart: true
@@ -13,4 +13,5 @@ Bundle-ClassPath: lib/colt.jar,
  QPE_SimQPN.jar
 Bundle-Vendor: Descartes Research Group
 Require-Bundle: org.dom4j;bundle-version="1.6.1",
- org.apache.log4j;bundle-version="1.2.15"
+ org.apache.log4j;bundle-version="1.2.16"
+Bundle-RequiredExecutionEnvironment: J2SE-1.5

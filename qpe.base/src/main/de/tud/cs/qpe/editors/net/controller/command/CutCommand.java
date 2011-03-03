@@ -51,8 +51,6 @@ import org.dom4j.Element;
 import org.dom4j.XPath;
 import org.eclipse.jface.viewers.StructuredSelection;
 
-import de.tud.cs.qpe.editors.net.controller.editpart.editor.ConnectionEditPart;
-import de.tud.cs.qpe.editors.net.controller.editpart.editor.PlaceTransitionEditPart;
 import de.tud.cs.qpe.model.DocumentManager;
 
 public class CutCommand extends CopyCommand {

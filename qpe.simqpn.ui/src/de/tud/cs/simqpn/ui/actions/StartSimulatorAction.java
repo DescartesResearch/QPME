@@ -83,7 +83,7 @@ import de.tud.cs.simqpn.kernel.Simulator;
 import de.tud.cs.simqpn.kernel.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.Stats;
 import de.tud.cs.simqpn.kernel.StatsDocumentBuilder;
-import de.tud.cs.simqpn.ui.wiizard.RunSimulationWizard;
+import de.tud.cs.simqpn.ui.wizard.RunSimulationWizard;
 
 public class StartSimulatorAction extends Action implements
 		IWorkbenchWindowActionDelegate {

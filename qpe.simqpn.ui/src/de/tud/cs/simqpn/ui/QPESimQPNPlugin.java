@@ -50,6 +50,8 @@ public class QPESimQPNPlugin extends AbstractUIPlugin {
 	//The shared instance.
 	private static QPESimQPNPlugin plugin;
 	
+	public static final String PLUGIN_ID = "qpe.simqpn.ui";
+	
 	/**
 	 * The constructor.
 	 */
@@ -87,6 +89,6 @@ public class QPESimQPNPlugin extends AbstractUIPlugin {
 	 * @return the image descriptor
 	 */
 	public static ImageDescriptor getImageDescriptor(String path) {
-		return AbstractUIPlugin.imageDescriptorFromPlugin("QPE_SimPQN", path);
+		return AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, path);
 	}
 }

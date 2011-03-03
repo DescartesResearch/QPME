@@ -12,11 +12,6 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.PropertyConfigurator;
-import org.dom4j.Attribute;
-import org.dom4j.DocumentHelper;
-import org.dom4j.XPath;
-
-import de.tud.cs.simqpn.kernel.SimQPNException;
 
 public class LogUtil {
 	

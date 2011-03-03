@@ -53,7 +53,6 @@ import org.dom4j.Element;
 import org.dom4j.XPath;
 import org.eclipse.draw2d.AbstractLayout;
 import org.eclipse.draw2d.Figure;
-import org.eclipse.draw2d.FreeformLayer;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.gef.EditPolicy;

@@ -24,9 +24,9 @@ import org.eclipse.gef.ui.actions.ActionRegistry;
 import org.eclipse.gef.ui.actions.SelectAllAction;
 import org.eclipse.gef.ui.actions.ZoomInAction;
 import org.eclipse.gef.ui.actions.ZoomOutAction;
+import org.eclipse.gef.ui.palette.FlyoutPaletteComposite.FlyoutPreferences;
 import org.eclipse.gef.ui.palette.PaletteViewer;
 import org.eclipse.gef.ui.palette.PaletteViewerProvider;
-import org.eclipse.gef.ui.palette.FlyoutPaletteComposite.FlyoutPreferences;
 import org.eclipse.gef.ui.parts.ContentOutlinePage;
 import org.eclipse.gef.ui.parts.GraphicalEditorWithFlyoutPalette;
 import org.eclipse.gef.ui.parts.GraphicalViewerKeyHandler;
@@ -53,47 +53,6 @@ import de.tud.cs.qpe.editors.net.gef.action.PasteAction;
 import de.tud.cs.qpe.editors.net.gef.palette.NetEditorPaletteFactory;
 import de.tud.cs.qpe.editors.net.gef.property.PlaceTransitionPropertyPage;
 import de.tud.cs.qpe.editors.subnet.controller.factory.SubnetEditPartFactory;
-/* ==============================================
- * QPME : Queueing Petri net Modeling Environment
- * ==============================================
- *
- * (c) Copyright 2003-2010, by Samuel Kounev and Contributors.
- * 
- * Project Info:   http://descartes.ipd.kit.edu/projects/qpme/
- *                 http://www.descartes-research.net/
- *    
- * All rights reserved. This software is made available under the terms of the 
- * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * This software is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE. See the Eclipse Public License (EPL)
- * for more details.
- *
- * You should have received a copy of the Eclipse Public License (EPL)
- * along with this software; if not visit http://www.eclipse.org or write to
- * Eclipse Foundation, Inc., 308 SW First Avenue, Suite 110, Portland, 97204 USA
- * Email: license (at) eclipse.org 
- *  
- * [Java is a trademark or registered trademark of Sun Microsystems, Inc.
- * in the United States and other countries.]
- *                                
- * =============================================
- *
- * Original Author(s):  Samuel Kounev and Christofer Dutz
- * Contributor(s):   
- * 
- * NOTE: The above list of contributors lists only the people that have
- * contributed to this source file - for a list of ALL contributors to 
- * the project, please see the README.txt file.
- * 
- *  History:
- *  Date        ID                Description
- *  ----------  ----------------  ------------------------------------------------------------------  
- *  2006        Christofer Dutz   Created.
- * 
- */
 
 /**
  * A graphical editor with flyout palette that can edit .qpn files.

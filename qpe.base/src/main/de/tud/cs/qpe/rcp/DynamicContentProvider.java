@@ -41,13 +41,15 @@
  */
 package de.tud.cs.qpe.rcp;
 
-import java.io.*;
-import java.util.*;
+import java.io.PrintWriter;
+import java.util.Date;
 
-import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.forms.widgets.*;
-import org.eclipse.ui.intro.config.*;
-import org.w3c.dom.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.intro.config.IIntroContentProviderSite;
+import org.eclipse.ui.intro.config.IIntroXHTMLContentProvider;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 //
 

@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.dom4j.Attribute;
 import org.dom4j.Element;
 import org.dom4j.tree.DefaultElement;
 import org.eclipse.jface.viewers.CellEditor;
@@ -86,7 +85,6 @@ import de.tud.cs.qpe.model.SubnetHelper;
 import de.tud.cs.qpe.utils.ColorCellEditor;
 import de.tud.cs.qpe.utils.ColorHelper;
 import de.tud.cs.qpe.utils.ITableLabelColorProvider;
-import de.tud.cs.qpe.utils.IdGenerator;
 import de.tud.cs.qpe.utils.IntegerCellEditor;
 
 public abstract class PlacePropertyComposite extends PlaceTransitionPropertyComposite {

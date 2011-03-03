@@ -42,12 +42,10 @@
 package de.tud.cs.qpe.editors.net.gef.property;
 
 import java.beans.PropertyChangeListener;
-import java.util.List;
 
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.XPath;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;

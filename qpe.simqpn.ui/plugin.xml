@@ -12,6 +12,9 @@
                label="SimQPN"
                menubarPath="qpeTools/SimQPNGroup"
                tooltip="SimQPN Plugin for QPE">
+            <class
+                  class="de.tud.cs.simqpn.ui.actions.StartSimulatorAction">
+            </class>
          </action>
       </actionSet>
    </extension>

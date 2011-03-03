@@ -44,6 +44,8 @@
  */
 package de.tud.cs.simqpn.kernel;
 
+import static de.tud.cs.simqpn.util.LogUtil.formatMultilineMessage;
+
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
@@ -57,8 +59,6 @@ import cern.jet.stat.Descriptive;
 import cern.jet.stat.Probability;
 import de.tud.cs.simqpn.util.LogUtil.ReportLevel;
 import drasys.or.prob.FDistribution;
-
-import static de.tud.cs.simqpn.util.LogUtil.formatMultilineMessage;
 
 /**
  * Class AggregateStats 

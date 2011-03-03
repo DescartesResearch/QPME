@@ -45,7 +45,6 @@ package de.tud.cs.qpe.editors.net.gef.property.place;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import org.dom4j.Attribute;
 import org.dom4j.Element;

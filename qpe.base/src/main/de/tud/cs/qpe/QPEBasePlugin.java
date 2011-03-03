@@ -41,8 +41,8 @@
  */
 package de.tud.cs.qpe;
 
-import org.eclipse.ui.plugin.*;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -53,7 +53,7 @@ public class QPEBasePlugin extends AbstractUIPlugin {
 	//The shared instance.
 	private static QPEBasePlugin plugin;
 	
-	public static final String PLUGIN_ID = "QPE_Base";
+	public static final String PLUGIN_ID = "qpe.base";
 	
 	/**
 	 * The constructor.
@@ -92,6 +92,6 @@ public class QPEBasePlugin extends AbstractUIPlugin {
 	 * @return the image descriptor
 	 */
 	public static ImageDescriptor getImageDescriptor(String path) {
-		return AbstractUIPlugin.imageDescriptorFromPlugin("QPE_Base", path);
+		return AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, path);
 	}
 }
