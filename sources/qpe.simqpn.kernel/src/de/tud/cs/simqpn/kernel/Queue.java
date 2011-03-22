@@ -2,7 +2,7 @@
  * QPME : Queueing Petri net Modeling Environment
  * ==============================================
  *
- * (c) Copyright 2003-2010, by Samuel Kounev and Contributors.
+ * (c) Copyright 2003-2011, by Samuel Kounev and Contributors.
  * 
  * Project Info:   http://descartes.ipd.kit.edu/projects/qpme/
  *                 http://www.descartes-research.net/
@@ -35,7 +35,7 @@
  * 
  *  History:
  *  Date        ID                Description
- *  ----------  ----------------  --------------------------------------------------------------------------------------------
+ *  ----------  ----------------  ------------------------------------------------------------------  
  *  2008/11/22  Samuel Kounev     Created.
  *  2008/12/13  Samuel Kounev     Fixed a bug in updateEvents() for expPS==true.
  *  2009/02/13  Samuel Kounev     Changed eventList to use PriorityQueue instead of LinkedList

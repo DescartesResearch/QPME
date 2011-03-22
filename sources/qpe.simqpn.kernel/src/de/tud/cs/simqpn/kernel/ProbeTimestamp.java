@@ -2,7 +2,7 @@
  * QPME : Queueing Petri net Modeling Environment
  * ==============================================
  *
- * (c) Copyright 2003-2010, by Samuel Kounev and Contributors.
+ * (c) Copyright 2003-2011, by Samuel Kounev and Contributors.
  * 
  * Project Info:   http://descartes.ipd.kit.edu/projects/qpme/
  *                 http://www.descartes-research.net/
@@ -35,7 +35,7 @@
  * 
  *  History:
  *  Date        ID                Description
- *  ----------  ----------------  ----------------------------------------------------------------------------------
+ *  ----------  ----------------  ------------------------------------------------------------------  
  *  2010/07/25  Simon Spinner     Created.
  * 
  */
