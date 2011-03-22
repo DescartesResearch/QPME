@@ -160,7 +160,7 @@ public class Simulator {
 	//			 the version attribute in .simqpn files
 	//			 is correct
 	//
-	public static final String QPME_VERSION = "1.5.2";	
+	public static final String QPME_VERSION = "2.0.0";	
 	
 	private static Logger log = Logger.getLogger(Simulator.class);
 	
