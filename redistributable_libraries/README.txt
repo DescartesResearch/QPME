@@ -10,16 +10,20 @@ under the ./redistributable_libraries/licenses subdirectory. The respective sour
 ./redistributable_libraries/sources
 
 ---------------------------------------------------------------------------------------------------
-Package Name                          Location              License Type   License File
+Package Name                          Location                 License Type   License File
 ---------------------------------------------------------------------------------------------------
-dom4j-1.6.1.jar                      ./qpe-base/lib/        BSD            dom4j-license.txt
-jaxen-1.1-beta-6.jar                 ./qpe-base/lib/        BSD            jaxen-license.txt
-jcommon-1.0.15.jar                   ./qpe-base/lib/        LGPL           jcommon-licence.txt
-jfreechart-1.0.12.jar                ./qpe-base/lib/        LGPL           jfreechart-licence.txt
-jfreechart-1.0.12-experimental.jar   ./qpe-base/lib/        LGPL           jfreechart-licence.txt 
-jfreechart-1.0.12-swt.jar            ./qpe-base/lib/        LGPL           jfreechart-licence.txt
-swtgraphics2d.jar                    ./qpe-base/lib/        LGPL           jfreechart-licence.txt
-JRI.jar                              ./qpe-base/lib/        LGPL           JRI-license.txt
-junit-4.5.jar                        ./qpe-base/lib/        BSD            junit-license.txt
-colt.jar                             ./qpe-simqpn/lib/      Custom         colt-license.txt
+dom4j-1.6.1.jar                      ./sources/org.dom4j       BSD            dom4j-license.txt
+jaxen-1.1-beta-6.jar                 ./sources/org.dom4j       BSD            jaxen-license.txt
+jcommon-1.0.15.jar                   ./sources/org.jfreechart  LGPL           jcommon-licence.txt
+jfreechart-1.0.12.jar                ./sources/org.jfreechart  LGPL           jfreechart-licence.txt
+jfreechart-1.0.12-experimental.jar   ./sources/org.jfreechart  LGPL           jfreechart-licence.txt 
+jfreechart-1.0.12-swt.jar            ./sources/org.jfreechart  LGPL           jfreechart-licence.txt
+swtgraphics2d.jar                    ./sources/org.jfreechart  LGPL           jfreechart-licence.txt
+JRI.jar                              ./sources/org.rosuda.JRI  LGPL           JRI-license.txt
+colt.jar                             ./sources/cern.colt       Custom         colt-license.txt
+log4j-1.2.16.jar                     ./sources/apache.log4j    Apache         log4j-license.txt
+                             ./sources/qpe.regressiontests/lib
+commons-math-2.1.jar         ./sources/qpe.regressiontests/lib Apache         commons-math-license.txt
+commons-io-2.0.1.jar         ./sources/qpe.regressiontests/lib Apache         commons-io-license.txt
+commons-exec-1.1.jar         ./sources/qpe.regressiontests/lib Apache         commons-exec-license.txt
 ---------------------------------------------------------------------------------------------------
