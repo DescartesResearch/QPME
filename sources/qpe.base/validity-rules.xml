@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ruleset name="QPE-Base">
-    <rule xpath="//place[count(color-refs/color-ref) = 0]" level="ERROR" message="Places must have at least one color-ref."/>
-    <rule xpath="//transition[count(modes/mode) = 0]" level="ERROR" message="Transitions must have at least one mode."/>
-    <rule xpath="//transition[count(connections/connection) = 0]" level="ERROR" message="Incidence-Function not specified."/>
-</ruleset>
