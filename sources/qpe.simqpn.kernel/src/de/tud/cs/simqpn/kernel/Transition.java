@@ -50,6 +50,7 @@ package de.tud.cs.simqpn.kernel;
 import static de.tud.cs.simqpn.util.LogUtil.formatMultilineMessage;
 
 import java.util.Arrays;
+import java.util.Random;
 
 import org.apache.log4j.Logger;
 
@@ -82,13 +83,17 @@ public class Transition extends Node {
 	public int enModesCnt; // Number of currently enabled modes
 
 	private Token[] tkCopyBuffer; // INTERNAL: [1..maxNumTokens] with maxNumTokens=max(outFunc[mode, outPlace, color])
-											// a buffer for copying tokens
+											// a buffer for copying tokens 
+	private int[] tkIndexBuffer; // INTERNAL: [1..maxNumTokens] with maxNumTokens=max(outFunc[mode, outPlace, color])
+											// a buffer for temporarily storing tokens indexes
 	private ProbeTimestamp[] probeData; // INTERNAL: [1..numProbes] buffer to copy probe timestamps between tokens
 	private boolean conflictWarnings = true; // INTERNAL: flag controlling whether warning for conflicting 
 												// timestamps are generated for this transition.
 
 	public EmpiricalWalker randModeGen; // Random number generator for
 										// generating modes to fire
+	
+	private Random randGen = new Random();
 
 	/**
 	 * Constructor
@@ -187,6 +192,7 @@ public class Transition extends Node {
 			}
 		}
 		tkCopyBuffer = new Token[maxNumTokens];
+		tkIndexBuffer = new int[maxNumTokens];
 	}
 
 	/**
@@ -381,24 +387,35 @@ public class Transition extends Node {
 								break;
 							default:
 								if (pl.individualTokens[c]) {
+									boolean conflict = false;
+									int j = 0; //the actual number of tokens with timestamps
+									// Filter out null timestamps and check that there are no conflicting timestamps
 									for (int i = 0; i < n; i++) {
 										ProbeTimestamp curStamp = tokens[i].probeData[pr];
 										if (curStamp == null) continue;
 										
-										 if (data == null) {
+										tkIndexBuffer[j] = i;
+										j++;
+										
+										if (data == null) {
 											data = curStamp;									
 										} else if (data.timestamp != curStamp.timestamp) {
-											if (data.timestamp > curStamp.timestamp)
-												data = curStamp;
+											conflict = true;
 											if (conflictWarnings) {
 												log.warn(formatMultilineMessage(
 														"Conflicting timestamps for probe " + probe.name + " at transition " + name + " and mode " + mode + ".",
-														"The minimum timestamp will be used. Other timestamps are dumped.",
+														"One randomly chosen timestamp will be used. Other timestamps are dumped.",
 														"Further occurences of this warning are disabled for this transition."
 														));
 												conflictWarnings = false; // no further warnings for this mode
 											}
 										}
+									}
+									
+									if (conflict) {
+										// Choose a timestamp from one tokens in the list randomly								
+										int randTokenIndex = tkIndexBuffer[randGen.nextInt(j)];
+										data = tokens[randTokenIndex].probeData[pr];
 									}
 								}
 								break;

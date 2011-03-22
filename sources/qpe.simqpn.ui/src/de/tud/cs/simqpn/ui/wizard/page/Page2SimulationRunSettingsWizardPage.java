@@ -335,8 +335,14 @@ public class Page2SimulationRunSettingsWizardPage extends WizardPage {
 				}
 				
 				configuration.setStoppingRule(sValue);
-				configuration.setTimeBetweenStopChecks(Double.parseDouble(timeBtwChkStopsText.getText()));				
-				configuration.setSecondsBetweenStopChecks(Double.parseDouble(secondsBtwChkStopsText.getText()));
+				String text = timeBtwChkStopsText.getText();
+				if (text != null && text.length() > 0) {
+					configuration.setTimeBetweenStopChecks(Double.parseDouble(text));
+				}
+				text = secondsBtwChkStopsText.getText();
+				if (text != null && text.length() > 0) {
+					configuration.setSecondsBetweenStopChecks(Double.parseDouble(text));
+				}
 				configuration.setVerbosityLevel(verbosityLevelSpinner.getSelection());
 				configuration.setOutputDirectory(statsDirText.getText());
 			}
