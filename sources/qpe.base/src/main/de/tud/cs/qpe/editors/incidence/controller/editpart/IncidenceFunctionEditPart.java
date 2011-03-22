@@ -51,6 +51,7 @@ import java.util.List;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.XPath;
+import org.dom4j.tree.DefaultElement;
 import org.eclipse.draw2d.AbstractLayout;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.IFigure;
@@ -83,6 +84,12 @@ public class IncidenceFunctionEditPart extends AbstractGraphicalEditPart
 		if (!isActive()) {
 			super.activate();
 			DocumentManager.addPropertyChangeListener(getCastedModel(), this);
+			Element modes = getCastedModel().element("modes");
+			if(modes == null) {
+				modes = new DefaultElement("modes");
+				DocumentManager.addChild(getCastedModel(), modes, false);
+			} 
+			DocumentManager.addPropertyChangeListener(modes, this);
 		}
 	}
 
@@ -95,6 +102,7 @@ public class IncidenceFunctionEditPart extends AbstractGraphicalEditPart
 			super.deactivate();
 			DocumentManager
 					.removePropertyChangeListener(getCastedModel(), this);
+			DocumentManager.removePropertyChangeListener(getCastedModel().element("modes"), this);
 		}
 	}
 
@@ -142,7 +150,7 @@ public class IncidenceFunctionEditPart extends AbstractGraphicalEditPart
 		// the wrapper objects are also recreated. Since these
 		// are diveren object instances, eclipse always recreated
 		// the editparts and figurs, resulting in realy strange 
-		// problems. 
+		// problems.
 		if(modelChildren != null) {
 			return modelChildren;
 		}
@@ -214,6 +222,16 @@ public class IncidenceFunctionEditPart extends AbstractGraphicalEditPart
 	 */
 	public void propertyChange(PropertyChangeEvent evt) {
 		String prop = evt.getPropertyName();
+		if (DocumentManager.PROP_CHILD_ADDED.equals(prop)) {
+			Element modeToAdd = (Element)evt.getNewValue();
+			modelChildren.add(modeToAdd);
+			refresh();
+		}
+		if (DocumentManager.PROP_CHILD_REMOVED.equals(prop)) {
+			Element modeToRemove = (Element)evt.getNewValue();
+			modelChildren.remove(modeToRemove);
+			refresh();
+		}
 		// Since this edit part is registered to be notified
 		// for modifications of its children. We simply need
 		// to check for child modification events.

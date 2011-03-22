@@ -42,22 +42,18 @@
  */
 package de.tud.cs.qpe.editors.net.gef.property.place;
 
-import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.dom4j.Attribute;
 import org.dom4j.Element;
 import org.dom4j.tree.DefaultElement;
-import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.ComboBoxCellEditor;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -72,6 +68,8 @@ import de.tud.cs.qpe.model.SubnetHelper;
 import de.tud.cs.qpe.model.TransitionHelper;
 import de.tud.cs.qpe.utils.ColorHelper;
 import de.tud.cs.qpe.utils.IdGenerator;
+import de.tud.cs.qpe.utils.XmlAttributeLabelProvider;
+import de.tud.cs.qpe.utils.XmlEnumerationAttributeEditingSupport;
 
 public class SubnetPlacePropertyComposite extends PlacePropertyComposite {
 	
@@ -98,96 +96,39 @@ public class SubnetPlacePropertyComposite extends PlacePropertyComposite {
 				}
 			}
 		});
-
-		columnNames = new String[] { "Color", "Initial", "Max", "Direction" };
 		initProperties();
 		initColorTable();
-	}
-	
-	
-	/* (non-Javadoc)
-	 * @see de.tud.cs.qpe.editors.net.gef.property.place.PlacePropertyComposite#initCellEditors()
-	 */
-	@Override
-	protected ArrayList<CellEditor> initCellEditors() {
-		ArrayList<CellEditor> cellEditors = super.initCellEditors();
-		cellEditors.add(new ComboBoxCellEditor(colorTableViewer.getTable(), directionItems));
-		return cellEditors;
-	}
-	
-	/* (non-Javadoc)
-	 * @see de.tud.cs.qpe.editors.net.gef.property.place.PlacePropertyComposite#initCellModifier()
-	 */
-	@Override
-	protected void initCellModifier() {
-		colorTableViewer.setCellModifier(new ColorTableCellModifier() {
-			@Override
-			protected Object getValue(int columnIndex, Element colorRef,
-					Element color) {
-				switch(columnIndex) {
-				case 3:
-					String value = colorRef.attributeValue("direction", "both");
-					for (int i = 0; i < directionItems.length; i++) {
-						if (directionItems[i].equals(value)) {
-							return i;
-						}
-					}
-					return 0;
-				default:
-					return super.getValue(columnIndex, colorRef, color);
-				}
-			}
-			
-			@Override
-			protected void modify(int columnIndex, Element colorRef, Object value) {
-				switch(columnIndex) {
-				case 3:
-					DocumentManager.setAttribute(colorRef, "direction", directionItems[((Integer)value).intValue()]);
-					break;
-				default:
-					super.modify(columnIndex, colorRef, value);
-				}
-			}
-		});
-	}
-	
-	@Override
-	protected void initLabelProvider() {
-		colorTableViewer.setLabelProvider(new ColorTableLabelProvider() {
-			@Override
-			protected String getColumnText(Element colorRef, Element color,
-					int columnIndex) {
-				switch(columnIndex) {
-				case 3:
-					return colorRef.attributeValue("direction", "both");
-				default:
-					return super.getColumnText(colorRef, color, columnIndex);
-				}
-			}
-		});
 	}
 	
 	@Override
 	protected void initTableColumns() {
 		super.initTableColumns();
-		TableColumn col = new TableColumn(colorTable, SWT.LEFT);
-		col.setText("Direction");
-		col.setWidth(70);		
+		TableViewerColumn col = colorTable.createColumn("Direction", 70);
+		colorTable.setColumnLabelProvider(col, new XmlAttributeLabelProvider("direction", "both"));
+		colorTable.setColumnEditingSupport(col, new XmlEnumerationAttributeEditingSupport(col.getViewer(), "direction") {	
+			@Override
+			protected Object[] getItems() {
+				return directionItems;
+			}
+			
+			@Override
+			protected void setValue(Object element, Object value) {
+				super.setValue(element, value);
+				Element colorRef = (Element)element;
+				colorRefModified(colorRef.attributeValue("color-id"), colorRef);
+			}
+		});
 	}
 	
-	@Override
-	protected Element createColorReference() {
-		Element colorRef = super.createColorReference();
-		colorRef.addAttribute("direction", "both");
-		return colorRef;
-	}
-
 	// If a color-ref is added to the subnet-place,
 	// it has to be added to the fixed portion of the
 	// subnet.
 	@Override
-	protected void colorRefAdded(Element colorRef) {
-		//DocumentManager.addPropertyCangeListener(colorRef, this);
+	public void colorRefAdded(Element colorRef) {
+		super.colorRefAdded(colorRef);
+		
+		// initialize attributes
+		colorRef.addAttribute("direction", "both");
 		
 		Element subnet = SubnetHelper.getSubnetOfColorReference(colorRef);
 		
@@ -203,14 +144,12 @@ public class SubnetPlacePropertyComposite extends PlacePropertyComposite {
 		
 		Element outputPlace = SubnetHelper.getOutputPlaceOfSubnet(subnet);
 		propagateColorReferenceDown(outputPlace, colorRef.attributeValue("color-id"), colorRef);
-		
-		super.colorRefAdded(colorRef);
 	}
 
 	// If a color-ref is modified, the modification has
 	// to be transfered to fixed part of the subnet.
 	@Override
-	protected void colorRefModified(String oldColorId, Element colorRef) {
+	public void colorRefModified(String oldColorId, Element colorRef) {
 		Element subnet = SubnetHelper.getSubnetOfColorReference(colorRef);
 
 		Element inputPlace = SubnetHelper.getInputPlaceOfSubnet(subnet);
@@ -231,12 +170,11 @@ public class SubnetPlacePropertyComposite extends PlacePropertyComposite {
 	// it has to be removed from the fixed portion of the
 	// subnet.
 	@Override
-	protected void colorRefRemoved(Element colorRef) {
+	public void colorRefRemoved(Element colorRef) {
 		super.colorRefRemoved(colorRef);
-//		DocumentManager.removePropertyChangeListener(colorRef, this);
 
 		Element subnet = SubnetHelper.getSubnetOfColorReference(colorRef);
-		Element color = NetHelper.getColorByReference(colorRef, colorRef);
+		Element color = NetHelper.getColorByReference(colorRef);
 		String colorName = color.attributeValue("name");
 			
 		// Remove color reference in input-place.
@@ -297,7 +235,7 @@ public class SubnetPlacePropertyComposite extends PlacePropertyComposite {
 		
 		Element placeColorRef = PlaceHelper.getColorReferenceByColorId(place, oldColorId);
 		Element subnet = SubnetHelper.getSubnetOfPlace(place);
-		Element color = NetHelper.getColorByReference(colorRef, colorRef);
+		Element color = NetHelper.getColorByReference(colorRef);
 		String colorName = color.attributeValue("name");
 		boolean inputPlace = SubnetHelper.isInputPlace(place);
 		boolean outputPlace = SubnetHelper.isOutputPlace(place);
@@ -442,11 +380,4 @@ public class SubnetPlacePropertyComposite extends PlacePropertyComposite {
 			}
 		}
 	}
-
-	@Override
-	public void propertyChange(PropertyChangeEvent event) {
-		super.propertyChange(event);
-	}
-	
-
 }

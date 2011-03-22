@@ -26,8 +26,8 @@
  *                                
  * =============================================
  *
- * Original Author(s):  Samuel Kounev and Christofer Dutz
- * Contributor(s):   
+ * Original Author(s):  Simon Spinner
+ * Contributor(s):  
  * 
  * NOTE: The above list of contributors lists only the people that have
  * contributed to this source file - for a list of ALL contributors to 
@@ -36,19 +36,31 @@
  *  History:
  *  Date        ID                Description
  *  ----------  ----------------  ------------------------------------------------------------------  
- *  2006        Christofer Dutz   Created.
+ *  2010/03/06  Simon Spinner     Created.
  * 
  */
-package de.tud.cs.qpe.editors.net.gef.property.place;
+package de.tud.cs.qpe.model;
+
+import java.util.List;
 
 import org.dom4j.Element;
-import org.eclipse.swt.widgets.Composite;
 
-public class OrdinaryPlacePropertyComposite extends PlacePropertyComposite {
+public class ProbeHelper extends XPathHelper {	
+	public static List<Element> listColorReferences(Element place) {
+		return query(place, "color-refs/color-ref");
+	}
 
-	public OrdinaryPlacePropertyComposite(Element net, Composite parent) {
-		super(net, parent);
-		initProperties();
-		initColorTable();
+	public static void addColorReference(Element probe, Element colorRef) {
+		Element colorRefContainer = probe.element("color-refs");
+		if (colorRefContainer == null) {
+			colorRefContainer = probe.addElement("color-refs");
+		}
+		
+		// Add the color-ref to the current place.
+		DocumentManager.addChild(colorRefContainer, colorRef);	
+	}
+
+	public static void removeColorReference(Element model, Element colorRef) {
+		DocumentManager.removeElement(colorRef);		
 	}
 }

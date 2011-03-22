@@ -42,12 +42,18 @@
 
 package de.tud.cs.qpe.model;
 
+import java.util.List;
+
 import org.dom4j.Element;
 
 public class TransitionHelper extends XPathHelper {
 	
 	public static boolean isTransition(Element elem) {
 		return "transitions".equals(elem.getParent().getName());
+	}
+	
+	public static List<Element> listModes(Element transition) {
+		return query(transition, "modes/mode");
 	}
 
 	public static void addMode(Element transition, Element mode) {
@@ -66,5 +72,11 @@ public class TransitionHelper extends XPathHelper {
 		IncidenceFuntionHelper.removeAllConnectionsFromMode(transition, mode);
 		
 		DocumentManager.removeElement(mode);
+	}
+	
+	public static boolean isModeReferencedInIncidenceFunction(Element mode) {
+		List<Element> connections = query(mode, "//transition/connections/connection[@source-id = '" + mode.attributeValue("id", "")
+				+ "'] | //transition/connections/connection[@target-id = '" + mode.attributeValue("id", "") + "']");
+		return connections.size() != 0;
 	}
 }

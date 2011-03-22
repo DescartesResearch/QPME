@@ -189,10 +189,12 @@ public class NetEditorActionBarContributor extends MultiPageEditorActionBarContr
 	 */
 	public void setActiveEditor(IEditorPart editor) {
 		ActionRegistry registry = (ActionRegistry) editor.getAdapter(ActionRegistry.class);
-		IActionBars bars = getActionBars();
-		for (int i = 0; i < globalActionKeys.size(); i++) {
-			String id = (String) globalActionKeys.get(i);
-			bars.setGlobalActionHandler(id, registry.getAction(id));
+		if(registry != null) {
+			IActionBars bars = getActionBars();
+			for (int i = 0; i < globalActionKeys.size(); i++) {
+				String id = (String) globalActionKeys.get(i);
+				bars.setGlobalActionHandler(id, registry.getAction(id));
+			}
 		}
 		getActionBars().updateActionBars();
 	}
@@ -268,10 +270,12 @@ public class NetEditorActionBarContributor extends MultiPageEditorActionBarContr
 	public void setActivePage(IEditorPart activeEditor) {
 		if (activeEditor != null) {
 			ActionRegistry registry = (ActionRegistry) activeEditor.getAdapter(ActionRegistry.class);
-			IActionBars bars = getActionBars();
-			for (int i = 0; i < globalActionKeys.size(); i++) {
-				String id = (String) globalActionKeys.get(i);
-				bars.setGlobalActionHandler(id, registry.getAction(id));
+			if (registry != null) {
+				IActionBars bars = getActionBars();
+				for (int i = 0; i < globalActionKeys.size(); i++) {
+					String id = (String) globalActionKeys.get(i);
+					bars.setGlobalActionHandler(id, registry.getAction(id));
+				}
 			}
 			getActionBars().updateActionBars();
 		}

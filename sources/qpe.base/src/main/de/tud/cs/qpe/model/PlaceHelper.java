@@ -68,10 +68,6 @@ public class PlaceHelper extends XPathHelper {
 		return element(place, "color-refs/color-ref[@color-id = '" + colorId + "']");
 	}
 	
-	public static Element getColorReferenceByIndex(Element place, int index) {
-		return element(place, "color-refs/color-ref[" + Integer.toString(index + 1) + "]");
-	}
-	
 	public static void addColorReference(Element place, Element colorRef) {
 		Element colorRefContainer = place.element("color-refs");
 		if (colorRefContainer == null) {

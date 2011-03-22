@@ -26,7 +26,7 @@
  *                                
  * =============================================
  *
- * Original Author(s):  Samuel Kounev and Christofer Dutz
+ * Original Author(s):  Simon Spinner
  * Contributor(s):   
  * 
  * NOTE: The above list of contributors lists only the people that have
@@ -36,19 +36,28 @@
  *  History:
  *  Date        ID                Description
  *  ----------  ----------------  ------------------------------------------------------------------  
- *  2006        Christofer Dutz   Created.
+ *  06/03/2011  Simon Spinner     Created.
  * 
  */
-package de.tud.cs.qpe.editors.net.gef.property.place;
+package de.tud.cs.qpe.utils;
 
 import org.dom4j.Element;
-import org.eclipse.swt.widgets.Composite;
+import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.widgets.Display;
 
-public class OrdinaryPlacePropertyComposite extends PlacePropertyComposite {
 
-	public OrdinaryPlacePropertyComposite(Element net, Composite parent) {
-		super(net, parent);
-		initProperties();
-		initColorTable();
+public class XmlColorAttributeLabelProvider extends XmlAttributeLabelProvider {
+	
+	public XmlColorAttributeLabelProvider(String attribute) {
+		super(attribute, "");
+	}
+	
+	@Override
+	protected void update(ViewerCell cell, Element element) {
+		String realColorString = element.attributeValue(getAttribute(), getDefaultValue());		
+		RGB realColor = ColorHelper.getRGBFromString(realColorString);
+		cell.setBackground(new Color(Display.getDefault(), realColor));
 	}
 }

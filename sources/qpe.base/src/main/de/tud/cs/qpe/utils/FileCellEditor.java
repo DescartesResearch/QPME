@@ -82,19 +82,6 @@ public class FileCellEditor extends DialogCellEditor {
 	/*
 	 * (non-Javadoc) Method declared on DialogCellEditor.
 	 */
-	/*
-	 * protected Control createContents(Composite cell) { Color bg =
-	 * cell.getBackground(); composite = new Composite(cell, getStyle());
-	 * composite.setBackground(bg); composite.setLayout(new ColorCellLayout());
-	 * colorLabel = new Label(composite, SWT.LEFT);
-	 * colorLabel.setBackground(bg); rgbLabel = new Label(composite, SWT.LEFT);
-	 * rgbLabel.setBackground(bg); rgbLabel.setFont(cell.getFont()); return
-	 * composite; }
-	 */
-
-	/*
-	 * (non-Javadoc) Method declared on DialogCellEditor.
-	 */
 	protected Object openDialogBox(Control cellEditorWindow) {
 		FileDialog dialog = new FileDialog(cellEditorWindow.getShell());
 		Object value = getValue();

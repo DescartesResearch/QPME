@@ -26,7 +26,7 @@
  *                                
  * =============================================
  *
- * Original Author(s):  Samuel Kounev and Christofer Dutz
+ * Original Author(s):  Simon Spinner
  * Contributor(s):   
  * 
  * NOTE: The above list of contributors lists only the people that have
@@ -36,19 +36,47 @@
  *  History:
  *  Date        ID                Description
  *  ----------  ----------------  ------------------------------------------------------------------  
- *  2006        Christofer Dutz   Created.
+ *  06/03/2011  Simon Spinner     Created.
  * 
  */
-package de.tud.cs.qpe.editors.net.gef.property.place;
+package de.tud.cs.qpe.utils;
 
 import org.dom4j.Element;
-import org.eclipse.swt.widgets.Composite;
+import org.eclipse.jface.viewers.CellLabelProvider;
+import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.swt.graphics.Color;
 
-public class OrdinaryPlacePropertyComposite extends PlacePropertyComposite {
+public class XmlAttributeLabelProvider extends CellLabelProvider {
+	
+	private String attribute;
+	private String defaultValue;
+	
+	public XmlAttributeLabelProvider(String attribute, String defaultValue) {
+		this.attribute = attribute;
+		this.defaultValue = defaultValue;
+	}
 
-	public OrdinaryPlacePropertyComposite(Element net, Composite parent) {
-		super(net, parent);
-		initProperties();
-		initColorTable();
+	@Override
+	public void update(ViewerCell cell) {
+		Element element = getCastedElement(cell);
+		if (element != null) {
+			update(cell, element);
+		}
+	}
+	
+	protected Element getCastedElement(ViewerCell cell) {
+		return (Element)cell.getElement();
+	}
+	
+	protected void update(ViewerCell cell, Element element) {
+		cell.setText(element.attributeValue(attribute, defaultValue));
+	}	
+
+	protected String getAttribute() {
+		return attribute;
+	}
+	
+	protected String getDefaultValue() {
+		return defaultValue;
 	}
 }

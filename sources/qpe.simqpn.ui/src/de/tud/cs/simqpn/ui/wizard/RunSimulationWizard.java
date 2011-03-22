@@ -46,6 +46,7 @@ package de.tud.cs.simqpn.ui.wizard;
 import org.dom4j.Element;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
@@ -56,11 +57,11 @@ import de.tud.cs.simqpn.ui.wizard.page.Page2SimulationRunSettingsWizardPage;
 import de.tud.cs.simqpn.ui.wizard.page.Page3PlaceConfigurationParametersWizardPage;
 
 public class RunSimulationWizard extends Wizard {
-	private BaseWizardPage configurationSelectionPage;
+	private Page1ConfigurationSelectionWizardPage configurationSelectionPage;
 
-	private BaseWizardPage simulationRunSettingsPage;
+	private Page2SimulationRunSettingsWizardPage simulationRunSettingsPage;
 
-	private BaseWizardPage placesConfigurationSettingsPage;
+	private Page3PlaceConfigurationParametersWizardPage placesConfigurationSettingsPage;
 
 	private ISelection selection;
 
@@ -79,27 +80,14 @@ public class RunSimulationWizard extends Wizard {
 	 * Adding the page to the wizard.
 	 */
 	public void addPages() {
-		configurationSelectionPage = new Page1ConfigurationSelectionWizardPage(
-				selection, net);
+		configurationSelectionPage = new Page1ConfigurationSelectionWizardPage(net);
 		addPage(configurationSelectionPage);
 
-		simulationRunSettingsPage = new Page2SimulationRunSettingsWizardPage(
-				selection, net);
+		simulationRunSettingsPage = new Page2SimulationRunSettingsWizardPage();
 		addPage(simulationRunSettingsPage);
 
-		placesConfigurationSettingsPage = new Page3PlaceConfigurationParametersWizardPage(
-				selection, net);
+		placesConfigurationSettingsPage = new Page3PlaceConfigurationParametersWizardPage(net);
 		addPage(placesConfigurationSettingsPage);
-
-		configurationSelectionPage
-				.addPropertyChangeListener(simulationRunSettingsPage);
-		configurationSelectionPage
-				.addPropertyChangeListener(placesConfigurationSettingsPage);
-
-	}
-
-	public String getActiveConfiguration() {
-		return Page1ConfigurationSelectionWizardPage.activeConfiguration;
 	}
 
 	/**
@@ -107,64 +95,8 @@ public class RunSimulationWizard extends Wizard {
 	 * will create an operation and run it using wizard as execution context.
 	 */
 	public boolean performFinish() {
-//		IRunnableWithProgress op = new IRunnableWithProgress() {
-//			public void run(IProgressMonitor monitor)
-//					throws InvocationTargetException {
-//				try {
-//					doFinish(monitor);
-//				} catch (CoreException e) {
-//					throw new InvocationTargetException(e);
-//				} finally {
-//					monitor.done();
-//				}
-//			}
-//		};
-//		try {
-//			getContainer().run(true, false, op);
-//		} catch (InterruptedException e) {
-//			return false;
-//		} catch (InvocationTargetException e) {
-//			Throwable realException = e.getTargetException();
-//			MessageDialog.openError(getShell(), "Error", realException
-//					.getMessage());
-//			return false;
-//		}
 		return true;
 	}
-
-//	/**
-//	 * The worker method. It will find the container, create the file if missing
-//	 * or just replace its contents, and open the editor on the newly created
-//	 * file.
-//	 */
-//	private void doFinish(IProgressMonitor monitor) throws CoreException {
-//		monitor.setTaskName("Simulating...");
-//		PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
-//			public void run() {
-//				IWorkbenchPage page = PlatformUI.getWorkbench()
-//						.getActiveWorkbenchWindow().getActivePage();
-//
-//				IEditorInput input = page.getActiveEditor().getEditorInput();
-//				if (input instanceof NetEditorInput) {
-//					NetEditorInput qpeInput = (NetEditorInput) input;
-//					try {
-//						Simulation simulation = new Simulation(qpeInput
-//								.getDocument().getRootElement(), PlatformUI.getWorkbench()
-//								.getDisplay());
-//
-//						ProgressMonitorDialog dialog = new ProgressMonitorDialog(null);
-//						dialog.run(true, true, simulation);
-//
-//					} catch (InvocationTargetException e) {
-//						e.printStackTrace();
-//					} catch (InterruptedException e) {
-//						e.printStackTrace();
-//					}
-//				}
-//			}
-//		});
-//		monitor.worked(1);
-//	}
 
 	/**
 	 * We will accept the selection in the workbench to see if we can initialize
@@ -174,5 +106,19 @@ public class RunSimulationWizard extends Wizard {
 	 */
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
 		this.selection = selection;
+	}
+	
+	@Override
+	public IWizardPage getNextPage(IWizardPage page) {
+		if (page == configurationSelectionPage) {
+			simulationRunSettingsPage.setConfiguration(configurationSelectionPage.getSelectedConfiguration());
+		} else if (page == simulationRunSettingsPage) {
+			placesConfigurationSettingsPage.setConfiguration(configurationSelectionPage.getSelectedConfiguration());
+		}
+		return super.getNextPage(page);
+	}
+
+	public String getActiveConfiguration() {
+		return configurationSelectionPage.getSelectedConfiguration().getName();
 	}
 }

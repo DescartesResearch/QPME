@@ -43,15 +43,54 @@ package de.tud.cs.qpe.model;
 
 import java.util.List;
 
+import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.dom4j.XPath;
+import org.dom4j.tree.DefaultElement;
 
 public class NetHelper extends XPathHelper {
+	
+	public static String getFullyQualifiedName(Element element) {		
+		List<Element> ancestorPlaces = query(element, "parent::node()/ancestor::place");
+		StringBuilder qualifiedName = new StringBuilder();
+		for (Element place : ancestorPlaces) {
+			qualifiedName.append(place.attributeValue("name")).append(".");
+		}
+		qualifiedName.append(element.attributeValue("name"));
+		return qualifiedName.toString();
+	}
+	
+	public static List<Element> listProbes(Element net) {
+		return query(net, "./probes/probe");
+	}
+	
+	public static boolean existsProbeWithName(Element model, String name) {
+		return (element(model, "//probe[@name='" + name + "']") != null);
+	}
+	
+	public static void addProbe(Element net, Element probe) {
+		Element probes = net.element("probes");
+		if (probes == null) {
+			probes = new DefaultElement("probes");
+			DocumentManager.addChild(net, probes);
+		}
+		DocumentManager.addChild(probes, probe);
+	}
+	
+	public static void removeProbe(Element net, Element probe) {
+		DocumentManager.removeElement(probe);
+	}
+	
 	public static List<Element> listColors(Element net) {
 		return query(net, "./colors/color");
 	}
 	
-	public static Element getColorByReference(Element model, Element colorRef) {
-		return getColorById(model, colorRef.attributeValue("color-id"));
+	public static List<Element> listColorsIncludingSubnets(Element net) {
+		return query(net, "//color");
+	}
+	
+	public static Element getColorByReference(Element colorRef) {
+		return getColorById(colorRef, colorRef.attributeValue("color-id"));
 	}
 	
 	public static Element getColorById(Element model, String id) {
@@ -129,6 +168,44 @@ public class NetHelper extends XPathHelper {
 	
 	public static Element getNetOfTransition(Element transition) {
 		return transition.getParent().getParent();
+	}
+
+	public static List<Element> listPlaces(Element net) {
+		return query(net, "/net/places/place");
+	}
+	
+	public static List<Element> listAllPlaces(Element model) {
+		return query(model, "//place");
+	}
+
+	public static Element getPlaceById(Element model, String id) {
+		return element(model, "//place[@id = '" + id + "']");
+	}
+	
+	public static Element getMetadata(Element element, String configName) {
+		return element(element, "./meta-attributes/meta-attribute[@name='sim-qpn' and @configuration-name='" + configName + "']");
+	}
+	
+	public static Element createMetadata(Element element, String configName) {		
+		Element metaAttributeContainer = element.element("meta-attributes"); 
+		if(metaAttributeContainer == null) {
+			metaAttributeContainer = element.addElement("meta-attributes");
+		}
+
+		Element metaAttribute = new DefaultElement("meta-attribute");
+		metaAttribute.addAttribute("name", "sim-qpn");
+		metaAttribute.addAttribute("configuration-name", configName);
+		
+		DocumentManager.addChild(metaAttributeContainer, metaAttribute);
+		return metaAttribute;
+	}
+	
+	public static List<Element> listConfigurations(Element net) {
+		return query(net, "/net/meta-attributes/meta-attribute[@name='sim-qpn']");
+	}
+	
+	public static List<Element> listAllMetadata(Element net, String configName) {
+		return query(net, "//meta-attribute[@name='sim-qpn' and @configuration-name='" + configName + "']");
 	}
 
 }

@@ -87,7 +87,7 @@ public class IncidenceFunctionEditorInput implements IEditorInput {
 
 	public String getName() {
 		File docFile = new File(content.getDocument().getRootElement().attributeValue("path", "new document.qpe"));
-		return docFile.getName().substring(0, docFile.getName().length() - 4) + ":" + content.getParent().attributeValue("name", "new transition");
+		return docFile.getName().substring(0, docFile.getName().length() - 4) + ":" + content.attributeValue("name", "new transition");
 	}
 
 	public IPersistableElement getPersistable() {
@@ -95,7 +95,7 @@ public class IncidenceFunctionEditorInput implements IEditorInput {
 	}
 
 	public String getToolTipText() {
-		String name = content.getDocument().getRootElement().attributeValue("path", "new document") + ":" + content.getParent().attributeValue("name", "new transition");
+		String name = content.getDocument().getRootElement().attributeValue("path", "new document") + ":" + content.attributeValue("name", "new transition");
 		return name;
 	}
 

@@ -26,7 +26,7 @@
  *                                
  * =============================================
  *
- * Original Author(s):  Samuel Kounev and Christofer Dutz
+ * Original Author(s):  Simon Spinner
  * Contributor(s):   
  * 
  * NOTE: The above list of contributors lists only the people that have
@@ -36,12 +36,47 @@
  *  History:
  *  Date        ID                Description
  *  ----------  ----------------  ------------------------------------------------------------------  
- *  2006        Christofer Dutz   Created.
+ *  06/03/2011  Simon Spinner     Created.
  * 
  */
 package de.tud.cs.qpe.utils;
 
-public class InvalidArgumentException extends Exception {
-	private static final long serialVersionUID = 1;
+import org.dom4j.Element;
+import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.ColorCellEditor;
+import org.eclipse.jface.viewers.ColumnViewer;
+import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.widgets.Composite;
 
+import de.tud.cs.qpe.model.DocumentManager;
+
+public class XmlColorAttributeEditingSupport extends XmlAttributeEditingSupport {
+
+	public XmlColorAttributeEditingSupport(ColumnViewer column, String attribute) {
+		super(column, attribute);
+	}
+	
+	@Override
+	protected CellEditor createCellEditor(Composite parent) {
+		return new ColorCellEditor(parent);
+	}
+	
+	@Override
+	protected Object getValue(Object element) {
+		String realColor = ((Element)element).attributeValue("real-color");
+		return ColorHelper.getRGBFromString(realColor);
+	}
+	
+	@Override
+	protected void setValue(Object element, Object value) {
+		if (value != null) {
+			String realColor = ColorHelper.getStringfromRGB((RGB) value);
+			Element color = (Element)element;
+			if (!realColor.equals(color.attributeValue("real-color"))) {
+				DocumentManager.setAttribute(color, "real-color", realColor);
+				getViewer().refresh();
+			}
+		}
+	}
+	
 }

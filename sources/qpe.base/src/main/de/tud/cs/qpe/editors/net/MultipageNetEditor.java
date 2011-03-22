@@ -81,6 +81,7 @@ public class MultipageNetEditor extends MultiPageEditorPart implements PropertyC
 	protected NetEditorPage netEditor;
 
 	protected ColorEditorPage colorEditor;
+	protected ProbeEditorPage probeEditor;
 	protected QueueEditorPage queueEditor;
 
 	public MultipageNetEditor() {
@@ -134,25 +135,40 @@ public class MultipageNetEditor extends MultiPageEditorPart implements PropertyC
 	}
 
 	protected void createColorEditorPage() {
-		// Create the Page for editing a nets colors.
-		colorEditor = new ColorEditorPage(getContainer(), SWT.NONE);
-		colorEditor.setInput(getEditorInput());
-		int index = addPage(colorEditor);
-		setPageText(index, "Colors");
+		try {
+			colorEditor = new ColorEditorPage();
+			int index = addPage(colorEditor, getEditorInput());
+			setPageText(index, "Colors");
+		} catch (PartInitException e) {
+			ErrorDialog.openError(getSite().getShell(), "Error creating color editor", null, e.getStatus());
+		}
+	}
+	
+	protected void createProbeEditorPage() {
+		try {
+			probeEditor = new ProbeEditorPage();
+			int index = addPage(probeEditor, getEditorInput());
+			setPageText(index, "Probes");
+		} catch (PartInitException e) {
+			ErrorDialog.openError(getSite().getShell(), "Error creating probe editor", null, e.getStatus());
+		}
 	}
 
 	protected void createQueueEditorPage() {
-		// Create the Page for editing a nets queues.
-		queueEditor = new QueueEditorPage(getContainer(), SWT.NONE);
-		queueEditor.setInput(getEditorInput());
-		int index = addPage(queueEditor);
-		setPageText(index, "Queues");
+		try {
+			queueEditor = new QueueEditorPage();
+			int index = addPage(queueEditor, getEditorInput());
+			setPageText(index, "Queues");
+		} catch (PartInitException e) {
+			ErrorDialog.openError(getSite().getShell(), "Error creating queue editor", null, e.getStatus());
+		}
 	}
 
 	protected void createPages() {
 		createGraphicalEditorPage();
 		createColorEditorPage();
 		createQueueEditorPage();
+		createProbeEditorPage();
 	}
 
 	public void close(final boolean save) {

@@ -103,8 +103,8 @@ public class ModeEditPart extends AbstractGraphicalEditPart implements
 			super.deactivate();
 			DocumentManager
 					.removePropertyChangeListener(getCastedModel(), this);
-			DocumentManager.removePropertyChangeListener((Element) getParent()
-					.getModel(), this);
+			Element transition = (Element)getParent().getModel();
+			DocumentManager.removePropertyChangeListener(transition.element("connections"), this);
 		}
 	}
 

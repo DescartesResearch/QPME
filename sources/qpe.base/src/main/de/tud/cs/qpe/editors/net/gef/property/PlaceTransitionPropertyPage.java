@@ -79,6 +79,8 @@ public class PlaceTransitionPropertyPage implements IPropertySheetPage {
 	protected ImmediateTransitionPropertyComposite immediateTransitionProperties;
 
 	protected TimedTransitionPropertyComposite timedTransitionProperties;
+	
+	protected ProbeProperyComposite probeProperties;
 
 	protected Element net;
 
@@ -110,6 +112,7 @@ public class PlaceTransitionPropertyPage implements IPropertySheetPage {
 				net, content);
 		timedTransitionProperties = new TimedTransitionPropertyComposite(net,
 				content);
+		probeProperties = new ProbeProperyComposite(content);
 		// Initialy set the emptyProperties to be the active
 		// propertysheet.
 		stackLayout.topControl = emptyProperties;
@@ -144,44 +147,50 @@ public class PlaceTransitionPropertyPage implements IPropertySheetPage {
 			// PropertyPage for this element is returned.
 			if (structuredSelection.size() == 1) {
 				// Remove the last property change listener.
-				if(stackLayout.topControl instanceof PlaceTransitionPropertyComposite) {
-					PlaceTransitionPropertyComposite oldPropetyComposite = (PlaceTransitionPropertyComposite) stackLayout.topControl;
+				if(stackLayout.topControl instanceof ElementPropertyComposite) {
+					ElementPropertyComposite oldPropetyComposite = (ElementPropertyComposite) stackLayout.topControl;
 					oldPropetyComposite.deactivate();
 				}
 				
+				Element newModel = null;
 				if (structuredSelection.getFirstElement() instanceof AbstractEditPart) {
 					AbstractEditPart editPart = (AbstractEditPart) structuredSelection
 							.getFirstElement();
 					if (editPart.getModel() instanceof Element) {
-						Element newModel = (Element) editPart.getModel();
-						String type = newModel.attributeValue("type");
-
-						if ("ordinary-place".equals(type)) {
-							stackLayout.topControl = ordinaryPlaceProperties;
-						} else if ("queueing-place".equals(type)) {
-							stackLayout.topControl = queueingPlaceProperties;
-						} else if ("subnet-place".equals(type)) {
-							stackLayout.topControl = subnetPlaceProperties;
-						} else if ("immediate-transition".equals(type)) {
-							stackLayout.topControl = immediateTransitionProperties;
-						} else if ("timed-transition".equals(type)) {
-							stackLayout.topControl = timedTransitionProperties;
-						} else {
-							stackLayout.topControl = emptyProperties;
-						}
-						
-						if (stackLayout.topControl != emptyProperties) {
-							// Set the new property change listener.
-							PlaceTransitionPropertyComposite newPropetyComposite = (PlaceTransitionPropertyComposite) stackLayout.topControl;
-							newPropetyComposite.setModel(newModel);
-							newPropetyComposite.activate();
-						}
+						newModel = (Element) editPart.getModel();					
+					} 
+				} else if (structuredSelection.getFirstElement() instanceof Element) {
+					newModel = (Element)structuredSelection.getFirstElement();										
+				} 
+				
+				if (newModel != null) {
+					String type = newModel.attributeValue("type");
+					if (newModel.getName().equals("probe")) {
+						stackLayout.topControl = probeProperties;
+					} else if ("ordinary-place".equals(type)) {
+						stackLayout.topControl = ordinaryPlaceProperties;
+					} else if ("queueing-place".equals(type)) {
+						stackLayout.topControl = queueingPlaceProperties;
+					} else if ("subnet-place".equals(type)) {
+						stackLayout.topControl = subnetPlaceProperties;
+					} else if ("immediate-transition".equals(type)) {
+						stackLayout.topControl = immediateTransitionProperties;
+					} else if ("timed-transition".equals(type)) {
+						stackLayout.topControl = timedTransitionProperties;
 					} else {
 						stackLayout.topControl = emptyProperties;
+					}
+					
+					if (stackLayout.topControl != emptyProperties) {
+						// Set the new property change listener.
+						ElementPropertyComposite newPropetyComposite = (ElementPropertyComposite) stackLayout.topControl;
+						newPropetyComposite.setModel(newModel);
+						newPropetyComposite.activate();
 					}
 				} else {
 					stackLayout.topControl = emptyProperties;
 				}
+				
 				content.layout();
 			}
 			// If more than one Element is selected, then ony a few

@@ -48,48 +48,46 @@ import java.util.List;
 
 import org.dom4j.Element;
 import org.dom4j.tree.DefaultElement;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.ComboBoxCellEditor;
-import org.eclipse.jface.viewers.ICellModifier;
-import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ColumnWeightData;
+import org.eclipse.jface.viewers.ICellEditorValidator;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.TableLayout;
 import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.TextCellEditor;
-import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.part.EditorPart;
 
 import de.tud.cs.qpe.model.DocumentManager;
 import de.tud.cs.qpe.model.NetHelper;
-import de.tud.cs.qpe.utils.ITableLabelColorProvider;
-import de.tud.cs.qpe.utils.IntegerCellEditor;
+import de.tud.cs.qpe.utils.CellValidators;
+import de.tud.cs.qpe.utils.XmlAttributeEditingSupport;
+import de.tud.cs.qpe.utils.XmlAttributeLabelProvider;
+import de.tud.cs.qpe.utils.XmlEnumerationAttributeEditingSupport;
 
-public class QueueEditorPage extends Composite implements PropertyChangeListener {
+public class QueueEditorPage extends EditorPart implements PropertyChangeListener {
 	private static final String[] STRATEGIES = new String[] { "PRIO", "PS", "FCFS", "IS", "RANDOM" };
 
 	protected Table queueTable;
 
 	protected TableViewer queueTableViewer;
-
-	protected String[] columnNames;
 
 	protected Button addQueueButton;
 
@@ -97,23 +95,17 @@ public class QueueEditorPage extends Composite implements PropertyChangeListener
 
 	protected Element model;
 
-	public QueueEditorPage(Composite parent, int style) {
-		super(parent, style);
-		setLayout(new GridLayout());
-		columnNames = new String[] { "Name", "Scheduling Strategy", "Number Of Servers", "Description" };
-		initQueueTable();
-	}
+	@Override
+	public void doSave(IProgressMonitor monitor) {}
 
-	/**
-	 * Uses a ShapesEditorInput to serve as a dummy editor input It is up to the
-	 * editor input to supply the initial shapes diagram
-	 * 
-	 * @see org.eclipse.ui.part.EditorPart#setInput(org.eclipse.ui.IEditorInput)
-	 */
-	protected void setInput(IEditorInput input) {
-		if (model != null) {
-			DocumentManager.removePropertyChangeListener(model, this);
-		}
+	@Override
+	public void doSaveAs() {}
+
+	@Override
+	public void init(IEditorSite site, IEditorInput input)
+			throws PartInitException {
+		setSite(site);
+		setInput(input);
 		
 		NetEditorInput netInput = (NetEditorInput) input;
 		model = netInput.getNetDiagram();
@@ -121,9 +113,84 @@ public class QueueEditorPage extends Composite implements PropertyChangeListener
 		// Add the queue editor as listener to modifications of the
 		// current document.
 		DocumentManager.addPropertyChangeListener(model, this);
+		
+	}
+	
+	@Override
+	public void dispose() {
+		if (model != null) {
+			DocumentManager.removePropertyChangeListener(model, this);
+		}
+		super.dispose();
+	}
 
+	@Override
+	public boolean isDirty() {
+		return false;
+	}
+
+	@Override
+	public boolean isSaveAsAllowed() {
+		return false;
+	}
+
+	@Override
+	public void createPartControl(Composite parent) {
+		parent.setLayout(new GridLayout());
+		
+		Label queueName = new Label(parent, SWT.NULL);
+		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.horizontalSpan = 2;
+		queueName.setLayoutData(gd);
+		queueName.setText("Queues");
+		initTable(parent);
+		// Add buttons for ading and deleting queues
+		Composite queueButtonComposite = new Composite(parent, SWT.NULL);
+		queueButtonComposite.setLayout(new GridLayout(2, false));
+		gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.horizontalSpan = 2;
+		queueButtonComposite.setLayoutData(gd);
+		addQueueButton = new Button(queueButtonComposite, SWT.PUSH);
+		addQueueButton.setText("Add Queue");
+		addQueueButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		addQueueButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				Element newQueue = createQueue(model);
+				NetHelper.addQueue(model, newQueue);
+				updatePropertyFields();
+			}
+		});
+
+		delQueueButton = new Button(queueButtonComposite, SWT.PUSH);
+		delQueueButton.setText("Delete Queue");
+		delQueueButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		delQueueButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				int selection = queueTable.getSelectionIndex();
+				Element queue = (Element) queueTable.getItem(selection).getData();
+				// Check if the queue is used. If yes, show a dialog asking the
+				// user if he is sure. If yes then all usages of this queue
+				// have to be removed.
+				if (NetHelper.isQueueReferencedInNet(model, queue)) {
+					boolean result = MessageDialog.openConfirm(getSite().getShell(), "", "The Queue you are trying to remove is is referenced in the current net. Are you sure you want it to be removed? Removing this queue will cause the removal of all its references. This process is irreversible.");
+					if (result) {
+						// Remove the queue and its references.
+						NetHelper.removeQueue(model, queue);
+					}
+				} else {
+					NetHelper.removeQueue(model, queue);
+				}
+
+				updatePropertyFields();
+			}
+		});
+		queueButtonComposite.layout();
+		
 		updatePropertyFields();
 	}
+
+	@Override
+	public void setFocus() {}
 
 	public void updatePropertyFields() {
 		List<Element> queues = NetHelper.listQueues(model);
@@ -159,67 +226,25 @@ public class QueueEditorPage extends Composite implements PropertyChangeListener
 		return newQueue;
 	}
 
-	protected void initQueueTable() {
-		Label queueName = new Label(this, SWT.NULL);
-		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-		gd.horizontalSpan = 2;
-		queueName.setLayoutData(gd);
-		queueName.setText("Queues");
-		initTable();
-		// Add buttons for ading and deleting queues
-		Composite queueButtonComposite = new Composite(this, SWT.NULL);
-		queueButtonComposite.setLayout(new GridLayout(2, false));
-		gd = new GridData(GridData.FILL_HORIZONTAL);
-		gd.horizontalSpan = 2;
-		queueButtonComposite.setLayoutData(gd);
-		addQueueButton = new Button(queueButtonComposite, SWT.PUSH);
-		addQueueButton.setText("Add Queue");
-		addQueueButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		addQueueButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				Element newQueue = createQueue(model);
-				NetHelper.addQueue(model, newQueue);
-				updatePropertyFields();
-			}
-		});
-
-		delQueueButton = new Button(queueButtonComposite, SWT.PUSH);
-		delQueueButton.setText("Delete Queue");
-		delQueueButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		delQueueButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				int selection = queueTable.getSelectionIndex();
-				Element queue = (Element) queueTable.getItem(selection).getData();
-				// Check if the queue is used. If yes, show a dialog asking the
-				// user if he is sure. If yes then all usages of this queue
-				// have to be removed.
-				if (NetHelper.isQueueReferencedInNet(model, queue)) {
-					boolean result = MessageDialog.openConfirm(getShell(), "", "The Queue you are trying to remove is is referenced in the current net. Are you sure you want it to be removed? Removing this queue will cause the removal of all its references. This process is irreversible.");
-					if (result) {
-						// Remove the queue and its references.
-						NetHelper.removeQueue(model, queue);
-					}
-				} else {
-					NetHelper.removeQueue(model, queue);
-				}
-
-				updatePropertyFields();
-			}
-		});
-		queueButtonComposite.layout();
-	}
-
-	protected void initTable() {
-		queueTable = new Table(this, SWT.BORDER | SWT.FULL_SELECTION);
+	protected void initTable(Composite parent) {
+		TableLayout tableLayout = new TableLayout();
+		for (int i = 0; i < 4; i++)
+			tableLayout.addColumnData(new ColumnWeightData(1));
+		
+		queueTable = new Table(parent, SWT.BORDER | SWT.FULL_SELECTION);
 		GridData gd = new GridData(GridData.FILL_BOTH);
 		gd.horizontalSpan = 2;
 		queueTable.setLayoutData(gd);
 		queueTable.setLinesVisible(true);
 		queueTable.setHeaderVisible(true);
+		queueTable.setLayout(tableLayout);
+		
+		queueTableViewer = new TableViewer(queueTable);
+		queueTableViewer.setContentProvider(new ArrayContentProvider());
+		
+		getSite().setSelectionProvider(queueTableViewer);
 
 		initTableColumns();
-		initTableViewer();
-		initCellEditors();
 
 		// Add a listener updating the delete-buttons
 		// enabled state when another item is selected.
@@ -243,180 +268,43 @@ public class QueueEditorPage extends Composite implements PropertyChangeListener
 	}
 
 	protected void initTableColumns() {
-		TableColumn col = new TableColumn(queueTable, SWT.LEFT);
-		col.setText("Name");
-		col.setWidth(150);
-		col = new TableColumn(queueTable, SWT.LEFT);
-		col.setText("Scheduling Strategy");
-		col.setWidth(150);
-		col = new TableColumn(queueTable, SWT.LEFT);
-		col.setText("Number Of Servers");
-		col.setWidth(150);
-		col = new TableColumn(queueTable, SWT.LEFT);
-		col.setText("Description");
-		col.setWidth(500);
-	}
-
-	protected void initTableViewer() {
-		queueTableViewer = new TableViewer(queueTable);
-		queueTableViewer.setColumnProperties(columnNames);
-
-		initContentProvider();
-		initLabelProvider();
-		initCellModifier();
-	}
-
-	protected void initContentProvider() {
-		queueTableViewer.setContentProvider(new IStructuredContentProvider() {
-			public Object[] getElements(Object inputElements) {
-				List l = (List) inputElements;
-				return l.toArray();
-			}
-
-			public void dispose() {
-			}
-
-			public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-			}
-		});
-	}
-
-	protected void initLabelProvider() {
-		queueTableViewer.setLabelProvider(new ITableLabelColorProvider() {
-			public void dispose() {
-			}
-
-			public Image getColumnImage(Object element, int columnIndex) {
-				return null;
-			}
-
-			public String getColumnText(Object element, int columnIndex) {
-				Element queue = (Element) element;
-				switch (columnIndex) {
-				case 0:
-					return queue.attributeValue("name", "new queue");
-				case 1:
-					return queue.attributeValue("strategy");
-				case 2:
-					return queue.attributeValue("number-of-servers");
-				case 3:
-					return queue.attributeValue("description");
+		TableViewerColumn col = new TableViewerColumn(queueTableViewer, SWT.LEFT);
+		col.getColumn().setText("Name");
+		col.setLabelProvider(new XmlAttributeLabelProvider("name", "new queue"));
+		XmlAttributeEditingSupport editor = new XmlAttributeEditingSupport(col.getViewer(), "name");
+		editor.setValidator(new ICellEditorValidator() {			
+			@Override
+			public String isValid(Object value) {
+				if(NetHelper.existsQueueWithName(model, value.toString())) {
+					return "Another queue with this name already exists.";
 				}
-				return null;
-			}
-
-			public void addListener(ILabelProviderListener listener) {
-			}
-
-			public void removeListener(ILabelProviderListener listener) {
-			}
-
-			public boolean isLabelProperty(Object element, String property) {
-				return false;
-			}
-
-			public org.eclipse.swt.graphics.Color getForeground(Object element, int columnIndex) {
-				return null;
-			}
-
-			public org.eclipse.swt.graphics.Color getBackground(Object element, int columnIndex) {
 				return null;
 			}
 		});
-	}
-
-	protected void initCellModifier() {
-		queueTableViewer.setCellModifier(new ICellModifier() {
-			public boolean canModify(Object element, String property) {
-				return true;
-			}
-
-			public Object getValue(Object element, String property) {
-				// Get the index first.
-				int index = -1;
-				for (int i = 0; i < columnNames.length; i++) {
-					if (columnNames[i].equals(property)) {
-						index = i;
-						break;
-					}
-				}
-				Element queue = (Element) element;
-
-				switch (index) {
-				case 0:
-					return queue.attributeValue("name", "unnnamed queue");
-				case 1:
-					for (int i = 0; i < STRATEGIES.length; i++) {
-						if (STRATEGIES[i].equals(queue.attributeValue("strategy", "FCFS"))) {
-							return new Integer(i);
-						}
-					}
-					return new Integer(0);
-				case 2:
-					return Integer.parseInt(queue.attributeValue("number-of-servers", "1"));
-				case 3:
-					return queue.attributeValue("description", "");
-				}
-
-				return null;
-			}
-
-			public void modify(Object element, String property, Object value) {
-				// Get the index first.
-				int index = -1;
-				for (int i = 0; i < columnNames.length; i++) {
-					if (columnNames[i].equals(property)) {
-						index = i;
-						break;
-					}
-				}
-
-				Element queue = null;
-				if (element instanceof Item) {
-					TableItem item = (TableItem) element;
-					queue = (Element) item.getData();
-				} else {
-					queue = (Element) element;
-				}
-
-				int iValue;
-				switch (index) {
-				case 0:
-					if (!queue.attributeValue("name").equals(value)) {
-						if(!NetHelper.existsQueueWithName(model, value.toString())) {
-							DocumentManager.setAttribute(queue, "name", (String) value);
-						} else {
-							MessageDialog.openError(getShell(), "Duplicate queue names", "Another queue with this name already exists.");
-						}
-					}
-					break;
-				case 1:
-					DocumentManager.setAttribute(queue, "strategy", STRATEGIES[(Integer) value]);
-					break;
-				case 2:
-					iValue = ((Integer) value).intValue();
-					if(iValue >= 0) {
-						DocumentManager.setAttribute(queue, "number-of-servers", ((Integer) value).toString());
-					}
-					break;
-				case 3:
-					DocumentManager.setAttribute(queue, "description", (String) value);
-					break;
-				}
-
-				queueTableViewer.update(queue, null);
+		col.setEditingSupport(editor);
+		
+		col = new TableViewerColumn(queueTableViewer, SWT.LEFT);
+		col.getColumn().setText("Scheduling Strategy");
+		col.setLabelProvider(new XmlAttributeLabelProvider("strategy", ""));
+		col.setEditingSupport(new XmlEnumerationAttributeEditingSupport(col.getViewer(), "strategy") {
+			
+			@Override
+			protected Object[] getItems() {
+				return STRATEGIES;
 			}
 		});
-	}
-
-	protected void initCellEditors() {
-		CellEditor[] cellEditors = new CellEditor[4];
-		cellEditors[0] = new TextCellEditor(queueTableViewer.getTable());;
-		cellEditors[1] = new ComboBoxCellEditor(queueTableViewer.getTable(), STRATEGIES);
-		cellEditors[2] = new IntegerCellEditor(queueTableViewer.getTable());
-		cellEditors[3] = cellEditors[0];
-
-		queueTableViewer.setCellEditors(cellEditors);
+		
+		col = new TableViewerColumn(queueTableViewer, SWT.LEFT);
+		col.getColumn().setText("Number Of Servers");
+		col.setLabelProvider(new XmlAttributeLabelProvider("number-of-servers", ""));
+		editor = new XmlAttributeEditingSupport(col.getViewer(), "number-of-servers");
+		editor.setValidator(CellValidators.newNonNegativeIntegerValidator());
+		col.setEditingSupport(editor);
+		
+		col = new TableViewerColumn(queueTableViewer, SWT.LEFT);
+		col.getColumn().setText("Description");
+		col.setLabelProvider(new XmlAttributeLabelProvider("description", ""));
+		col.setEditingSupport(new XmlAttributeEditingSupport(col.getViewer(), "description"));
 	}
 
 	public void propertyChange(PropertyChangeEvent arg0) {

@@ -41,12 +41,10 @@
  */
 package de.tud.cs.simqpn.ui.wizard.page;
 
-import java.beans.PropertyChangeEvent;
 import java.io.File;
 
-import org.dom4j.Element;
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -63,9 +61,12 @@ import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 
-import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.simqpn.ui.model.Configuration;
 
-public class Page2SimulationRunSettingsWizardPage extends BaseWizardPage {
+public class Page2SimulationRunSettingsWizardPage extends WizardPage {
+	
+	private Configuration configuration;
+	
 	protected Label rampUpLenLabel;
 	
 	protected Text rampUpLenText;
@@ -97,10 +98,15 @@ public class Page2SimulationRunSettingsWizardPage extends BaseWizardPage {
 	 * 
 	 * @param pageName
 	 */
-	public Page2SimulationRunSettingsWizardPage(ISelection selection, Element net) {
-		super("placeSettingsWizardPage", selection, net);
+	public Page2SimulationRunSettingsWizardPage() {
+		super("placeSettingsWizardPage");
 		setTitle("Simulation Run Configuration");
 		// setDescription("Configure simulator-specific place parameters.");
+	}
+	
+	public void setConfiguration(Configuration configuration) {
+		this.configuration = configuration;
+		updateDialog();
 	}
 
 	/**
@@ -145,10 +151,9 @@ public class Page2SimulationRunSettingsWizardPage extends BaseWizardPage {
 		stoppingRuleCombobox.setLayoutData(gd);
 		stoppingRuleCombobox.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
-				if(!"Fixed sample size".equals(stoppingRuleCombobox.getText())) {
-					Element metaAttribute = getMetaAttribute();
-					timeBtwChkStopsText.setText(metaAttribute.attributeValue("time-between-stop-checks", "100000"));
-					secondsBtwChkStopsText.setText(metaAttribute.attributeValue("seconds-between-stop-checks", "60"));
+				if(stoppingRuleCombobox.getSelectionIndex() == 1) {
+					timeBtwChkStopsText.setText(Double.toString(configuration.getTimeBetweenStopChecks()));
+					secondsBtwChkStopsText.setText(Double.toString(configuration.getSecondsBetweenStopChecks()));
 				}
 				updateModel();
 			}
@@ -179,34 +184,6 @@ public class Page2SimulationRunSettingsWizardPage extends BaseWizardPage {
 			}
 		});		
 		
-		//
-		// Since progress monitor implementation these parameters are not used anymore
-		//		
-//		Label timeInitHeartBeatLabel = new Label(container, SWT.NULL);
-//		timeInitHeartBeatLabel.setText("Time before initial heart beat");
-//		timeInitHeartBeatText = new Text(container, SWT.BORDER | SWT.SINGLE);
-//		gd = new GridData(GridData.FILL_HORIZONTAL);
-//		gd.horizontalSpan = 2;
-//		timeInitHeartBeatText.setLayoutData(gd);
-//		timeInitHeartBeatText.addModifyListener(new ModifyListener() {
-//			public void modifyText(ModifyEvent e) {
-//				updateModel();
-//			}
-//		});
-//
-//		Label timeBtwHeartBeatsLabel = new Label(container, SWT.NULL);
-//		timeBtwHeartBeatsLabel.setText("Seconds between heart beats");
-//		secondsBtwHeartBeatsText = new Text(container, SWT.BORDER | SWT.SINGLE);
-//		gd = new GridData(GridData.FILL_HORIZONTAL);
-//		gd.horizontalSpan = 2;
-//		secondsBtwHeartBeatsText.setLayoutData(gd);
-//		secondsBtwHeartBeatsText.addModifyListener(new ModifyListener() {
-//			public void modifyText(ModifyEvent e) {
-//				updateModel();
-//			}
-//		});
-		
-
 		// Verbosity level.
 		Label verbosityLevelLabel = new Label(container, SWT.NULL);
 		verbosityLevelLabel.setText("Verbosity level");
@@ -243,9 +220,6 @@ public class Page2SimulationRunSettingsWizardPage extends BaseWizardPage {
 				}
 			}
 		});
-
-		updateDialog();
-
 		setControl(container);
 	}
 
@@ -299,29 +273,7 @@ public class Page2SimulationRunSettingsWizardPage extends BaseWizardPage {
 				return false;
 			}			
 		}
-
-//		try {
-//			dValue = Double.parseDouble(timeInitHeartBeatText.getText());
-//		} catch (NumberFormatException nfe) {
-//			setErrorMessage("Invalid number format. Time before initial heart beat must be a positive number.");
-//			return false;
-//		}
-//		if (dValue <= 0) {
-//			setErrorMessage("Time before initial heart beat must be a positive number.");
-//			return false;
-//		}
-//
-//		try {
-//			dValue = Double.parseDouble(secondsBtwHeartBeatsText.getText());
-//		} catch (NumberFormatException nfe) {
-//			setErrorMessage("Invalid number format. Seconds between heart beats must be a positive number.");
-//			return false;
-//		}
-//		if (dValue <= 0) {
-//			setErrorMessage("Seconds between heart beats must be a positive number.");
-//			return false;
-//		}
-
+		
 		int iValue;
 		try {
 			iValue = verbosityLevelSpinner.getSelection();
@@ -349,8 +301,6 @@ public class Page2SimulationRunSettingsWizardPage extends BaseWizardPage {
 
 	public void updateModel() {
 		if (modifyListenersActive == true) {
-			Element metaAttribute = getMetaAttribute();
-
 			// We have to initialize update the visibility first or
 			// the fields will never be shown because of failled
 			// field validation.
@@ -365,8 +315,6 @@ public class Page2SimulationRunSettingsWizardPage extends BaseWizardPage {
 				secondsBtwChkStopsLabel.setVisible(true);
 				secondsBtwChkStopsText.setVisible(true);								
 			} else {
-				DocumentManager.removeAttribute(metaAttribute, "time-between-stop-checks");
-				DocumentManager.removeAttribute(metaAttribute, "seconds-between-stop-checks");
 				timeBtwChkStopsLabel.setVisible(false);
 				timeBtwChkStopsText.setVisible(false);
 				secondsBtwChkStopsLabel.setVisible(false);
@@ -374,96 +322,77 @@ public class Page2SimulationRunSettingsWizardPage extends BaseWizardPage {
 			}
 
 			if (validate()) {
-				if(rampUpLenText.isVisible()) {
-					DocumentManager.setAttribute(metaAttribute, "ramp-up-length", rampUpLenText.getText());
-				} else {
-					DocumentManager.removeAttribute(metaAttribute, "ramp-up-length");
-				}
-				DocumentManager.setAttribute(metaAttribute, "total-run-length", totRunLenText.getText());
+				configuration.setRampUpLength(Double.parseDouble(rampUpLenText.getText()));
+
+				configuration.setTotalRunLength(Double.parseDouble(totRunLenText.getText()));
 				String sValue;
 				if (stoppingRuleCombobox.getSelectionIndex() == 1) {
-					sValue = "ABSPRC";
+					sValue = Configuration.ABSOLUTE_PRECISION_STOPPING_RULE;
 				} else if (stoppingRuleCombobox.getSelectionIndex() == 2) {
-					sValue = "RELPRC";
+					sValue = Configuration.RELATIVE_PRECISION_STOPPING_RULE;
 				} else {
-					sValue = "FIXEDLEN";
+					sValue = Configuration.FIXED_LENGTH_STOPPING_RULE;
 				}
-				DocumentManager.setAttribute(metaAttribute, "stopping-rule", sValue);
-				if(timeBtwChkStopsText.isVisible()) {
-					DocumentManager.setAttribute(metaAttribute, "time-between-stop-checks", timeBtwChkStopsText.getText());
-				} else {
-					DocumentManager.removeAttribute(metaAttribute, "time-between-stop-checks");
-				}				
-				if(secondsBtwChkStopsText.isVisible()) {
-					DocumentManager.setAttribute(metaAttribute, "seconds-between-stop-checks", secondsBtwChkStopsText.getText());
-				} else {
-					DocumentManager.removeAttribute(metaAttribute, "seconds-between-stop-checks");
-				}
-//				DocumentManager.setAttribute(metaAttribute, "time-before-initial-heart-beat", timeInitHeartBeatText.getText());
-//				DocumentManager.setAttribute(metaAttribute, "seconds-between-heart-beats", secondsBtwHeartBeatsText.getText());
-				DocumentManager.setAttribute(metaAttribute, "verbosity-level", Integer.toString(verbosityLevelSpinner.getSelection()));
-				DocumentManager.setAttribute(metaAttribute, "output-directory", statsDirText.getText());
+				
+				configuration.setStoppingRule(sValue);
+				configuration.setTimeBetweenStopChecks(Double.parseDouble(timeBtwChkStopsText.getText()));				
+				configuration.setSecondsBetweenStopChecks(Double.parseDouble(secondsBtwChkStopsText.getText()));
+				configuration.setVerbosityLevel(verbosityLevelSpinner.getSelection());
+				configuration.setOutputDirectory(statsDirText.getText());
 			}
 		}
 	}
 
 	protected void updateDialog() {
-		Element metaAttribute = getMetaAttribute();
-		if (metaAttribute != null) {
-			modifyListenersActive = false;
-			if (!"1".equals(metaAttribute.attributeValue("scenario"))) {
-				stoppingRuleCombobox.setItems(new String[] { "Fixed sample size" });
-				stoppingRuleCombobox.setEnabled(false);
-			} else {
-				stoppingRuleCombobox.setItems(new String[] { "Fixed sample size", "Sequential / Absolute precision", "Sequential / Relative precision" });
-				stoppingRuleCombobox.setEnabled(true);
-			}
-			
-			if("3".equals(metaAttribute.attributeValue("scenario"))) {
-				rampUpLenLabel.setVisible(false);
-				rampUpLenText.setVisible(false);
-			} else {
-				rampUpLenLabel.setVisible(true);
-				rampUpLenText.setVisible(true);
-				rampUpLenText.setText(metaAttribute.attributeValue("ramp-up-length", ""));
-			}
-
-			totRunLenText.setText(metaAttribute.attributeValue("total-run-length", ""));
-			String stoppingRule = metaAttribute.attributeValue("stopping-rule");
-			if ("ABSPRC".equals(stoppingRule)) {
-				stoppingRuleCombobox.select(1);
-				timeBtwChkStopsLabel.setVisible(true);
-				timeBtwChkStopsText.setVisible(true);
-				timeBtwChkStopsText.setText(metaAttribute.attributeValue("time-between-stop-checks", ""));
-				secondsBtwChkStopsLabel.setVisible(true);
-				secondsBtwChkStopsText.setVisible(true);
-				secondsBtwChkStopsText.setText(metaAttribute.attributeValue("seconds-between-stop-checks", ""));				
-			} else if ("RELPRC".equals(stoppingRule)) {
-				stoppingRuleCombobox.select(2);
-				timeBtwChkStopsLabel.setVisible(true);
-				timeBtwChkStopsText.setVisible(true);
-				timeBtwChkStopsText.setText(metaAttribute.attributeValue("time-between-stop-checks", ""));
-				secondsBtwChkStopsLabel.setVisible(true);
-				secondsBtwChkStopsText.setVisible(true);
-				secondsBtwChkStopsText.setText(metaAttribute.attributeValue("seconds-between-stop-checks", ""));								
-			} else {
-				stoppingRuleCombobox.select(0);
-				timeBtwChkStopsLabel.setVisible(false);
-				timeBtwChkStopsText.setVisible(false);				
-				secondsBtwChkStopsLabel.setVisible(false);
-				secondsBtwChkStopsText.setVisible(false);				
-			}
-//			timeInitHeartBeatText.setText(metaAttribute.attributeValue("time-before-initial-heart-beat", ""));
-//			secondsBtwHeartBeatsText.setText(metaAttribute.attributeValue("seconds-between-heart-beats", ""));
-			verbosityLevelSpinner.setSelection(Integer.parseInt(metaAttribute.attributeValue("verbosity-level", "")));
-			statsDirText.setText(metaAttribute.attributeValue("output-directory", ""));
-
-			modifyListenersActive = true;
+		modifyListenersActive = false;
+		
+		if (configuration.getScenario() != Configuration.BATCH_MEANS_SCENARIO) {
+			stoppingRuleCombobox.setItems(new String[] { "Fixed sample size" });
+			stoppingRuleCombobox.setEnabled(false);
+		} else {
+			stoppingRuleCombobox.setItems(new String[] { "Fixed sample size", "Sequential / Absolute precision", "Sequential / Relative precision" });
+			stoppingRuleCombobox.setEnabled(true);
 		}
-		validate();
-	}
+		
+		if (configuration.getScenario() == Configuration.WELCH_SCENARIO) {
+			rampUpLenLabel.setVisible(false);
+			rampUpLenText.setVisible(false);
+		} else {
+			rampUpLenLabel.setVisible(true);
+			rampUpLenText.setVisible(true);
+			rampUpLenText.setText(Double.toString(configuration.getRampUpLength()));
+		}
+		
+		totRunLenText.setText(Double.toString(configuration.getTotalRunLength()));
+		String stoppingRule = configuration.getStoppingRule();
+		if (Configuration.ABSOLUTE_PRECISION_STOPPING_RULE.equals(stoppingRule)) {
+			stoppingRuleCombobox.select(1);
+			timeBtwChkStopsLabel.setVisible(true);
+			timeBtwChkStopsText.setVisible(true);
+			timeBtwChkStopsText.setText(Double.toString(configuration.getTimeBetweenStopChecks()));
+			secondsBtwChkStopsLabel.setVisible(true);
+			secondsBtwChkStopsText.setVisible(true);
+			secondsBtwChkStopsText.setText(Double.toString(configuration.getSecondsBetweenStopChecks()));				
+		} else if (Configuration.RELATIVE_PRECISION_STOPPING_RULE.equals(stoppingRule)) {
+			stoppingRuleCombobox.select(2);
+			timeBtwChkStopsLabel.setVisible(true);
+			timeBtwChkStopsText.setVisible(true);
+			timeBtwChkStopsText.setText(Double.toString(configuration.getTimeBetweenStopChecks()));
+			secondsBtwChkStopsLabel.setVisible(true);
+			secondsBtwChkStopsText.setVisible(true);
+			secondsBtwChkStopsText.setText(Double.toString(configuration.getSecondsBetweenStopChecks()));								
+		} else {
+			stoppingRuleCombobox.select(0);
+			timeBtwChkStopsLabel.setVisible(false);
+			timeBtwChkStopsText.setVisible(false);				
+			secondsBtwChkStopsLabel.setVisible(false);
+			secondsBtwChkStopsText.setVisible(false);				
+		}
+		verbosityLevelSpinner.setSelection(configuration.getVerbosityLevel());
+		statsDirText.setText(configuration.getOutputDirectory());
 
-	public void propertyChange(PropertyChangeEvent event) {
-		super.propertyChange(event);
+		modifyListenersActive = true;
+
+		validate();
 	}
 }

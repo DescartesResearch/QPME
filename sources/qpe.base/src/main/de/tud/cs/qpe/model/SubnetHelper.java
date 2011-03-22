@@ -107,4 +107,8 @@ public class SubnetHelper extends XPathHelper {
 	public static boolean isOutputPlace(Element place) {
 		return (place.attributeValue("name").equals("output-place") && Boolean.valueOf(place.attributeValue("locked", "false")));
 	}
+
+	public static List<Element> listSubnetPlaces(Element place) {
+		return query(place, "subnet/places/place");
+	}
 }

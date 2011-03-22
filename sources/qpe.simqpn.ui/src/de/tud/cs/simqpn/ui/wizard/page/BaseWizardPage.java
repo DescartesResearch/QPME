@@ -41,10 +41,6 @@
  */
 package de.tud.cs.simqpn.ui.wizard.page;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.XPath;
@@ -53,16 +49,16 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.wizard.WizardPage;
 
 import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.simqpn.ui.model.Configuration;
 
-public abstract class BaseWizardPage extends WizardPage implements PropertyChangeListener {
+public abstract class BaseWizardPage extends WizardPage {
 	protected Element net;
-
-	protected PropertyChangeSupport pcs;
+	
+	protected Configuration currentConfiguration;
 	
 	public BaseWizardPage(String pageName, ISelection selection, Element net) {
 		super(pageName);
 		this.net = net;
-		pcs = new PropertyChangeSupport(this);
 	}
 
 	protected Element getMetaAttribute() {
@@ -71,11 +67,12 @@ public abstract class BaseWizardPage extends WizardPage implements PropertyChang
 			metaAttributeContainer = net.addElement("meta-attributes");
 		}
 
-		String activeConfiguration = Page1ConfigurationSelectionWizardPage.activeConfiguration;
+		//String activeConfiguration = Page1ConfigurationSelectionWizardPage.activeConfiguration;
 		
-		XPath xpathSelector = DocumentHelper.createXPath("meta-attribute[@name = 'sim-qpn' and @configuration-name='" + activeConfiguration + "']");
-		Element mataAttribute = (Element) xpathSelector.selectSingleNode(metaAttributeContainer);
-		return mataAttribute;
+		//XPath xpathSelector = DocumentHelper.createXPath("meta-attribute[@name = 'sim-qpn' and @configuration-name='" + activeConfiguration + "']");
+//		Element mataAttribute = (Element) xpathSelector.selectSingleNode(metaAttributeContainer);
+//		return mataAttribute;
+		return null;
 	}
 	
 	protected Element getMetaAttribute(Element parent) {
@@ -106,26 +103,6 @@ public abstract class BaseWizardPage extends WizardPage implements PropertyChang
 		}
 		return metaAttribute;
 	}
-
-
-	public void addPropertyChangeListener(PropertyChangeListener listener) {
-		pcs.addPropertyChangeListener(listener);
-	}
-	
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
-		pcs.removePropertyChangeListener(listener);
-	}
-	
-	public void firePropertyChanged(String key) {
-		pcs.firePropertyChange(key, null, null);
-	}
-	
-	public void propertyChange(PropertyChangeEvent event) {
-		String key = event.getPropertyName();
-		if(Page1ConfigurationSelectionWizardPage.PROP_CONFIGURATION_CHANGED.equals(key)) {
-			updateDialog();	
-		}
-	}
-	
+		
 	protected abstract void updateDialog();
 }

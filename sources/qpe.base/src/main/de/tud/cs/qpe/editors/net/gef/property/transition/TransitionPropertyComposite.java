@@ -42,17 +42,18 @@
 package de.tud.cs.qpe.editors.net.gef.property.transition;
 
 import java.beans.PropertyChangeEvent;
-import java.util.List;
 
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.XPath;
+import org.dom4j.tree.DefaultElement;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -62,12 +63,13 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -76,14 +78,18 @@ import de.tud.cs.qpe.editors.incidence.IncidenceFunctionEditor;
 import de.tud.cs.qpe.editors.incidence.IncidenceFunctionEditorInput;
 import de.tud.cs.qpe.editors.net.gef.property.PlaceTransitionPropertyComposite;
 import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.TransitionHelper;
+import de.tud.cs.qpe.utils.ColorHelper;
+import de.tud.cs.qpe.utils.XmlAttributeEditingSupport;
+import de.tud.cs.qpe.utils.XmlAttributeLabelProvider;
+import de.tud.cs.qpe.utils.XmlColorAttributeEditingSupport;
+import de.tud.cs.qpe.utils.XmlColorAttributeLabelProvider;
 
 public abstract class TransitionPropertyComposite extends
 		PlaceTransitionPropertyComposite {
 	protected Table modeTable;
 
 	protected TableViewer modeTableViewer;
-
-	protected String[] columnNames;
 
 	protected Button addModeButton;
 
@@ -139,9 +145,7 @@ public abstract class TransitionPropertyComposite extends
 			priority.setSelection(Integer.parseInt(getModel().attributeValue(
 					"priority", "0")));
 
-			XPath xpathSelector = DocumentHelper.createXPath("modes/mode");
-			List modes = xpathSelector.selectNodes(getModel());
-			modeTableViewer.setInput(modes);
+			modeTableViewer.setInput(TransitionHelper.listModes(getModel()));
 			delModeButton.setEnabled(modeTable.getSelectionIndex() != -1);
 		}
 	}
@@ -170,7 +174,68 @@ public abstract class TransitionPropertyComposite extends
 		priority.setMaximum(1000000);
 	}
 
-	protected abstract void initColorTable();
+	protected void initColorTable() {
+		Label modeName = new Label(this, SWT.NULL);
+		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.horizontalSpan = 2;
+		modeName.setLayoutData(gd);
+		modeName.setText("Modes");
+		initTable();
+		// Add buttons for ading and deleting modes
+		Composite modeButtonComposite = new Composite(this, SWT.NULL);
+		modeButtonComposite.setLayout(new GridLayout(2, false));
+		gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.horizontalSpan = 2;
+		modeButtonComposite.setLayoutData(gd);
+		addModeButton = new Button(modeButtonComposite, SWT.PUSH);
+		addModeButton.setText("Add Mode");
+		addModeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		addModeButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				// Create a new mode.
+				Element mode = createMode();
+
+				// Add the mode to the current transition.
+				TransitionHelper.addMode(getModel(), mode);
+
+				updatePropertyFields();
+			}
+		});
+
+		delModeButton = new Button(modeButtonComposite, SWT.PUSH);
+		delModeButton.setText("Delete Mode");
+		delModeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		delModeButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				IStructuredSelection selection = (IStructuredSelection)modeTableViewer.getSelection();
+				if (selection.size() == 1) {
+					Element mode = (Element)selection.getFirstElement();
+					
+					if (TransitionHelper.isModeReferencedInIncidenceFunction(mode)) {
+						boolean result = MessageDialog.openConfirm(getShell(), "Mode References", "The Mode you are trying to remove is beeing used in this transitions incidence function. Are you sure you want it to be removed? Removing this color will couse the removal of all associated connections. This process is irreversable.");
+						if (result) {
+							TransitionHelper.removeMode(getModel(), mode);
+						}
+					} else {
+						TransitionHelper.removeMode(getModel(), mode);
+					}
+					updatePropertyFields();
+				}
+			}
+		});
+		modeButtonComposite.layout();
+	}
+	
+	protected Element createMode() {
+		// Create a new mode.
+		Element mode = new DefaultElement("mode");
+
+		// Generate a new Name and a new Color.
+		mode.addAttribute("name", generateName());
+		mode.addAttribute("real-color", ColorHelper.generateRandomColor());
+		
+		return mode;
+	}
 
 	protected void initTable() {
 		modeTable = new Table(this, SWT.BORDER | SWT.FULL_SELECTION);
@@ -179,10 +244,11 @@ public abstract class TransitionPropertyComposite extends
 		modeTable.setLayoutData(gd);
 		modeTable.setLinesVisible(true);
 		modeTable.setHeaderVisible(true);
+		
+		modeTableViewer = new TableViewer(modeTable);
+		modeTableViewer.setContentProvider(new ArrayContentProvider());
 
 		initTableColumns();
-		initTableViewer();
-		initCellEditors();
 
 		// Add a listener updating the delete-buttons
 		// enabled state when another item is selected.
@@ -208,44 +274,18 @@ public abstract class TransitionPropertyComposite extends
 	}
 
 	protected void initTableColumns() {
-		TableColumn col = new TableColumn(modeTable, SWT.LEFT);
-		col.setText("Name");
-		col.setWidth(120);
-		col = new TableColumn(modeTable, SWT.LEFT);
-		col.setText("Real Color");
-		col.setWidth(80);
+		TableViewerColumn col = new TableViewerColumn(modeTableViewer, SWT.LEFT);
+		col.getColumn().setText("Name");
+		col.getColumn().setWidth(120);
+		col.setLabelProvider(new XmlAttributeLabelProvider("name", "new mode"));
+		col.setEditingSupport(new XmlAttributeEditingSupport(col.getViewer(), "name"));
+		
+		col = new TableViewerColumn(modeTableViewer, SWT.LEFT);
+		col.getColumn().setText("Real Color");
+		col.getColumn().setWidth(80);
+		col.setLabelProvider(new XmlColorAttributeLabelProvider("real-color"));
+		col.setEditingSupport(new XmlColorAttributeEditingSupport(col.getViewer(), "real-color"));
 	}
-
-	protected void initTableViewer() {
-		modeTableViewer = new TableViewer(modeTable);
-		modeTableViewer.setColumnProperties(columnNames);
-
-		initContentProvider();
-		initLabelProvider();
-		initCellModifier();
-	}
-
-	protected void initContentProvider() {
-		modeTableViewer.setContentProvider(new IStructuredContentProvider() {
-			public Object[] getElements(Object inputElements) {
-				List l = (List) inputElements;
-				return l.toArray();
-			}
-
-			public void dispose() {
-			}
-
-			public void inputChanged(Viewer viewer, Object oldInput,
-					Object newInput) {
-			}
-		});
-	}
-
-	protected abstract void initLabelProvider();
-
-	protected abstract void initCellModifier();
-
-	protected abstract void initCellEditors();
 
 	protected String generateName() {
 		Element modeContainer = getModel().element("modes");
@@ -253,12 +293,12 @@ public abstract class TransitionPropertyComposite extends
 			return "new mode";
 		}
 
-		String name = "mode 1";
+		String name = "new mode 1";
 		XPath xpathSelector = DocumentHelper.createXPath("mode[@name = '"
 				+ name + "']");
 		Element mode = (Element) xpathSelector.selectSingleNode(modeContainer);
 		for (int i = 1; mode != null; i++) {
-			name = "mode " + Integer.toString(i);
+			name = "new mode " + Integer.toString(i);
 			xpathSelector = DocumentHelper.createXPath("mode[@name = '" + name
 					+ "']");
 			mode = (Element) xpathSelector.selectSingleNode(modeContainer);
@@ -267,5 +307,6 @@ public abstract class TransitionPropertyComposite extends
 	}
 
 	public void propertyChange(PropertyChangeEvent event) {
+		updatePropertyFields();
 	}
 }

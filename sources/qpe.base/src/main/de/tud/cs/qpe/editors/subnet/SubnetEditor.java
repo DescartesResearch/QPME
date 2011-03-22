@@ -49,7 +49,6 @@ import org.dom4j.tree.DefaultAttribute;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -118,11 +117,13 @@ public class SubnetEditor extends MultiPageEditorPart implements
 	}
 
 	protected void createColorEditorPage() {
-		// Create the Page for editing a nets colors.
-		colorEditor = new SubnetColorEditorPage(getContainer(), SWT.NONE);
-		colorEditor.setInput(getEditorInput());
-		int index = addPage(colorEditor);
-		setPageText(index, "Colors");
+		try {
+			colorEditor = new SubnetColorEditorPage();
+			int index = addPage(colorEditor, getEditorInput());
+			setPageText(index, "Colors");
+		} catch(PartInitException e) {
+			ErrorDialog.openError(getSite().getShell(), "Error creating color editor", null, e.getStatus());
+		}
 	}
 
 	protected void createPages() {

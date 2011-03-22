@@ -41,8 +41,6 @@
  */
 package de.tud.cs.qpe.editors.net.gef.property;
 
-import java.beans.PropertyChangeListener;
-
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.XPath;
@@ -61,16 +59,13 @@ import org.eclipse.swt.widgets.Text;
 
 import de.tud.cs.qpe.model.DocumentManager;
 
-public abstract class PlaceTransitionPropertyComposite extends Composite implements PropertyChangeListener {
-	private Element _model;
+public abstract class PlaceTransitionPropertyComposite extends ElementPropertyComposite {
 
 	private Text name;
 	private ControlDecoration nameDecoration;
 
 	public PlaceTransitionPropertyComposite(Element model, Composite parent) {
-		super(parent, SWT.BORDER);
-
-		this._model = model;
+		super(parent);
 
 		GridLayout layout = new GridLayout(1, false);
 		layout.verticalSpacing = 8;
@@ -115,22 +110,6 @@ public abstract class PlaceTransitionPropertyComposite extends Composite impleme
 			}
 		});
 		this.layout();
-	}
-
-	public void setModel(Element model) {
-		this._model = model;
-	}
-
-	public Element getModel() {
-		return _model;
-	}
-
-	public void activate() {
-		DocumentManager.addPropertyChangeListener(getModel(), this);
-	}
-
-	public void deactivate() {
-		DocumentManager.removePropertyChangeListener(getModel(), this);
 	}
 
 	protected void updatePropertyFields() {

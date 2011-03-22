@@ -302,9 +302,7 @@ public class SubnetEditorPage extends GraphicalEditorWithFlyoutPalette {
 		// displaying the property sheets of the
 		// net elements.
 		if (type == IPropertySheetPage.class) {
-			PlaceTransitionPropertyPage propertyPage = new PlaceTransitionPropertyPage(
-					diagram);
-			return propertyPage;
+			return new PlaceTransitionPropertyPage(diagram);
 		}
 		if (type == IContentOutlinePage.class) {
 			return new NetOutlinePage(new TreeViewer());

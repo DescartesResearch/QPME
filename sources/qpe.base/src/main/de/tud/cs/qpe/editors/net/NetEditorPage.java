@@ -326,8 +326,9 @@ public class NetEditorPage extends GraphicalEditorWithFlyoutPalette {
 		// displaying the property sheets of the
 		// net elements.
 		if (type == IPropertySheetPage.class) {
-			PlaceTransitionPropertyPage propertyPage = new PlaceTransitionPropertyPage(diagram);
-			return propertyPage;
+			PlaceTransitionPropertyPage p = new PlaceTransitionPropertyPage(diagram);
+//			getSite().getPage().addSelectionListener(p);
+			return p;
 		}
 		if (type == IContentOutlinePage.class) {
 			return new NetOutlinePage(new TreeViewer());

@@ -42,13 +42,17 @@
  */
 package de.tud.cs.qpe.editors.net.gef.property.place;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.dom4j.Attribute;
 import org.dom4j.Element;
 import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.ComboBoxCellEditor;
+import org.eclipse.jface.viewers.CellLabelProvider;
+import org.eclipse.jface.viewers.ColumnViewer;
+import org.eclipse.jface.viewers.EditingSupport;
+import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.TextCellEditor;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -60,14 +64,15 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Spinner;
-import org.eclipse.swt.widgets.TableColumn;
 
 import de.tud.cs.qpe.editors.net.QueueEditorPage;
 import de.tud.cs.qpe.model.DocumentManager;
 import de.tud.cs.qpe.model.NetHelper;
-import de.tud.cs.qpe.utils.DoubleCellEditor;
+import de.tud.cs.qpe.utils.CellValidators;
 import de.tud.cs.qpe.utils.FileCellEditor;
-import de.tud.cs.qpe.utils.IntegerCellEditor;
+import de.tud.cs.qpe.utils.XmlAttributeEditingSupport;
+import de.tud.cs.qpe.utils.XmlAttributeLabelProvider;
+import de.tud.cs.qpe.utils.XmlEnumerationAttributeEditingSupport;
 
 public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 	protected Combo queue;
@@ -80,10 +85,20 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 
 	public QueueingPlacePropertyComposite(Element net, Composite parent) {
 		super(net, parent);
-		columnNames = new String[] { "Color", "Initial", "Max", "Ranking",
-				"Priority", "Distribution", "p1", "p2", "p3", "Input File" };
 		initProperties();
 		initColorTable();
+	}
+	
+	@Override
+	public void colorRefAdded(Element colorRef) {
+		super.colorRefAdded(colorRef);
+		
+		colorRef.addAttribute("ranking", "0");
+		colorRef.addAttribute("priority", "0");
+		colorRef.addAttribute("distribution-function", "Exponential");
+		
+		// Initialize the default parameters of the distribution function.
+		distHelper.initializeAttributes(colorRef);		
 	}
 
 	/*
@@ -143,13 +158,15 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 		numberOfServers.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		numberOfServers.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent evnt) {
-				if ("place".equals(getModel().getName())) {
-					Element q = getQueueElement();
-					if (q != null) {
-						String oldValue = q.attributeValue("number-of-servers");
-						String newValue = Integer.toString(QueueingPlacePropertyComposite.this.numberOfServers.getSelection());
-						if (!oldValue.equals(newValue)) {
-							DocumentManager.setAttribute(q, "number-of-servers", newValue);
+				if (getModel() != null) {
+					if ("place".equals(getModel().getName())) {
+						Element q = getQueueElement();
+						if (q != null) {
+							String oldValue = q.attributeValue("number-of-servers");
+							String newValue = Integer.toString(QueueingPlacePropertyComposite.this.numberOfServers.getSelection());
+							if (!oldValue.equals(newValue)) {
+								DocumentManager.setAttribute(q, "number-of-servers", newValue);
+							}
 						}
 					}
 				}
@@ -185,266 +202,83 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see de.tud.cs.qpe.parts.property.place.PlacePropertyComposite#initCellEditors()
-	 */
-	protected ArrayList<CellEditor> initCellEditors() {
-		ArrayList<CellEditor> cellEditors = super.initCellEditors();
-		cellEditors.add(new IntegerCellEditor(colorTableViewer.getTable()));
-		cellEditors.add(new IntegerCellEditor(colorTableViewer.getTable()));
-		cellEditors.add(new ComboBoxCellEditor(colorTableViewer.getTable(),
-				distHelper.getItems()));
-		cellEditors.add(new DoubleCellEditor(colorTableViewer.getTable()));
-		cellEditors.add(new DoubleCellEditor(colorTableViewer.getTable()));
-		cellEditors.add(new DoubleCellEditor(colorTableViewer.getTable()));
-		cellEditors.add(new FileCellEditor(colorTableViewer.getTable()));
-
-		return cellEditors;
-	}
-
-	
-	@Override
-	protected Element createColorReference() {
-		Element colorRef = super.createColorReference();
-		colorRef.addAttribute("ranking", "0");
-		colorRef.addAttribute("priority", "0");
-		colorRef.addAttribute("distribution-function", "Exponential");
-		
-		// Initialize the default parameters of the distribution function.
-		distHelper.initializeAttributes(colorRef);
-		
-		return colorRef;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.tud.cs.qpe.parts.property.place.PlacePropertyComposite#initCellModifier()
-	 */
-	protected void initCellModifier() {
-		colorTableViewer.setCellModifier(new ColorTableCellModifier() {
-			@Override
-			public boolean canModify(Object element, String property) {
-				Element colorRef = (Element) element;
-				String distrFkt = colorRef.attributeValue(
-						"distribution-function", "Exponential");
-
-				if (!super.canModify(element, property)) {
-					return false;
-				} else if ("p1".equals(property)) {
-					if ((distrFkt == null)
-							|| (distHelper.getNumberOfParameters(distrFkt) == 0)) {
-						return false;
-					}
-				} else if ("p2".equals(property)) {
-					if ((distrFkt == null)
-							|| (distHelper.getNumberOfParameters(distrFkt) <= 1)) {
-						return false;
-					}
-				} else if ("p3".equals(property)) {
-					if ((distrFkt == null)
-							|| (distHelper.getNumberOfParameters(distrFkt) <= 2)) {
-						return false;
-					}
-				}
-				if(!"Empirical".equals(distrFkt) && "Input File".equals(property)) {
-					return false;
-				}
-				return true;
-			}
-			
-			@Override
-			protected Object getValue(int columnIndex, Element colorRef,
-					Element color) {
-				String distrFkt = colorRef.attributeValue(
-						"distribution-function", "Exponential");
-
-				switch (columnIndex) {
-					case 0:
-					case 1:
-					case 2:
-						return super.getValue(columnIndex, colorRef, color);
-					case 3:
-						return new Integer(colorRef.attributeValue("ranking", "0"));
-					case 4:
-						return new Integer(colorRef.attributeValue("priority", "0"));
-					case 5:
-						return distHelper.getValue(colorRef.attributeValue(
-								"distribution-function", "Exponential"));
-					case 6:
-						if ((distrFkt != null)
-								&& (distHelper.getNumberOfParameters(distrFkt) > 0)) {
-							return new Double(colorRef.attributeValue(distHelper
-									.getP1Name(distrFkt), "1.0"));
-						}
-					case 7:
-						if ((distrFkt != null)
-								&& (distHelper.getNumberOfParameters(distrFkt) > 1)) {
-							return new Double(colorRef.attributeValue(distHelper
-									.getP2Name(distrFkt), "1.0"));
-						}
-					case 8:
-						if ((distrFkt != null)
-								&& (distHelper.getNumberOfParameters(distrFkt) > 2)) {
-							return new Double(colorRef.attributeValue(distHelper
-									.getP3Name(distrFkt), "1.0"));
-						}
-					case 9:
-						if("Empirical".equals(distrFkt)) {
-							return colorRef.attributeValue("pdf_filename", "");
-						}
-				}
-
-				return null;
-			}
-			
-			@Override
-			protected void modify(int columnIndex, Element colorRef, Object value) {
-				int iValue;
-
-				String distrFkt = colorRef.attributeValue(
-						"distribution-function", "Exponential");
-				switch (columnIndex) {
-				case 0:
-				case 1:
-				case 2:
-					super.modify(columnIndex, colorRef, value);
-					break;
-				case 3:
-					iValue = ((Integer) value).intValue();
-					if (iValue >= 0) {
-						DocumentManager.setAttribute(colorRef, "ranking",
-								((Integer) value).toString());
-					}
-					break;
-				case 4:
-					iValue = ((Integer) value).intValue();
-					if (iValue >= 0) {
-						DocumentManager.setAttribute(colorRef, "priority",
-								((Integer) value).toString());
-					}
-					break;
-				case 5:
-					DocumentManager.setAttribute(colorRef,
-							"distribution-function", distHelper
-									.getValue((Integer) value));
-					distHelper.initializeAttributes(colorRef);
-					break;
-				case 6:
-					if ((distrFkt != null)
-							&& (distHelper.getNumberOfParameters(distrFkt) > 0)) {
-						DocumentManager.setAttribute(colorRef, distHelper
-								.getP1Name(distrFkt), ((Double) value)
-								.toString());
-					}
-					break;
-				case 7:
-					if ((distrFkt != null)
-							&& (distHelper.getNumberOfParameters(distrFkt) > 1)) {
-						DocumentManager.setAttribute(colorRef, distHelper
-								.getP2Name(distrFkt), ((Double) value)
-								.toString());
-					}
-					break;
-				case 8:
-					if ((distrFkt != null)
-							&& (distHelper.getNumberOfParameters(distrFkt) > 2)) {
-						DocumentManager.setAttribute(colorRef, distHelper
-								.getP3Name(distrFkt), ((Double) value)
-								.toString());
-					}
-					break;
-				case 9:
-					if("Empirical".equals(distrFkt)) {
-						DocumentManager.setAttribute(colorRef, "pdf_filename",
-							(String) value);
-					}
-					break;
-				}
-
-				distHelper.cleanupAttributes(colorRef);
-			}
-		});
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see de.tud.cs.qpe.parts.property.place.PlacePropertyComposite#initLabelProvider()
-	 */
-	protected void initLabelProvider() {
-		colorTableViewer.setLabelProvider(new ColorTableLabelProvider() {
-			@Override
-			protected String getColumnText(Element colorRef, Element color,
-					int columnIndex) {
-				String curDistFkt = colorRef.attributeValue(
-						"distribution-function", "Exponential");
-				switch (columnIndex) {
-					case 0:
-					case 1:
-					case 2:
-						return super.getColumnText(colorRef, color, columnIndex);
-					case 3:
-						return colorRef.attributeValue("ranking", "0");
-					case 4:
-						return colorRef.attributeValue("priority", "0");
-					case 5:
-						return colorRef.attributeValue("distribution-function",
-								"Exponential");
-					case 6:
-						if (distHelper.getNumberOfParameters(curDistFkt) >= 1) {
-							return colorRef.attributeValue(distHelper
-									.getP1Name(curDistFkt), "1.0");
-						}
-					case 7:
-						if (distHelper.getNumberOfParameters(curDistFkt) >= 2) {
-							return colorRef.attributeValue(distHelper
-									.getP2Name(curDistFkt), "1.0");
-						}
-						break;
-					case 8:
-						if (distHelper.getNumberOfParameters(curDistFkt) == 3) {
-							return colorRef.attributeValue(distHelper
-									.getP3Name(curDistFkt), "1.0");
-						}
-						break;
-					case 9:
-						if("Empirical".equals(curDistFkt)) {
-							return colorRef.attributeValue("pdf_filename", "");
-						}
-				}
-				return null;
-			}
-		});
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
 	 * @see de.tud.cs.qpe.parts.property.place.PlacePropertyComposite#initTableColumns()
 	 */
 	protected void initTableColumns() {
 		super.initTableColumns();
-		TableColumn col = new TableColumn(colorTable, SWT.LEFT);
-		col.setText("Ranking");
-		col.setWidth(70);
-		col = new TableColumn(colorTable, SWT.LEFT);
-		col.setText("Priority");
-		col.setWidth(70);
-		col = new TableColumn(colorTable, SWT.LEFT);
-		col.setText("Distribution");
-		col.setWidth(100);
-		col = new TableColumn(colorTable, SWT.LEFT);
-		col.setText("p1");
-		col.setWidth(40);
-		col = new TableColumn(colorTable, SWT.LEFT);
-		col.setText("p2");
-		col.setWidth(40);
-		col = new TableColumn(colorTable, SWT.LEFT);
-		col.setText("p3");
-		col.setWidth(40);
-		col = new TableColumn(colorTable, SWT.LEFT);
-		col.setText("Input File");
-		col.setWidth(80);
+		
+		
+		TableViewerColumn col = colorTable.createColumn("Ranking", 70);
+		colorTable.setColumnLabelProvider(col, new XmlAttributeLabelProvider("ranking", "0"));
+		XmlAttributeEditingSupport editor = new XmlAttributeEditingSupport(col.getViewer(), "ranking");
+		editor.setValidator(CellValidators.newNonNegativeIntegerValidator());
+		colorTable.setColumnEditingSupport(col, editor);
+		
+		col = colorTable.createColumn("Priority", 70);
+		colorTable.setColumnLabelProvider(col, new XmlAttributeLabelProvider("priority", "0"));
+		editor = new XmlAttributeEditingSupport(col.getViewer(), "priority");
+		editor.setValidator(CellValidators.newNonNegativeIntegerValidator());
+		colorTable.setColumnEditingSupport(col, editor);
+		
+		col = colorTable.createColumn("Distribution", 100);
+		colorTable.setColumnLabelProvider(col, new XmlAttributeLabelProvider("distribution-function", "Exponential"));
+		colorTable.setColumnEditingSupport(col, new XmlEnumerationAttributeEditingSupport(col.getViewer(), "distribution-function") {	
+			@Override
+			protected Object[] getItems() {
+				return distHelper.getItems();
+			}
+			
+			@Override
+			protected void setValue(Object element, Object value) {
+				super.setValue(element, value);
+				distHelper.initializeAttributes((Element)element);
+				distHelper.cleanupAttributes((Element)element);
+			}
+		});
+		
+		col = colorTable.createColumn("p1", 40);
+		colorTable.setColumnLabelProvider(col, new DistributionFunctionParameterLabelProvider(0));
+		colorTable.setColumnEditingSupport(col, new DistributionFunctionParameterEditingSupport(col.getViewer(), 0));
+		
+		col = colorTable.createColumn("p2", 40);
+		colorTable.setColumnLabelProvider(col, new DistributionFunctionParameterLabelProvider(1));
+		colorTable.setColumnEditingSupport(col, new DistributionFunctionParameterEditingSupport(col.getViewer(), 1));
+		
+		col = colorTable.createColumn("p3", 40);
+		colorTable.setColumnLabelProvider(col, new DistributionFunctionParameterLabelProvider(2));
+		colorTable.setColumnEditingSupport(col, new DistributionFunctionParameterEditingSupport(col.getViewer(), 2));
+		
+		col = colorTable.createColumn("Input File", 80);
+		colorTable.setColumnLabelProvider(col, new CellLabelProvider() {
+			
+			@Override
+			public void update(ViewerCell cell) {
+				Element colorRef = (Element)cell.getElement();
+				String curDistFkt = colorRef.attributeValue(
+						"distribution-function", "Exponential");
+				if("Empirical".equals(curDistFkt)) {
+					cell.setText(colorRef.attributeValue("pdf_filename", ""));
+				} else {
+					cell.setText("");
+				}
+			}
+		});
+		colorTable.setColumnEditingSupport(col, new XmlAttributeEditingSupport(col.getViewer(), "pdf_filename") {
+			
+			@Override
+			protected CellEditor createCellEditor(Composite parent) {
+				return new FileCellEditor(parent);
+			}
+			
+			@Override
+			protected boolean canEdit(Object element) {
+				Element colorRef = (Element)element;
+				String curDistFkt = colorRef.attributeValue(
+						"distribution-function", "Exponential");
+				return "Empirical".equals(curDistFkt);
+			}
+			
+		});
 	}
 
 	protected void updatePropertyFields() {
@@ -467,6 +301,81 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 		for (Element queueElement : queues) {
 			queue.add(queueElement.attributeValue("name"));
 		}
+	}
+	
+	private class DistributionFunctionParameterLabelProvider extends CellLabelProvider {
+		
+		private int parameterIndex;
+		
+		public DistributionFunctionParameterLabelProvider(int parameterIndex) {
+			this.parameterIndex = parameterIndex;
+		}
+
+		@Override
+		public void update(ViewerCell cell) {
+			Element colorRef = (Element)cell.getElement();
+			String curDistFkt = colorRef.attributeValue(
+					"distribution-function", "Exponential");
+			if (parameterIndex < distHelper.getNumberOfParameters(curDistFkt)) {
+				cell.setText(colorRef.attributeValue(distHelper
+						.getParamterName(curDistFkt, parameterIndex), "1.0"));
+			} else {
+				cell.setText("");
+			}			
+		}
+	}
+	
+	private class DistributionFunctionParameterEditingSupport extends EditingSupport {
+		
+		private CellEditor cellEditor;
+		private int parameterIndex;
+
+		public DistributionFunctionParameterEditingSupport(ColumnViewer viewer, int parameterIndex) {
+			super(viewer);
+			this.parameterIndex = parameterIndex;
+			this.cellEditor = new TextCellEditor((Composite)viewer.getControl());
+			this.cellEditor.setValidator(CellValidators.newDoubleValidator());
+		}
+
+		@Override
+		protected CellEditor getCellEditor(Object element) {
+			return cellEditor;
+		}
+
+		@Override
+		protected boolean canEdit(Object element) {
+			String distrFkt = getDistributionFunction(element);
+			return (distHelper.getNumberOfParameters(distrFkt) > parameterIndex);
+		}
+		
+		@Override
+		protected Object getValue(Object element) {
+			Element colorRef = (Element)element;
+			String distrFkt = getDistributionFunction(element);
+			if (parameterIndex < distHelper.getNumberOfParameters(distrFkt)) {
+				return colorRef.attributeValue(
+						distHelper.getParamterName(distrFkt, parameterIndex), "1.0");
+			}
+			return null;
+		}
+
+		@Override
+		protected void setValue(Object element, Object value) {
+			Element colorRef = (Element)element;
+			String distrFkt = getDistributionFunction(element);
+			if (parameterIndex < distHelper.getNumberOfParameters(distrFkt)) {
+				DocumentManager.setAttribute(colorRef, 
+						distHelper.getParamterName(distrFkt, parameterIndex), value.toString());
+				getViewer().refresh();
+			}			
+		}
+		
+		private String getDistributionFunction(Object element) {
+			Element colorRef = (Element) element;
+			return colorRef.attributeValue(
+					"distribution-function", "Exponential");
+		}
+		
 	}
 
 	protected class DistributionFunctionHelper {
@@ -513,51 +422,22 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 			return new Integer(0);
 		}
 
-		/**
-		 * Returns the name of the distriburion function identified by the given
-		 * index.
-		 * 
-		 * @param intValue
-		 * @return
-		 */
-		public String getValue(Integer intValue) {
-			return items[intValue.intValue()];
-		}
-
 		public int getNumberOfParameters(String distFkt) {
 			int i = getValue(distFkt);
 			return numParams[i];
 		}
-
-		public String getP1Name(String distFkt) {
+		
+		public String getParamterName(String distFkt, int index) {
 			int i = getValue(distFkt);
-			return paramNames[i][0];
-		}
-
-		public String getP2Name(String distFkt) {
-			int i = getValue(distFkt);
-			return paramNames[i][1];
-		}
-
-		public String getP3Name(String distFkt) {
-			int i = getValue(distFkt);
-			return paramNames[i][2];
+			return paramNames[i][index];
 		}
 
 		public void initializeAttributes(Element colorRef) {
 			String distrFkt = colorRef.attributeValue("distribution-function",
 					"Exponential");
 			int i = getValue(distrFkt);
-			switch (getNumberOfParameters(distrFkt)) {
-			case 3:
-				colorRef.addAttribute(getP3Name(distrFkt),
-						defaultValues[i][2]);
-			case 2:
-				colorRef.addAttribute(getP2Name(distrFkt),
-						defaultValues[i][1]);
-			case 1:
-				colorRef.addAttribute(getP1Name(distrFkt),
-						defaultValues[i][0]);
+			for (int index = 0; index < getNumberOfParameters(distrFkt); index++) {
+				colorRef.addAttribute(getParamterName(distrFkt, index), defaultValues[i][index]);
 			}
 		}
 
