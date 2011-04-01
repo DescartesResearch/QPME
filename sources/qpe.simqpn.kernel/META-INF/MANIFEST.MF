@@ -14,4 +14,4 @@ Require-Bundle: org.dom4j;bundle-version="1.6.1",
  org.apache.log4j;bundle-version="1.2.16",
  cern.colt;bundle-version="1.2.0",
  drasys.or;bundle-version="1.2.4"
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

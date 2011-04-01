@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: SimQPN Plug-in for QPE
 Bundle-SymbolicName: qpe.simqpn.ui;singleton:=true
 Bundle-Version: 2.0.0
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: Descartes Research Group
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: de.tud.cs.simqpn.ui.QPESimQPNPlugin
