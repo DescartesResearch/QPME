@@ -2,7 +2,7 @@
 QPME : Queueing Petri net Modeling Environment
 ==============================================================================
 
-Copyright (c) 2003-2010 www.descartes-research.net
+Copyright (c) 2003-2011 www.descartes-research.net
  
 Project Website: 
   http://descartes.ipd.kit.edu/projects/qpme/                
@@ -12,6 +12,8 @@ Contributors
 -------------------
   Project Leader
      Samuel Kounev
+  Development Leader
+     Simon Spinner
   Developers
      Ana Aleksieva
      Christofer Dutz
@@ -36,7 +38,7 @@ for more details.
 System Requirements
 -------------------
 Java SE 6
-Development: Eclipse SDK 3.5.1, GEF 3.5.1
+Development: Eclipse SDK 3.6.1, GEF 3.6.1
 
 ==============================================================================
                                
