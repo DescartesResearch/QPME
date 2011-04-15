@@ -58,7 +58,6 @@ import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
 import cern.jet.stat.Probability;
 import de.tud.cs.simqpn.util.LogUtil.ReportLevel;
-import drasys.or.prob.FDistribution;
 
 /**
  * Class AggregateStats 
@@ -385,36 +384,36 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 	 * 
 	 * Used only in mode CVRG_EST. 
 	 */
-	public boolean enoughCvrgStats()  {
-		if (statsLevel < 3) return true;		
-		
-		boolean passed = enoughBadCIs();
-		if (passed)  {			
-			for (int c = 0; c < numColors; c++)  {				
-				// Colors with negative trueAvgST[c] are not considered!
-				if (trueAvgST[c] < 0) continue;											
-				estCvrg[c]  = ((double) numCvrgs[c]) / numRepls;
-				// Check if required precision for the c.i. coverage has been reached				
-				if (useFdistr)  {	// Use the F distribution to construct c.i. for the true coverage 
-					if (Math.abs(estCvrg[c] - getTrCvrgLowerLimit(c)) > reqCvrgAbsPrc || 
-					    Math.abs(getTrCvrgUpperLimit(c) - estCvrg[c]) > reqCvrgAbsPrc)  {
-							passed = false; break;
-					    }
-				}
-				else  { 	// Use the Normal distribution to construct c.i. for the true coverage
-					ciHalfLenTrCvrg[c] = Math.abs(Probability.normalInverse(signLevCvrg / 2)) * Math.sqrt((estCvrg[c] * (1 - estCvrg[c])) / numRepls);				
-					if (ciHalfLenTrCvrg[c] > reqCvrgAbsPrc)  {					 										
-/* DEBUG:
-						Simulator.logln("Not enough coverage stats for " + name + " of type " + type + "***********************************");
-						Simulator.logln("Color=" + c + ":estCvrg[c]=" + estCvrg[c] + ":ciHalfLenTrCvrg[c]=" + ciHalfLenTrCvrg[c]);
-*/
-						passed = false; break;
-					}													 
-				}
-			}
-		}																																
-		return passed;	
-	}
+//	public boolean enoughCvrgStats()  {
+//		if (statsLevel < 3) return true;		
+//		
+//		boolean passed = enoughBadCIs();
+//		if (passed)  {			
+//			for (int c = 0; c < numColors; c++)  {				
+//				// Colors with negative trueAvgST[c] are not considered!
+//				if (trueAvgST[c] < 0) continue;											
+//				estCvrg[c]  = ((double) numCvrgs[c]) / numRepls;
+//				// Check if required precision for the c.i. coverage has been reached				
+//				if (useFdistr)  {	// Use the F distribution to construct c.i. for the true coverage 
+//					if (Math.abs(estCvrg[c] - getTrCvrgLowerLimit(c)) > reqCvrgAbsPrc || 
+//					    Math.abs(getTrCvrgUpperLimit(c) - estCvrg[c]) > reqCvrgAbsPrc)  {
+//							passed = false; break;
+//					    }
+//				}
+//				else  { 	// Use the Normal distribution to construct c.i. for the true coverage
+//					ciHalfLenTrCvrg[c] = Math.abs(Probability.normalInverse(signLevCvrg / 2)) * Math.sqrt((estCvrg[c] * (1 - estCvrg[c])) / numRepls);				
+//					if (ciHalfLenTrCvrg[c] > reqCvrgAbsPrc)  {					 										
+///* DEBUG:
+//						Simulator.logln("Not enough coverage stats for " + name + " of type " + type + "***********************************");
+//						Simulator.logln("Color=" + c + ":estCvrg[c]=" + estCvrg[c] + ":ciHalfLenTrCvrg[c]=" + ciHalfLenTrCvrg[c]);
+//*/
+//						passed = false; break;
+//					}													 
+//				}
+//			}
+//		}																																
+//		return passed;	
+//	}
 
 	/**
 	 * Method getTrCvrgLowerLimit 
@@ -426,16 +425,16 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 	 * 
 	 * Used only in mode CVRG_EST. 
 	 */
-	public double getTrCvrgLowerLimit(int color)  {
-		double n	= numRepls;
-		double np	= numCvrgs[color]; // == (n * estCvrg[color]);
-		double r1	= 2 * (n - np + 1);  
-		double r2	= 2 * np;	
-		if (r1 < 1.0 || r2 < 1.0) 		
-			log.debug("place=" + name + "; type=" + type + "; np=" + np + "; n=" + n + "; r1=" + r1 + "; r2=" + r2);
-		double Fq	= (new FDistribution(r1, r2)).inverseCdf(1 - (signLevCvrg / 2));	
-		return np / (np + (n - np + 1) * Fq);
-	}
+//	public double getTrCvrgLowerLimit(int color)  {
+//		double n	= numRepls;
+//		double np	= numCvrgs[color]; // == (n * estCvrg[color]);
+//		double r1	= 2 * (n - np + 1);  
+//		double r2	= 2 * np;	
+//		if (r1 < 1.0 || r2 < 1.0) 		
+//			log.debug("place=" + name + "; type=" + type + "; np=" + np + "; n=" + n + "; r1=" + r1 + "; r2=" + r2);
+//		double Fq	= (new FDistribution(r1, r2)).inverseCdf(1 - (signLevCvrg / 2));	
+//		return np / (np + (n - np + 1) * Fq);
+//	}
 
 	/**
 	 * Method getTrCvrgUpperLimit 
@@ -447,16 +446,16 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 	 * 
 	 * Used only in mode CVRG_EST. 
 	 */
-	public double getTrCvrgUpperLimit(int color)  {
-		double n	= numRepls;
-		double np	= numCvrgs[color]; // == (n * estCvrg[color]);
-		double r3	= 2 * (np + 1);  
-		double r4	= 2 * (n - np);						
-		if (r3 < 1.0 || r4 < 1.0) 		
-			log.debug("place=" + name + "; type=" + type + "; np=" + np + "; n=" + n + "; r3=" + r3 + "; r4=" + r4);		
-		double Fq	= (new FDistribution(r3, r4)).inverseCdf(1 - (signLevCvrg / 2));		
-		return ((np + 1) * Fq) / ((n - np) + (np + 1) * Fq);		
-	}
+//	public double getTrCvrgUpperLimit(int color)  {
+//		double n	= numRepls;
+//		double np	= numCvrgs[color]; // == (n * estCvrg[color]);
+//		double r3	= 2 * (np + 1);  
+//		double r4	= 2 * (n - np);						
+//		if (r3 < 1.0 || r4 < 1.0) 		
+//			log.debug("place=" + name + "; type=" + type + "; np=" + np + "; n=" + n + "; r3=" + r3 + "; r4=" + r4);		
+//		double Fq	= (new FDistribution(r3, r4)).inverseCdf(1 - (signLevCvrg / 2));		
+//		return ((np + 1) * Fq) / ((n - np) + (np + 1) * Fq);		
+//	}
 	
 	/**
 	 * Method enoughBadCIs - returns true if at least reqMinBadCIs 'bad' confidence intervals have been recorded 
@@ -695,12 +694,12 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 					avgBatchSizeST[c]	= sumBatchSizesST[c] / numRepls;					
 					avgNumBatchesST[c]	= sumNumBatchesST[c] / numRepls;					 
 				}																					
-				if (Simulator.runMode == Simulator.CVRG_EST && trueAvgST[c] >= 0)  {
-					estCvrg[c]  = ((double) numCvrgs[c]) / numRepls;															
-					trCvrgLowerLimit[c] = getTrCvrgLowerLimit(c);
-					trCvrgUpperLimit[c] = getTrCvrgUpperLimit(c);
-					ciHalfLenTrCvrg[c] = Math.abs(Probability.normalInverse(signLevCvrg / 2)) * Math.sqrt((estCvrg[c] * (1 - estCvrg[c])) / numRepls);					
-				}											
+//				if (Simulator.runMode == Simulator.CVRG_EST && trueAvgST[c] >= 0)  {
+//					estCvrg[c]  = ((double) numCvrgs[c]) / numRepls;															
+//					trCvrgLowerLimit[c] = getTrCvrgLowerLimit(c);
+//					trCvrgUpperLimit[c] = getTrCvrgUpperLimit(c);
+//					ciHalfLenTrCvrg[c] = Math.abs(Probability.normalInverse(signLevCvrg / 2)) * Math.sqrt((estCvrg[c] * (1 - estCvrg[c])) / numRepls);					
+//				}											
 			}																														
 		completed = true;		
 	}

@@ -12,6 +12,5 @@ Bundle-ClassPath: QPE_SimQPN.jar
 Bundle-Vendor: Descartes Research Group
 Require-Bundle: org.dom4j;bundle-version="1.6.1",
  org.apache.log4j;bundle-version="1.2.16",
- cern.colt;bundle-version="1.2.0",
- drasys.or;bundle-version="1.2.4"
+ cern.colt;bundle-version="1.2.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
