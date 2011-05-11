@@ -128,7 +128,6 @@ This Agreement is governed by the laws of the State of New York and the intellec
    <plugins>
       <plugin id="cern.colt"/>
       <plugin id="com.ibm.icu"/>
-      <plugin id="drasys.or"/>
       <plugin id="org.apache.log4j"/>
       <plugin id="org.dom4j"/>
       <plugin id="org.eclipse.ant.core"/>
