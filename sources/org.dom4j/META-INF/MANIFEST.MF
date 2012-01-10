@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Dom4j
 Bundle-SymbolicName: org.dom4j
-Bundle-Version: 1.6.1
+Bundle-Version: 1.6.1.qualifier
 Bundle-ClassPath: jaxen-1.1-beta-6.jar,
  dom4j-1.6.1.jar
 Bundle-Vendor: Dom4j
