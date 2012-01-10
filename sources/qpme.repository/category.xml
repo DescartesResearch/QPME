@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/qpme.feature_2.1.0.qualifier.jar" id="qpme.feature" version="2.1.0.qualifier">
+      <category name="qpme.category"/>
+   </feature>
+   <category-def name="qpme.category" label="QPME Category">
+      <description>
+         QPME Category
+      </description>
+   </category-def>
+</site>
