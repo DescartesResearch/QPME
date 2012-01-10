@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: SimQPN Plug-in for QPE
-Bundle-SymbolicName: qpe.simqpn.kernel;singleton:=true
-Bundle-Version: 2.0.0
+Bundle-SymbolicName: qpme.simqpn.kernel;singleton:=true
+Bundle-Version: 2.1.0.qualifier
 Bundle-Localization: plugin
 Eclipse-AutoStart: true
 Export-Package: de.tud.cs.simqpn.console,
