@@ -38,6 +38,14 @@
             <introProductBinding
                   introId="qpe.base.intro"
                   productId="qpe.base.QPE">
+            </introProductBinding>
+            <intro
+                  class="org.eclipse.ui.intro.config.CustomizableIntroPart"
+                  id="qpme.base.intro">
+            </intro>
+            <introProductBinding
+                  introId="qpme.base.intro"
+                  productId="qpme.base.QPE">
             </introProductBinding> 
       </extension>
       <extension point="org.eclipse.ui.intro.config">
@@ -45,6 +53,19 @@
                   content="introContent.xml"
                   id="qpe.base.introConfigId"
                   introId="qpe.base.intro">
+               <presentation
+                     home-page-id="root">
+                  <implementation
+                        kind="html"
+                        os="win32,linux,macosx"
+                        style="content/shared.css">
+                  </implementation>
+               </presentation>
+            </config>
+            <config
+                  content="introContent.xml"
+                  id="qpme.base.introConfigId"
+                  introId="qpme.base.intro">
                <presentation
                      home-page-id="root">
                   <implementation

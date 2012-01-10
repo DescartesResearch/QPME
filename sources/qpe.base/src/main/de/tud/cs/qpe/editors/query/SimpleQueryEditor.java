@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -62,7 +62,6 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import de.tud.cs.qpe.editors.query.model.Aggregation;
 import de.tud.cs.qpe.editors.query.model.Color;
 import de.tud.cs.qpe.editors.query.model.HistogramType;
@@ -218,7 +217,7 @@ public class SimpleQueryEditor extends AbstractQueryEditor {
 
 	@Override
 	public void setQuery(Query<Place, Color> query) {
-		throw new NotImplementedException();
+		throw new UnsupportedOperationException();
 	}
 	
 	private class PopupMenuSelectionListener implements Listener {
