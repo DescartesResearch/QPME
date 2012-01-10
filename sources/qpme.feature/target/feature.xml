@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="qpme.feature"
+      label="QPME Feature"
+      version="2.1.0.201201101729"
+      provider-name="Descartes Research Group">
+
+   <description url="http://www.example.com/description">
+      [Enter Feature Description here.]
+   </description>
+
+   <copyright url="http://www.example.com/copyright">
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      [Enter License Description here.]
+   </license>
+
+   <plugin
+         id="cern.colt"
+         download-size="924"
+         install-size="1066"
+         version="1.2.0.201201101729"/>
+
+   <plugin
+         id="drasys.or"
+         download-size="365"
+         install-size="434"
+         version="1.2.4.201201101729"/>
+
+   <plugin
+         id="org.apache.log4j"
+         download-size="427"
+         install-size="471"
+         version="1.2.16.201201101729"/>
+
+   <plugin
+         id="org.dom4j"
+         download-size="495"
+         install-size="546"
+         version="1.6.1.201201101729"/>
+
+   <plugin
+         id="org.jfreechart"
+         download-size="1637"
+         install-size="1740"
+         version="1.0.12.201201101729"/>
+
+   <plugin
+         id="org.rosuda.JRI"
+         download-size="31"
+         install-size="31"
+         version="1.0.0.201201101729"/>
+
+   <plugin
+         id="qpme.simqpn.kernel"
+         download-size="107"
+         install-size="110"
+         version="2.1.0.201201101729"/>
+
+   <plugin
+         id="qpme.simqpn.ui"
+         download-size="69"
+         install-size="129"
+         version="2.1.0.201201101729"
+         unpack="false"/>
+
+   <plugin
+         id="qpme.base"
+         download-size="4046"
+         install-size="5700"
+         version="2.1.0.201201101729"/>
+
+</feature>
