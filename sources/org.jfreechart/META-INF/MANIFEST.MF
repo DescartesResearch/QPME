@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: JFreeChart
 Bundle-SymbolicName: org.jfreechart
-Bundle-Version: 1.0.12
+Bundle-Version: 1.0.12.qualifier
 Bundle-ClassPath: jcommon-1.0.15.jar,
  jfreechart-1.0.12-experimental.jar,
  jfreechart-1.0.12-swt.jar,

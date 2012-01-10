@@ -7,5 +7,5 @@
 	<classpathentry exported="true" kind="lib" path="jfreechart-1.0.12-swt.jar"/>
 	<classpathentry exported="true" kind="lib" path="jfreechart-1.0.12.jar"/>
 	<classpathentry exported="true" kind="lib" path="swtgraphics2d.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>
