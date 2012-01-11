@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -42,6 +42,7 @@
  */
 package de.tud.cs.qpe.rcp;
 
+import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.ICoolBarManager;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
@@ -120,13 +121,13 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		// is sort of ugly ... but it works and is certainly
 		// prettier than errors in the logs or stupid menues 
 		// in the menu-bar.
-		MenuManager hiddenMenu = new MenuManager("&Help", IWorkbenchActionConstants.M_HELP);
-		menuBar.add(hiddenMenu);
-		hiddenMenu.setVisible(false);
+//		MenuManager hiddenMenu = new MenuManager("&Help", IWorkbenchActionConstants.M_HELP);
+//		menuBar.add(hiddenMenu);
+//		hiddenMenu.setVisible(false);
 		
 		// TIP: If I don't setup the menus here,
 		// they will appear in random order.
-		MenuManager fileMenu = new MenuManager("&File", "qpeFile");
+		MenuManager fileMenu = new MenuManager("&File", IWorkbenchActionConstants.M_FILE);
 		menuBar.add(fileMenu);
 		fileMenu.add(new Separator("new"));
 		fileMenu.add(newAction);
@@ -145,13 +146,12 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		MenuManager editMenu = new MenuManager("&Edit", IWorkbenchActionConstants.M_EDIT);
 		menuBar.add(editMenu);
 
-		MenuManager viewMenu = new MenuManager("&View", "qpeView");
+		menuBar.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+		
+		MenuManager viewMenu = new MenuManager("&Window", IWorkbenchActionConstants.M_WINDOW);
 		menuBar.add(viewMenu);
 
-		MenuManager extrasMenu = new MenuManager("&Tools", "qpeTools");
-		menuBar.add(extrasMenu);
-
-		MenuManager helpMenu = new MenuManager("&Help", "qpeHelp");
+		MenuManager helpMenu = new MenuManager("&Help", IWorkbenchActionConstants.M_FILE);
 		menuBar.add(helpMenu);
 		helpMenu.add(introAction);
 	}

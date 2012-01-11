@@ -14,17 +14,17 @@
       </extension>
       <extension id="QPE" point="org.eclipse.core.runtime.products">
             <product
-                  application="qpe.base.qpe.application"
+                  application="qpme.qpe.core.qpe.application"
                   name="QPME">
                <property
                      name="windowImages"
-                     value="images/QPME-Icon16.gif,images/QPME-Icon32.gif"/>
+                     value="/qpme.product/branding/QPME-Icon16.gif,/qpme.product/branding/QPME-Icon32.gif"/>
                <property
                      name="appName"
                      value="QPME"/>
                <property
                      name="aboutImage"
-                     value="QPME-AboutImage.gif"/>
+                     value="/qpme.product/branding/QPME-AboutImage.gif"/>
                <property
                      name="aboutText"
                      value="Copyright 2010"/>
@@ -157,19 +157,19 @@
             <actionSet label="View Actions" visible="true" id="de.tud.cs.qpe.actionset.view">
                   <action label="Outline"
                         class="de.tud.cs.qpe.rcp.actions.window.OutlineViewDelegate"
-                        tooltip="Shows/Hides The Outlines View" menubarPath="qpeView/viewMenuGroup"
+                        tooltip="Shows/Hides The Outlines View" menubarPath="window/viewMenuGroup"
                         id="de.tud.cs.qpe.view.actions.outlineAction"/>
                   <action label="Properties"
                         class="de.tud.cs.qpe.rcp.actions.window.ProppertiesViewDelegate"
                         tooltip="Shows/Hides The Properties View"
-                        menubarPath="qpeView/viewMenuGroup"
+                        menubarPath="window/viewMenuGroup"
                         id="de.tud.cs.qpe.view.actions.propertiesAction"/>
                   <!--action label="Tasks" class="de.tud.cs.qpe.rcp.actions.window.TaskViewDelegate"
                         tooltip="Shows/Hides The Tasks View" menubarPath="qpeView/viewMenuGroup"
                         id="de.tud.cs.qpe.view.actions.tasksAction"/-->
                   <action label="Console"
                         class="de.tud.cs.qpe.rcp.actions.window.ConsoleViewDelegate"
-                        tooltip="Shows/Hides The Console View" menubarPath="qpeView/viewMenuGroup"
+                        tooltip="Shows/Hides The Console View" menubarPath="window/viewMenuGroup"
                         id="de.tud.cs.qpe.view.actions.consoleAction"/>
             </actionSet>
             <actionSet label="Help Actions" visible="true" id="de.tud.cs.qpe.actionset.help"/>
