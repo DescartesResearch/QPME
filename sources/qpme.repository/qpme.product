@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="QPME" uid="qpme.product" id="qpme.base.QPE" application="qpme.base.qpe.application" version="2.1.0.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="QPME" uid="qpme.product" id="qpme.qpe.core.QPE" application="qpme.qpe.core.qpe.application" version="2.1.0.qualifier" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
-      <image path="/qpe.base/QPME-AboutImage.gif"/>
+      <image path="/qpme.repository/branding/QPME-AboutImage.gif"/>
       <text>
          Copyright 2010
       </text>
@@ -16,18 +16,20 @@
    <launcherArgs>
    </launcherArgs>
 
-   <windowImages i16="/qpe.base/images/QPME-Icon16.gif" i32="/qpe.base/images/QPME-Icon32.gif"/>
+   <windowImages i16="/qpme.repository/branding/QPME-Icon16.gif" i32="/qpme.repository/branding/QPME-Icon32.gif"/>
 
    <splash
-      location="qpme.base" />
+      location="qpme.qpe.core" />
    <launcher name="QPME">
       <solaris/>
       <win useIco="false">
-         <bmp/>
+         <bmp
+            winSmallHigh="/qpme.repository/branding/QPME-Icon16.bmp"
+            winMediumHigh="/qpme.repository/branding/QPME-Icon32.bmp"/>
       </win>
    </launcher>
 
-   <intro introId="qpme.base.intro"/>
+   <intro introId="qpme.qpe.core.intro"/>
 
    <vm>
    </vm>
