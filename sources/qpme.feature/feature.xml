@@ -67,7 +67,7 @@
          unpack="false"/>
 
    <plugin
-         id="qpme.base"
+         id="qpme.qpe.core"
          download-size="0"
          install-size="0"
          version="0.0.0"/>
