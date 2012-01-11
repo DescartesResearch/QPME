@@ -12,4 +12,4 @@ Require-Bundle: qpme.simqpn.kernel,
  org.dom4j;bundle-version="1.6.1",
  org.eclipse.core.runtime,
  org.eclipse.ui,
- qpme.base
+ qpme.qpe.core;bundle-version="2.1.0"
