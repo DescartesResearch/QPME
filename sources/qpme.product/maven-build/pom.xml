@@ -68,7 +68,7 @@
 	</build>
 
 	<modules>
-		<module>../target-platform</module>
+		
 		<module>../../cern.colt</module>
 		<module>../../drasys.or</module>
 		<module>../../org.apache.log4j</module>
