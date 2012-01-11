@@ -41,34 +41,34 @@
 					</target>
 					<!-- configure the p2 target environments for multi-platform build -->
 					<environments>
-							<environment>
-								<os>linux</os>
-								<ws>gtk</ws>
-								<arch>x86</arch>
-							</environment>
-							<environment>
-								<os>linux</os>
-								<ws>gtk</ws>
-								<arch>x86_64</arch>
-							</environment>
-							<environment>
-								<os>win32</os>
-								<ws>win32</ws>
-								<arch>x86</arch>
-							</environment>
-							<environment>
-								<os>macosx</os>
-								<ws>cocoa</ws>
-								<arch>x86</arch>
-							</environment>
-						</environments>
+						<environment>
+							<os>linux</os>
+							<ws>gtk</ws>
+							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>linux</os>
+							<ws>gtk</ws>
+							<arch>x86_64</arch>
+						</environment>
+						<environment>
+							<os>win32</os>
+							<ws>win32</ws>
+							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>macosx</os>
+							<ws>cocoa</ws>
+							<arch>x86</arch>
+						</environment>
+					</environments>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
 
 	<modules>
-		<module>../qpe.base</module>
+		<module>../qpme.qpe.core</module>
 		<module>../qpme.target</module>
 		<module>../cern.colt</module>
 		<module>../drasys.or</module>
@@ -77,8 +77,8 @@
 		<module>../org.jfreechart</module>
 		<module>../org.rosuda.JRI</module>
 		<module>../qpme.feature</module>
-		<module>../qpe.simqpn.kernel</module>
-		<module>../qpe.simqpn.ui</module>
+		<module>../qpme.simqpn.kernel</module>
+		<module>../qpme.simqpn.ui</module>
 		<module>../qpme.repository</module>
 	</modules>
 </project>
