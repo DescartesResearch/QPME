@@ -50,7 +50,7 @@ public class QPESimQPNPlugin extends AbstractUIPlugin {
 	//The shared instance.
 	private static QPESimQPNPlugin plugin;
 	
-	public static final String PLUGIN_ID = "qpe.simqpn.ui";
+	public static final String PLUGIN_ID = "qpme.simqpn.ui";
 	
 	/**
 	 * The constructor.
