@@ -57,7 +57,6 @@ Export-Package: de.tud.cs.qpe,
  de.tud.cs.qpe.rcp,
  de.tud.cs.qpe.rcp.actions.context,
  de.tud.cs.qpe.rcp.actions.file,
- de.tud.cs.qpe.rcp.actions.window,
  de.tud.cs.qpe.rcp.task,
  de.tud.cs.qpe.utils,
  de.tud.cs.qpe.utils.view.anchor

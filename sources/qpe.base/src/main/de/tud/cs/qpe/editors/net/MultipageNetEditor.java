@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -244,6 +244,15 @@ public class MultipageNetEditor extends MultiPageEditorPart implements PropertyC
 
 	public void doSave(IProgressMonitor monitor) {
 		NetEditorInput input = (NetEditorInput) this.getEditorInput();
+		save(input.getNetDiagram().getDocument().getRootElement().attributeValue("path"));
+	}
+	
+	public void doSaveAs() {
+		save(null);
+	}
+	
+	private void save(String path) {
+		NetEditorInput input = (NetEditorInput) this.getEditorInput();
 
 		// Create a copy of the current input, because we are going to
 		// remove some attributes from the documents root node, which
@@ -256,7 +265,6 @@ public class MultipageNetEditor extends MultiPageEditorPart implements PropertyC
 		root.addAttribute("qpme-version", ver);
 
 		// If this document is new, then ask for a destination file first.
-		String path = root.attributeValue("path");
 		if (path == null) {
 			path = openFileDialog();
 		}
@@ -291,9 +299,6 @@ public class MultipageNetEditor extends MultiPageEditorPart implements PropertyC
 				}
 			}
 		}
-	}
-
-	public void doSaveAs() {
 	}
 
 	public boolean isSaveAsAllowed() {

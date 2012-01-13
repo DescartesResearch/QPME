@@ -33,22 +33,6 @@
       <extension point="org.eclipse.ui.intro">
             <intro
                   class="org.eclipse.ui.intro.config.CustomizableIntroPart"
-                  id="qpe.base.intro">
-            </intro>
-            <introProductBinding
-                  introId="qpe.base.intro"
-                  productId="qpe.base.QPE">
-            </introProductBinding>
-            <intro
-                  class="org.eclipse.ui.intro.config.CustomizableIntroPart"
-                  id="qpme.base.intro">
-            </intro>
-            <introProductBinding
-                  introId="qpme.base.intro"
-                  productId="qpme.base.QPE">
-            </introProductBinding>
-            <intro
-                  class="org.eclipse.ui.intro.config.CustomizableIntroPart"
                   id="qpme.qpe.core.intro">
             </intro>
             <introProductBinding
@@ -153,25 +137,107 @@
             </objectContribution>
       </extension>
       <extension
-            point="org.eclipse.ui.actionSets">
-            <actionSet label="View Actions" visible="true" id="de.tud.cs.qpe.actionset.view">
-                  <action label="Outline"
-                        class="de.tud.cs.qpe.rcp.actions.window.OutlineViewDelegate"
-                        tooltip="Shows/Hides The Outlines View" menubarPath="window/viewMenuGroup"
-                        id="de.tud.cs.qpe.view.actions.outlineAction"/>
-                  <action label="Properties"
-                        class="de.tud.cs.qpe.rcp.actions.window.ProppertiesViewDelegate"
-                        tooltip="Shows/Hides The Properties View"
-                        menubarPath="window/viewMenuGroup"
-                        id="de.tud.cs.qpe.view.actions.propertiesAction"/>
-                  <!--action label="Tasks" class="de.tud.cs.qpe.rcp.actions.window.TaskViewDelegate"
-                        tooltip="Shows/Hides The Tasks View" menubarPath="qpeView/viewMenuGroup"
-                        id="de.tud.cs.qpe.view.actions.tasksAction"/-->
-                  <action label="Console"
-                        class="de.tud.cs.qpe.rcp.actions.window.ConsoleViewDelegate"
-                        tooltip="Shows/Hides The Console View" menubarPath="window/viewMenuGroup"
-                        id="de.tud.cs.qpe.view.actions.consoleAction"/>
-            </actionSet>
-            <actionSet label="Help Actions" visible="true" id="de.tud.cs.qpe.actionset.help"/>
+            point="org.eclipse.ui.menus">
+         <menuContribution
+               allPopups="false"
+               locationURI="menu:file">
+            <separator
+                  name="fileStart">
+            </separator>
+            <command
+                  commandId="org.eclipse.ui.newWizard"
+                  style="push">
+            </command>
+            <separator
+                  name="new.ext"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="org.eclipse.ui.file.close"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.file.closeAll"
+                  style="push">
+            </command>
+            <separator
+                  name="close.ext"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="org.eclipse.ui.file.save"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.file.saveAs"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.file.saveAll"
+                  style="push">
+            </command>
+            <separator
+                  name="save.ext"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="org.eclipse.ui.file.exit"
+                  style="push">
+            </command>
+            <separator
+                  name="fileEnd"
+                  visible="false">
+            </separator>
+         </menuContribution>
+         <menuContribution
+               allPopups="false"
+               locationURI="menu:help">
+            <command
+                  commandId="org.eclipse.ui.help.quickStartAction"
+                  style="push">
+            </command>
+         </menuContribution>
+      </extension>
+      <extension
+            point="org.eclipse.ui.handlers">
+         <handler
+               class="de.tud.cs.qpe.rcp.actions.file.NewAction"
+               commandId="org.eclipse.ui.newWizard">
+            <activeWhen>
+               <with
+                     variable="activeContexts">
+                  <iterate
+                        ifEmpty="false"
+                        operator="or">
+                     <equals
+                           value="qpme.qpe.core.context">
+                     </equals>
+                  </iterate>
+               </with>
+            </activeWhen>
+         </handler>
+         <handler
+               class="de.tud.cs.qpe.rcp.actions.file.OpenAction"
+               commandId="org.eclipse.ui.edit.text.openLocalFile">
+            <activeWhen>
+               <with
+                     variable="activeContexts">
+                  <iterate
+                        ifEmpty="false"
+                        operator="or">
+                     <equals
+                           value="qpme.qpe.core.context">
+                     </equals>
+                  </iterate>
+               </with>
+            </activeWhen>
+         </handler>
+      </extension>
+      <extension
+            point="org.eclipse.ui.contexts">
+         <context
+               id="qpme.qpe.core.context"
+               name="QPME">
+         </context>
       </extension>
 </plugin>
