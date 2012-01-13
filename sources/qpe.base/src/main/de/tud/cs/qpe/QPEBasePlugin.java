@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -53,7 +53,7 @@ public class QPEBasePlugin extends AbstractUIPlugin {
 	//The shared instance.
 	private static QPEBasePlugin plugin;
 	
-	public static final String PLUGIN_ID = "qpe.base";
+	public static final String PLUGIN_ID = "qpme.qpe.core";
 	
 	/**
 	 * The constructor.
