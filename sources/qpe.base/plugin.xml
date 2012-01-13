@@ -264,4 +264,55 @@
                name="QPME">
          </context>
       </extension>
+      <extension
+            point="org.eclipse.ui.activities">
+         <activity
+               id="qpme.qpe.core.hideEclipseElements"
+               name="Hide Eclipse Elements">
+         </activity>
+         <activityPatternBinding
+               activityId="qpme.qpe.core.hideEclipseElements"
+               pattern="org.eclipse.search/.*">
+         </activityPatternBinding>
+         <activityPatternBinding
+               activityId="qpme.qpe.core.hideEclipseElements"
+               pattern="org.eclipse.ui.externaltools/.*">
+         </activityPatternBinding>
+         <activityPatternBinding
+               activityId="qpme.qpe.core.hideEclipseElements"
+               pattern="org.eclipse.ui.editors/.*">
+         </activityPatternBinding>
+         <activityPatternBinding
+               activityId="qpme.qpe.core.hideEclipseElements"
+               pattern="org.eclipse.equinox.p2.ui.sdk/.*">
+         </activityPatternBinding>
+         <activityPatternBinding
+               activityId="qpme.qpe.core.hideEclipseElements"
+               pattern="org.eclipse.ui.cheetsheats/.*">
+         </activityPatternBinding>
+         <activityPatternBinding
+               activityId="qpme.qpe.core.hideEclipseElements"
+               pattern="org.eclipse.help.ui/.*">
+         </activityPatternBinding>
+         <activityPatternBinding
+               activityId="qpme.qpe.core.hideEclipseElements"
+               pattern="org.eclipse.team.ui/.*">
+         </activityPatternBinding>
+         <activityPatternBinding
+               activityId="qpme.qpe.core.hideEclipseElements"
+               pattern="org.eclipse.debug.ui/.*">
+         </activityPatternBinding>
+         <activityPatternBinding
+               activityId="qpme.qpe.core.hideEclipseElements"
+               pattern="org.eclipse.ui.ide/.*">
+         </activityPatternBinding>
+         <activityPatternBinding
+               activityId="qpme.qpe.core.hideEclipseElements"
+               pattern="org.eclipse.ui.browser/.*">
+         </activityPatternBinding>
+         <activityPatternBinding
+               activityId="qpme.qpe.core.hideEclipseElements"
+               pattern="org.eclipse.ui.navigator.resources/.*">
+         </activityPatternBinding>
+      </extension>
 </plugin>
