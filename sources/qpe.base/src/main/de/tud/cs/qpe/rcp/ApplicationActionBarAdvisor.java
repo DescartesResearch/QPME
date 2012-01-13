@@ -94,41 +94,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		IContextService contextService = (IContextService) PlatformUI
 				.getWorkbench().getService(IContextService.class);
 		contextService.activateContext("qpme.qpe.core.context");
-
-		// TIP: If I don't setup the menus here,
-		// they will appear in random order.
-		// MenuManager fileMenu = new MenuManager("&File",
-		// IWorkbenchActionConstants.M_FILE);
-		// menuBar.add(fileMenu);
-		// fileMenu.add(new Separator("new"));
-		// fileMenu.add(newAction);
-		// fileMenu.add(new Separator("open"));
-		// fileMenu.add(openAction);
-		// fileMenu.add(new Separator("close"));
-		// fileMenu.add(closeAction);
-		// fileMenu.add(closeAllAction);
-		// fileMenu.add(new Separator("save"));
-		// fileMenu.add(saveAction);
-		// fileMenu.add(saveAsAction);
-		// fileMenu.add(saveAllAction);
-		// fileMenu.add(new Separator("quit"));
-		// fileMenu.add(exitAction);
-		//
-		// MenuManager editMenu = new MenuManager("&Edit",
-		// IWorkbenchActionConstants.M_EDIT);
-		// menuBar.add(editMenu);
-		//
-		// //menuBar.add(new
-		// GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-		//
-		// MenuManager viewMenu = new MenuManager("&Window",
-		// IWorkbenchActionConstants.M_WINDOW);
-		// menuBar.add(viewMenu);
-		//
-		// MenuManager helpMenu = new MenuManager("&Help",
-		// IWorkbenchActionConstants.M_FILE);
-		// menuBar.add(helpMenu);
-		// helpMenu.add(introAction);
 	}
 
 	protected void fillCoolBar(ICoolBarManager coolBar) {
