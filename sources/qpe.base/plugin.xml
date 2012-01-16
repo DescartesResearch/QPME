@@ -18,13 +18,13 @@
                   name="QPME">
                <property
                      name="windowImages"
-                     value="/qpme.product/branding/QPME-Icon16.gif,/qpme.product/branding/QPME-Icon32.gif"/>
+                     value="branding/QPME-Icon16.gif,branding/QPME-Icon32.gif"/>
                <property
                      name="appName"
                      value="QPME"/>
                <property
                      name="aboutImage"
-                     value="/qpme.product/branding/QPME-AboutImage.gif"/>
+                     value="branding/QPME-AboutImage.gif"/>
                <property
                      name="aboutText"
                      value="Copyright 2010"/>
@@ -148,6 +148,10 @@
                   commandId="org.eclipse.ui.newWizard"
                   style="push">
             </command>
+            <command
+                  commandId="org.eclipse.ui.edit.text.openLocalFile"
+                  style="push">
+            </command>
             <separator
                   name="new.ext"
                   visible="true">
@@ -194,6 +198,10 @@
                locationURI="menu:help">
             <command
                   commandId="org.eclipse.ui.help.quickStartAction"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.help.aboutAction"
                   style="push">
             </command>
          </menuContribution>
@@ -313,6 +321,10 @@
          <activityPatternBinding
                activityId="qpme.qpe.core.hideEclipseElements"
                pattern="org.eclipse.ui.navigator.resources/.*">
+         </activityPatternBinding>
+         <activityPatternBinding
+               activityId="qpme.qpe.core.hideEclipseElements"
+               pattern="org.eclipse.platform/.*">
          </activityPatternBinding>
       </extension>
 </plugin>
