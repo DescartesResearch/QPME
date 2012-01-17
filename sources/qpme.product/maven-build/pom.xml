@@ -64,11 +64,26 @@
 					</environments>
 				</configuration>
 			</plugin>
+
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-source-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<executions>
+					<execution>
+						<id>attach-source</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>plugin-source</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
 	<modules>
-		
+
 		<module>../../cern.colt</module>
 		<module>../../drasys.or</module>
 		<module>../../org.apache.log4j</module>
@@ -79,6 +94,7 @@
 		<module>../../qpme.simqpn.kernel</module>
 		<module>../../qpme.simqpn.ui</module>
 		<module>../../qpme.feature</module>
+		<module>../../qpme.source.feature</module>
 		<module>..</module>
 	</modules>
 </project>

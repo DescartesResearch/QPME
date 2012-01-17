@@ -76,6 +76,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		menuBar.add(new MenuManager("&Project",
 				IWorkbenchActionConstants.M_PROJECT));
 		menuBar.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+		menuBar.add(new MenuManager("&Run", "qpme.qpe.run"));
 		MenuManager windowMenu = new MenuManager("&Window",
 				IWorkbenchActionConstants.M_WINDOW);
 		{

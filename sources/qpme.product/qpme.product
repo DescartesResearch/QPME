@@ -131,10 +131,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
    </plugins>
 
    <features>
-      <feature id="org.eclipse.gef" version="3.7.1.v20110830-1143-777D181B3Bz06C853D8863365"/>
-      <feature id="org.eclipse.platform" version="3.7.1.r37x_v20110729-9gF7UHOxFtniV7mI3T556iZN9AU8bEZ1lHMcVK"/>
       <feature id="qpme.feature" version="2.1.0.qualifier"/>
-      <feature id="org.eclipse.rcp" version="3.7.1.r37x_v20110729-9DB5FmNFnFLSFCtLxnRfMqt15A4A"/>
    </features>
 
    <configurations>

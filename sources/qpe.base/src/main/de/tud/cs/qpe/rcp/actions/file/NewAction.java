@@ -47,19 +47,13 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.handlers.HandlerUtil;
 
 import de.tud.cs.qpe.editors.net.NetEditorInput;
 import de.tud.cs.qpe.editors.net.NetEditorPage;
 
 public class NewAction extends AbstractHandler {
 	public NewAction() {
-	}
-
-	public void run() {
-
-	}
-
-	public void dispose() {
 	}
 
 	@Override

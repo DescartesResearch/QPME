@@ -51,11 +51,13 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IProgressMonitorWithBlocking;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
@@ -65,15 +67,14 @@ import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.handlers.HandlerUtil;
 
 import de.tud.cs.qpe.editors.net.NetEditorInput;
 import de.tud.cs.qpe.editors.query.QueryEditorInput;
@@ -85,14 +86,9 @@ import de.tud.cs.simqpn.kernel.Stats;
 import de.tud.cs.simqpn.kernel.StatsDocumentBuilder;
 import de.tud.cs.simqpn.ui.wizard.RunSimulationWizard;
 
-public class StartSimulatorAction extends Action implements
-		IWorkbenchWindowActionDelegate {
-	
-	private static Logger log = Logger.getLogger(StartSimulatorAction.class);
-	
-	private IWorkbenchWindow window;
+public class StartSimulatorAction extends AbstractHandler {
 
-	private Element net;
+	private static Logger log = Logger.getLogger(StartSimulatorAction.class);
 
 	/**
 	 * The constructor.
@@ -100,70 +96,71 @@ public class StartSimulatorAction extends Action implements
 	public StartSimulatorAction() {
 	}
 
-	/**
-	 * The action has been activated. The argument of the method represents the
-	 * 'real' action sitting in the workbench UI.
-	 * 
-	 * @see IWorkbenchWindowActionDelegate#run
-	 */
-	public void run(IAction action) {
-		Shell shell = window.getShell();
-		if(Simulator.simRunning) {
-			MessageDialog.openWarning(shell, "Simulation warning", "SimQPN is currently active! Please wait until the current simulation run is finished.");
+	@Override
+	public Object execute(ExecutionEvent event) throws ExecutionException {
+		Shell shell = HandlerUtil.getActiveShell(event);
+		if (Simulator.simRunning) {
+			MessageDialog
+					.openWarning(
+							shell,
+							"Simulation warning",
+							"SimQPN is currently active! Please wait until the current simulation run is finished.");
 		} else {
-			if (net != null) {
+			IEditorInput input = HandlerUtil.getActiveEditorInput(event);
+			if (input instanceof NetEditorInput) {
+				NetEditorInput qpeInput = (NetEditorInput) input;
+				Element net = qpeInput.getNetDiagram();
+
 				RunSimulationWizard wizard = new RunSimulationWizard(net);
 				WizardDialog dialog = new WizardDialog(shell, wizard);
 				dialog.create();
 
 				int result = dialog.open();
 
-				if(result == WizardDialog.OK) {
+				if (result == WizardDialog.OK) {
 					String configuration = wizard.getActiveConfiguration();
-					IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-					IEditorInput input = page.getActiveEditor().getEditorInput();
-					if (input instanceof NetEditorInput) {
-						NetEditorInput qpeInput = (NetEditorInput) input;
-						try {
-							Simulation simulation = new Simulation(qpeInput
-									.getDocument().getRootElement(), PlatformUI.getWorkbench()
-									.getDisplay(), configuration);
+					try {
+						Simulation simulation = new Simulation(net, shell,
+								configuration);
 
-							ProgressMonitorDialog progress = new ProgressMonitorDialog(shell) {								
+						ProgressMonitorDialog progress = new ProgressMonitorDialog(
+								shell) {
 
-								@Override
-								protected Control createDialogArea(
-										Composite parent) {
-									Control c = super.createDialogArea(parent);
-									GridData gd = (GridData) subTaskLabel.getLayoutData();
-									gd.heightHint = convertVerticalDLUsToPixels(30);
-									return c;
-								}
+							@Override
+							protected Control createDialogArea(Composite parent) {
+								Control c = super.createDialogArea(parent);
+								GridData gd = (GridData) subTaskLabel
+										.getLayoutData();
+								gd.heightHint = convertVerticalDLUsToPixels(30);
+								return c;
+							}
 
-								@Override
-								protected void cancelPressed() {
-									super.cancelPressed();
-									IProgressMonitorWithBlocking p = (IProgressMonitorWithBlocking) getProgressMonitor();
-									p.setBlocked(Status.CANCEL_STATUS);
-									p.setTaskName("Cancelling simulation...");
-									p.subTask("");
-								}
-								
-							};
-							progress.run(true, true, simulation);
-						} catch (InvocationTargetException e) {
-							e.printStackTrace();
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
+							@Override
+							protected void cancelPressed() {
+								super.cancelPressed();
+								IProgressMonitorWithBlocking p = (IProgressMonitorWithBlocking) getProgressMonitor();
+								p.setBlocked(Status.CANCEL_STATUS);
+								p.setTaskName("Cancelling simulation...");
+								p.subTask("");
+							}
+
+						};
+						progress.run(true, true, simulation);
+					} catch (InvocationTargetException e) {
+						e.printStackTrace();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
 					}
 				}
 
 				// TODO: Maximize the Console view
 			} else {
-				MessageDialog.openError(shell, "Missing model error", "No queueing petri net model found.\nPlease choose one in the editor area."); 
+				MessageDialog
+						.openError(shell, "Missing model error",
+								"No queueing petri net model found.\nPlease choose one in the editor area.");
 			}
 		}
+		return null;
 	}
 
 	/**
@@ -174,19 +171,19 @@ public class StartSimulatorAction extends Action implements
 	 * @see IWorkbenchWindowActionDelegate#selectionChanged
 	 */
 	public void selectionChanged(IAction action, ISelection selection) {
-		IWorkbenchPage page = PlatformUI.getWorkbench()
-				.getActiveWorkbenchWindow().getActivePage();
-
-		IEditorPart activeEditor = page.getActiveEditor();
-		if (activeEditor != null) {
-			IEditorInput input = activeEditor.getEditorInput();
-			if (input instanceof NetEditorInput) {
-				NetEditorInput qpeInput = (NetEditorInput) input;
-				net = qpeInput.getNetDiagram();
-				return;
-			}
-		}
-		net = null;
+//		IWorkbenchPage page = PlatformUI.getWorkbench()
+//				.getActiveWorkbenchWindow().getActivePage();
+//
+//		IEditorPart activeEditor = page.getActiveEditor();
+//		if (activeEditor != null) {
+//			IEditorInput input = activeEditor.getEditorInput();
+//			if (input instanceof NetEditorInput) {
+//				NetEditorInput qpeInput = (NetEditorInput) input;
+//				net = qpeInput.getNetDiagram();
+//				return;
+//			}
+//		}
+//		net = null;
 	}
 
 	/**
@@ -198,34 +195,25 @@ public class StartSimulatorAction extends Action implements
 	public void dispose() {
 	}
 
-	/**
-	 * We will cache window object in order to be able to provide parent shell
-	 * for the message dialog.
-	 * 
-	 * @see IWorkbenchWindowActionDelegate#init
-	 */
-	public void init(IWorkbenchWindow window) {
-		this.window = window;
-	}
-
 	class Simulation implements IRunnableWithProgress, SimulatorProgress {
-		
+
 		protected Element net;
-		protected Display display;
+		protected Shell shell;
 		private String configuration;
 		private IProgressMonitor monitor;
 		private int totalWork;
 		private int worked;
 		private int lastProgress;
-		private int numRuns;			// total number of simulation runs
-		private int currentRun;			// number of current simulation run
-		private long totalTime;			// total run time of simulation (in milliseconds)
-		private long remainingTime;		// (in seconds)
+		private int numRuns; // total number of simulation runs
+		private int currentRun; // number of current simulation run
+		private long totalTime; // total run time of simulation (in
+								// milliseconds)
+		private long remainingTime; // (in seconds)
 		private String failedPlace = null;
 
-		public Simulation(Element net, Display display, String configuration) {
+		public Simulation(Element net, Shell shell, String configuration) {
 			this.net = net;
-			this.display = display;
+			this.shell = shell;
 			this.configuration = configuration;
 		}
 
@@ -246,8 +234,8 @@ public class StartSimulatorAction extends Action implements
 			public void run() {
 				try {
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-							.getActivePage().openEditor(input, editorId,
-									activate);
+							.getActivePage()
+							.openEditor(input, editorId, activate);
 				} catch (PartInitException e) {
 					e.printStackTrace();
 				}
@@ -256,50 +244,55 @@ public class StartSimulatorAction extends Action implements
 		}
 
 		@Override
-		public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+		public void run(IProgressMonitor monitor)
+				throws InvocationTargetException, InterruptedException {
 			this.monitor = monitor;
 
 			monitor.setTaskName("Simulation");
 			try {
 				monitor.subTask("Configure Simulator");
-				
+
 				Simulator.configure(net, configuration, null);
 				net = Simulator.prepareNet(net, configuration);
 				Stats[] result = Simulator.execute(net, configuration, this);
-				
-				// Skip stats document generation for WELCH and REPL_DEL since the 
+
+				// Skip stats document generation for WELCH and REPL_DEL since
+				// the
 				// document builder does not support these methods yet.
-				if ((result != null) && (Simulator.analMethod == Simulator.BATCH_MEANS)) {
+				if ((result != null)
+						&& (Simulator.analMethod == Simulator.BATCH_MEANS)) {
 					monitor.subTask("Collect Results");
-					StatsDocumentBuilder builder = new StatsDocumentBuilder(result,
-							net, configuration);
+					StatsDocumentBuilder builder = new StatsDocumentBuilder(
+							result, net, configuration);
 					Document statsDocument = builder.buildDocument();
-					File resultsFile = new File(Simulator.statsDir, builder
-							.getResultFileBaseName()
-							+ ".simqpn");
+					File resultsFile = new File(Simulator.statsDir,
+							builder.getResultFileBaseName() + ".simqpn");
 					saveXmlToFile(statsDocument, resultsFile);
-		
-					IEditorInput simulationOutput = new QueryEditorInput(new Path(
-							resultsFile.getAbsolutePath()));
-		
-					display.asyncExec(new EditorOpener(simulationOutput,
-							SimpleQueryEditor.ID, true));
+
+					IEditorInput simulationOutput = new QueryEditorInput(
+							new Path(resultsFile.getAbsolutePath()));
+
+					shell.getDisplay().asyncExec(
+							new EditorOpener(simulationOutput,
+									SimpleQueryEditor.ID, true));
 				}
 			} catch (SimQPNException e) {
-				display.syncExec(new Runnable() {
+				shell.getDisplay().syncExec(new Runnable() {
 					@Override
 					public void run() {
-						MessageDialog.openError(window.getShell(), "Simulation Error", 
-							"An error occurred during the simulation. For details see the console output.");
+						MessageDialog
+								.openError(shell, "Simulation Error",
+										"An error occurred during the simulation. For details see the console output.");
 					}
 				});
 				throw new InvocationTargetException(e);
 			} catch (final Exception e) {
-				display.syncExec(new Runnable() {
+				shell.getDisplay().syncExec(new Runnable() {
 					@Override
 					public void run() {
-						MessageDialog.openError(window.getShell(), "Simulation Error", 
-								"An internal error occurred during the simulation: " + e.getClass().getName());
+						MessageDialog.openError(shell, "Simulation Error",
+								"An internal error occurred during the simulation: "
+										+ e.getClass().getName());
 					}
 				});
 				throw new InvocationTargetException(e);
@@ -312,8 +305,8 @@ public class StartSimulatorAction extends Action implements
 		private void saveXmlToFile(Document doc, File file) {
 			XMLWriter writer = null;
 			try {
-				writer = new XMLWriter(new FileOutputStream(file), OutputFormat
-						.createPrettyPrint());
+				writer = new XMLWriter(new FileOutputStream(file),
+						OutputFormat.createPrettyPrint());
 				writer.write(doc);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -327,7 +320,9 @@ public class StartSimulatorAction extends Action implements
 			}
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
+		 * 
 		 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#finishSimulation()
 		 */
 		@Override
@@ -335,7 +330,9 @@ public class StartSimulatorAction extends Action implements
 			log.info("Simulation finished.");
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
+		 * 
 		 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#finishSimulationRun()
 		 */
 		@Override
@@ -343,7 +340,9 @@ public class StartSimulatorAction extends Action implements
 			log.info("Simulation run finished.");
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
+		 * 
 		 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#finishWarmUp()
 		 */
 		@Override
@@ -351,18 +350,21 @@ public class StartSimulatorAction extends Action implements
 			updateStatusString();
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
+		 * 
 		 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#startSimulation()
 		 */
 		@Override
 		public void startSimulation() {
-			this.numRuns = (Simulator.analMethod == Simulator.BATCH_MEANS) ? 1 : Simulator.numRuns;
+			this.numRuns = (Simulator.analMethod == Simulator.BATCH_MEANS) ? 1
+					: Simulator.numRuns;
 			this.totalWork = numRuns * 100;
 			this.worked = 0;
 			this.totalTime = 0;
 			monitor.beginTask("Simulation", totalWork);
 
-			switch(Simulator.analMethod) {
+			switch (Simulator.analMethod) {
 			case Simulator.BATCH_MEANS:
 				monitor.setTaskName("Simulation (Batch Means)");
 				break;
@@ -375,8 +377,11 @@ public class StartSimulatorAction extends Action implements
 			}
 		}
 
-		/* (non-Javadoc)
-		 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#startSimulationRun(int)
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * de.tud.cs.simqpn.kernel.SimulatorProgress#startSimulationRun(int)
 		 */
 		@Override
 		public void startSimulationRun(int number) {
@@ -387,8 +392,12 @@ public class StartSimulatorAction extends Action implements
 			updateStatusString();
 		}
 
-		/* (non-Javadoc)
-		 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#updateSimulationProgress(double, long)
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * de.tud.cs.simqpn.kernel.SimulatorProgress#updateSimulationProgress
+		 * (double, long)
 		 */
 		@Override
 		public void updateSimulationProgress(double progress, long elapsedTime) {
@@ -397,7 +406,7 @@ public class StartSimulatorAction extends Action implements
 			remainingTime = ((long) ((totalTime / totalProgress) * (totalWork - totalProgress))) / 1000;
 
 			int progressDiff = ((int) progress) - lastProgress;
-			if(progressDiff > 0) {
+			if (progressDiff > 0) {
 				worked += progressDiff;
 				monitor.worked(progressDiff);
 				lastProgress = (int) progress;
@@ -405,7 +414,9 @@ public class StartSimulatorAction extends Action implements
 			updateStatusString();
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
+		 * 
 		 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#isCanceled()
 		 */
 		@Override
@@ -413,22 +424,31 @@ public class StartSimulatorAction extends Action implements
 			return monitor.isCanceled();
 		}
 
-		/* (non-Javadoc)
-		 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#getMaxUpdateLogicalTimeInterval()
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * de.tud.cs.simqpn.kernel.SimulatorProgress#getMaxUpdateLogicalTimeInterval
+		 * ()
 		 */
 		@Override
 		public double getMaxUpdateLogicalTimeInterval() {
-			// if numRuns > 1 distribute the heartbeats approximately evenly over the simulation runs
+			// if numRuns > 1 distribute the heartbeats approximately evenly
+			// over the simulation runs
 			int numberHeartbeats = (100 / numRuns) + 1;
 			return Simulator.totRunLen / numberHeartbeats;
 		}
 
-		/* (non-Javadoc)
-		 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#precisionCheck(boolean, java.lang.String)
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * de.tud.cs.simqpn.kernel.SimulatorProgress#precisionCheck(boolean,
+		 * java.lang.String)
 		 */
 		@Override
 		public void precisionCheck(boolean done, String failedPlaceName) {
-			if(!done) {
+			if (!done) {
 				this.failedPlace = failedPlaceName;
 			}
 		}
@@ -436,26 +456,29 @@ public class StartSimulatorAction extends Action implements
 		@Override
 		public void warning(final String message) {
 			log.warn(message);
-			display.syncExec(new Runnable() {
+			shell.getDisplay().syncExec(new Runnable() {
 				@Override
 				public void run() {
-					if(lastProgress != 100) {
-						//Simulation still running
-						MessageDialog dialog = new MessageDialog(window.getShell(), "Simulation Warning", 
-								null, message, MessageDialog.WARNING, new String[] {"Cancel Simulation", "Ignore"}, 0);
-						if(dialog.open() == 0) {
+					if (lastProgress != 100) {
+						// Simulation still running
+						MessageDialog dialog = new MessageDialog(shell,
+								"Simulation Warning", null, message,
+								MessageDialog.WARNING, new String[] {
+										"Cancel Simulation", "Ignore" }, 0);
+						if (dialog.open() == 0) {
 							monitor.setCanceled(true);
 						}
 					} else {
-						MessageDialog.openWarning(window.getShell(), "Simulation Warning", message);
+						MessageDialog.openWarning(shell, "Simulation Warning",
+								message);
 					}
-				}				
+				}
 			});
 		}
 
 		private void updateStatusString() {
 			StringBuilder status = new StringBuilder();
-			
+
 			// Remaining time display
 			if (totalTime > 0) {
 				if (Simulator.stoppingRule == Simulator.FIXEDLEN) {
@@ -463,14 +486,15 @@ public class StartSimulatorAction extends Action implements
 				} else {
 					status.append("Maximum Remaining Time: ");
 				}
-				if(remainingTime >= 3600) {
+				if (remainingTime >= 3600) {
 					long hours = remainingTime / 3600;
 					status.append(hours).append(" h ");
-					if(hours < 10) {					
-						status.append((remainingTime % 3600) / 60).append(" min");
+					if (hours < 10) {
+						status.append((remainingTime % 3600) / 60).append(
+								" min");
 					}
 					status.append("\n");
-				} else if(remainingTime >= 60)
+				} else if (remainingTime >= 60)
 					status.append(remainingTime / 60).append(" min\n");
 				else
 					status.append(remainingTime % 60).append(" sec\n");
@@ -480,9 +504,10 @@ public class StartSimulatorAction extends Action implements
 
 			// Number of run
 			if (Simulator.analMethod != Simulator.BATCH_MEANS) {
-				status.append("Run: ").append(currentRun).append("/").append(numRuns).append("\n");
+				status.append("Run: ").append(currentRun).append("/")
+						.append(numRuns).append("\n");
 			}
-			
+
 			// Phase
 			status.append("Phase: ");
 			if (Simulator.analMethod == Simulator.WELCH) {
@@ -495,17 +520,24 @@ public class StartSimulatorAction extends Action implements
 				}
 			}
 			status.append("\n");
-			
+
 			// Failed place name
-			if (Simulator.stoppingRule != Simulator.FIXEDLEN && (failedPlace != null)) {
-				status.append("There are not enough statistics for place ").append(failedPlace).append(". Precision check failed.");
+			if (Simulator.stoppingRule != Simulator.FIXEDLEN
+					&& (failedPlace != null)) {
+				status.append("There are not enough statistics for place ")
+						.append(failedPlace)
+						.append(". Precision check failed.");
 			}
 
 			monitor.subTask(status.toString());
 		}
 
-		/* (non-Javadoc)
-		 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#getMaxUpdateRealTimeInterval()
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * de.tud.cs.simqpn.kernel.SimulatorProgress#getMaxUpdateRealTimeInterval
+		 * ()
 		 */
 		@Override
 		public long getMaxUpdateRealTimeInterval() {

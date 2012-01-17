@@ -149,7 +149,7 @@
                   style="push">
             </command>
             <command
-                  commandId="org.eclipse.ui.edit.text.openLocalFile"
+                  commandId="qpme.qpe.core.OpenFileCommand"
                   style="push">
             </command>
             <separator
@@ -215,7 +215,7 @@
                      style="push">
                </command>
                <command
-                     commandId="org.eclipse.ui.edit.text.openLocalFile"
+                     commandId="qpme.qpe.core.OpenFileCommand"
                      icon="IMG_OBJ_FOLDER"
                      style="push">
                </command>
@@ -248,22 +248,6 @@
                </with>
             </activeWhen>
          </handler>
-         <handler
-               class="de.tud.cs.qpe.rcp.actions.file.OpenAction"
-               commandId="org.eclipse.ui.edit.text.openLocalFile">
-            <activeWhen>
-               <with
-                     variable="activeContexts">
-                  <iterate
-                        ifEmpty="false"
-                        operator="or">
-                     <equals
-                           value="qpme.qpe.core.context">
-                     </equals>
-                  </iterate>
-               </with>
-            </activeWhen>
-         </handler>
       </extension>
       <extension
             point="org.eclipse.ui.contexts">
@@ -273,58 +257,11 @@
          </context>
       </extension>
       <extension
-            point="org.eclipse.ui.activities">
-         <activity
-               id="qpme.qpe.core.hideEclipseElements"
-               name="Hide Eclipse Elements">
-         </activity>
-         <activityPatternBinding
-               activityId="qpme.qpe.core.hideEclipseElements"
-               pattern="org.eclipse.search/.*">
-         </activityPatternBinding>
-         <activityPatternBinding
-               activityId="qpme.qpe.core.hideEclipseElements"
-               pattern="org.eclipse.ui.externaltools/.*">
-         </activityPatternBinding>
-         <activityPatternBinding
-               activityId="qpme.qpe.core.hideEclipseElements"
-               pattern="org.eclipse.ui.editors/.*">
-         </activityPatternBinding>
-         <activityPatternBinding
-               activityId="qpme.qpe.core.hideEclipseElements"
-               pattern="org.eclipse.equinox.p2.ui.sdk/.*">
-         </activityPatternBinding>
-         <activityPatternBinding
-               activityId="qpme.qpe.core.hideEclipseElements"
-               pattern="org.eclipse.ui.cheetsheats/.*">
-         </activityPatternBinding>
-         <activityPatternBinding
-               activityId="qpme.qpe.core.hideEclipseElements"
-               pattern="org.eclipse.help.ui/.*">
-         </activityPatternBinding>
-         <activityPatternBinding
-               activityId="qpme.qpe.core.hideEclipseElements"
-               pattern="org.eclipse.team.ui/.*">
-         </activityPatternBinding>
-         <activityPatternBinding
-               activityId="qpme.qpe.core.hideEclipseElements"
-               pattern="org.eclipse.debug.ui/.*">
-         </activityPatternBinding>
-         <activityPatternBinding
-               activityId="qpme.qpe.core.hideEclipseElements"
-               pattern="org.eclipse.ui.ide/.*">
-         </activityPatternBinding>
-         <activityPatternBinding
-               activityId="qpme.qpe.core.hideEclipseElements"
-               pattern="org.eclipse.ui.browser/.*">
-         </activityPatternBinding>
-         <activityPatternBinding
-               activityId="qpme.qpe.core.hideEclipseElements"
-               pattern="org.eclipse.ui.navigator.resources/.*">
-         </activityPatternBinding>
-         <activityPatternBinding
-               activityId="qpme.qpe.core.hideEclipseElements"
-               pattern="org.eclipse.platform/.*">
-         </activityPatternBinding>
+            point="org.eclipse.ui.commands">
+         <command
+               defaultHandler="de.tud.cs.qpe.rcp.actions.file.OpenAction"
+               id="qpme.qpe.core.OpenFileCommand"
+               name="&amp;Open File...">
+         </command>
       </extension>
 </plugin>

@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -44,13 +44,13 @@
  * Copyright (c) 2004 Elias Volanakis.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *    Elias Volanakis - initial API and implementation
+ï¿½* which accompanies this distribution, and is available at
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
+ï¿½*
+ï¿½* Contributors:
+ï¿½*ï¿½ï¿½ï¿½ï¿½Elias Volanakis - initial API and implementation
  *    IBM Corporation
-  *******************************************************************************/
+ ï¿½*******************************************************************************/
 package de.tud.cs.qpe.editors.incidence.gef.palette;
 
 import java.net.MalformedURLException;
@@ -109,8 +109,9 @@ public final class IncidenceFunctionEditorPaletteFactory {
 					public Object getObjectType() {
 						return new Integer(Graphics.LINE_SOLID);
 					}
-				}, getImageDescriptor("images/Connection.gif"), 
-					getImageDescriptor("images/Connection.gif"));
+				}, 
+				QPEBasePlugin.getImageDescriptor("images/Connection.gif"), 
+				QPEBasePlugin.getImageDescriptor("images/Connection.gif"));
 		componentsDrawer.add(tool);
 
 		return componentsDrawer;
@@ -187,17 +188,4 @@ public final class IncidenceFunctionEditorPaletteFactory {
 	private IncidenceFunctionEditorPaletteFactory() {
 		// Utility class
 	}
-	
-	public static ImageDescriptor getImageDescriptor(final String fileName) {
-		Bundle bundle = Platform.getBundle(QPEBasePlugin.PLUGIN_ID);
-		final URL installURL = FileLocator.find(bundle, new Path("/"), null);
-
-		try {
-			final URL url = new URL(installURL, fileName);
-			return ImageDescriptor.createFromURL(url);
-		} catch (MalformedURLException mue) {
-			return null;
-		}
-	}
-
 }

@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -54,12 +54,6 @@
  *******************************************************************************/
 package de.tud.cs.qpe.editors.net.gef.palette;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.gef.palette.CombinedTemplateCreationEntry;
 import org.eclipse.gef.palette.ConnectionCreationToolEntry;
@@ -72,8 +66,6 @@ import org.eclipse.gef.palette.ToolEntry;
 import org.eclipse.gef.requests.CreationFactory;
 import org.eclipse.gef.ui.palette.FlyoutPaletteComposite.FlyoutPreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.osgi.framework.Bundle;
 
 import de.tud.cs.qpe.QPEBasePlugin;
 import de.tud.cs.qpe.editors.net.controller.factory.DomElementFactory;
@@ -109,19 +101,19 @@ public final class NetEditorPaletteFactory {
 				"Ordinary Place", "Create an Ordinary Place",
 				OrdinaryPlace.class,
 				new DomElementFactory(OrdinaryPlace.class),
-				getImageDescriptor("images/OrdinaryPlace.gif"),
-				getImageDescriptor("images/OrdinaryPlace.gif")));
+				QPEBasePlugin.getImageDescriptor("images/OrdinaryPlace.gif"),
+				QPEBasePlugin.getImageDescriptor("images/OrdinaryPlace.gif")));
 		componentsDrawer.add(new CombinedTemplateCreationEntry(
 				"Queueing Place", "Create a Queueing Place",
 				QueueingPlace.class,
 				new DomElementFactory(QueueingPlace.class),
-				getImageDescriptor("images/QueueingPlace.gif"),
-				getImageDescriptor("images/QueueingPlace.gif")));
+				QPEBasePlugin.getImageDescriptor("images/QueueingPlace.gif"),
+				QPEBasePlugin.getImageDescriptor("images/QueueingPlace.gif")));
 		componentsDrawer.add(new CombinedTemplateCreationEntry("Subnet Place",
 				"Create a Subnet Place", SubnetPlace.class,
 				new DomElementFactory(SubnetPlace.class),
-				getImageDescriptor("images/SubnetPlace.gif"),
-				getImageDescriptor("images/SubnetPlace.gif")));
+				QPEBasePlugin.getImageDescriptor("images/SubnetPlace.gif"),
+				QPEBasePlugin.getImageDescriptor("images/SubnetPlace.gif")));
 
 		return componentsDrawer;
 	}
@@ -135,14 +127,14 @@ public final class NetEditorPaletteFactory {
 				"Immediate Transition", "Create a Immediate Transition",
 				ImmediateTransition.class, new DomElementFactory(
 						ImmediateTransition.class),
-				getImageDescriptor("images/ImmediateTransition.gif"),
-				getImageDescriptor("images/ImmediateTransition.gif")));
+				QPEBasePlugin.getImageDescriptor("images/ImmediateTransition.gif"),
+				QPEBasePlugin.getImageDescriptor("images/ImmediateTransition.gif")));
 		componentsDrawer.add(new CombinedTemplateCreationEntry(
 				"Timed Transition", "Create a Timed Transition",
 				TimedTransition.class, new DomElementFactory(
 						TimedTransition.class),
-				getImageDescriptor("images/TimedTransition.gif"),
-				getImageDescriptor("images/TimedTransition.gif")));
+						QPEBasePlugin.getImageDescriptor("images/TimedTransition.gif"),
+						QPEBasePlugin.getImageDescriptor("images/TimedTransition.gif")));
 
 		return componentsDrawer;
 	}
@@ -162,8 +154,9 @@ public final class NetEditorPaletteFactory {
 					public Object getObjectType() {
 						return new Integer(Graphics.LINE_SOLID);
 					}
-				}, getImageDescriptor("images/Connection.gif"),
-				getImageDescriptor("images/Connection.gif"));
+				}, 
+				QPEBasePlugin.getImageDescriptor("images/Connection.gif"),
+				QPEBasePlugin.getImageDescriptor("images/Connection.gif"));
 		componentsDrawer.add(tool);
 
 		return componentsDrawer;
@@ -242,17 +235,4 @@ public final class NetEditorPaletteFactory {
 	private NetEditorPaletteFactory() {
 		// Utility class
 	}
-
-	public static ImageDescriptor getImageDescriptor(final String fileName) {
-		Bundle bundle = Platform.getBundle(QPEBasePlugin.PLUGIN_ID);
-		final URL installURL = FileLocator.find(bundle, new Path("/"), null);
-
-		try {
-			final URL url = new URL(installURL, fileName);
-			return ImageDescriptor.createFromURL(url);
-		} catch (MalformedURLException mue) {
-			return null;
-		}
-	}
-
 }
