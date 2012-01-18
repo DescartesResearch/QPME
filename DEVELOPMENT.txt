@@ -1,0 +1,65 @@
+==============================================================================
+QPME : Queueing Petri net Modeling Environment
+==============================================================================
+
+Copyright (c) 2003-2011 www.descartes-research.net
+ 
+Project Website: 
+  http://descartes.ipd.kit.edu/projects/qpme/
+
+==============================================================================
+
+This document describes how to set up a development environment for working
+with the QPME sources and how to execute QPME from the sources.
+
+==============================================================================
+Set up up IDE
+==============================================================================
+
+1. Install Eclipse SDK 3.6.1 from [1]. ATTENTION: Eclipse SDK 3.6.2 contains a
+   a bug [2] that prevents property pages from being updated correctly. Other
+   versions of Eclipse SDK might work but have not been tested.
+2. Install the GEF SDK 3.6.1:
+     - Open "Help->Install New Software" in Eclipse
+     - Choose Helios update site
+     - Uncheck "Show only latest versions of available software"
+     - Go to open category "Modeling" and select 
+       "Graphical Editing Framework GEF SDK" in Version 3.6.1
+     - Start installation
+
+[1] http://archive.eclipse.org/eclipse/downloads/drops/R-3.6.1-201009090800/index.php
+[2] https://bugs.eclipse.org/bugs/show_bug.cgi?id=339055
+
+==============================================================================
+Import sources
+==============================================================================
+Extract the archive with the QPME source code. Create a new Eclipse workspace
+and import all projects in <extracted_dir>/sources into the newly created
+workspace (with File->Import...->General->Existing Projects into Workspace).
+
+==============================================================================
+Plug-ins
+==============================================================================
+The following plug-in projects should now be available in the workspace:
+
+- qpe.base: QPE modeling environment (Main window + editors)
+- qpe.simqpn.kernel: simulator for QPNs
+- qpe.simqpn.ui: GUI wizard for calling SimQPN from within QPE
+
+- cern.colt: Wrapper plug-in for third-party library
+- org.apache.log4j: Wrapper plug-in for third-party library
+- org.dom4j: Wrapper plug-in for third-party library
+- org.jfreechart: Wrapper plug-in for third-party library
+- org.rosuda.JRI: Wrapper plug-in for third-party library
+
+==============================================================================
+Run QPME
+==============================================================================
+Right-click on file "qpe.base/qpe.product" and call "Run as->Eclipse 
+Application" in context menu. 
+
+NOTE: It might be necessary to update the dependencies. In this case open the 
+file "qpe.base/qpe.product", navigate to page "Dependencies" and click button 
+"Add required plug-ins". 
+
+       
