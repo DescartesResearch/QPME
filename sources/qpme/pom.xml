@@ -91,7 +91,6 @@
 		<module>qpme.simqpn.kernel</module>
 		<module>qpme.simqpn.ui</module>
 		<module>qpme.feature</module>
-		<module>qpme.source.feature</module>
 		<module>qpme.product</module>
 	</modules>
 </project>
