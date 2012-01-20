@@ -22,7 +22,7 @@
 		<connection>scm:svn:https://svnserver.informatik.kit.edu/i43/svn/descartes/code/qpme/eclipse-src/trunk/sources/qpme</connection>
 		<developerConnection>scm:svn:https://svnserver.informatik.kit.edu/i43/svn/descartes/code/qpme/eclipse-src/trunk/sources/qpme</developerConnection>
 		<url>https://svnserver.informatik.kit.edu/i43/svn/descartes/code/qpme/eclipse-src/trunk/sources/qpme</url>
-	<scm>
+	</scm>
 
 	<properties>
 		<tycho-version>0.13.0</tycho-version>
