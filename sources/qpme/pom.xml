@@ -65,7 +65,7 @@
 				</configuration>
 			</plugin>
 
-			<plugin>
+			<!-- <plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-source-plugin</artifactId>
 				<version>${tycho-version}</version>
@@ -78,7 +78,7 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin> -->
 		</plugins>
 	</build>
 
@@ -90,9 +90,9 @@
 		<module>org.dom4j</module>
 		<module>org.jfreechart</module>
 		<module>org.rosuda.JRI</module>
-		<module>qpme.qpe.core</module>
-		<module>qpme.simqpn.kernel</module>
-		<module>qpme.simqpn.ui</module>
+		<module>qpe.base</module>
+		<module>qpe.simqpn.kernel</module>
+		<module>qpe.simqpn.ui</module>
 		<module>qpme.feature</module>
 		<module>qpme.source.feature</module>
 		<module>qpme.product</module>
