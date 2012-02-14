@@ -40,7 +40,8 @@
 				<version>${tycho-version}</version>
 				<executions>
 					<execution>
-						<!-- install the product for all configured os/ws/arch environments using p2 director -->
+						<!-- install the product for all configured os/ws/arch environments 
+							using p2 director -->
 						<id>materialize-products</id>
 						<goals>
 							<goal>materialize-products</goal>
@@ -52,17 +53,37 @@
 						<goals>
 							<goal>archive-products</goal>
 						</goals>
-		          </execution>
+					</execution>
 				</executions>
 				<!-- (optional) customize the root folder name of the product zip -->
-        		<configuration>
-          			<products>
-            			<product>
-              				<id>qpme.product</id>
-              				<rootFolder>qpme</rootFolder>
-            			</product>
-          			</products>
-        		</configuration>
+				<configuration>
+					<products>
+						<product>
+							<id>qpme.product</id>
+							<rootFolder>qpme</rootFolder>
+						</product>
+					</products>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.2.2</version>
+				<configuration>
+					<descriptors>
+						<descriptor>assemble/sources.xml</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
