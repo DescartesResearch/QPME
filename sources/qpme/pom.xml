@@ -89,8 +89,8 @@
 		<module>qpme.qpe.core</module>
 		<module>qpme.simqpn.kernel</module>
 		<module>qpme.simqpn.ui</module>
-		<module>qpme.feature</module>
-		<module>qpme.product</module>
+		<module>qpme.qpe.feature</module>
 		<module>qpme.simqpn.feature</module>
+		<module>qpme.product</module>
 	</modules>
 </project>
