@@ -11,6 +11,6 @@ Export-Package: de.tud.cs.simqpn.console,
 Bundle-ClassPath: QPE_SimQPN.jar
 Bundle-Vendor: Descartes Research Group
 Require-Bundle: org.dom4j;bundle-version="1.6.1",
- org.apache.log4j;bundle-version="1.2.16",
- cern.colt;bundle-version="1.2.0"
+ cern.colt;bundle-version="1.2.0",
+ org.apache.log4j;bundle-version="1.2.15"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

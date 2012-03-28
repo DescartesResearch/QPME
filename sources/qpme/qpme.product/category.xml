@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/qpme.feature_2.1.0.qualifier.jar" id="qpme.feature" version="2.1.0.qualifier">
+   <feature url="features/qpme.qpe.feature_2.1.0.qualifier.jar" id="qpme.qpe.feature" version="2.1.0.qualifier">
       <category name="qpme.category"/>
    </feature>
-   <category-def name="qpme.category" label="QPME Category">
+   <feature url="features/qpme.simqpn.feature_2.1.0.qualifier.jar" id="qpme.simqpn.feature" version="2.1.0.qualifier">
+      <category name="qpme.category"/>
+   </feature>
+   <category-def name="qpme.category" label="QPME">
       <description>
-         QPME Category
+         QPME
       </description>
    </category-def>
 </site>

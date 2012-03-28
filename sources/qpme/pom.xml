@@ -82,7 +82,7 @@
 	<modules>
 		<module>cern.colt</module>
 		<module>drasys.or</module>
-		<module>org.apache.log4j</module>
+		
 		<module>org.dom4j</module>
 		<module>org.jfreechart</module>
 		<module>org.rosuda.JRI</module>
