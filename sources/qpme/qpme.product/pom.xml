@@ -69,12 +69,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.2.2</version>
-				<configuration>
-					<descriptors>
-						<descriptor>assemble/sources.xml</descriptor>
-					</descriptors>
-				</configuration>
+				<version>2.3</version>
 				<executions>
 					<execution>
 						<id>make-assembly</id>
@@ -82,6 +77,11 @@
 						<goals>
 							<goal>single</goal>
 						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>assemble/sources.xml</descriptor>
+							</descriptors>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>

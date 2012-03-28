@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<?artifactRepository version='1.1.0'?>
+<artifacts size='1'>
+  <artifact classifier='org.eclipse.update.feature' id='qpme.simqpn.feature' version='2.1.0.201203281313'>
+    <properties size='6'>
+      <property name='artifact.size' value='1784'/>
+      <property name='download.size' value='1784'/>
+      <property name='maven-groupId' value='qpme'/>
+      <property name='maven-artifactId' value='qpme.simqpn.feature'/>
+      <property name='maven-version' value='2.1.0-SNAPSHOT'/>
+      <property name='download.contentType' value='application/zip'/>
+    </properties>
+  </artifact>
+</artifacts>
