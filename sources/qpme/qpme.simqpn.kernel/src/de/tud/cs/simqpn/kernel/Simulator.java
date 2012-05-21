@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -3001,7 +3001,7 @@ public class Simulator {
 		}
 	}
 
-	private void configureInputOutputRelationships() {
+	private void configureInputOutputRelationships() throws SimQPNException {
 		log.debug("/////////////////////////////////////////////");
 		log.debug("// Configure input/output relationships");
 		// Initialize the place-transition and transition-place connections.
@@ -3015,6 +3015,25 @@ public class Simulator {
 			// Select the source and target of this connection			
 			Element sourceElement = idToElementMap.get(connection.attributeValue("source-id"));
 			Element targetElement = idToElementMap.get(connection.attributeValue("target-id"));
+			
+			if (sourceElement == null) {
+				log.error(formatDetailMessage(
+						"Source of connection not found!",
+						"connection.id", connection.attributeValue("id"),
+						"connection.source-id", connection.attributeValue("source-id"),
+						"connection.target-id", connection.attributeValue("target-id")
+						));	
+				throw new SimQPNException();
+			}			
+			if (targetElement == null) {
+				log.error(formatDetailMessage(
+						"Target of connection not found!",
+						"connection.id", connection.attributeValue("id"),
+						"connection.source-id", connection.attributeValue("source-id"),
+						"connection.target-id", connection.attributeValue("target-id")
+						));
+				throw new SimQPNException();
+			}
 
 			// if the source is a place, then select the Place object which it is assigned to.
 			if ("place".equals(sourceElement.getName())) {
