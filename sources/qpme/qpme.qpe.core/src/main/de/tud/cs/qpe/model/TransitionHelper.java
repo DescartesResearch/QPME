@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -47,36 +47,48 @@ import java.util.List;
 import org.dom4j.Element;
 
 public class TransitionHelper extends XPathHelper {
-	
+
 	public static boolean isTransition(Element elem) {
 		return "transitions".equals(elem.getParent().getName());
 	}
+
+	public static boolean isImmediateTranstion(Element elem) {
+		return "immediate-transition".equals(elem.attributeValue("type"));
+	}
 	
+	public static boolean isTimedTransition(Element elem) {
+		return "timed-transition".equals(elem.attributeValue("type"));
+	}
+
 	public static List<Element> listModes(Element transition) {
 		return query(transition, "modes/mode");
 	}
 
 	public static void addMode(Element transition, Element mode) {
-		if(transition.element("modes") == null) {
+		if (transition.element("modes") == null) {
 			transition.addElement("modes");
 		}
 		DocumentManager.addChild(transition.element("modes"), mode);
 	}
-	
+
 	public static Element getModeByName(Element transition, String name) {
-		return element(transition, "modes/mode[@name='" + name + "']");		
+		return element(transition, "modes/mode[@name='" + name + "']");
 	}
-	
+
 	public static void removeMode(Element transition, Element mode) {
 		IncidenceFuntionHelper.removeAllConnectionsToMode(transition, mode);
 		IncidenceFuntionHelper.removeAllConnectionsFromMode(transition, mode);
-		
+
 		DocumentManager.removeElement(mode);
 	}
-	
+
 	public static boolean isModeReferencedInIncidenceFunction(Element mode) {
-		List<Element> connections = query(mode, "//transition/connections/connection[@source-id = '" + mode.attributeValue("id", "")
-				+ "'] | //transition/connections/connection[@target-id = '" + mode.attributeValue("id", "") + "']");
+		List<Element> connections = query(
+				mode,
+				"//transition/connections/connection[@source-id = '"
+						+ mode.attributeValue("id", "")
+						+ "'] | //transition/connections/connection[@target-id = '"
+						+ mode.attributeValue("id", "") + "']");
 		return connections.size() != 0;
 	}
 }

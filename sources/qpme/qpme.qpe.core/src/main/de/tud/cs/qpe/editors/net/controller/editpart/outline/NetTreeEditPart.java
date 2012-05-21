@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -42,15 +42,15 @@
 
 /*******************************************************************************
  * Copyright (c) 2004 Elias Volanakis.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *    Elias Volanakis - initial API and implementation
+ï¿½* All rights reserved. This program and the accompanying materials
+ï¿½* are made available under the terms of the Eclipse Public License v1.0
+ï¿½* which accompanies this distribution, and is available at
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
+ï¿½*
+ï¿½* Contributors:
+ï¿½*ï¿½ï¿½ï¿½ï¿½Elias Volanakis - initial API and implementation
  *    IBM Corporation
- *******************************************************************************/
+ï¿½*******************************************************************************/
 package de.tud.cs.qpe.editors.net.controller.editpart.outline;
 
 import java.beans.PropertyChangeEvent;
@@ -64,7 +64,10 @@ import org.eclipse.gef.editpolicies.ComponentEditPolicy;
 import org.eclipse.gef.requests.GroupRequest;
 import org.eclipse.swt.graphics.Image;
 
+import de.tud.cs.qpe.QPEBasePlugin;
 import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.PlaceHelper;
+import de.tud.cs.qpe.model.TransitionHelper;
 
 /**
  * TreeEditPart used for Shape instances (more specific for EllipticalShape and
@@ -139,6 +142,18 @@ public class NetTreeEditPart extends AbstractTreeEditPart implements
 	 * @see org.eclipse.gef.editparts.AbstractTreeEditPart#getImage()
 	 */
 	protected Image getImage() {
+		Element elem = getCastedModel();		
+		if (PlaceHelper.isOrdinaryPlace(elem)) {
+			return QPEBasePlugin.getImageDescriptor("images/OrdinaryPlace.gif").createImage();
+		} else if(PlaceHelper.isQueueingPlace(elem)) {
+			return QPEBasePlugin.getImageDescriptor("images/QueueingPlace.gif").createImage();
+		} else if(PlaceHelper.isSubnetPlace(elem)) {
+			return QPEBasePlugin.getImageDescriptor("images/SubnetPlace.gif").createImage();
+		} else if(TransitionHelper.isImmediateTranstion(elem)) {
+			return QPEBasePlugin.getImageDescriptor("images/ImmediateTransition.gif").createImage();
+		} else if(TransitionHelper.isTimedTransition(elem)) {
+			return QPEBasePlugin.getImageDescriptor("images/TimedTransition.gif").createImage();
+		}
 		return null;
 	}
 
@@ -148,8 +163,7 @@ public class NetTreeEditPart extends AbstractTreeEditPart implements
 	 * @see org.eclipse.gef.editparts.AbstractTreeEditPart#getText()
 	 */
 	protected String getText() {
-		Element model = getCastedModel();
-		return model.getName() + ":" + model.attributeValue("name", "new element") + " (" + model.attributeValue("type", "Unknown type") + ")";
+		return getCastedModel().attributeValue("name", "new element");
 	}
 
 	/*

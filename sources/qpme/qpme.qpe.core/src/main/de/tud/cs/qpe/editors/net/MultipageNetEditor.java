@@ -267,6 +267,7 @@ public class MultipageNetEditor extends MultiPageEditorPart implements PropertyC
 		// If this document is new, then ask for a destination file first.
 		if (path == null) {
 			path = openFileDialog();
+			DocumentManager.setAttribute(input.getNetDiagram().getDocument().getRootElement(), "path", path);
 		}
 
 		if (path != null) {

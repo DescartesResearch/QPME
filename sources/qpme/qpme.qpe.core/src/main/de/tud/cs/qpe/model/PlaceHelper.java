@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -50,6 +50,18 @@ public class PlaceHelper extends XPathHelper {
 	
 	public static boolean isPlace(Element elem) {
 		return "places".equals(elem.getParent().getName());
+	}
+	
+	public static boolean isOrdinaryPlace(Element elem) {
+		return "ordinary-place".equals(elem.attributeValue("type"));
+	}
+	
+	public static boolean isQueueingPlace(Element elem) {
+		return "queueing-place".equals(elem.attributeValue("type"));
+	}
+	
+	public static boolean isSubnetPlace(Element elem) {
+		return "subnet-place".equals(elem.attributeValue("type"));
 	}
 	
 	public static List<Element> listVisibleColors(Element place) {
