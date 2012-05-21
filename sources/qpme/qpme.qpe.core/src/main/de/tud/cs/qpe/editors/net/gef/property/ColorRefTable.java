@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -138,8 +138,8 @@ public abstract class ColorRefTable implements PropertyChangeListener {
 	}
 
 	public void deactivate() {
-		for (Element colorRef : getColorReferences()) {
-			Element color = NetHelper.getColorByReference(colorRef);
+		// Attention: color elements might be already removed from the model
+		for (Element color : getAvailableColors()) {
 			DocumentManager.removePropertyChangeListener(color, this);
 		}
 	}
