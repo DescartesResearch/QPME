@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -56,6 +56,9 @@ import org.dom4j.XPath;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.equinox.app.IApplication;
+import org.eclipse.equinox.app.IApplicationContext;
 
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.Simulator;
@@ -63,12 +66,54 @@ import de.tud.cs.simqpn.kernel.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.Stats;
 import de.tud.cs.simqpn.kernel.StatsDocumentBuilder;
 
-public class SimQPN {
+public class SimQPN implements IApplication {
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
+	private static void runSimulatorOnDocument(Document netDocument,
+			String configuration, String outputFilename, String logConfigFilename, SimulatorProgress progress) throws SimQPNException {
+		Element net = netDocument.getRootElement();
+		Simulator.configure(net, configuration, logConfigFilename);
+		net = Simulator.prepareNet(net, configuration);
+		Stats[] result = Simulator.execute(net, configuration, progress);
+		// Skip stats document generation for WELCH and REPL_DEL since the 
+		// document builder does not support these methods yet.
+		if ((result != null) && (Simulator.analMethod == Simulator.BATCH_MEANS)) {
+			StatsDocumentBuilder builder = new StatsDocumentBuilder(result, net, configuration);
+			Document statsDocument = builder.buildDocument();
+
+			File resultsFile = null;
+			if (outputFilename != null) {
+				resultsFile = new File(outputFilename);
+			} else {
+				resultsFile = new File(Simulator.statsDir, builder.getResultFileBaseName() + ".simqpn");
+			}
+
+			System.out.println("Saving simulation result to "
+				+ resultsFile.getAbsolutePath());
+
+			saveXmlToFile(statsDocument, resultsFile);
+		}
+	}
+		
+	private static void saveXmlToFile(Document doc, File file) {
+		XMLWriter writer = null;
+		try {
+			writer = new XMLWriter(new FileOutputStream(file), OutputFormat.createPrettyPrint());
+			writer.write(doc);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (writer != null) {
+				try {
+					writer.close();
+				} catch (IOException e) {
+				}
+			}
+		}
+	}
+
+	@Override
+	public Object start(IApplicationContext context) throws Exception {
+		
 		Document netDocument = null;
 		String configuration = null;
 		String outputFilename = null;
@@ -78,6 +123,7 @@ public class SimQPN {
 		boolean validConfig = false;
 
 		try {
+			String[] args = Platform.getCommandLineArgs();
 			for (int x = 0; x < args.length; x++) {
 				if ("-l".equals(args[x])) {
 					listConfigurations = true;
@@ -142,49 +188,13 @@ public class SimQPN {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-
-	private static void runSimulatorOnDocument(Document netDocument,
-			String configuration, String outputFilename, String logConfigFilename, SimulatorProgress progress) throws SimQPNException {
-		Element net = netDocument.getRootElement();
-		Simulator.configure(net, configuration, logConfigFilename);
-		net = Simulator.prepareNet(net, configuration);
-		Stats[] result = Simulator.execute(net, configuration, progress);
-		// Skip stats document generation for WELCH and REPL_DEL since the 
-		// document builder does not support these methods yet.
-		if ((result != null) && (Simulator.analMethod == Simulator.BATCH_MEANS)) {
-			StatsDocumentBuilder builder = new StatsDocumentBuilder(result, net, configuration);
-			Document statsDocument = builder.buildDocument();
-
-			File resultsFile = null;
-			if (outputFilename != null) {
-				resultsFile = new File(outputFilename);
-			} else {
-				resultsFile = new File(Simulator.statsDir, builder.getResultFileBaseName() + ".simqpn");
-			}
-
-			System.out.println("Saving simulation result to "
-				+ resultsFile.getAbsolutePath());
-
-			saveXmlToFile(statsDocument, resultsFile);
-		}
-	}
 		
-	private static void saveXmlToFile(Document doc, File file) {
-		XMLWriter writer = null;
-		try {
-			writer = new XMLWriter(new FileOutputStream(file), OutputFormat.createPrettyPrint());
-			writer.write(doc);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			if (writer != null) {
-				try {
-					writer.close();
-				} catch (IOException e) {
-				}
-			}
-		}
+		return IApplication.EXIT_OK;
+	}
+
+	@Override
+	public void stop() {
+		// empty		
 	}
 
 }
