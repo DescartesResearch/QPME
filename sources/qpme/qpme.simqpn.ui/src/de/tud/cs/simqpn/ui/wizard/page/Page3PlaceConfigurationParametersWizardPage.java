@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -193,7 +193,11 @@ public class Page3PlaceConfigurationParametersWizardPage extends WizardPage {
 					initColorRef(colorRefNodes, colorRef);
 				}					
 				probeNode.setChildren(colorRefNodes.toArray(new TreeNode[colorRefNodes.size()]));
-			}				
+			} else {
+				// Sometimes there might be some orphaned meta attribute elements, 
+				// which should be removed here to avoid inconsistencies.
+				removeMetaAttributeElements(probeSettings);
+			}
 			nodes.add(probeNode);
 		}
 	}
@@ -260,9 +264,23 @@ public class Page3PlaceConfigurationParametersWizardPage extends WizardPage {
 						}
 					}					
 					placeNode.setChildren(colorRefNodes.toArray(new TreeNode[colorRefNodes.size()]));
+				} else {
+					// Sometimes there might be some orphaned meta attribute elements, 
+					// which should be removed here to avoid inconsistencies.
+					removeMetaAttributeElements(placeSettings);
 				}
 			}				
 			nodes.add(placeNode);
+		}
+	}
+	
+	private void removeMetaAttributeElements(Settings settings) {
+		List<Element> colorRefs = PlaceHelper.listColorReferences(settings.metadata.getParent().getParent());
+		for (Element ref : colorRefs) {
+			Element m = NetHelper.getMetadata(ref, configuration.getName());
+			if (m != null) {
+				DocumentManager.removeElement(m);
+			}
 		}
 	}
 
@@ -387,7 +405,6 @@ public class Page3PlaceConfigurationParametersWizardPage extends WizardPage {
 				}
 				return null;
 			}
-			
 			return null;
 		}
 
@@ -406,13 +423,7 @@ public class Page3PlaceConfigurationParametersWizardPage extends WizardPage {
 					DocumentManager.setAttribute(settings.metadata, "statsLevel", (String)value);
 					if (statsLevel < 3) {
 						node.setChildren(null);
-						List<Element> colorRefs = ProbeHelper.listColorReferences(settings.metadata.getParent().getParent());
-						for (Element ref : colorRefs) {
-							Element m = NetHelper.getMetadata(ref, configuration.getName());
-							if (m != null) {
-								DocumentManager.removeElement(m);
-							}
-						}
+						removeMetaAttributeElements(settings);
 					} else {
 						List<Element> colorRefs = ProbeHelper.listColorReferences(settings.metadata.getParent().getParent());
 						ArrayList<TreeNode> colorRefNodes = new ArrayList<TreeNode>();
@@ -420,9 +431,9 @@ public class Page3PlaceConfigurationParametersWizardPage extends WizardPage {
 							Element m = NetHelper.getMetadata(ref, configuration.getName());
 							if (m == null) {
 								m = NetHelper.createMetadata(ref, configuration.getName());
-								configuration.initColorRefDepositoryMetadata(m);
-								initColorRef(colorRefNodes, ref);
 							}
+							configuration.initColorRefDepositoryMetadata(m);
+							initColorRef(colorRefNodes, ref);
 						}
 						node.setChildren(colorRefNodes.toArray(new TreeNode[colorRefNodes.size()]));
 					}
@@ -435,13 +446,7 @@ public class Page3PlaceConfigurationParametersWizardPage extends WizardPage {
 					DocumentManager.setAttribute(settings.metadata, "statsLevel", (String)value);
 					if (statsLevel < 3) {
 						node.setChildren(null);
-						List<Element> colorRefs = PlaceHelper.listColorReferences(settings.metadata.getParent().getParent());
-						for (Element ref : colorRefs) {
-							Element m = NetHelper.getMetadata(ref, configuration.getName());
-							if (m != null) {
-								DocumentManager.removeElement(m);
-							}
-						}
+						removeMetaAttributeElements(settings);
 					} else {
 						List<Element> colorRefs = PlaceHelper.listColorReferences(settings.metadata.getParent().getParent());
 						ArrayList<TreeNode> colorRefNodes = new ArrayList<TreeNode>();
@@ -449,13 +454,14 @@ public class Page3PlaceConfigurationParametersWizardPage extends WizardPage {
 							Element m = NetHelper.getMetadata(ref, configuration.getName());
 							if (m == null) {
 								m = NetHelper.createMetadata(ref, configuration.getName());
-								configuration.initColorRefDepositoryMetadata(m);
-								if (settings.type == SettingsType.QUEUEING_PLACE) {
-									configuration.initColorRefQueueMetadata(m);
-									initCompoundColorRef(colorRefNodes, ref);
-								} else {
-									initColorRef(colorRefNodes, ref);
-								}
+							}
+							configuration.initColorRefDepositoryMetadata(m);
+							if (settings.type == SettingsType.QUEUEING_PLACE) {
+								configuration.initColorRefQueueMetadata(m);
+								initCompoundColorRef(colorRefNodes, ref);
+							} else {
+								initColorRef(colorRefNodes, ref);
+								configuration.initColorRefQueueMetadata(m);
 							}
 						}
 						node.setChildren(colorRefNodes.toArray(new TreeNode[colorRefNodes.size()]));
