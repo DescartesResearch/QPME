@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -361,13 +361,15 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 
 		@Override
 		protected void setValue(Object element, Object value) {
-			Element colorRef = (Element)element;
-			String distrFkt = getDistributionFunction(element);
-			if (parameterIndex < distHelper.getNumberOfParameters(distrFkt)) {
-				DocumentManager.setAttribute(colorRef, 
-						distHelper.getParamterName(distrFkt, parameterIndex), value.toString());
-				getViewer().refresh();
-			}			
+			if (value != null) {
+				Element colorRef = (Element)element;
+				String distrFkt = getDistributionFunction(element);
+				if (parameterIndex < distHelper.getNumberOfParameters(distrFkt)) {
+					DocumentManager.setAttribute(colorRef, 
+							distHelper.getParamterName(distrFkt, parameterIndex), value.toString());
+					getViewer().refresh();
+				}
+			}
 		}
 		
 		private String getDistributionFunction(Object element) {
