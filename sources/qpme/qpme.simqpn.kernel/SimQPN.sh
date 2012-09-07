@@ -21,7 +21,7 @@ fi
 JAVA_OPTS="$JAVA_OPTS -server -Djava.awt.headless=true"
 
 # set path to eclipse folder. If the same folder as this script, use the default; otherwise, use /path/to/eclipse/
-ECLIPSE_HOME=`dirname $BASH_SOURCE`;
+ECLIPSE_HOME=.
 
 # get path to equinox jar inside $ECLIPSE_HOME folder
 CLASSPATH=$(find $ECLIPSE_HOME -name "org.eclipse.equinox.launcher_*.jar" | sort | tail -1);
@@ -31,4 +31,4 @@ PROGRAM="org.eclipse.equinox.launcher.Main"
 ECLIPSE_ARGS="-consoleLog -application qpme.simqpn.kernel.Simulator"
 
 # Do the job
-exec $JAVA $JAVA_OPTS -cp $CLASSPATH $PROGRAM ECLIPSE_ARGS $*
+exec $JAVA $JAVA_OPTS -cp $CLASSPATH $PROGRAM $ECLIPSE_ARGS $*
