@@ -123,7 +123,7 @@ public class SimQPN implements IApplication {
 		boolean validConfig = false;
 
 		try {
-			String[] args = Platform.getCommandLineArgs();
+			String[] args = Platform.getApplicationArgs();
 			for (int x = 0; x < args.length; x++) {
 				if ("-l".equals(args[x])) {
 					listConfigurations = true;
