@@ -84,9 +84,11 @@
 		<module>org.dom4j</module>
 		<module>org.jfreechart</module>
 		<module>org.rosuda.JRI</module>
+		<module>qpme.model.migration</module>
 		<module>qpme.qpe.core</module>
 		<module>qpme.simqpn.kernel</module>
 		<module>qpme.simqpn.ui</module>
+		<module>qpme.model.feature</module>
 		<module>qpme.qpe.feature</module>
 		<module>qpme.simqpn.feature</module>
 		<module>qpme.product</module>
