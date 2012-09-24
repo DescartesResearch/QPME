@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -43,11 +43,10 @@ package de.tud.cs.qpe.editors.net.controller.editpart.editor;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.List;
 
-import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.dom4j.XPath;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FreeformLayer;
 import org.eclipse.draw2d.FreeformLayout;
@@ -67,6 +66,7 @@ import org.eclipse.gef.requests.CreateRequest;
 import de.tud.cs.qpe.editors.net.controller.command.PlaceTransitionCreateCommand;
 import de.tud.cs.qpe.editors.net.controller.command.PlaceTransitionSetConstraintCommand;
 import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.NetHelper;
 
 public class NetEditPart extends AbstractGraphicalEditPart implements PropertyChangeListener {
 
@@ -127,8 +127,10 @@ public class NetEditPart extends AbstractGraphicalEditPart implements PropertyCh
 	 * @see org.eclipse.gef.editparts.AbstractEditPart#getModelChildren()
 	 */
 	protected List getModelChildren() {
-		XPath xpathSelector = DocumentHelper.createXPath("places/place | transitions/transition");
-		return xpathSelector.selectNodes(getCastedModel());
+		List<Element> elements = new ArrayList<Element>();
+		elements.addAll(NetHelper.listPlaces(getCastedModel()));
+		elements.addAll(NetHelper.listTransitions(getCastedModel()));
+		return elements;
 	}
 
 	/*

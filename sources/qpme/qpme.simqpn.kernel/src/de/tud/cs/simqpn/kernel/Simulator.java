@@ -106,6 +106,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
 
+import javax.xml.XMLConstants;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
@@ -116,6 +117,8 @@ import org.apache.log4j.Logger;
 import org.dom4j.Attribute;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.dom4j.Namespace;
+import org.dom4j.QName;
 import org.dom4j.XPath;
 import org.dom4j.io.DocumentResult;
 import org.dom4j.io.DocumentSource;
@@ -160,7 +163,7 @@ public class Simulator {
 	//			 the version attribute in .simqpn files
 	//			 is correct
 	//
-	public static final String QPME_VERSION = "2.0.0";	
+	public static final String QPME_VERSION = "2.1.0";	
 	
 	private static Logger log = Logger.getLogger(Simulator.class);
 	
@@ -306,20 +309,26 @@ public class Simulator {
 	protected List queueList;
 	protected List probeList;
 	protected Map<String, Element> idToElementMap = new HashMap<String, Element>();
+	
+	private static Map<String, String> namespaceUris = new HashMap<String, String>();	
+	static {
+		namespaceUris.put("xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
+	}
+	private static final QName XSI_TYPE_ATTRIBUTE = new QName("type", new Namespace("xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI));
 
 	public Simulator(Element net, String configuration) {
 		this.configuration = configuration;
 		this.net = net;
-		XPath xpathSelector = DocumentHelper.createXPath("//place");
+		XPath xpathSelector = createXPath("//place");
 		placeList = xpathSelector.selectNodes(net);
-		xpathSelector = DocumentHelper.createXPath("//transition");
+		xpathSelector = createXPath("//transition");
 		transitionList = xpathSelector.selectNodes(net);
-		xpathSelector = DocumentHelper.createXPath("//queue");
+		xpathSelector = createXPath("//queue");
 		queueList = xpathSelector.selectNodes(net);
-		xpathSelector = DocumentHelper.createXPath("//probe");
+		xpathSelector = createXPath("//probe");
 		probeList = xpathSelector.selectNodes(net);
 		
-		xpathSelector = DocumentHelper.createXPath("//connection");
+		xpathSelector = createXPath("//connection");
 		for (Object o : xpathSelector.selectNodes(net)) {
 			if (o instanceof Element) {
 				Element e = (Element) o;
@@ -349,7 +358,7 @@ public class Simulator {
 		}
 
 		
-		xpathSelector = DocumentHelper.createXPath("//*");
+		xpathSelector = createXPath("//*");
 		for (Object o : xpathSelector.selectNodes(net)) {
 			if (o instanceof Element) {
 				Element e = (Element) o;
@@ -391,7 +400,7 @@ public class Simulator {
 		if (logConfigFilename != null) {
 			LogUtil.configureCustomLogging(logConfigFilename);
 		} else {
-			XPath xpathSelector = DocumentHelper.createXPath("/net/meta-attributes/meta-attribute[@name = 'sim-qpn' and @configuration-name = '" + configuration + "']/@output-directory");
+			XPath xpathSelector = createXPath("/net/meta-attributes/meta-attribute[@xsi:type = 'simqpn-configuration' and @configuration-name = '" + configuration + "']/@output-directory");
 			Attribute outputDirAttribute = (Attribute) xpathSelector.selectSingleNode(net);
 			try {
 				LogUtil.configureDefaultLogging(outputDirAttribute.getStringValue(), "SimQPN_Output_" + configuration);
@@ -485,7 +494,7 @@ public class Simulator {
 	 */
 	public static Element prepareNet(Element net, String configuration) throws SimQPNException {
 		Element result = net;
-		XPath xpathSelector = DocumentHelper.createXPath("//place[@type = 'subnet-place']");
+		XPath xpathSelector = createXPath("//place[@xsi:type = 'subnet-place']");
 		if(xpathSelector.selectSingleNode(net) != null) {
 			try {
 				// There are subnet-places in the net; replace the subnet place by their subnet
@@ -598,22 +607,22 @@ public class Simulator {
 	}
 
 	private static void validateInputNet(Element net) throws SimQPNException {
-		XPath xpathSelector = DocumentHelper.createXPath("//color-ref[@maximum-capacity > 0]");
+		XPath xpathSelector = createXPath("//color-ref[@maximum-capacity > 0]");
 		if(xpathSelector.selectSingleNode(net) != null) {
 			log.error("Max population attribute currently not supported (Set to 0 for all places)");
 			throw new SimQPNException();
 		}		
-		xpathSelector = DocumentHelper.createXPath("//color-ref[@ranking > 0]");
+		xpathSelector = createXPath("//color-ref[@ranking > 0]");
 		if(xpathSelector.selectSingleNode(net) != null) {
 			log.error("Ranking attribute currently not supported (Set to 0 for all places)");
 			throw new SimQPNException();
 		}
-		xpathSelector = DocumentHelper.createXPath("//color-ref[@priority > 0]");
+		xpathSelector = createXPath("//color-ref[@priority > 0]");
 		if(xpathSelector.selectSingleNode(net) != null) {
 			log.error("Priority attribute currently not supported (Set to 0 for all places)");
 			throw new SimQPNException();
 		}
-		xpathSelector = DocumentHelper.createXPath("//transition[@priority > 0]");
+		xpathSelector = createXPath("//transition[@priority > 0]");
 		if(xpathSelector.selectSingleNode(net) != null) {
 			log.error("Transition priorities currently not supported (Set to 0 for all places)");
 			throw new SimQPNException();
@@ -791,7 +800,7 @@ public class Simulator {
 			Element place = (Element) placeIterator.next();
 			pl = places[p];
 			if (pl.statsLevel >= 3) {
-				XPath xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
+				XPath xpathSelector = createXPath("color-refs/color-ref");
 				Iterator colorRefIterator = xpathSelector.selectNodes(place).iterator();
 				for (int c = 0; colorRefIterator.hasNext(); c++) {
 					Element colorRef = (Element) colorRefIterator.next();
@@ -957,7 +966,7 @@ public class Simulator {
 				// color-ref of the current place (depository and queue). 
 				// These values are used in WELCH method.
 				if (pl.statsLevel >= 3) {
-					XPath xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
+					XPath xpathSelector = createXPath("color-refs/color-ref");
 					Iterator colorRefIterator = xpathSelector.selectNodes(place).iterator();
 					for (int c = 0; colorRefIterator.hasNext(); c++) {
 						Element colorRef = (Element) colorRefIterator.next();
@@ -1389,7 +1398,7 @@ public class Simulator {
 				Place pl = places[p];
 				if (pl.statsLevel >= 3) {
 					log.debug("places[" + p + "]");
-					XPath xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
+					XPath xpathSelector = createXPath("color-refs/color-ref");
 					Iterator colorRefIterator = xpathSelector.selectNodes(place).iterator();
 					for (int cr = 0; colorRefIterator.hasNext(); cr++) {
 						Element colorRef = (Element) colorRefIterator.next();
@@ -1798,7 +1807,7 @@ public class Simulator {
 				Probe pr = probes[p];
 				if (pr.statsLevel >= 3) {
 					log.debug("probes[" + p + "]");
-					XPath xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
+					XPath xpathSelector = createXPath("color-refs/color-ref");
 					Iterator colorRefIterator = xpathSelector.selectNodes(probe).iterator();
 					for (int cr = 0; colorRefIterator.hasNext(); cr++) {
 						Element colorRef = (Element) colorRefIterator.next();
@@ -2102,7 +2111,7 @@ public class Simulator {
 		Iterator placeIterator = placeList.iterator();
 		for (int i = 0; placeIterator.hasNext(); i++) {
 			Element place = (Element) placeIterator.next();
-			XPath xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
+			XPath xpathSelector = createXPath("color-refs/color-ref");
 			Iterator colorRefIterator = xpathSelector.selectNodes(place).iterator();
 			for (int j = 0; colorRefIterator.hasNext(); j++) {
 				Element colorRef = (Element) colorRefIterator.next();
@@ -2161,7 +2170,7 @@ public class Simulator {
 		Iterator placeIterator = placeList.iterator();
 		for (int i = 0; placeIterator.hasNext(); i++) {
 			Element place = (Element) placeIterator.next();
-			if ("queueing-place".equals(place.attributeValue("type"))) {
+			if ("queueing-place".equals(place.attributeValue(XSI_TYPE_ATTRIBUTE))) {
 				QPlace qPl = (QPlace) places[i];				
 				
 				// BEGIN-CONFIG
@@ -2172,7 +2181,7 @@ public class Simulator {
 				if (!(qPl.queue.queueDiscip == Queue.PS && qPl.queue.expPS)) 
 					qPl.randServTimeGen = new AbstractContinousDistribution[qPl.numColors];
 				
-				XPath xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
+				XPath xpathSelector = createXPath("color-refs/color-ref");
 				Iterator colorRefIterator = xpathSelector.selectNodes(place).iterator();
 				for (int j = 0; colorRefIterator.hasNext(); j++) {
 					Element colorRef = (Element) colorRefIterator.next();					
@@ -2853,7 +2862,7 @@ public class Simulator {
 			// Select the element for the current transition.
 			Element transition = (Element) transitionList.get(t);
 
-			XPath xpathSelector = DocumentHelper.createXPath("modes/mode");
+			XPath xpathSelector = createXPath("modes/mode");
 			List modes = xpathSelector.selectNodes(transition);
 
 			// Iterate through all modes
@@ -2863,7 +2872,7 @@ public class Simulator {
 				for (int p = 0; p < trans[t].inPlaces.length; p++) {
 					Element inputPlace = trans[t].inPlaces[p].element;
 					// Go through all color-refs for the current place.
-					xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
+					xpathSelector = createXPath("color-refs/color-ref");
 					List colorRefs = xpathSelector.selectNodes(inputPlace);
 
 					// Allocate an array saving the number of tokens for each color-ref to the current mode for the
@@ -2878,7 +2887,7 @@ public class Simulator {
 						String colorRefId = colorRef.attributeValue("id");
 						String modeId = ((Element) modes.get(m)).attributeValue("id");
 
-						xpathSelector = DocumentHelper.createXPath("connections/connection[(@source-id='" + colorRefId + "') and (@target-id='" + modeId + "')]");
+						xpathSelector = createXPath("connections/connection[(@source-id='" + colorRefId + "') and (@target-id='" + modeId + "')]");
 						Element connection = (Element) xpathSelector.selectSingleNode(transition);
 						if (connection != null) {
 							if(connection.attributeValue("count") == null) {
@@ -2926,7 +2935,7 @@ public class Simulator {
 				for (int p = 0; p < trans[t].outPlaces.length; p++) {
 					Element outputPlace = trans[t].outPlaces[p].element;
 					// Go through all color-refs for the current place.
-					xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
+					xpathSelector = createXPath("color-refs/color-ref");
 					List colorRefs = xpathSelector.selectNodes(outputPlace);
 					
 					// Allocate an array saving the number of tokens for each color-ref to mode connection. 
@@ -2941,7 +2950,7 @@ public class Simulator {
 						String colorRefId = colorRef.attributeValue("id");
 						String modeId = ((Element) modes.get(m)).attributeValue("id");
 
-						xpathSelector = DocumentHelper.createXPath("connections/connection[(@source-id='" + modeId + "') and (@target-id='" + colorRefId + "')]");
+						xpathSelector = createXPath("connections/connection[(@source-id='" + modeId + "') and (@target-id='" + colorRefId + "')]");
 						Element connection = (Element) xpathSelector.selectSingleNode(transition);
 						if (connection != null) {
 							if(connection.attributeValue("count") == null) {
@@ -2979,7 +2988,7 @@ public class Simulator {
 		Iterator transitionIterator = transitionList.iterator();
 		for (int i = 0; transitionIterator.hasNext(); i++) {
 			Element transition = (Element) transitionIterator.next();
-			XPath xpathSelector = DocumentHelper.createXPath("modes/mode");
+			XPath xpathSelector = createXPath("modes/mode");
 			Iterator modeIterator = xpathSelector.selectNodes(transition).iterator();
 			for (int j = 0; modeIterator.hasNext(); j++) {
 				Element mode = (Element) modeIterator.next();
@@ -3005,7 +3014,7 @@ public class Simulator {
 		log.debug("/////////////////////////////////////////////");
 		log.debug("// Configure input/output relationships");
 		// Initialize the place-transition and transition-place connections.
-		XPath xpathSelector = DocumentHelper.createXPath("/net/connections/connection");
+		XPath xpathSelector = createXPath("/net/connections/connection");
 		Iterator connectionIterator = xpathSelector.selectNodes(net).iterator();
 		
 		while (connectionIterator.hasNext()) {
@@ -3137,17 +3146,17 @@ public class Simulator {
 				transNames.add(name);
 			}
 			
-			if(!"immediate-transition".equals(transition.attributeValue("type"))) {
+			if(!"immediate-transition".equals(transition.attributeValue(XSI_TYPE_ATTRIBUTE))) {
 				log.error(formatDetailMessage(
 						"Invalid or missing transition type setting! Only \"immediate-transition\" is currently supported.",
 						"transition-num", Integer.toString(i),
 						"transition.id", transition.attributeValue("id"),
 						"transition.name", transition.attributeValue("name"),
-						"transition.type", transition.attributeValue("type")
+						"transition.type", transition.attributeValue(XSI_TYPE_ATTRIBUTE)
 						));
 				throw new SimQPNException();
 			}
-			XPath xpathSelector = DocumentHelper.createXPath("modes/mode");
+			XPath xpathSelector = createXPath("modes/mode");
 			int numModes = xpathSelector.selectNodes(transition).size();
 			if(numModes == 0) {
 				log.error(formatDetailMessage(
@@ -3155,7 +3164,7 @@ public class Simulator {
 						"transition-num", Integer.toString(i),
 						"transition.id", transition.attributeValue("id"),
 						"transition.name", transition.attributeValue("name"),
-						"transition.type", transition.attributeValue("type")
+						"transition.type", transition.attributeValue(XSI_TYPE_ATTRIBUTE)
 						));			
 				throw new SimQPNException();
 			}
@@ -3169,7 +3178,7 @@ public class Simulator {
 						"transition-num", Integer.toString(i),
 						"transition.id", transition.attributeValue("id"),
 						"transition.name", transition.attributeValue("name"),
-						"transition.type", transition.attributeValue("type")
+						"transition.type", transition.attributeValue(XSI_TYPE_ATTRIBUTE)
 						));					
 				throw new SimQPNException();
 			}
@@ -3431,12 +3440,12 @@ public class Simulator {
 			Iterator colorRefIterator = colorRefs.iterator();			
 			for (int c = 0; colorRefIterator.hasNext(); c++) {
 			   Element colorRef = (Element) colorRefIterator.next();
-			   XPath xpathSelector = DocumentHelper.createXPath("colors/color[(@id='" + colorRef.attributeValue("color-id") + "')]");
+			   XPath xpathSelector = createXPath("colors/color[(@id='" + colorRef.attributeValue("color-id") + "')]");
 			   Element color = (Element) xpathSelector.selectSingleNode(net);
 			   colors[c] = color.attributeValue("name");			   
 			}
 			
-			if ("ordinary-place".equals(place.attributeValue("type"))) {
+			if ("ordinary-place".equals(place.attributeValue(XSI_TYPE_ATTRIBUTE))) {
 				places[i] = new Place(
 						i,																	// id 
 						place.attributeValue("name"), 										// name
@@ -3460,7 +3469,7 @@ public class Simulator {
 							+ place + ")"
 							);
 				}
-			} else if ("queueing-place".equals(place.attributeValue("type"))) {
+			} else if ("queueing-place".equals(place.attributeValue(XSI_TYPE_ATTRIBUTE))) {
 				try {
 					String queueRef = place.attributeValue("queue-ref");
 					Queue queue = findQueueByXmlId(queueRef);
@@ -3496,7 +3505,7 @@ public class Simulator {
 							"place-num", Integer.toString(i),
 							"place.id", place.attributeValue("id"),
 							"place.name", place.attributeValue("name"),
-							"place.type", place.attributeValue("type")
+							"place.type", place.attributeValue(XSI_TYPE_ATTRIBUTE)
 							));
 					throw new SimQPNException();
 				}
@@ -3506,7 +3515,7 @@ public class Simulator {
 						"place-num", Integer.toString(i),
 						"place.id", place.attributeValue("id"),
 						"place.name", place.attributeValue("name"),
-						"place.type", place.attributeValue("type")
+						"place.type", place.attributeValue(XSI_TYPE_ATTRIBUTE)
 						));
 				throw new SimQPNException();
 			}
@@ -3550,13 +3559,13 @@ public class Simulator {
 			Iterator colorRefIterator = colorRefs.iterator();			
 			for (int c = 0; colorRefIterator.hasNext(); c++) {
 			   Element colorRef = (Element) colorRefIterator.next();
-			   xpathSelector = DocumentHelper.createXPath("colors/color[(@id='" + colorRef.attributeValue("color-id") + "')]");
+			   xpathSelector = createXPath("colors/color[(@id='" + colorRef.attributeValue("color-id") + "')]");
 			   Element color = (Element) xpathSelector.selectSingleNode(net);
 			   colors[c] = color.attributeValue("name");
 			}
 			
 			// Extract start place of probe
-			xpathSelector = DocumentHelper.createXPath("//place[@id = '" + probe.attributeValue("start-place-id") + "']");
+			xpathSelector = createXPath("//place[@id = '" + probe.attributeValue("start-place-id") + "']");
 			Element startElement = (Element) xpathSelector.selectSingleNode(net);
 			if (startElement == null) {
 				log.error(formatDetailMessage(
@@ -3590,7 +3599,7 @@ public class Simulator {
 			}
 			
 			// Extract end place of probe
-			xpathSelector = DocumentHelper.createXPath("//place[@id = '" + probe.attributeValue("end-place-id") + "']");
+			xpathSelector = createXPath("//place[@id = '" + probe.attributeValue("end-place-id") + "']");
 			Element endElement = (Element) xpathSelector.selectSingleNode(net);
 			if (endElement == null) {
 				log.error(formatDetailMessage(
@@ -3693,7 +3702,7 @@ public class Simulator {
 	}
 
 	private void checkColorDefinitions() throws SimQPNException {
-		XPath colorSelector = DocumentHelper.createXPath("//color");
+		XPath colorSelector = createXPath("//color");
 		List colorList = colorSelector.selectNodes(net);
 		// Set for checking the uniqueness of color names
 		HashSet<String> colorNames = new HashSet<String>();
@@ -4152,9 +4161,15 @@ public class Simulator {
 	} // end of run() method
 
 	protected static Element getSettings(Element element, String configuration) {
-		XPath xpathSelector = DocumentHelper.createXPath("meta-attributes/meta-attribute[@name='sim-qpn' and @configuration-name='" + configuration + "']");
+		XPath xpathSelector = createXPath("meta-attributes/meta-attribute[starts-with(@xsi:type, 'simqpn') and @configuration-name='" + configuration + "']");
 		Element elementSettings = (Element) xpathSelector.selectSingleNode(element);
 		return elementSettings;
+	}
+	
+	private static XPath createXPath(String xpath) {
+		XPath selector = DocumentHelper.createXPath(xpath);
+		selector.setNamespaceURIs(namespaceUris);
+		return selector;
 	}
 
 } // end of Class Simulator

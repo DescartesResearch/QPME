@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -62,7 +62,9 @@ import org.eclipse.gef.editpolicies.RootComponentEditPolicy;
 import de.tud.cs.qpe.editors.incidence.model.InputPlaceWrapper;
 import de.tud.cs.qpe.editors.incidence.model.OutputPlaceWrapper;
 import de.tud.cs.qpe.editors.incidence.view.layout.IncidenceFunctionLayout;
+import de.tud.cs.qpe.model.ConnectionHelper;
 import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.TransitionHelper;
 
 public class IncidenceFunctionEditPart extends AbstractGraphicalEditPart
 		implements PropertyChangeListener {
@@ -157,45 +159,22 @@ public class IncidenceFunctionEditPart extends AbstractGraphicalEditPart
 		Element model = getCastedModel();
 
 		// Add all modes of the current transisiton.
-		XPath xpathSelector = DocumentHelper.createXPath("modes/mode");
-		List modes = xpathSelector.selectNodes(model);
+		List<Element> modes = TransitionHelper.listModes(model);
 
 		// Select all connections to the current
 		// transition from the other places.
-		List inputPlaces = new ArrayList<Element>();
-		xpathSelector = DocumentHelper
-				.createXPath("../../connections/connection[@target-id='"
-						+ model.attributeValue("id", "") + "']");
-		Iterator incommingConnectionsIterator = xpathSelector
-				.selectNodes(model).iterator();
-		while (incommingConnectionsIterator.hasNext()) {
-			Element connection = (Element) incommingConnectionsIterator.next();
-
-			xpathSelector = DocumentHelper
-					.createXPath("../../places/place[@id = '"
-							+ connection.attributeValue("source-id", "") + "']");
-			Element targetElement = (Element) xpathSelector
-					.selectSingleNode(model);
-			inputPlaces.add(targetElement);
+		List<Element> inputPlaces = new ArrayList<Element>();
+		List<Element> incomingConnections = TransitionHelper.listIncomingConnections(model);
+		for (Element con : incomingConnections) {
+			inputPlaces.add(ConnectionHelper.getSource(con));
 		}
 
 		// Select all connections from the current
 		// transition to places.
-		List outputPlaces = new ArrayList<Element>();
-		xpathSelector = DocumentHelper
-				.createXPath("../../connections/connection[@source-id='"
-						+ model.attributeValue("id", "") + "']");
-		Iterator outgoingConnectionsIterator = xpathSelector.selectNodes(model)
-				.iterator();
-		while (outgoingConnectionsIterator.hasNext()) {
-			Element connection = (Element) outgoingConnectionsIterator.next();
-
-			xpathSelector = DocumentHelper
-					.createXPath("../../places/place[@id = '"
-							+ connection.attributeValue("target-id", "") + "']");
-			Element targetElement = (Element) xpathSelector
-					.selectSingleNode(model);
-			outputPlaces.add(targetElement);
+		List<Element> outputPlaces = new ArrayList<Element>();
+		List<Element> outgoingConnections = TransitionHelper.listOutgoingConnections(model);
+		for (Element con : outgoingConnections) {
+			outputPlaces.add(ConnectionHelper.getTarget(con));
 		}
 
 		modelChildren = new ArrayList<Object>();

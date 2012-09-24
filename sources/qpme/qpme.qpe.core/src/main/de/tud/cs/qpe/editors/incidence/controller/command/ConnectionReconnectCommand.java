@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -42,22 +42,20 @@
 
 /*******************************************************************************
  * Copyright (c) 2004 Elias Volanakis.
-  * All rights reserved. This program and the accompanying materials
-  * are made available under the terms of the Eclipse Public License v1.0
-  * which accompanies this distribution, and is available at
-  * http://www.eclipse.org/legal/epl-v10.html
-  *
-  * Contributors:
-  *    Elias Volanakis - initial API and implementation
+ ï¿½* All rights reserved. This program and the accompanying materials
+ ï¿½* are made available under the terms of the Eclipse Public License v1.0
+ ï¿½* which accompanies this distribution, and is available at
+ ï¿½* http://www.eclipse.org/legal/epl-v10.html
+ ï¿½*
+ ï¿½* Contributors:
+ ï¿½*ï¿½ï¿½ï¿½ï¿½Elias Volanakis - initial API and implementation
  *    IBM Corporation
-  *******************************************************************************/
+ ï¿½*******************************************************************************/
 package de.tud.cs.qpe.editors.incidence.controller.command;
 
 import java.beans.PropertyChangeListener;
 
-import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.dom4j.XPath;
 import org.eclipse.gef.ConnectionEditPart;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.commands.Command;
@@ -68,6 +66,7 @@ import de.tud.cs.qpe.editors.incidence.controller.editpart.PlaceEditPart;
 import de.tud.cs.qpe.editors.incidence.view.figure.PlaceFigure;
 import de.tud.cs.qpe.editors.net.gef.palette.templates.PlaceTransition;
 import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.IncidenceFunctionHelper;
 
 /**
  * A command to reconnect a connection to a different start point or end point.
@@ -149,9 +148,7 @@ public class ConnectionReconnectCommand extends Command {
 			// Check if the connection starts at a color-ref
 			if (newSource instanceof ColorRefEditPart) {
 				// If a connection allready exists, prevent a new one.
-				XPath xpathSelector = DocumentHelper.createXPath("../../connections/connection[(@source-id = '" + ((Element) newSource.getModel()).attributeValue("id", "")
-						+ "') and (@target-id = '" + ((Element) newTarget.getModel()).attributeValue("id", "") + "')]");
-				if (xpathSelector.selectNodes((Element) newTarget.getModel()).size() == 0) {
+				if (!IncidenceFunctionHelper.existsConnection((Element) newTarget.getParent().getModel(), (Element) newSource.getModel(), (Element) newTarget.getModel())) {
 					if (((PlaceEditPart) newSource.getParent()).getType() == PlaceFigure.TYPE_INPUT_PLACE) {
 						if (newTarget instanceof ModeEditPart) {
 							return true;
@@ -160,9 +157,7 @@ public class ConnectionReconnectCommand extends Command {
 				}
 			} else if (newSource instanceof ModeEditPart) {
 				// If a connection allready exists, prevent a new one.
-				XPath xpathSelector = DocumentHelper.createXPath("../../connections/connection[(@source-id = '" + ((Element) newSource.getModel()).attributeValue("id", "")
-						+ "') and (@target-id = '" + ((Element) newTarget.getModel()).attributeValue("id", "") + "')]");
-				if (xpathSelector.selectNodes((Element) newSource.getModel()).size() == 0) {
+				if (!IncidenceFunctionHelper.existsConnection((Element) newSource.getParent().getModel(), (Element) newSource.getModel(), (Element) newTarget.getModel())) {
 					if (newTarget instanceof ColorRefEditPart) {
 						if (((PlaceEditPart) newTarget.getParent()).getType() == PlaceFigure.TYPE_OUTPUT_PLACE) {
 							return true;

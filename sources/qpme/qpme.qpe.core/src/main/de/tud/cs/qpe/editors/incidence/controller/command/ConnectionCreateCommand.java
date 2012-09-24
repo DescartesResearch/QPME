@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -42,31 +42,31 @@
 
 /*******************************************************************************
   * Copyright (c) 2004 Elias Volanakis.
-  * All rights reserved. This program and the accompanying materials
-  * are made available under the terms of the Eclipse Public License v1.0
-  * which accompanies this distribution, and is available at
-  * http://www.eclipse.org/legal/epl-v10.html
-  *
-  * Contributors:
-  *    Elias Volanakis - initial API and implementation
+ ï¿½* All rights reserved. This program and the accompanying materials
+ ï¿½* are made available under the terms of the Eclipse Public License v1.0
+ ï¿½* which accompanies this distribution, and is available at
+ ï¿½* http://www.eclipse.org/legal/epl-v10.html
+ ï¿½*
+ ï¿½* Contributors:
+ ï¿½*ï¿½ï¿½ï¿½ï¿½Elias Volanakis - initial API and implementation
   *    IBM Corporation
-  *******************************************************************************/
+ ï¿½*******************************************************************************/
 package de.tud.cs.qpe.editors.incidence.controller.command;
 
 import java.beans.PropertyChangeListener;
 
-import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.dom4j.XPath;
-import org.dom4j.tree.DefaultElement;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.commands.Command;
 
 import de.tud.cs.qpe.editors.incidence.controller.editpart.ColorRefEditPart;
 import de.tud.cs.qpe.editors.incidence.controller.editpart.ModeEditPart;
 import de.tud.cs.qpe.editors.incidence.controller.editpart.PlaceEditPart;
+import de.tud.cs.qpe.editors.incidence.model.PlaceWrapper;
 import de.tud.cs.qpe.editors.incidence.view.figure.PlaceFigure;
+import de.tud.cs.qpe.model.ConnectionHelper;
 import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.IncidenceFunctionHelper;
 
 /**
  * A command to create a connection between two shapes. The command can be
@@ -144,33 +144,17 @@ public class ConnectionCreateCommand extends Command {
 			// Check if the connection starts at a color-ref
 			if (source instanceof ColorRefEditPart) {
 				// If a connection allready exists, prevent a new one.
-				XPath xpathSelector = DocumentHelper
-						.createXPath("../../connections/connection[@source-id = '"
-								+ ((Element) source.getModel())
-										.attributeValue("id")
-								+ "' and @target-id = '"
-								+ ((Element) target.getModel())
-										.attributeValue("id") + "']");
-				if (xpathSelector.selectNodes((Element) target.getModel())
-						.size() == 0) {
-					if (((PlaceEditPart) source.getParent()).getType() == PlaceFigure.TYPE_INPUT_PLACE) {
-						if (target instanceof ModeEditPart) {
+				if (target instanceof ModeEditPart) {
+					if (!IncidenceFunctionHelper.existsConnection((Element) target.getParent().getModel() , (Element) source.getModel(), (Element) target.getModel())) {
+						if (((PlaceEditPart) source.getParent()).getType() == PlaceFigure.TYPE_INPUT_PLACE) {
 							return true;
 						}
 					}
 				}
 			} else if (source instanceof ModeEditPart) {
 				// If a connection allready exists, prevent a new one.
-				XPath xpathSelector = DocumentHelper
-						.createXPath("../../connections/connection[@source-id = '"
-								+ ((Element) source.getModel())
-										.attributeValue("id")
-								+ "' and @target-id = '"
-								+ ((Element) target.getModel())
-										.attributeValue("id") + "']");
-				if (xpathSelector.selectNodes((Element) source.getModel())
-						.size() == 0) {
-					if (target instanceof ColorRefEditPart) {
+				if (target instanceof ColorRefEditPart) {
+					if (!IncidenceFunctionHelper.existsConnection((Element) source.getParent().getModel(), (Element) source.getModel(), (Element) target.getModel())) {
 						if (((PlaceEditPart) target.getParent()).getType() == PlaceFigure.TYPE_OUTPUT_PLACE) {
 							return true;
 						}
@@ -197,25 +181,19 @@ public class ConnectionCreateCommand extends Command {
 	 * @see org.eclipse.gef.commands.Command#redo()
 	 */
 	public void redo() {
-		XPath xpathSelector = DocumentHelper.createXPath("../../connections");
-		Element container = null;
+		Element transition = null;
 		
 		if (source instanceof ColorRefEditPart) {
-			container = (Element) xpathSelector.selectSingleNode(target.getModel());
+			transition = (Element)target.getParent().getModel();
 		} else {
-			container = (Element) xpathSelector.selectSingleNode(source.getModel());
+			transition = (Element)source.getParent().getModel();
 		}
 		
-		if( container != null) {
+		if(transition != null) {
 			// create a new connection element for this connection
 			// and set it's attributes.
-			connection = new DefaultElement("connection");
-			connection.addAttribute("source-id", ((Element) source.getModel())
-					.attributeValue("id"));
-			connection.addAttribute("target-id", ((Element) target.getModel())
-					.attributeValue("id"));
-			connection.addAttribute("count", "1");
-			DocumentManager.addChild(container, connection);
+			connection = IncidenceFunctionHelper.createConnection((Element) source.getModel(), (Element) target.getModel(), 1);
+			IncidenceFunctionHelper.addConnection(transition, connection);
 		}
 		
 		// Activate the connection listaners.

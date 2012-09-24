@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -42,15 +42,15 @@
 
 /*******************************************************************************
  * Copyright (c) 2004 Elias Volanakis.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *    Elias Volanakis - initial API and implementation
+ï¿½* All rights reserved. This program and the accompanying materials
+ï¿½* are made available under the terms of the Eclipse Public License v1.0
+ï¿½* which accompanies this distribution, and is available at
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
+ï¿½*
+ï¿½* Contributors:
+ï¿½*ï¿½ï¿½ï¿½ï¿½Elias Volanakis - initial API and implementation
  *    IBM Corporation
- *******************************************************************************/
+ï¿½*******************************************************************************/
 package de.tud.cs.qpe.editors.net.controller.command;
 
 import org.dom4j.DocumentHelper;
@@ -63,6 +63,7 @@ import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.requests.ChangeBoundsRequest;
 
 import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.NetHelper;
 
 /**
  * A command to resize and/or move a shape. The command can be undone or redone.
@@ -125,10 +126,7 @@ public class PlaceTransitionSetConstraintCommand extends Command {
 	 * @see org.eclipse.gef.commands.Command#execute()
 	 */
 	public void execute() {
-		XPath xpathSelector = DocumentHelper
-				.createXPath("meta-attributes/meta-attribute[@name = 'location']");
-		Element metaAttribute = (Element) xpathSelector
-				.selectSingleNode(element);
+		Element metaAttribute = NetHelper.getQpePositionMetaAttribute(element);
 		if (metaAttribute != null) {
 			String xPosition = metaAttribute.attributeValue("location-x", "0");
 			String yPosition = metaAttribute.attributeValue("location-y", "0");

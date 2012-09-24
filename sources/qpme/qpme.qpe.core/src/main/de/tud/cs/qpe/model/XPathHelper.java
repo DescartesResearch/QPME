@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -42,21 +42,42 @@
 
 package de.tud.cs.qpe.model;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import javax.xml.XMLConstants;
+
+import org.dom4j.Attribute;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.XPath;
 
 public class XPathHelper {
+	
+	private static Map<String, String> namespaceUris = new HashMap<String, String>();
+	
+	static {
+		namespaceUris.put("xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
+	}
+	
 	@SuppressWarnings("unchecked")
-	public static List<Element> query(Element elem, String xpath) {
+	public static List<Element> queryElements(Element elem, String xpath) {
 		XPath xpathSelector = DocumentHelper.createXPath(xpath);
+		xpathSelector.setNamespaceURIs(namespaceUris);
 		return (List<Element>)xpathSelector.selectNodes(elem);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static List<Attribute> queryAttributes(Element elem, String xpath) {
+		XPath xpathSelector = DocumentHelper.createXPath(xpath);
+		xpathSelector.setNamespaceURIs(namespaceUris);
+		return (List<Attribute>)xpathSelector.selectNodes(elem);
 	}
 	
 	public static Element element(Element elem, String xpath) {
 		XPath xpathSelector = DocumentHelper.createXPath(xpath);
+		xpathSelector.setNamespaceURIs(namespaceUris);
 		return (Element)xpathSelector.selectSingleNode(elem);
 	}
 }

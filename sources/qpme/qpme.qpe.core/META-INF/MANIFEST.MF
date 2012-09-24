@@ -15,7 +15,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.console,
  org.dom4j;bundle-version="1.6.1",
  org.jfreechart;bundle-version="1.0.12",
- org.rosuda.JRI;bundle-version="1.0.0"
+ org.rosuda.JRI;bundle-version="1.0.0",
+ qpme.model.migration;bundle-version="2.1.0"
 Bundle-ActivationPolicy: lazy
 Export-Package: de.tud.cs.qpe,
  de.tud.cs.qpe.editors.incidence,
@@ -57,7 +58,6 @@ Export-Package: de.tud.cs.qpe,
  de.tud.cs.qpe.rcp,
  de.tud.cs.qpe.rcp.actions.context,
  de.tud.cs.qpe.rcp.actions.file,
- de.tud.cs.qpe.rcp.task,
  de.tud.cs.qpe.utils,
  de.tud.cs.qpe.utils.view.anchor
 Bundle-ClassPath: QPE_Base.jar

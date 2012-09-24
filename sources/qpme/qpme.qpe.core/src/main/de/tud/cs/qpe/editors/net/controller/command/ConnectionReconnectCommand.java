@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -42,15 +42,15 @@
 
 /*******************************************************************************
  * Copyright (c) 2004 Elias Volanakis.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *    Elias Volanakis - initial API and implementation
+ï¿½* All rights reserved. This program and the accompanying materials
+ï¿½* are made available under the terms of the Eclipse Public License v1.0
+ï¿½* which accompanies this distribution, and is available at
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
+ï¿½*
+ï¿½* Contributors:
+ï¿½*ï¿½ï¿½ï¿½ï¿½Elias Volanakis - initial API and implementation
  *    IBM Corporation
- *******************************************************************************/
+ï¿½*******************************************************************************/
 package de.tud.cs.qpe.editors.net.controller.command;
 
 import java.util.List;
@@ -60,7 +60,7 @@ import org.eclipse.gef.commands.Command;
 
 import de.tud.cs.qpe.editors.net.gef.palette.templates.PlaceTransition;
 import de.tud.cs.qpe.model.ConnectionHelper;
-import de.tud.cs.qpe.model.IncidenceFuntionHelper;
+import de.tud.cs.qpe.model.IncidenceFunctionHelper;
 import de.tud.cs.qpe.model.PlaceHelper;
 import de.tud.cs.qpe.model.SubnetHelper;
 import de.tud.cs.qpe.model.TransitionHelper;
@@ -182,9 +182,9 @@ public class ConnectionReconnectCommand extends Command {
 		}
 		ConnectionHelper.setSource(connection, newSource);
 		ConnectionHelper.setTarget(connection, newTarget);
-		oldIncidenceFunctionConnections = IncidenceFuntionHelper.listAllConnectionsFromOrToPlace(transition, place);
+		oldIncidenceFunctionConnections = IncidenceFunctionHelper.listAllConnectionsFromOrToPlace(transition, place);
 		for(Element con : oldIncidenceFunctionConnections) {
-			IncidenceFuntionHelper.removeConnection(transition, con);
+			IncidenceFunctionHelper.removeConnection(transition, con);
 		}
 	}
 
@@ -201,7 +201,7 @@ public class ConnectionReconnectCommand extends Command {
 		ConnectionHelper.setSource(connection, oldSource);
 		ConnectionHelper.setTarget(connection, oldTarget);
 		for(Element con : oldIncidenceFunctionConnections) {
-			IncidenceFuntionHelper.addConnection(transition, con);
+			IncidenceFunctionHelper.addConnection(transition, con);
 		}
 	}
 

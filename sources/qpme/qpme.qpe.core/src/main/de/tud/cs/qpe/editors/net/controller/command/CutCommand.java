@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -52,6 +52,7 @@ import org.dom4j.XPath;
 import org.eclipse.jface.viewers.StructuredSelection;
 
 import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.NetHelper;
 
 public class CutCommand extends CopyCommand {
 	protected Document sourceDocument;
@@ -130,17 +131,13 @@ public class CutCommand extends CopyCommand {
 		
 		// After adding all places, transitions and connections
 		// remove those whose sources or targets don't exist.
-		XPath xpathSelector = DocumentHelper.createXPath("//connection");
-		Iterator connectionIterator = xpathSelector.selectNodes(sourceDocument).iterator();
-		while (connectionIterator.hasNext()) {
-			Element connection = (Element) connectionIterator.next();
-			xpathSelector = DocumentHelper.createXPath("//*[@id = '" + connection.attributeValue("source-id", "") + "']");
-			Element el = (Element) xpathSelector.selectSingleNode(connection);
+		for (Element connection : NetHelper.listAllConnections(sourceDocument.getRootElement())) {
+			Element el = NetHelper.getElement(connection, connection.attributeValue("source-id", ""));
+			
 			if (el == null) {
 				removedConnections.put(connection, connection.getParent());
 			} else {
-				xpathSelector = DocumentHelper.createXPath("//*[@id = '" + connection.attributeValue("target-id", "") + "']");
-				el = (Element) xpathSelector.selectSingleNode(connection);
+				el = NetHelper.getElement(connection, connection.attributeValue("target-id", ""));
 				if (el == null) {
 					removedConnections.put(connection, connection.getParent());
 				}

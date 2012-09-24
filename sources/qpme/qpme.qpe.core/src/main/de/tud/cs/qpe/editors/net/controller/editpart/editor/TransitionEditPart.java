@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -41,7 +41,12 @@
  */
 package de.tud.cs.qpe.editors.net.controller.editpart.editor;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.dom4j.XPath;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.requests.SelectionRequest;
 import org.eclipse.swt.SWT;
@@ -52,11 +57,38 @@ import org.eclipse.ui.PlatformUI;
 
 import de.tud.cs.qpe.editors.incidence.IncidenceFunctionEditor;
 import de.tud.cs.qpe.editors.incidence.IncidenceFunctionEditorInput;
+import de.tud.cs.qpe.model.TransitionHelper;
 
 public class TransitionEditPart extends PlaceTransitionEditPart {
 
 	public TransitionEditPart() {
 		super();
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.gef.editparts.AbstractGraphicalEditPart#getModelSourceConnections()
+	 */
+	protected List getModelSourceConnections() {
+		if (getCastedModel().getParent() != null) {
+			return TransitionHelper.listOutgoingConnections(getCastedModel());
+		} else {
+			return new ArrayList();
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.gef.editparts.AbstractGraphicalEditPart#getModelTargetConnections()
+	 */
+	protected List getModelTargetConnections() {
+		if (getCastedModel().getParent() != null) {
+			return TransitionHelper.listIncomingConnections(getCastedModel());
+		} else {
+			return new ArrayList();
+		}
 	}
 
 	// TIP: To be able to listen for double-clicks on transitions, we have to override the performRequest method.

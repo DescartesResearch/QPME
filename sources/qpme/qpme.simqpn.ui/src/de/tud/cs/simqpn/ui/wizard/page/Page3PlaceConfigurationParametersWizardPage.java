@@ -430,7 +430,7 @@ public class Page3PlaceConfigurationParametersWizardPage extends WizardPage {
 						for (Element ref : colorRefs) {
 							Element m = NetHelper.getMetadata(ref, configuration.getName());
 							if (m == null) {
-								m = NetHelper.createMetadata(ref, configuration.getName());
+								m = configuration.createColorRefMetadata(ref, configuration.getName());
 							}
 							configuration.initColorRefDepositoryMetadata(m);
 							initColorRef(colorRefNodes, ref);
@@ -453,7 +453,7 @@ public class Page3PlaceConfigurationParametersWizardPage extends WizardPage {
 						for (Element ref : colorRefs) {
 							Element m = NetHelper.getMetadata(ref, configuration.getName());
 							if (m == null) {
-								m = NetHelper.createMetadata(ref, configuration.getName());
+								m = configuration.createColorRefMetadata(ref, configuration.getName());
 							}
 							configuration.initColorRefDepositoryMetadata(m);
 							if (settings.type == SettingsType.QUEUEING_PLACE) {

@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -43,6 +43,8 @@
  */
 package de.tud.cs.qpe.editors.net;
 
+import javax.xml.XMLConstants;
+
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentFactory;
@@ -65,6 +67,7 @@ public class NetEditorInput implements IPathEditorInput {
 		if (path == null) {
 			Document netDiagram = DocumentFactory.getInstance().createDocument();
 			content = netDiagram.addElement("net");
+			content.addNamespace("xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);			
 			content.addElement("colors");
 			content.addElement("queues");
 			content.addElement("places");
@@ -91,6 +94,21 @@ public class NetEditorInput implements IPathEditorInput {
 		// is used to emulate property-change support
 		// for non-event-based dom implementations.
 		DocumentManager.registerInput(content.getDocument());
+	}
+	
+	public void replaceWith(Document doc) {
+		if (content != null) {
+			DocumentManager.unregisterInput(content.getDocument());
+		}
+		
+		content = doc.getRootElement();
+
+		// Save the path so it can be used when saving.
+		content.addAttribute("path", path.toOSString());
+		
+		DocumentManager.registerInput(content.getDocument());
+		
+		content.addAttribute("dirty", "true");
 	}
 
 	public boolean exists() {

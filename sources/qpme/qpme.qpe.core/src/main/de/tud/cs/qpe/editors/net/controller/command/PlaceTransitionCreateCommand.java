@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -42,15 +42,15 @@
 
 /*******************************************************************************
  * Copyright (c) 2004 Elias Volanakis.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *    Elias Volanakis - initial API and implementation
+ï¿½* All rights reserved. This program and the accompanying materials
+ï¿½* are made available under the terms of the Eclipse Public License v1.0
+ï¿½* which accompanies this distribution, and is available at
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
+ï¿½*
+ï¿½* Contributors:
+ï¿½*ï¿½ï¿½ï¿½ï¿½Elias Volanakis - initial API and implementation
  *    IBM Corporation
- *******************************************************************************/
+ï¿½*******************************************************************************/
 package de.tud.cs.qpe.editors.net.controller.command;
 
 import java.util.HashSet;
@@ -63,6 +63,7 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.commands.Command;
 
 import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.NetHelper;
 
 /**
  * A command to add a Shape to a ShapeDiagram. The command can be undone or
@@ -129,12 +130,8 @@ public class PlaceTransitionCreateCommand extends Command {
 		// see ShapesEditorPaletteFactory#createComponentsGroup()
 		if ("place".equals(newElement.getName())) {
 			HashSet<String> nameIndex = new HashSet<String>();
-
-			XPath xpathSelector = DocumentHelper.createXPath("./places/place");
-			Iterator queueIterator = xpathSelector.selectNodes(parent).iterator();
-			while (queueIterator.hasNext()) {
-				Element queue = (Element) queueIterator.next();
-				nameIndex.add(queue.attributeValue("name"));
+			for (Element place : NetHelper.listPlaces(parent)) {
+				nameIndex.add(place.attributeValue("name"));
 			}
 
 			// Find a new name.
@@ -152,11 +149,8 @@ public class PlaceTransitionCreateCommand extends Command {
 		} else if ("transition".equals(newElement.getName())) {
 			HashSet<String> nameIndex = new HashSet<String>();
 
-			XPath xpathSelector = DocumentHelper.createXPath("./transitions/transition");
-			Iterator queueIterator = xpathSelector.selectNodes(parent).iterator();
-			while (queueIterator.hasNext()) {
-				Element queue = (Element) queueIterator.next();
-				nameIndex.add(queue.attributeValue("name"));
+			for (Element transition : NetHelper.listTransitions(parent)) {
+				nameIndex.add(transition.attributeValue("name"));
 			}
 
 			// Find a new name.

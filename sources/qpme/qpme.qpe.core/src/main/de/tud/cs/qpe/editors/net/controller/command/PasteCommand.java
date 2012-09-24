@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -60,6 +60,8 @@ import org.eclipse.ui.PlatformUI;
 
 import de.tud.cs.qpe.editors.net.NetEditorInput;
 import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.NetHelper;
+import de.tud.cs.qpe.model.XPathHelper;
 import de.tud.cs.qpe.utils.IdGenerator;
 
 public class PasteCommand extends Command {
@@ -110,62 +112,36 @@ public class PasteCommand extends Command {
 			Document clipBoardCopy = (Document) clipBoardContent.clone();
 
 			// Remove all meta-attributes from the copied elements.
-			XPath xpathSelector = DocumentHelper
-					.createXPath("//meta-attribute[@name != 'location']");
-			Iterator metaAttributeIterator = xpathSelector.selectNodes(
-					clipBoardCopy).iterator();
-			while (metaAttributeIterator.hasNext()) {
-				Element metaAttribute = (Element) metaAttributeIterator.next();
+			for (Element metaAttribute : NetHelper.listAllMetadataExceptLocation(clipBoardCopy.getRootElement())) {
 				metaAttribute.detach();
 			}
 
 			// Replace the places color-ref ids and update all
 			// incidence-functions.
-			xpathSelector = DocumentHelper.createXPath("//color-ref");
-			Iterator colorRefIterator = xpathSelector
-					.selectNodes(clipBoardCopy).iterator();
-			while (colorRefIterator.hasNext()) {
-				Element colorRef = (Element) colorRefIterator.next();
+			for (Element colorRef : NetHelper.listAllColorReferences(clipBoardCopy.getRootElement())) {
 				replaceId(colorRef);
 			}
 
 			// Replace the places ids and update the connections id-refs
-			xpathSelector = DocumentHelper.createXPath("//place");
-			Iterator placeIterator = xpathSelector.selectNodes(clipBoardCopy)
-					.iterator();
-			while (placeIterator.hasNext()) {
-				Element place = (Element) placeIterator.next();
+			for (Element place : NetHelper.listAllPlaces(clipBoardCopy.getRootElement())) {
 				replaceId(place);
 				places.add((Element) place.clone());
 			}
 
 			// Replace the transitions modes ids and update the current
 			// transitions incidence-function.
-			xpathSelector = DocumentHelper.createXPath("//mode");
-			Iterator modeIterator = xpathSelector.selectNodes(clipBoardCopy)
-					.iterator();
-			while (modeIterator.hasNext()) {
-				Element mode = (Element) modeIterator.next();
+			for (Element mode :  NetHelper.listAllModes(clipBoardCopy.getRootElement())) {
 				replaceId(mode);
 			}
 
 			// Replace the transitions ids and update the connections id-refs
-			xpathSelector = DocumentHelper.createXPath("//transition");
-			Iterator tansitionIterator = xpathSelector.selectNodes(
-					clipBoardCopy).iterator();
-			while (tansitionIterator.hasNext()) {
-				Element transition = (Element) tansitionIterator.next();
+			for (Element transition : NetHelper.listAllTransitions(clipBoardCopy.getRootElement())) {
 				replaceId(transition);
 				transitions.add((Element) transition.clone());
 			}
 
 			// Replace the connections ids.
-			xpathSelector = DocumentHelper
-					.createXPath("/qpe-clipboard-document/connections/connection");
-			Iterator connectionIterator = xpathSelector.selectNodes(
-					clipBoardCopy).iterator();
-			while (connectionIterator.hasNext()) {
-				Element connection = (Element) connectionIterator.next();
+			for (Element connection : NetHelper.listAllConnections(clipBoardCopy.getRootElement())) {
 				replaceId(connection);
 				connections.add((Element) connection.clone());
 			}
@@ -188,12 +164,8 @@ public class PasteCommand extends Command {
 					newColorPrefix = "new document";
 				}
 				newColorPrefix += ".";
-
-				xpathSelector = DocumentHelper.createXPath("//color");
-				Iterator colorIterator = xpathSelector.selectNodes(
-						clipBoardCopy).iterator();
-				while (colorIterator.hasNext()) {
-					Element color = (Element) colorIterator.next();
+				
+				for (Element color : NetHelper.listAllColors(clipBoardCopy.getRootElement())) {
 					String curName = color.attributeValue("name", "");
 					// Since the Ids are generated new every time colors are
 					// copied, we have to check for equality by comparing every
@@ -201,12 +173,7 @@ public class PasteCommand extends Command {
 					// treated as equal.
 
 					// Add the color, if it doesen't yet exist.
-					xpathSelector = DocumentHelper
-							.createXPath("//color[@name = '" + newColorPrefix
-									+ curName + "']");
-					Element testColor = (Element) xpathSelector
-							.selectSingleNode(targetDocument);
-					if (testColor == null) {
+					if (!NetHelper.existsColorWithName(targetDocument.getRootElement(), newColorPrefix + curName)) {
 						color.addAttribute("name", newColorPrefix + curName);
 						colors.add((Element) color.clone());
 					}
@@ -229,18 +196,11 @@ public class PasteCommand extends Command {
 			if (location == null) {
 				location = new Point(0, 0);
 			}
-			Element metaAttribute = null;
+
 			do {
 				location.x += 10;
 				location.y += 10;
-				XPath xpathSelector = DocumentHelper
-						.createXPath("//meta-attribute[@name = 'location' and @location-x='"
-								+ Integer.toString(location.x)
-								+ "' and @location-y='"
-								+ Integer.toString(location.y) + "']");
-				metaAttribute = (Element) xpathSelector
-						.selectSingleNode(targetDocument);
-			} while (metaAttribute != null);
+			} while (NetHelper.existsElementAtLocation(targetDocument.getRootElement(), location.x, location.y));
 			DocumentManager.setLocation(place, location);
 			DocumentManager.addChild(placesRoot, place);
 			addedElements.add(place);
@@ -252,18 +212,11 @@ public class PasteCommand extends Command {
 		while (transitionIterator.hasNext()) {
 			Element transition = transitionIterator.next();
 			Point location = DocumentManager.getLocation(transition);
-			Element metaAttribute = null;
+
 			do {
 				location.x += 10;
 				location.y += 10;
-				XPath xpathSelector = DocumentHelper
-						.createXPath("//meta-attribute[@name = 'location' and @location-x='"
-								+ Integer.toString(location.x)
-								+ "' and @location-y='"
-								+ Integer.toString(location.y) + "']");
-				metaAttribute = (Element) xpathSelector
-						.selectSingleNode(targetDocument);
-			} while (metaAttribute != null);
+			} while (NetHelper.existsElementAtLocation(targetDocument.getRootElement(), location.x, location.y));
 			DocumentManager.setLocation(transition, location);
 			DocumentManager.addChild(transitionsRoot, transition);
 			addedElements.add(transition);
@@ -301,11 +254,7 @@ public class PasteCommand extends Command {
 		String oldId = element.attributeValue("id");
 		String newId = IdGenerator.get();
 
-		XPath xpathSelector = DocumentHelper.createXPath("//@*[. = '" + oldId
-				+ "']");
-		Iterator occurences = xpathSelector.selectNodes(element).iterator();
-		while (occurences.hasNext()) {
-			Attribute usage = (Attribute) occurences.next();
+		for (Attribute usage : NetHelper.listAllUsages(element, oldId)) {
 			usage.setValue(newId);
 		}
 	}
@@ -313,21 +262,13 @@ public class PasteCommand extends Command {
 	private void removeInvalidConnections() {
 		// After adding all places, transitions and connections
 		// remove those whose sources or targets don't exist.
-		XPath xpathSelector = DocumentHelper.createXPath("//connection");
-		Iterator connectionIterator = xpathSelector.selectNodes(targetDocument)
-				.iterator();
-		while (connectionIterator.hasNext()) {
-			Element connection = (Element) connectionIterator.next();
-			xpathSelector = DocumentHelper.createXPath("//*[@id = '"
-					+ connection.attributeValue("source-id", "") + "']");
-			Element el = (Element) xpathSelector.selectSingleNode(connection);
+		for (Element connection : NetHelper.listAllConnections(targetDocument.getRootElement())) {
+			Element el = NetHelper.getElement(connection, connection.attributeValue("source-id", ""));
 			if (el == null) {
 				DocumentManager.removeElement(connection);
 				addedElements.remove(connection);
 			} else {
-				xpathSelector = DocumentHelper.createXPath("//*[@id = '"
-						+ connection.attributeValue("target-id", "") + "']");
-				el = (Element) xpathSelector.selectSingleNode(connection);
+				el = NetHelper.getElement(connection, connection.attributeValue("target-id", ""));
 				if (el == null) {
 					DocumentManager.removeElement(connection);
 					addedElements.remove(connection);

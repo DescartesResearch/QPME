@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -47,9 +47,9 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Elias Volanakis - initial API and implementation
+ *ï¿½ï¿½ï¿½ï¿½Elias Volanakis - initial API and implementation
  *    IBM Corporation
- *******************************************************************************/
+ï¿½*******************************************************************************/
 package de.tud.cs.qpe.editors.net.controller.command;
 
 import java.util.List;
@@ -58,7 +58,7 @@ import org.dom4j.Element;
 import org.eclipse.gef.commands.Command;
 
 import de.tud.cs.qpe.model.ConnectionHelper;
-import de.tud.cs.qpe.model.IncidenceFuntionHelper;
+import de.tud.cs.qpe.model.IncidenceFunctionHelper;
 import de.tud.cs.qpe.model.NetHelper;
 import de.tud.cs.qpe.model.TransitionHelper;
 
@@ -117,7 +117,7 @@ public class ConnectionDeleteCommand extends Command {
 			transition = targetElement;
 			place = sourceElement;
 		}
-		incidenceFunctionConnections = IncidenceFuntionHelper.listAllConnectionsFromOrToPlace(transition, place);
+		incidenceFunctionConnections = IncidenceFunctionHelper.listAllConnectionsFromOrToPlace(transition, place);
 
 		redo();
 	}
@@ -130,7 +130,7 @@ public class ConnectionDeleteCommand extends Command {
 	public void redo() {
 		// Remove the connections in the transition.
 		for(Element con : incidenceFunctionConnections) {
-			IncidenceFuntionHelper.removeConnection(transition, con);
+			IncidenceFunctionHelper.removeConnection(transition, con);
 		}
 
 		// Remove the connection itself.
@@ -148,7 +148,7 @@ public class ConnectionDeleteCommand extends Command {
 
 		// Read the connections in the transition.
 		for(Element con : incidenceFunctionConnections) {
-			IncidenceFuntionHelper.addConnection(transition, con);
+			IncidenceFunctionHelper.addConnection(transition, con);
 		}
 	}
 }

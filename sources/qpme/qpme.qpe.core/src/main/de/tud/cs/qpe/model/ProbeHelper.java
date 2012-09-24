@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -47,7 +47,7 @@ import org.dom4j.Element;
 
 public class ProbeHelper extends XPathHelper {	
 	public static List<Element> listColorReferences(Element place) {
-		return query(place, "color-refs/color-ref");
+		return queryElements(place, "color-refs/color-ref");
 	}
 
 	public static void addColorReference(Element probe, Element colorRef) {
@@ -62,5 +62,13 @@ public class ProbeHelper extends XPathHelper {
 
 	public static void removeColorReference(Element model, Element colorRef) {
 		DocumentManager.removeElement(colorRef);		
+	}
+
+	public static boolean isProbe(Element newModel) {
+		return "probe".equals(newModel.getName());
+	}
+	
+	public static Element createSimqpnProbeConfigurationMetadata(Element place, String configName) {
+		return PlaceHelper.createSimqpnPlaceConfigurationMetadata(place, configName);
 	}
 }

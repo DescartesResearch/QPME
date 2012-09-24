@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -49,6 +49,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.wizard.WizardPage;
 
 import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.NetHelper;
 import de.tud.cs.simqpn.ui.model.Configuration;
 
 public abstract class BaseWizardPage extends WizardPage {
@@ -91,8 +92,7 @@ public abstract class BaseWizardPage extends WizardPage {
 					metaAttributeContainer = parent.addElement("meta-attributes");
 				}
 
-				XPath xpathSelector = DocumentHelper.createXPath("meta-attribute[@name = 'sim-qpn' and @configuration-name='" + configruationName + "']");
-				metaAttribute = (Element) xpathSelector.selectSingleNode(metaAttributeContainer);
+				metaAttribute = NetHelper.getMetadata(parent, configruationName);
 				if (metaAttribute == null) {
 					metaAttribute = new DefaultElement("meta-attribute");
 					metaAttribute.addAttribute("name", "sim-qpn");

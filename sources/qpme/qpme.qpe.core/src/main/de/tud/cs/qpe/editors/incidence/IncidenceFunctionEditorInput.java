@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -47,7 +47,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Chris Aniszczyk - initial API and implementation
+ *ï¿½ï¿½ï¿½ï¿½Chris Aniszczyk - initial API and implementation
  *    IBM Corporation
  *******************************************************************************/
 
@@ -55,16 +55,19 @@ package de.tud.cs.qpe.editors.incidence;
 
 import java.io.File;
 import java.util.Iterator;
+import java.util.List;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.dom4j.XPath;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
 
 import de.tud.cs.qpe.QPEBasePlugin;
+import de.tud.cs.qpe.model.ConnectionHelper;
+import de.tud.cs.qpe.model.PlaceHelper;
+import de.tud.cs.qpe.model.TransitionHelper;
 
 public class IncidenceFunctionEditorInput implements IEditorInput {
 	protected Element content;
@@ -133,37 +136,31 @@ public class IncidenceFunctionEditorInput implements IEditorInput {
 	public static boolean isValid(Element transitionModel) {
 		// Check, if at least one mode is configured 
 		boolean valid = true;
-		XPath xpathSelector = DocumentHelper.createXPath("modes/mode");
-		if(xpathSelector.selectNodes(transitionModel).size() < 1) {
+		if(TransitionHelper.listModes(transitionModel).size() < 1) {
 			valid = false;
 		}
-		 
-		xpathSelector = DocumentHelper.createXPath("//connection[@target-id = '" + transitionModel.attributeValue("id") + "']");
-		Iterator inputPlaceIterator = xpathSelector.selectNodes(transitionModel).iterator();
-		if(!inputPlaceIterator.hasNext()) {
+		
+		
+		List<Element> incomingConnections = TransitionHelper.listIncomingConnections(transitionModel);
+		if(incomingConnections.isEmpty()) {
 			valid = false;
 		}
-		while(inputPlaceIterator.hasNext()) {
-			Element incommingConnection = (Element) inputPlaceIterator.next();
-			xpathSelector = DocumentHelper.createXPath("//place[@id = '" + incommingConnection.attributeValue("source-id") + "']");
-			Element inputPlace = (Element) xpathSelector.selectSingleNode(transitionModel);
-			xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
-			if(xpathSelector.selectNodes(inputPlace).size() < 1) {
+		for (Element con : incomingConnections) {
+			Element inputPlace = ConnectionHelper.getSource(con);
+
+			if(PlaceHelper.listColorReferences(inputPlace).size() < 1) {
 				valid = false;
 			}
 		}
 		
-		xpathSelector = DocumentHelper.createXPath("//connection[@source-id = '" + transitionModel.attributeValue("id") + "']");
-		Iterator outputPlaceIterator = xpathSelector.selectNodes(transitionModel).iterator();
-		if(!outputPlaceIterator.hasNext()) {
+		List<Element> outgoingConnections = TransitionHelper.listOutgoingConnections(transitionModel);
+		if(outgoingConnections.isEmpty()) {
 			valid = false;
 		}
-		while(outputPlaceIterator.hasNext()) {
-			Element outgoingConnection = (Element) outputPlaceIterator.next();
-			xpathSelector = DocumentHelper.createXPath("//place[@id = '" + outgoingConnection.attributeValue("target-id") + "']");
-			Element outputPlace = (Element) xpathSelector.selectSingleNode(transitionModel);
-			xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
-			if(xpathSelector.selectNodes(outputPlace).size() < 1) {
+		for(Element con : outgoingConnections) {
+			Element outputPlace = ConnectionHelper.getTarget(con);
+
+			if(PlaceHelper.listColorReferences(outputPlace).size() < 1) {
 				valid = false;
 			}
 		}

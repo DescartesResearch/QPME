@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0"
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
 	<xsl:key name="allPlaces" match="place" use="@id" />
 	<xsl:key name="allColorRefs" match="color-ref" use="@id" />
@@ -13,7 +14,7 @@
 		</xsl:copy>
 	</xsl:template>
 	
-	<xsl:template match="place[@type='subnet-place']">
+	<xsl:template match="place[@xsi:type='subnet-place']">
 		<xsl:for-each select="subnet/places">
 			<xsl:apply-templates />
 		</xsl:for-each>
@@ -44,7 +45,7 @@
 		<xsl:if test="$targetColorRef">
 			<xsl:variable name="place" select="$targetColorRef/parent::node()/parent::place" />
 			<xsl:choose>
-				<xsl:when test="$place/@type='subnet-place'">
+				<xsl:when test="$place/@xsi:type='subnet-place'">
 					<connection>
 						<xsl:attribute name="source-id">
 							<xsl:value-of select="@source-id" />
@@ -73,7 +74,7 @@
 		<xsl:if test="$sourceColorRef">
 			<xsl:variable name="place" select="$sourceColorRef/parent::node()/parent::place" />
 			<xsl:choose>
-				<xsl:when test="$place/@type='subnet-place'">
+				<xsl:when test="$place/@xsi:type='subnet-place'">
 					<connection>
 						<xsl:attribute name="source-id">
 							<xsl:value-of select="$place/subnet/places/place[@name='output-place']/color-refs/color-ref[@color-id=$sourceColorRef/@color-id]/@id" />
@@ -104,7 +105,7 @@
 		<xsl:variable name="sourcePlace" select="key('allPlaces', @source-id)" />
 		
 		<xsl:choose>
-			<xsl:when test="$targetPlace/@type='subnet-place'">
+			<xsl:when test="$targetPlace/@xsi:type='subnet-place'">
 				<connection>
 					<xsl:attribute name="source-id">
 						<xsl:value-of select="@source-id" />
@@ -118,7 +119,7 @@
 				</connection>
 			</xsl:when>
 			
-			<xsl:when test="$sourcePlace/@type='subnet-place'">
+			<xsl:when test="$sourcePlace/@xsi:type='subnet-place'">
 				<connection>
 					<xsl:attribute name="source-id">
 						<xsl:value-of select="$sourcePlace/subnet/places/place[@name='output-place']/@id" />

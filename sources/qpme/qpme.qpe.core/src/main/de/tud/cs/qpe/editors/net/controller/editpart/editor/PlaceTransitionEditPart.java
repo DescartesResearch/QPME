@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -48,7 +48,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Elias Volanakis - initial API and implementation
+ *ï¿½ï¿½ï¿½ï¿½Elias Volanakis - initial API and implementation
  *    IBM Corporation
  *******************************************************************************/
 package de.tud.cs.qpe.editors.net.controller.editpart.editor;
@@ -87,6 +87,9 @@ import de.tud.cs.qpe.editors.net.view.figure.place.SubnetPlaceFigure;
 import de.tud.cs.qpe.editors.net.view.figure.transition.ImmediateTransitionFigure;
 import de.tud.cs.qpe.editors.net.view.figure.transition.TimedTransitionFigure;
 import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.NetHelper;
+import de.tud.cs.qpe.model.PlaceHelper;
+import de.tud.cs.qpe.model.TransitionHelper;
 
 /**
  * EditPart used for Shape instances (more specific for EllipticalShape and
@@ -114,9 +117,8 @@ public class PlaceTransitionEditPart extends AbstractGraphicalEditPart
 			super.activate();
 			DocumentManager.addPropertyChangeListener(getCastedModel(), this);
 			// Add listener for connections.
-			XPath xpathSelector = DocumentHelper.createXPath("connections");
-			Element connections = (Element) xpathSelector
-					.selectSingleNode((Element) getParent().getModel());
+			Element net = (Element) getParent().getModel();
+			Element connections = net.element("connections");
 			DocumentManager.addPropertyChangeListener(connections, this);
 		}
 	}
@@ -131,12 +133,11 @@ public class PlaceTransitionEditPart extends AbstractGraphicalEditPart
 			DocumentManager
 					.removePropertyChangeListener(getCastedModel(), this);
 			// Remove listener for connections.
-			XPath xpathSelector = DocumentHelper.createXPath("connections");
 			// Here we have to go the way over the parent edit-parts model
 			// since on element deletion the element is detatched and there
 			// is no way to navigate back.
-			Element connections = (Element) xpathSelector
-					.selectSingleNode((Element) getParent().getModel());
+			Element net = (Element) getParent().getModel();
+			Element connections = net.element("connections");
 			DocumentManager.removePropertyChangeListener(connections, this);
 		}
 	}
@@ -238,18 +239,18 @@ public class PlaceTransitionEditPart extends AbstractGraphicalEditPart
 	protected BaseFigure createFigureForModel() {
 		Element model = (Element) getModel();
 		BaseFigure newFigure = null;
-		if ("place".equals(model.getName())) {
-			if ("ordinary-place".equals(model.attributeValue("type"))) {
+		if (PlaceHelper.isPlace(model)) {
+			if (PlaceHelper.isOrdinaryPlace(model)) {
 				newFigure = new OrdinaryPlaceFigure();
-			} else if ("queueing-place".equals(model.attributeValue("type"))) {
+			} else if (PlaceHelper.isQueueingPlace(model)) {
 				newFigure = new QueueingPlaceFigure();
-			} else if ("subnet-place".equals(model.attributeValue("type"))) {
+			} else if (PlaceHelper.isSubnetPlace(model)) {
 				newFigure = new SubnetPlaceFigure();
 			}
-		} else if ("transition".equals(model.getName())) {
-			if ("immediate-transition".equals(model.attributeValue("type"))) {
+		} else if (TransitionHelper.isTransition(model)) {
+			if (TransitionHelper.isImmediateTranstion(model)) {
 				newFigure = new ImmediateTransitionFigure();
-			} else if ("timed-transition".equals(model.attributeValue("type"))) {
+			} else if (TransitionHelper.isTimedTransition(model)) {
 				newFigure = new TimedTransitionFigure();
 			}
 		} else {
@@ -273,37 +274,7 @@ public class PlaceTransitionEditPart extends AbstractGraphicalEditPart
 		return ((BaseFigure) getFigure()).getConnectionAnchor();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.eclipse.gef.editparts.AbstractGraphicalEditPart#getModelSourceConnections()
-	 */
-	protected List getModelSourceConnections() {
-		if (getCastedModel().getParent() != null) {
-			XPath xpathSelector = DocumentHelper
-					.createXPath("../../connections/connection[@source-id = '"
-							+ getCastedModel().attributeValue("id") + "']");
-			return xpathSelector.selectNodes(getCastedModel());
-		} else {
-			return new ArrayList();
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.eclipse.gef.editparts.AbstractGraphicalEditPart#getModelTargetConnections()
-	 */
-	protected List getModelTargetConnections() {
-		if (getCastedModel().getParent() != null) {
-			XPath xpathSelector = DocumentHelper
-					.createXPath("../../connections/connection[@target-id = '"
-							+ getCastedModel().attributeValue("id") + "']");
-			return xpathSelector.selectNodes(getCastedModel());
-		} else {
-			return new ArrayList();
-		}
-	}
+	
 
 	/*
 	 * (non-Javadoc)
@@ -376,10 +347,7 @@ public class PlaceTransitionEditPart extends AbstractGraphicalEditPart
 		// (the Figure of the ShapesDiagramEditPart), will not know the bounds
 		// of this figure
 		// and will not draw it correctly.
-		XPath xpathSelector = DocumentHelper
-				.createXPath("meta-attributes/meta-attribute[@name = 'location']");
-		Element location = (Element) xpathSelector
-				.selectSingleNode(getCastedModel());
+		Element location = NetHelper.getQpePositionMetaAttribute(getCastedModel());
 
 		int xPos = 0;
 		int yPos = 0;

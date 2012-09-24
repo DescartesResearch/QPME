@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -47,7 +47,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Elias Volanakis - initial API and implementation
+ *ï¿½ï¿½ï¿½ï¿½Elias Volanakis - initial API and implementation
  *    IBM Corporation
  *******************************************************************************/
 package de.tud.cs.qpe.editors.net.controller.command;
@@ -63,7 +63,11 @@ import org.dom4j.Element;
 import org.dom4j.XPath;
 import org.eclipse.gef.commands.Command;
 
+import de.tud.cs.qpe.model.ConnectionHelper;
 import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.IncidenceFunctionHelper;
+import de.tud.cs.qpe.model.TransitionHelper;
+import de.tud.cs.qpe.model.XPathHelper;
 
 /**
  * A command to remove a shape from its parent. The command can be undone or
@@ -128,15 +132,12 @@ public class PlaceTransitionDeleteCommand extends Command {
 		childContainer = (Element) child.getParent();
 
 		// save the container for connections.
-		XPath xpathSelector = DocumentHelper.createXPath("../connections");
-		connectionContainer = (Element) xpathSelector
-				.selectSingleNode(childContainer);
+		connectionContainer = childContainer.getParent().element("connections");
 
 		// store a copy of incoming & outgoing connections before proceeding.
-		xpathSelector = DocumentHelper.createXPath("connection[@source-id = '"
+		connections = XPathHelper.queryElements(connectionContainer, "connection[@source-id = '"
 				+ child.attributeValue("id") + "' or @target-id = '"
 				+ child.attributeValue("id") + "']");
-		connections = xpathSelector.selectNodes(connectionContainer);
 
 		// if this element is a place, then all elements
 		// linked to this one with connections have to be
@@ -151,11 +152,7 @@ public class PlaceTransitionDeleteCommand extends Command {
 			// to the element instances for fast access
 			// in folowin matching process.
 			Map colorRefMap = new HashMap<String, Element>();
-			xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
-			Iterator colorRefIterator = xpathSelector.selectNodes(child)
-					.iterator();
-			while (colorRefIterator.hasNext()) {
-				Element colorRef = (Element) colorRefIterator.next();
+			for (Element colorRef : XPathHelper.queryElements(child, "color-refs/color-ref")) {
 				colorRefMap.put(colorRef.attributeValue("id", ""), colorRef);
 			}
 
@@ -174,38 +171,29 @@ public class PlaceTransitionDeleteCommand extends Command {
 				List connectionsList = new ArrayList();
 
 				// Get the transition which this connection connects to.
-				xpathSelector = DocumentHelper
-						.createXPath("//transition[@id = '"
+			    Element transition = XPathHelper.element(connection, "//transition[@id = '"
 								+ connection.attributeValue("source-id", "")
 								+ "' or @id = '"
 								+ connection.attributeValue("target-id", "")
 								+ "']");
-				Element transition = (Element) xpathSelector
-						.selectSingleNode(connection);
 
 				// For each connection to a transition, iterate
 				// through the incidence-functions connections and
 				// check if it uses a color-ref of the current place.
 				// If yes, then add it to the list of connections
 				// that will be removed.
-				xpathSelector = DocumentHelper
-						.createXPath("connections/connection");
-				Iterator incidenceFunctionConnectionsIterator = xpathSelector
-						.selectNodes(transition).iterator();
-				while (incidenceFunctionConnectionsIterator.hasNext()) {
-					Element incidenceFunctionConnection = (Element) incidenceFunctionConnectionsIterator
-							.next();
+				for (Element incidenceFuncCon : TransitionHelper.listConnections(transition)) {
 
 					// If this incidence-function connection uses
 					// a color-ref from the place we are removing,
 					// add it to the list of connections to be removed.
-					String sourceId = incidenceFunctionConnection
+					String sourceId = incidenceFuncCon
 							.attributeValue("source-id", "");
-					String targetId = incidenceFunctionConnection
+					String targetId = incidenceFuncCon
 							.attributeValue("target-id", "");
 					if ((colorRefMap.get(sourceId) != null)
 							|| (colorRefMap.get(targetId) != null)) {
-						connectionsList.add(incidenceFunctionConnection);
+						connectionsList.add(incidenceFuncCon);
 					}
 				}
 

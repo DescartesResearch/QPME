@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -62,6 +62,9 @@ import de.tud.cs.qpe.editors.net.gef.property.place.QueueingPlacePropertyComposi
 import de.tud.cs.qpe.editors.net.gef.property.place.SubnetPlacePropertyComposite;
 import de.tud.cs.qpe.editors.net.gef.property.transition.ImmediateTransitionPropertyComposite;
 import de.tud.cs.qpe.editors.net.gef.property.transition.TimedTransitionPropertyComposite;
+import de.tud.cs.qpe.model.PlaceHelper;
+import de.tud.cs.qpe.model.ProbeHelper;
+import de.tud.cs.qpe.model.TransitionHelper;
 
 public class PlaceTransitionPropertyPage implements IPropertySheetPage {
 	protected Composite content;
@@ -145,40 +148,44 @@ public class PlaceTransitionPropertyPage implements IPropertySheetPage {
 			StructuredSelection structuredSelection = (StructuredSelection) selection;
 			// If only one element is selected then an ordinary
 			// PropertyPage for this element is returned.
-			if (structuredSelection.size() == 1) {
+			if (structuredSelection.size() <= 1) {
 				// Remove the last property change listener.
 				if(stackLayout.topControl instanceof ElementPropertyComposite) {
 					ElementPropertyComposite oldPropetyComposite = (ElementPropertyComposite) stackLayout.topControl;
 					oldPropetyComposite.deactivate();
 				}
 				
-				Element newModel = null;
-				if (structuredSelection.getFirstElement() instanceof AbstractEditPart) {
-					AbstractEditPart editPart = (AbstractEditPart) structuredSelection
-							.getFirstElement();
-					if (editPart.getModel() instanceof Element) {
-						newModel = (Element) editPart.getModel();					
+				Element newModel = null;				
+				if (structuredSelection.size() == 1) {
+					if (structuredSelection.getFirstElement() instanceof AbstractEditPart) {
+						AbstractEditPart editPart = (AbstractEditPart) structuredSelection
+								.getFirstElement();
+						if (editPart.getModel() instanceof Element) {
+							newModel = (Element) editPart.getModel();					
+						} 
+					} else if (structuredSelection.getFirstElement() instanceof Element) {
+						newModel = (Element)structuredSelection.getFirstElement();										
 					} 
-				} else if (structuredSelection.getFirstElement() instanceof Element) {
-					newModel = (Element)structuredSelection.getFirstElement();										
-				} 
+				}
 				
-				if (newModel != null) {
-					String type = newModel.attributeValue("type");
-					if (newModel.getName().equals("probe")) {
+				if (newModel != null) {					
+					stackLayout.topControl = emptyProperties;
+					if (ProbeHelper.isProbe(newModel)) {
 						stackLayout.topControl = probeProperties;
-					} else if ("ordinary-place".equals(type)) {
-						stackLayout.topControl = ordinaryPlaceProperties;
-					} else if ("queueing-place".equals(type)) {
-						stackLayout.topControl = queueingPlaceProperties;
-					} else if ("subnet-place".equals(type)) {
-						stackLayout.topControl = subnetPlaceProperties;
-					} else if ("immediate-transition".equals(type)) {
-						stackLayout.topControl = immediateTransitionProperties;
-					} else if ("timed-transition".equals(type)) {
-						stackLayout.topControl = timedTransitionProperties;
-					} else {
-						stackLayout.topControl = emptyProperties;
+					} else if (PlaceHelper.isPlace(newModel)) {
+						if (PlaceHelper.isOrdinaryPlace(newModel)) {
+							stackLayout.topControl = ordinaryPlaceProperties;
+						} else if (PlaceHelper.isQueueingPlace(newModel)) {
+							stackLayout.topControl = queueingPlaceProperties;
+						} else if (PlaceHelper.isSubnetPlace(newModel)) {
+							stackLayout.topControl = subnetPlaceProperties;
+						}
+					} else if (TransitionHelper.isTransition(newModel)) {
+						if (TransitionHelper.isImmediateTranstion(newModel)) {
+							stackLayout.topControl = immediateTransitionProperties;
+						} else if (TransitionHelper.isTimedTransition(newModel)) {
+							stackLayout.topControl = timedTransitionProperties;
+						}
 					}
 					
 					if (stackLayout.topControl != emptyProperties) {

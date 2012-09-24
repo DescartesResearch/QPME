@@ -46,7 +46,11 @@ package de.tud.cs.simqpn.console;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+
+import javax.xml.XMLConstants;
 
 import org.dom4j.Attribute;
 import org.dom4j.Document;
@@ -154,7 +158,10 @@ public class SimQPN implements IApplication {
 					System.out.println("---------------------------------------");
 				}
 				XPath xpathSelector = DocumentHelper
-						.createXPath("/net/meta-attributes/meta-attribute[@name = 'sim-qpn']/@configuration-name");
+						.createXPath("/net/meta-attributes/meta-attribute[@xsi:type = 'simqpn-configuration']/@configuration-name");
+				Map<String, String> namespaceUris = new HashMap<String, String>();
+				namespaceUris.put("xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
+				xpathSelector.setNamespaceURIs(namespaceUris);
 				Iterator configurationNameIterator = xpathSelector
 						.selectNodes(netDocument).iterator();
 				while (configurationNameIterator.hasNext()) {

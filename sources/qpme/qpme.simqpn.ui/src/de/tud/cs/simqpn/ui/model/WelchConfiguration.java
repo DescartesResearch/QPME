@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -43,6 +43,7 @@ package de.tud.cs.simqpn.ui.model;
 import org.dom4j.Element;
 import org.eclipse.jface.viewers.ICellEditorValidator;
 
+import de.tud.cs.qpe.model.ColorReferenceHelper;
 import de.tud.cs.qpe.model.NetHelper;
 import de.tud.cs.qpe.utils.CellValidators;
 
@@ -97,9 +98,9 @@ public class WelchConfiguration extends Configuration {
 	}
 	
 	@Override
-	public void createMetadata(Element net, String configName) {
+	public void createSimulationConfiguration(Element net, String configName) {
 		if (getMetadata() == null) {
-			Element metadata = NetHelper.createMetadata(net, configName);
+			Element metadata = NetHelper.createSimqpnConfigurationMetadata(net, configName);
 			metadata.addAttribute("scenario", "3");
 			metadata.addAttribute("number-of-runs", "100");
 			metadata.addAttribute("total-run-length", "10000000");
@@ -110,6 +111,11 @@ public class WelchConfiguration extends Configuration {
 			metadata.addAttribute("output-directory", ".");
 			setMetadata(metadata);
 		}
+	}
+	
+	@Override
+	public Element createColorRefMetadata(Element colorRef, String configName) {
+		return ColorReferenceHelper.createSimqpnWelchColoRefConfigurationMetadata(colorRef, configName);
 	}
 	
 	@Override

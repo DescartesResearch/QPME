@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -41,7 +41,11 @@
  */
 package de.tud.cs.qpe.editors.net.gef.property.place;
 
+import javax.xml.XMLConstants;
+
 import org.dom4j.Element;
+import org.dom4j.Namespace;
+import org.dom4j.QName;
 import org.eclipse.swt.widgets.Composite;
 
 public class OrdinaryPlacePropertyComposite extends PlacePropertyComposite {
@@ -50,5 +54,12 @@ public class OrdinaryPlacePropertyComposite extends PlacePropertyComposite {
 		super(net, parent);
 		initProperties();
 		initColorTable();
+	}
+	
+	@Override
+	public void colorRefAdded(Element colorRef) {
+		super.colorRefAdded(colorRef);
+		
+		colorRef.addAttribute(new QName("type", new Namespace("xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI)), "ordinary-color-reference");
 	}
 }

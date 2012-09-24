@@ -43,7 +43,9 @@ package de.tud.cs.qpe.editors.net.gef.property;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.dom4j.Element;
 import org.dom4j.tree.DefaultElement;
@@ -95,7 +97,30 @@ public abstract class ColorRefTable implements PropertyChangeListener {
 	
 	private List<Element> unusedColors = new ArrayList<Element>();
 	
+	private Set<Element> observedElements = new HashSet<Element>();
+	 
 	private ListenerList listeners = new ListenerList();
+	
+	private void attachToPropertyChanges(Element target) {
+		if (!observedElements.contains(target)) {
+			DocumentManager.addPropertyChangeListener(target, this);
+			observedElements.add(target);
+		}
+	}
+	
+	private void detachFromPropertyChanges(Element target) {
+		if(observedElements.contains(target)) {
+			observedElements.remove(target);
+			DocumentManager.removePropertyChangeListener(target, this);
+		}
+	}
+	
+	private void detachFromAllPropertyChanges() {
+		for (Element target : observedElements) {
+			DocumentManager.removePropertyChangeListener(target, this);
+		}
+		observedElements.clear();
+	}
 
 	public ColorRefTable(Composite parent) {
 		initColorTable(parent);
@@ -132,16 +157,13 @@ public abstract class ColorRefTable implements PropertyChangeListener {
 	public void activate() {
 		for (Element colorRef : getColorReferences()) {				
 			Element color = NetHelper.getColorByReference(colorRef);
-			DocumentManager.addPropertyChangeListener(color, this);
+			attachToPropertyChanges(color);
 		}
 		updateUnusedColors();
 	}
 
 	public void deactivate() {
-		// Attention: color elements might be already removed from the model
-		for (Element color : getAvailableColors()) {
-			DocumentManager.removePropertyChangeListener(color, this);
-		}
+		detachFromAllPropertyChanges();
 	}
 	
 	protected void fireColorRefAdded(final Element colorRef) {
@@ -216,9 +238,9 @@ public abstract class ColorRefTable implements PropertyChangeListener {
 					
 					fireColorRefAdded(colorRef);
 
-					DocumentManager.addPropertyChangeListener(colorRef, ColorRefTable.this);
-					Element color = NetHelper.getColorByReference(colorRef);
-					DocumentManager.addPropertyChangeListener(color, ColorRefTable.this);
+					attachToPropertyChanges(colorRef);
+					Element color = NetHelper.getColorByReference(colorRef);					
+					attachToPropertyChanges(color);
 					
 					updateUnusedColors();
 				}
@@ -234,11 +256,11 @@ public abstract class ColorRefTable implements PropertyChangeListener {
 				if (selection.size() == 1) {
 
 					Element colorRef = (Element)selection.getFirstElement();
-					DocumentManager.removePropertyChangeListener(colorRef, ColorRefTable.this);
+					detachFromPropertyChanges(colorRef);
 					
 					// Unregister as listener for changes to the referenced color.
 					Element color = NetHelper.getColorByReference(colorRef);
-					DocumentManager.removePropertyChangeListener(color, ColorRefTable.this);
+					detachFromPropertyChanges(color);
 	
 					fireColorRefRemoved(colorRef);
 					
@@ -406,7 +428,7 @@ public abstract class ColorRefTable implements PropertyChangeListener {
 		public ColorReferenceEditingSupport(ColumnViewer viewer) {
 			super(viewer);
 			cellEditor = new ComboBoxViewerCellEditor((Composite) viewer.getControl());
-			cellEditor.setContenProvider(new ArrayContentProvider());
+			cellEditor.setContentProvider(new ArrayContentProvider());
 			cellEditor.setLabelProvider(new LabelProvider() {
 				@Override
 				public String getText(Object element) {

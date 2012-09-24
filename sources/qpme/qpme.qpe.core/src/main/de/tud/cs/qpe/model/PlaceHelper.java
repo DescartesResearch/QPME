@@ -44,28 +44,33 @@ package de.tud.cs.qpe.model;
 
 import java.util.List;
 
+import javax.xml.XMLConstants;
+
 import org.dom4j.Element;
+import org.dom4j.Namespace;
+import org.dom4j.QName;
+import org.dom4j.tree.DefaultElement;
 
 public class PlaceHelper extends XPathHelper {
 	
 	public static boolean isPlace(Element elem) {
-		return "places".equals(elem.getParent().getName());
+		return "place".equals(elem.getName());
 	}
 	
 	public static boolean isOrdinaryPlace(Element elem) {
-		return "ordinary-place".equals(elem.attributeValue("type"));
+		return "ordinary-place".equals(elem.attributeValue(new QName("type", new Namespace("xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI))));
 	}
 	
 	public static boolean isQueueingPlace(Element elem) {
-		return "queueing-place".equals(elem.attributeValue("type"));
+		return "queueing-place".equals(elem.attributeValue(new QName("type", new Namespace("xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI))));
 	}
 	
 	public static boolean isSubnetPlace(Element elem) {
-		return "subnet-place".equals(elem.attributeValue("type"));
+		return "subnet-place".equals(elem.attributeValue(new QName("type", new Namespace("xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI))));
 	}
 	
 	public static List<Element> listVisibleColors(Element place) {
-		return query(place, "ancestor::*/colors/color");
+		return queryElements(place, "ancestor::*/colors/color");
 	}
 	
 	public static boolean existsColorReferenceForColorId(Element place, String colorId) {
@@ -73,7 +78,7 @@ public class PlaceHelper extends XPathHelper {
 	}
 	
 	public static List<Element> listColorReferences(Element place) {
-		return query(place, "color-refs/color-ref");
+		return queryElements(place, "color-refs/color-ref");
 	}
 	
 	public static Element getColorReferenceByColorId(Element place, String colorId) {
@@ -100,14 +105,14 @@ public class PlaceHelper extends XPathHelper {
 	}
 	
 	public static void removeOutgoingConnections(Element place, Element colorRef) {
-		List<Element> incidenceFunctionConnections = query(colorRef, "//*[@source-id = " + colorRef.attributeValue("id") + "]");
+		List<Element> incidenceFunctionConnections = queryElements(colorRef, "//*[@source-id = " + colorRef.attributeValue("id") + "]");
 		for(Element connection : incidenceFunctionConnections) {
 			DocumentManager.removeElement(connection);
 		}
 	}
 	
 	public static void removeIncomingConnections(Element place, Element colorRef) {
-		List<Element> incidenceFunctionConnections = query(colorRef, "//*[@target-id = " + colorRef.attributeValue("id") + "]");
+		List<Element> incidenceFunctionConnections = queryElements(colorRef, "//*[@target-id = " + colorRef.attributeValue("id") + "]");
 		for(Element connection : incidenceFunctionConnections) {
 			DocumentManager.removeElement(connection);
 		}
@@ -115,5 +120,27 @@ public class PlaceHelper extends XPathHelper {
 	
 	public static boolean isLocked(Element place) {
 		return "true".equals(place.attributeValue("locked"));
+	}
+	
+	public static Element createSimqpnPlaceConfigurationMetadata(Element place, String configName) {
+		Element metaAttributeContainer = place.element("meta-attributes"); 
+		if(metaAttributeContainer == null) {
+			metaAttributeContainer = place.addElement("meta-attributes");
+		}
+
+		Element metaAttribute = new DefaultElement("meta-attribute");
+		metaAttribute.addAttribute(new QName("type", new Namespace("xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI)), "simqpn-place-configuration");
+		metaAttribute.addAttribute("configuration-name", configName);
+		
+		DocumentManager.addChild(metaAttributeContainer, metaAttribute);
+		return metaAttribute;
+	}
+	
+	public static List<Element> listIncomingConnections(Element place) {
+		return queryElements(place, "//connection[@target-id = '" + place.attributeValue("id") + "']");
+	}
+	
+	public static List<Element> listOutgoingConnections(Element place) {
+		return queryElements(place, "//connection[@source-id = '" + place.attributeValue("id") + "']");
 	}
 }

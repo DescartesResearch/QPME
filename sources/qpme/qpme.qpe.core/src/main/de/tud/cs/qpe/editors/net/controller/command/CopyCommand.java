@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -59,6 +59,9 @@ import de.tud.cs.qpe.editors.net.controller.editpart.editor.ConnectionEditPart;
 import de.tud.cs.qpe.editors.net.controller.editpart.editor.PlaceEditPart;
 import de.tud.cs.qpe.editors.net.controller.editpart.editor.PlaceTransitionEditPart;
 import de.tud.cs.qpe.editors.net.controller.editpart.editor.TransitionEditPart;
+import de.tud.cs.qpe.model.ConnectionHelper;
+import de.tud.cs.qpe.model.NetHelper;
+import de.tud.cs.qpe.model.PlaceHelper;
 
 public class CopyCommand extends Command {
 	protected StructuredSelection selection;
@@ -111,12 +114,9 @@ public class CopyCommand extends Command {
 
 					// Add the colors, which are referenced
 					// by the current place.
-					XPath xpathSelector = DocumentHelper.createXPath("color-refs/color-ref");
-					Iterator colorRefIterator = xpathSelector.selectNodes(placeEditPart.getModel()).iterator();
-					while (colorRefIterator.hasNext()) {
-						Element colorRef = (Element) colorRefIterator.next();
-						xpathSelector = DocumentHelper.createXPath("//color[@id = '" + colorRef.attributeValue("color-id") + "']");
-						Element color = (Element) xpathSelector.selectSingleNode(colorRef);
+					List<Element> colorReferences = PlaceHelper.listColorReferences((Element)placeEditPart.getModel());
+					for (Element colorRef : colorReferences) {
+						Element color = NetHelper.getColorById(colorRef, colorRef.attributeValue("color-id"));
 						if (color != null) {
 							colors.add(color);
 						}
@@ -176,10 +176,7 @@ public class CopyCommand extends Command {
 		Iterator connectionIterator = connections.iterator();
 		while (connectionIterator.hasNext()) {
 			Element connection = (Element) connectionIterator.next();
-			XPath xpathSelector = DocumentHelper.createXPath("//connection[@source-id = '" + connection.attributeValue("source-id", "") + "' and @target-id = '"
-					+ connection.attributeValue("target-id", "") + "']");
-			Element test = (Element) xpathSelector.selectSingleNode(curElement);
-			if (test == null) {
+			if (!ConnectionHelper.existsConnection(curElement, connection.attributeValue("source-id", ""), connection.attributeValue("target-id", ""))) {
 				curElement.add((Element) connection.clone());
 			}
 		}

@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -48,7 +48,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *    Elias Volanakis - initial API and implementation
+ *ï¿½ï¿½ï¿½ï¿½Elias Volanakis - initial API and implementation
  *    IBM Corporation
  *******************************************************************************/
 package de.tud.cs.qpe.editors.net.controller.factory;
@@ -62,6 +62,7 @@ import de.tud.cs.qpe.editors.net.controller.editpart.editor.NetEditPart;
 import de.tud.cs.qpe.editors.net.controller.editpart.editor.PlaceEditPart;
 import de.tud.cs.qpe.editors.net.controller.editpart.editor.SubnetPlaceEditPart;
 import de.tud.cs.qpe.editors.net.controller.editpart.editor.TransitionEditPart;
+import de.tud.cs.qpe.model.PlaceHelper;
 
 /**
  * Factory that maps model elements to edit parts.
@@ -96,7 +97,7 @@ public class NetEditPartFactory implements EditPartFactory {
 			return new NetEditPart();
 		}
 		if ("places".equals(element.getParent().getName())) {
-			if("subnet-place".equals(element.attributeValue("type"))) {
+			if(PlaceHelper.isSubnetPlace(element)) {
 				return new SubnetPlaceEditPart();
 			} else {
 				return new PlaceEditPart();

@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -71,6 +71,10 @@ import de.tud.cs.qpe.editors.incidence.view.figure.ColorRefFigure;
 import de.tud.cs.qpe.editors.incidence.view.figure.PlaceFigure;
 import de.tud.cs.qpe.editors.net.view.figure.BaseFigure;
 import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.IncidenceFunctionHelper;
+import de.tud.cs.qpe.model.ModeHelper;
+import de.tud.cs.qpe.model.NetHelper;
+import de.tud.cs.qpe.model.TransitionHelper;
 import de.tud.cs.qpe.utils.ColorHelper;
 
 public class ColorRefEditPart extends AbstractGraphicalEditPart implements
@@ -87,11 +91,11 @@ public class ColorRefEditPart extends AbstractGraphicalEditPart implements
 		if (!isActive()) {
 			super.activate();
 			DocumentManager.addPropertyChangeListener(getCastedModel(), this);
-			XPath xpathSelector = DocumentHelper.createXPath("connections");
-			Element connections = (Element) xpathSelector.selectSingleNode((Element) getParent().getParent().getModel());
+			Element transition = ((Element) getParent().getParent().getModel());
+			Element connections = transition.element("connections");
 			if(connections == null) {
 				connections = new DefaultElement("connections");
-				DocumentManager.addChild((Element) getParent().getParent().getModel(), connections, false);
+				DocumentManager.addChild(transition, connections, false);
 			} 
 			DocumentManager.addPropertyChangeListener(connections, this);
 		}
@@ -187,9 +191,7 @@ public class ColorRefEditPart extends AbstractGraphicalEditPart implements
 	 */
 	protected IFigure createFigure() {
 		Element model = (Element) getModel();
-		XPath xpathSelector = DocumentHelper.createXPath("//color[@id = '"
-				+ model.attributeValue("color-id") + "']");
-		Element color = (Element) xpathSelector.selectSingleNode(model);
+		Element color = NetHelper.getColorById(model, model.attributeValue("color-id"));
 
 		view = new ColorRefFigure();
 		view.setName(color.attributeValue("name", "new color"));
@@ -213,14 +215,9 @@ public class ColorRefEditPart extends AbstractGraphicalEditPart implements
 	 * @see org.eclipse.gef.editparts.AbstractGraphicalEditPart#getModelSourceConnections()
 	 */
 	protected List getModelSourceConnections() {
-		// TODO: Check the ColorRef's parent. If it is a OutgoinPlace, then this method should return null.
 		if(this.getParent() instanceof PlaceEditPart) {
 			PlaceEditPart parentPlaceEditPart = (PlaceEditPart) this.getParent();
 			if(parentPlaceEditPart.getType() == PlaceFigure.TYPE_INPUT_PLACE) {
-				XPath xpathSelector = DocumentHelper
-				.createXPath("connections/connection[@source-id = '"
-						+ getCastedModel().attributeValue("id") + "']");
-
 				// For each connection using this color-ref as source,
 				// choose only thise who's target is in the current
 				// incidence-function.
@@ -230,14 +227,10 @@ public class ColorRefEditPart extends AbstractGraphicalEditPart implements
 					Element transitionModel = (Element) getParent().getParent()
 							.getModel();
 
-					Iterator connectionIterator = xpathSelector.selectNodes(
-							transitionModel).iterator();
-					while (connectionIterator.hasNext()) {
-						Element connection = (Element) connectionIterator.next();
-						xpathSelector = DocumentHelper.createXPath("modes/mode[@id = '"
-								+ connection.attributeValue("target-id") + "']");
-						if (xpathSelector.selectSingleNode(transitionModel) != null) {
-							sourceConnections.add(connection);
+					List<Element> connections = IncidenceFunctionHelper.listConnectionsFromColorRef(transitionModel, getCastedModel());
+					for (Element con : connections) {
+						if (TransitionHelper.getMode(transitionModel, con.attributeValue("target-id")) != null) {
+							sourceConnections.add(con);
 						}
 					}
 				}
@@ -258,10 +251,6 @@ public class ColorRefEditPart extends AbstractGraphicalEditPart implements
 		if(this.getParent() instanceof PlaceEditPart) {
 			PlaceEditPart parentPlaceEditPart = (PlaceEditPart) this.getParent();
 			if(parentPlaceEditPart.getType() == PlaceFigure.TYPE_OUTPUT_PLACE) {
-				XPath xpathSelector = DocumentHelper
-				.createXPath("connections/connection[@target-id = '"
-						+ getCastedModel().attributeValue("id") + "']");
-
 				// For each connection using this color-ref as source,
 				// choose only thise who's target is in the current
 				// incidence-function.
@@ -271,14 +260,10 @@ public class ColorRefEditPart extends AbstractGraphicalEditPart implements
 					Element transitionModel = (Element) this.getParent().getParent()
 							.getModel();
 			
-					Iterator connectionIterator = xpathSelector.selectNodes(
-							transitionModel).iterator();
-					while (connectionIterator.hasNext()) {
-						Element connection = (Element) connectionIterator.next();
-						xpathSelector = DocumentHelper.createXPath("modes/mode[@id = '"
-								+ connection.attributeValue("source-id") + "']");
-						if (xpathSelector.selectSingleNode(transitionModel) != null) {
-							targetConnections.add(connection);
+					List<Element> connections = IncidenceFunctionHelper.listConnectionsToColorRef(transitionModel, getCastedModel());
+					for (Element con : connections) {
+						if (TransitionHelper.getMode(transitionModel, con.attributeValue("source-id"))!= null) {
+							targetConnections.add(con);
 						}
 					}
 				}

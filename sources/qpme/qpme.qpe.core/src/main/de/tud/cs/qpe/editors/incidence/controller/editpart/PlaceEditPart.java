@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -55,6 +55,7 @@ import de.tud.cs.qpe.editors.incidence.model.InputPlaceWrapper;
 import de.tud.cs.qpe.editors.incidence.model.PlaceWrapper;
 import de.tud.cs.qpe.editors.incidence.view.figure.PlaceFigure;
 import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.SubnetHelper;
 
 public class PlaceEditPart extends AbstractGraphicalEditPart implements
 		PropertyChangeListener {
@@ -129,14 +130,11 @@ public class PlaceEditPart extends AbstractGraphicalEditPart implements
 	 * @see org.eclipse.gef.editparts.AbstractEditPart#getModelChildren()
 	 */
 	protected List getModelChildren() {
-		XPath xpathSelector;
 		if (getType() == PlaceFigure.TYPE_INPUT_PLACE) {
-			xpathSelector = DocumentHelper.createXPath("color-refs/color-ref[not(@direction = 'in')]");
+			return SubnetHelper.listOutColorReferences(getCastedModel().getElement());
 		} else {
-			xpathSelector = DocumentHelper.createXPath("color-refs/color-ref[not(@direction = 'out')]");
+			return SubnetHelper.listInColorReferences(getCastedModel().getElement());
 		}
-				
-		return xpathSelector.selectNodes(getCastedModel().getElement());
 	}
 
 	public void propertyChange(PropertyChangeEvent evt) {

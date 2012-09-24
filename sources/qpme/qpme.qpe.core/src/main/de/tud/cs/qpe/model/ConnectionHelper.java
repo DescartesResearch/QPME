@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -62,10 +62,14 @@ public class ConnectionHelper extends XPathHelper {
 	}
 	
 	public static boolean existsConnection(Element source, Element target) {
-		return (element(source, "../../connections/connection[@source-id = '"
-							+ source.attributeValue("id")
+		return existsConnection(source, source.attributeValue("id"), target.attributeValue("id"));
+	}
+	
+	public static boolean existsConnection(Element elem, String sourceId, String targetId) {
+		return (element(elem, "//connections/connection[@source-id = '"
+							+ sourceId
 							+ "' and @target-id = '"
-							+ target.attributeValue("id") + "']") != null);
+							+ targetId + "']") != null);
 	}
 	
 	public static void removeConnection(Element connection) {

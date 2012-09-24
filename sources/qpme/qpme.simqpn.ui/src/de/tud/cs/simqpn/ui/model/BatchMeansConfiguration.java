@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -41,10 +41,9 @@
 package de.tud.cs.simqpn.ui.model;
 
 import org.dom4j.Element;
-import org.dom4j.tree.DefaultElement;
 import org.eclipse.jface.viewers.ICellEditorValidator;
 
-import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.ColorReferenceHelper;
 import de.tud.cs.qpe.model.NetHelper;
 import de.tud.cs.qpe.utils.CellValidators;
 
@@ -126,9 +125,9 @@ public class BatchMeansConfiguration extends Configuration {
 	}
 	
 	@Override
-	public void createMetadata(Element net, String configName) {
+	public void createSimulationConfiguration(Element net, String configName) {
 		if (getMetadata() == null) {
-			Element metadata = NetHelper.createMetadata(net, configName);
+			Element metadata = NetHelper.createSimqpnConfigurationMetadata(net, configName);
 			metadata.addAttribute("scenario", "1");
 			metadata.addAttribute("ramp-up-length", "1000000");
 			metadata.addAttribute("total-run-length", "10000000");
@@ -142,7 +141,12 @@ public class BatchMeansConfiguration extends Configuration {
 			setMetadata(metadata);
 		}
 	}
-
+	
+	@Override
+	public Element createColorRefMetadata(Element colorRef, String configName) {
+		return ColorReferenceHelper.createSimqpnBatchMeansColoRefConfigurationMetadata(colorRef, configName);
+	}
+	
 	@Override
 	public void initColorRefDepositoryMetadata(Element metaAttribute) {
 		setAttributeIfNotExists(metaAttribute, SIGN_LEV, "0.05");

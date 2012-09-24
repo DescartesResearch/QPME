@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -68,6 +68,7 @@ import de.tud.cs.qpe.editors.net.controller.command.PlaceTransitionCreateCommand
 import de.tud.cs.qpe.editors.net.controller.command.PlaceTransitionSetConstraintCommand;
 import de.tud.cs.qpe.editors.net.controller.editpart.editor.PlaceTransitionEditPart;
 import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.NetHelper;
 
 public class SubnetEditPart extends AbstractGraphicalEditPart implements PropertyChangeListener {
 
@@ -128,9 +129,9 @@ public class SubnetEditPart extends AbstractGraphicalEditPart implements Propert
 	 * @see org.eclipse.gef.editparts.AbstractEditPart#getModelChildren()
 	 */
 	protected List getModelChildren() {
-		XPath xpathSelector = DocumentHelper.createXPath("places/place | transitions/transition");
-		List nodes = xpathSelector.selectNodes(getCastedModel());
-		return nodes;
+		List<Element> elements = NetHelper.listPlaces(getCastedModel());
+		elements.addAll(NetHelper.listTransitions(getCastedModel()));
+		return elements;
 	}
 
 	/*

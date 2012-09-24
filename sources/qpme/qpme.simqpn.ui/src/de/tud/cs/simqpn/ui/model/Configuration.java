@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -48,6 +48,7 @@ import org.eclipse.jface.viewers.ICellEditorValidator;
 import de.tud.cs.qpe.model.DocumentManager;
 import de.tud.cs.qpe.model.NetHelper;
 import de.tud.cs.qpe.model.PlaceHelper;
+import de.tud.cs.qpe.model.ProbeHelper;
 
 
 public abstract class Configuration {
@@ -194,7 +195,9 @@ public abstract class Configuration {
 	
 	public abstract ICellEditorValidator getValidator(int colIndex);
 	
-	public abstract void createMetadata(Element net, String configName);
+	public abstract void createSimulationConfiguration(Element net, String configName);
+	
+	public abstract Element createColorRefMetadata(Element colorRef, String configName);
 	
 	public void init(Element net) {
 		List<Element> places = NetHelper.listAllPlaces(net);
@@ -203,7 +206,7 @@ public abstract class Configuration {
 		for (Element place : places) {
 			Element placeMeta = NetHelper.getMetadata(place, configName);
 			if (placeMeta == null) {
-				placeMeta = NetHelper.createMetadata(place, configName);
+				placeMeta = PlaceHelper.createSimqpnPlaceConfigurationMetadata(place, configName);
 			}
 			if (placeMeta.attribute(STATS_LEVEL) == null) {
 				placeMeta.addAttribute(STATS_LEVEL, "1");
@@ -215,7 +218,7 @@ public abstract class Configuration {
 				for (Element colorRef : colorRefs) {
 					Element colorRefMeta = NetHelper.getMetadata(colorRef, configName);
 					if (colorRefMeta == null) {
-						colorRefMeta = NetHelper.createMetadata(colorRef, configName);						
+						colorRefMeta = createColorRefMetadata(colorRef, configName);						
 					}
 					
 					initColorRefDepositoryMetadata(colorRefMeta);
@@ -231,7 +234,7 @@ public abstract class Configuration {
 		for (Element probe : probes) {
 			Element probeMeta = NetHelper.getMetadata(probe, configName);
 			if (probeMeta == null) {
-				probeMeta = NetHelper.createMetadata(probe, configName);
+				probeMeta = ProbeHelper.createSimqpnProbeConfigurationMetadata(probe, configName);
 			}
 			if (probeMeta.attribute(STATS_LEVEL) == null) {
 				probeMeta.addAttribute(STATS_LEVEL, "1");
@@ -244,7 +247,7 @@ public abstract class Configuration {
 				for (Element colorRef : colorRefs) {
 					Element colorRefMeta = NetHelper.getMetadata(colorRef, configName);
 					if (colorRefMeta == null) {
-						colorRefMeta = NetHelper.createMetadata(colorRef, configName);						
+						colorRefMeta = createColorRefMetadata(colorRef, configName);						
 					}
 					
 					initColorRefDepositoryMetadata(colorRefMeta);

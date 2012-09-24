@@ -44,8 +44,12 @@ package de.tud.cs.qpe.editors.net.gef.property.place;
 
 import java.util.Iterator;
 
+import javax.xml.XMLConstants;
+
 import org.dom4j.Attribute;
 import org.dom4j.Element;
+import org.dom4j.Namespace;
+import org.dom4j.QName;
 import org.dom4j.tree.DefaultElement;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
@@ -61,7 +65,7 @@ import org.eclipse.ui.PlatformUI;
 import de.tud.cs.qpe.editors.subnet.SubnetEditor;
 import de.tud.cs.qpe.editors.subnet.SubnetEditorInput;
 import de.tud.cs.qpe.model.DocumentManager;
-import de.tud.cs.qpe.model.IncidenceFuntionHelper;
+import de.tud.cs.qpe.model.IncidenceFunctionHelper;
 import de.tud.cs.qpe.model.NetHelper;
 import de.tud.cs.qpe.model.PlaceHelper;
 import de.tud.cs.qpe.model.SubnetHelper;
@@ -126,6 +130,8 @@ public class SubnetPlacePropertyComposite extends PlacePropertyComposite {
 	@Override
 	public void colorRefAdded(Element colorRef) {
 		super.colorRefAdded(colorRef);
+		
+		colorRef.addAttribute(new QName("type", new Namespace("xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI)), "subnet-color-reference");
 		
 		// initialize attributes
 		colorRef.addAttribute("direction", "both");
@@ -291,13 +297,15 @@ public class SubnetPlacePropertyComposite extends PlacePropertyComposite {
 					// Create connections between place and mode, if not present
 					if (actualPopulationPlace) {
 						Element outColorRef = PlaceHelper.getColorReferenceByColorId(place, colorRef.attributeValue("color-id"));
-						if (!IncidenceFuntionHelper.existsConnectionFromModeToColorRef(inputTransition, inputTransitionMode, outColorRef)) {
-							IncidenceFuntionHelper.addConnectionFromModeToColorRef(inputTransition, inputTransitionMode, outColorRef, 1);
+						if (!IncidenceFunctionHelper.existsConnection(inputTransition, inputTransitionMode, outColorRef)) {
+							Element connection = IncidenceFunctionHelper.createConnection(inputTransitionMode, outColorRef, 1);
+							IncidenceFunctionHelper.addConnection(inputTransition, connection);
 						}
 					} else {
 						Element inColorRef = PlaceHelper.getColorReferenceByColorId(place, colorRef.attributeValue("color-id"));
-						if (!IncidenceFuntionHelper.existsConnectionFromColorRefToMode(inputTransition, inputTransitionMode, inColorRef)) {
-							IncidenceFuntionHelper.addConnectionFromColorRefToMode(inputTransition, inputTransitionMode, inColorRef, 1);
+						if (!IncidenceFunctionHelper.existsConnection(inputTransition, inColorRef, inputTransitionMode)) {
+							Element connection = IncidenceFunctionHelper.createConnection(inColorRef, inputTransitionMode, 1);
+							IncidenceFunctionHelper.addConnection(inputTransition, connection);
 						}
 					}
 					
@@ -331,13 +339,15 @@ public class SubnetPlacePropertyComposite extends PlacePropertyComposite {
 					// Otherwise create it.
 					if (actualPopulationPlace) {
 						Element inColorRef = PlaceHelper.getColorReferenceByColorId(place, colorRef.attributeValue("color-id"));
-						if (!IncidenceFuntionHelper.existsConnectionFromColorRefToMode(outputTransition, outputTransitionMode, inColorRef)) {
-							IncidenceFuntionHelper.addConnectionFromColorRefToMode(outputTransition, outputTransitionMode, inColorRef, 1);
+						if (!IncidenceFunctionHelper.existsConnection(outputTransition, inColorRef, outputTransitionMode)) {
+							Element connection = IncidenceFunctionHelper.createConnection(inColorRef, outputTransitionMode, 1);
+							IncidenceFunctionHelper.addConnection(outputTransition, connection);
 						}
 					} else {
 						Element outColorRef = PlaceHelper.getColorReferenceByColorId(place, colorRef.attributeValue("color-id"));
-						if (!IncidenceFuntionHelper.existsConnectionFromModeToColorRef(outputTransition, outputTransitionMode, outColorRef)) {
-							IncidenceFuntionHelper.addConnectionFromModeToColorRef(outputTransition, outputTransitionMode, outColorRef, 1);
+						if (!IncidenceFunctionHelper.existsConnection(outputTransition, outputTransitionMode, outColorRef)) {
+							Element connection = IncidenceFunctionHelper.createConnection(outputTransitionMode, outColorRef, 1);
+							IncidenceFunctionHelper.addConnection(outputTransition, connection);
 						}
 					}
 					

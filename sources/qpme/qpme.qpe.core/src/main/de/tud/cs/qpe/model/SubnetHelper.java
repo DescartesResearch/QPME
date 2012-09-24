@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -53,11 +53,11 @@ public class SubnetHelper extends XPathHelper {
 	}
 	
 	public static List<Element> listLocallyDefinedColors(Element subnet) {
-		return query(subnet, "colors/color");
+		return queryElements(subnet, "colors/color");
 	}
 	
 	public static List<Element> listVisibleColors(Element subnet) {
-		return query(subnet, "ancestor-or-self::*/colors/color");
+		return queryElements(subnet, "ancestor-or-self::*/colors/color");
 	}
 	
 	public static Element getSubnetOfPlace(Element place) {
@@ -96,6 +96,14 @@ public class SubnetHelper extends XPathHelper {
 		return isInputPlace(place) || isOutputPlace(place) || isActualPopulationPlace(place);
 	}
 	
+	public static List<Element> listInColorReferences(Element subnetPlace) {
+		return queryElements(subnetPlace, "color-refs/color-ref[not(@direction = 'out')]");
+	}
+	
+	public static List<Element> listOutColorReferences(Element subnetPlace) {
+		return queryElements(subnetPlace, "color-refs/color-ref[not(@direction = 'in')]");
+	}
+	
 	public static boolean isInputPlace(Element place) {
 		return (place.attributeValue("name").equals("input-place") && Boolean.valueOf(place.attributeValue("locked", "false")));
 	}
@@ -109,6 +117,6 @@ public class SubnetHelper extends XPathHelper {
 	}
 
 	public static List<Element> listSubnetPlaces(Element place) {
-		return query(place, "subnet/places/place");
+		return queryElements(place, "subnet/places/place");
 	}
 }

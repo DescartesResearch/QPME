@@ -42,20 +42,27 @@
  */
 package de.tud.cs.qpe.rcp.actions.file;
 
+import org.dom4j.Document;
+import org.dom4j.io.DOMReader;
+import org.dom4j.io.DOMWriter;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.handlers.HandlerUtil;
 
 import de.tud.cs.qpe.editors.net.NetEditorInput;
 import de.tud.cs.qpe.editors.net.NetEditorPage;
 import de.tud.cs.qpe.editors.query.QueryEditorInput;
 import de.tud.cs.qpe.editors.query.SimpleQueryEditor;
+import edu.kit.ipd.descartes.qpme.model.migration.DocumentMigrationHandler;
 
 public class OpenAction extends AbstractHandler {
 	public OpenAction() {
@@ -64,6 +71,8 @@ public class OpenAction extends AbstractHandler {
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		String path = openFileDialog();
+		DocumentMigrationHandler migration = new DocumentMigrationHandler();
+		
 		if (path != null) {
 			IEditorInput input = null;
 			String editor = null;

@@ -133,6 +133,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
    <features>
       <feature id="qpme.qpe.feature" version="2.1.0.qualifier"/>
       <feature id="qpme.simqpn.feature" version="2.1.0.qualifier"/>
+      <feature id="qpme.model.feature" version="2.1.0.qualifier"/>
    </features>
 
    <configurations>

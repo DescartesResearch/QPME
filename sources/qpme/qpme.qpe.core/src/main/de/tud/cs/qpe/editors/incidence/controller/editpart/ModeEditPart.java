@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -68,6 +68,8 @@ import de.tud.cs.qpe.editors.incidence.controller.command.ConnectionReconnectCom
 import de.tud.cs.qpe.editors.incidence.view.figure.ModeFigure;
 import de.tud.cs.qpe.editors.net.view.figure.BaseFigure;
 import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.model.IncidenceFunctionHelper;
+import de.tud.cs.qpe.model.ModeHelper;
 import de.tud.cs.qpe.utils.ColorHelper;
 
 public class ModeEditPart extends AbstractGraphicalEditPart implements
@@ -84,11 +86,11 @@ public class ModeEditPart extends AbstractGraphicalEditPart implements
 		if (!isActive()) {
 			super.activate();
 			DocumentManager.addPropertyChangeListener(getCastedModel(), this);
-			XPath xpathSelector = DocumentHelper.createXPath("connections");
-			Element connections = (Element) xpathSelector.selectSingleNode((Element) getParent().getModel());
+			Element transition = (Element) getParent().getModel();
+			Element connections = transition.element("connections");
 			if(connections == null) {
 				connections = new DefaultElement("connections");
-				DocumentManager.addChild((Element) getParent().getModel(), connections, false);
+				DocumentManager.addChild(transition, connections, false);
 			} 
 			DocumentManager.addPropertyChangeListener(connections, this);
 		}
@@ -202,10 +204,7 @@ public class ModeEditPart extends AbstractGraphicalEditPart implements
 	 * @see org.eclipse.gef.editparts.AbstractGraphicalEditPart#getModelSourceConnections()
 	 */
 	protected List getModelSourceConnections() {
-		XPath xpathSelector = DocumentHelper
-				.createXPath("../../connections/connection[@source-id = '"
-						+ getCastedModel().attributeValue("id") + "']");
-		return xpathSelector.selectNodes(getCastedModel());
+		return ModeHelper.listOutgoingConnections(getCastedModel());
 	}
 
 	/*
@@ -214,10 +213,7 @@ public class ModeEditPart extends AbstractGraphicalEditPart implements
 	 * @see org.eclipse.gef.editparts.AbstractGraphicalEditPart#getModelTargetConnections()
 	 */
 	protected List getModelTargetConnections() {
-		XPath xpathSelector = DocumentHelper
-				.createXPath("../../connections/connection[@target-id = '"
-						+ getCastedModel().attributeValue("id") + "']");
-		return xpathSelector.selectNodes(getCastedModel());
+		return ModeHelper.listIncomingConnections(getCastedModel());
 	}
 
 	protected ConnectionAnchor getConnectionAnchor() {

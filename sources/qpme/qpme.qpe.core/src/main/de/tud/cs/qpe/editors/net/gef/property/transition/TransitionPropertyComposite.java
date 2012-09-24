@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -288,20 +288,11 @@ public abstract class TransitionPropertyComposite extends
 	}
 
 	protected String generateName() {
-		Element modeContainer = getModel().element("modes");
-		if (modeContainer == null) {
-			return "new mode";
-		}
-
-		String name = "new mode 1";
-		XPath xpathSelector = DocumentHelper.createXPath("mode[@name = '"
-				+ name + "']");
-		Element mode = (Element) xpathSelector.selectSingleNode(modeContainer);
+		String name = "new mode";
+		Element mode = TransitionHelper.getModeByName(getModel(), name);
 		for (int i = 1; mode != null; i++) {
 			name = "new mode " + Integer.toString(i);
-			xpathSelector = DocumentHelper.createXPath("mode[@name = '" + name
-					+ "']");
-			mode = (Element) xpathSelector.selectSingleNode(modeContainer);
+			mode = TransitionHelper.getModeByName(getModel(), name);			
 		}
 		return name;
 	}

@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -409,7 +409,7 @@ public class Page1ConfigurationSelectionWizardPage extends WizardPage {
 			break;
 		}
 		
-		conf.createMetadata(net, name);
+		conf.createSimulationConfiguration(net, name);
 		conf.init(net);
 		
 		return conf;

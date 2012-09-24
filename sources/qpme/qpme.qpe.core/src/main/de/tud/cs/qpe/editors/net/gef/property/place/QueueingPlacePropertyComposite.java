@@ -44,8 +44,12 @@ package de.tud.cs.qpe.editors.net.gef.property.place;
 
 import java.util.List;
 
+import javax.xml.XMLConstants;
+
 import org.dom4j.Attribute;
 import org.dom4j.Element;
+import org.dom4j.Namespace;
+import org.dom4j.QName;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewer;
@@ -92,6 +96,8 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 	@Override
 	public void colorRefAdded(Element colorRef) {
 		super.colorRefAdded(colorRef);
+		
+		colorRef.addAttribute(new QName("type", new Namespace("xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI)), "queueing-color-reference");
 		
 		colorRef.addAttribute("ranking", "0");
 		colorRef.addAttribute("priority", "0");

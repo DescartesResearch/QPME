@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -46,10 +46,14 @@ import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.XMLConstants;
+
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.dom4j.Namespace;
+import org.dom4j.QName;
 import org.dom4j.XPath;
 import org.eclipse.draw2d.geometry.Point;
 
@@ -163,7 +167,7 @@ public class DocumentManager {
 	public static void setLocation(Element element, Point location) {
 		// Save the old value.
 		Point oldValue = null;
-		XPath xpathSelector = DocumentHelper.createXPath("meta-attributes/meta-attribute[@name = 'location']");
+		XPath xpathSelector = DocumentHelper.createXPath("meta-attributes/meta-attribute[@xsi:type = 'location-attribute']");
 		Element locationMetaAttribute = (Element) xpathSelector.selectSingleNode(element);
 		if (locationMetaAttribute != null) {
 			int xPos = Integer.parseInt(locationMetaAttribute.attributeValue("location-x", "0"));
@@ -177,7 +181,7 @@ public class DocumentManager {
 			}
 
 			locationMetaAttribute = container.addElement("meta-attribute");
-			locationMetaAttribute.addAttribute("name", "location");
+			locationMetaAttribute.addAttribute(new QName("type", new Namespace("xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI)), "location-attribute");
 		}
 
 		// Add the new value.
@@ -191,7 +195,7 @@ public class DocumentManager {
 	}
 
 	public static Point getLocation(Element element) {
-		XPath xpathSelector = DocumentHelper.createXPath("meta-attributes/meta-attribute[@name = 'location']");
+		XPath xpathSelector = DocumentHelper.createXPath("meta-attributes/meta-attribute[@xsi:type = 'location-attribute']");
 		Element locationMetaAttribute = (Element) xpathSelector.selectSingleNode(element);
 		if (locationMetaAttribute != null) {
 			int xPos = Integer.parseInt(locationMetaAttribute.attributeValue("location-x", "0"));

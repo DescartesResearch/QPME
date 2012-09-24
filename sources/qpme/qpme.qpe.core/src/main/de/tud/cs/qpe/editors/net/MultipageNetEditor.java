@@ -48,17 +48,24 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import javax.xml.transform.TransformerException;
+
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.Element;
+import org.dom4j.io.DOMReader;
+import org.dom4j.io.DOMWriter;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 import org.dom4j.tree.DefaultAttribute;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IEditorSite;
@@ -73,6 +80,7 @@ import de.tud.cs.qpe.editors.incidence.IncidenceFunctionEditorInput;
 import de.tud.cs.qpe.editors.subnet.SubnetEditorInput;
 import de.tud.cs.qpe.model.DocumentManager;
 import de.tud.cs.qpe.utils.CloseableEditor;
+import edu.kit.ipd.descartes.qpme.model.migration.DocumentMigrationHandler;
 
 public class MultipageNetEditor extends MultiPageEditorPart implements PropertyChangeListener, ISelectionListener, CloseableEditor {
 	/** Editor ID */
@@ -96,15 +104,20 @@ public class MultipageNetEditor extends MultiPageEditorPart implements PropertyC
 		if (!(editorInput instanceof NetEditorInput))
 			throw new PartInitException("Invalid Input: Must be NetEditorInput");
 
+		super.init(site, editorInput);
+		
+		migrateDocument(site.getShell(), editorInput);
+		
+		Element diagramRoot = ((NetEditorInput) editorInput).getDocument().getRootElement();				
+		
 		String title = null;
-		if (((NetEditorInput) editorInput).getDocument().getRootElement().attributeValue("path") != null) {
-			title = new File(((NetEditorInput) editorInput).getDocument().getRootElement().attributeValue("path")).getName();
+		if (diagramRoot.attributeValue("path") != null) {
+			title = new File(diagramRoot.attributeValue("path")).getName();
 		} else {
 			title = "new document";
 		}
-
 		this.setPartName(title);
-		super.init(site, editorInput);
+		
 
 		// Add editor as listener to modifications of the
 		// current document.
@@ -115,6 +128,32 @@ public class MultipageNetEditor extends MultiPageEditorPart implements PropertyC
 		// This is needed in order to be able to propagate the
 		// selection-events to the child editor.
 		getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(this);
+	}
+	
+	private void migrateDocument(Shell currentShell, IEditorInput input) throws PartInitException {
+		DocumentMigrationHandler migration = new DocumentMigrationHandler();
+		Document doc = ((NetEditorInput)input).getDocument();
+		try {
+			org.w3c.dom.Document w3cDoc = (new DOMWriter()).write(doc);
+			if (migration.isMigrationRequired(w3cDoc)) {				
+				if (MessageDialog.openConfirm(currentShell, "Document Migration", "You try to open a .qpe file from a previous version of QPME. Do you want to migrate it to the current version?")) {
+					if (migration.canMigrate(w3cDoc)) {
+						w3cDoc = migration.migrate(w3cDoc);
+						doc = (new DOMReader()).read(w3cDoc);
+						((NetEditorInput)input).replaceWith(doc);
+						return;
+					} else {
+						throw new PartInitException("Unsupported document version.");
+					}
+				} else {
+					throw new PartInitException("Document migration cancelled by user.");
+				}
+			}
+		} catch (TransformerException e) {
+			throw new PartInitException("Error during document migration.", e);
+		} catch (DocumentException e) {
+			throw new PartInitException("Error during document migration.", e);
+		}
 	}
 
 	protected void createGraphicalEditorPage() {

@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -43,7 +43,10 @@ package de.tud.cs.qpe.editors.net;
 
 import java.util.EventObject;
 
+import org.dom4j.Document;
 import org.dom4j.Element;
+import org.dom4j.io.DOMReader;
+import org.dom4j.io.DOMWriter;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.draw2d.AbstractRouter;
 import org.eclipse.draw2d.BendpointConnectionRouter;
@@ -73,15 +76,18 @@ import org.eclipse.gef.ui.parts.GraphicalEditorWithFlyoutPalette;
 import org.eclipse.gef.ui.parts.GraphicalViewerKeyHandler;
 import org.eclipse.gef.ui.parts.TreeViewer;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.actions.ActionFactory;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
@@ -94,6 +100,7 @@ import de.tud.cs.qpe.editors.net.gef.action.CutAction;
 import de.tud.cs.qpe.editors.net.gef.action.PasteAction;
 import de.tud.cs.qpe.editors.net.gef.palette.NetEditorPaletteFactory;
 import de.tud.cs.qpe.editors.net.gef.property.PlaceTransitionPropertyPage;
+import edu.kit.ipd.descartes.qpme.model.migration.DocumentMigrationHandler;
 
 /**
  * A graphical editor with flyout palette that can edit .qpn files.

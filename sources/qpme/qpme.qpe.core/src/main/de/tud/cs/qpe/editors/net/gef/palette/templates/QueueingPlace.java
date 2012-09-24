@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -41,12 +41,17 @@
  */
 package de.tud.cs.qpe.editors.net.gef.palette.templates;
 
+import javax.xml.XMLConstants;
+
+import org.dom4j.Namespace;
+import org.dom4j.QName;
+
 public class QueueingPlace extends Place {
 	private static final long serialVersionUID = -4386671664737573811L;
 	
 	public QueueingPlace() {
 		super();
-		addAttribute("type", "queueing-place");
+		addAttribute(new QName("type", new Namespace("xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI)), "queueing-place");
 		addAttribute("queue-ref", "");
 	}
 }
