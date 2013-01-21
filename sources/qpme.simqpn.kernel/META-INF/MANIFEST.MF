@@ -8,7 +8,6 @@ Eclipse-AutoStart: true
 Export-Package: de.tud.cs.simqpn.console,
  de.tud.cs.simqpn.kernel,
  de.tud.cs.simqpn.util
-Bundle-ClassPath: QPE_SimQPN.jar
 Bundle-Vendor: Descartes Research Group
 Require-Bundle: org.dom4j;bundle-version="1.6.1",
  cern.colt;bundle-version="1.2.0",
