@@ -1,0 +1,123 @@
+/* ==============================================
+ * QPME : Queueing Petri net Modeling Environment
+ * ==============================================
+ *
+ * (c) Copyright 2003-2011, by Samuel Kounev and Contributors.
+ * 
+ * Project Info:   http://descartes.ipd.kit.edu/projects/qpme/
+ *                 http://www.descartes-research.net/
+ *    
+ * All rights reserved. This software is made available under the terms of the 
+ * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * This software is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the Eclipse Public License (EPL)
+ * for more details.
+ *
+ * You should have received a copy of the Eclipse Public License (EPL)
+ * along with this software; if not visit http://www.eclipse.org or write to
+ * Eclipse Foundation, Inc., 308 SW First Avenue, Suite 110, Portland, 97204 USA
+ * Email: license (at) eclipse.org 
+ *  
+ * [Java is a trademark or registered trademark of Sun Microsystems, Inc.
+ * in the United States and other countries.]
+ *                                
+ * =============================================
+ *
+ * Original Author(s):  Samuel Kounev and Christofer Dutz
+ * Contributor(s):   
+ * 
+ * NOTE: The above list of contributors lists only the people that have
+ * contributed to this source file - for a list of ALL contributors to 
+ * the project, please see the README.txt file.
+ * 
+ *  History:
+ *  Date        ID                Description
+ *  ----------  ----------------  ------------------------------------------------------------------  
+ *  2006        Christofer Dutz   Created.
+ * 
+ */
+package de.tud.cs.qpe.editors.net.gef.property.transition;
+
+import org.dom4j.Element;
+import org.eclipse.jface.viewers.ICellEditorValidator;
+import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
+
+import de.tud.cs.qpe.model.DocumentManager;
+import de.tud.cs.qpe.utils.CellValidators;
+import de.tud.cs.qpe.utils.XmlAttributeEditingSupport;
+import de.tud.cs.qpe.utils.XmlAttributeLabelProvider;
+
+public class ImmediateTransitionPropertyComposite extends TransitionPropertyComposite {
+
+	protected Text firingWeight;
+
+	public ImmediateTransitionPropertyComposite(Element net, Composite parent) {
+		super(net, parent);
+		initProperties();
+		initColorTable();
+	}
+
+	public void updatePropertyFields() {
+		super.updatePropertyFields();
+
+		if (getModel() != null) {
+			firingWeight.setText(getModel().attributeValue("weight", "1.0"));
+		}
+	}
+
+	protected void initProperties() {
+		super.initProperties();
+
+		new Label(this, SWT.NULL).setText("Firing Weight");
+		firingWeight = new Text(this, SWT.BORDER);
+		firingWeight.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		firingWeight.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent event) {
+				String oldValue = getModel().attributeValue("weight", "1.0");
+				String newValue = ImmediateTransitionPropertyComposite.this.firingWeight.getText();
+				try {
+					double dValue = Double.parseDouble(newValue);
+					if (dValue >= 0) {
+						DocumentManager.setAttribute(getModel(), "weight", newValue);
+					} else {
+						firingWeight.setText(oldValue);
+					}
+				} catch (Exception e) {
+					ImmediateTransitionPropertyComposite.this.firingWeight.setText(oldValue);
+				}
+			}
+		});
+		if (getModel() != null) {
+			firingWeight.setText(getModel().attributeValue("weight", "1.0"));
+		}
+	}
+	
+	@Override
+	protected Element createMode() {
+		Element mode = super.createMode();
+		mode.addAttribute("firing-weight", "1.0");
+		return mode;
+	}
+
+	protected void initTableColumns() {
+		super.initTableColumns();
+		
+		TableViewerColumn col = new TableViewerColumn(modeTableViewer, SWT.LEFT);
+		col.getColumn().setText("Firing Weight");
+		col.getColumn().setWidth(100);
+		col.setLabelProvider(new XmlAttributeLabelProvider("firing-weight", "1.0"));
+		XmlAttributeEditingSupport editor = new XmlAttributeEditingSupport(col.getViewer(), "firing-weight");
+		editor.setValidator(CellValidators.newNonNegativeDoubleValidator());
+		col.setEditingSupport(editor);
+	}
+}

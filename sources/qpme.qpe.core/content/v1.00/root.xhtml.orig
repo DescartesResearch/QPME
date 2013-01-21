@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>root.xhtml</title>
+  <link rel="stylesheet" href="shared.css" type="text/css" />
+  <link rel="stylesheet" href="root.css" type="text/css" />
+  </head>
+
+<body> 
+<h1>Welcome to QPME 1.0 - Queueing Petri net Modeling Environment</h1>
+<div class="page-style">
+
+
+
+  <div id="content"> 	      
+
+
+		<a href="http://org.eclipse.ui.intro/showPage?id=Introduction" id="firstLink">
+			<img border="0" src="link_obj.gif" alt="Concept1" />
+			QPME User's Guide 
+		</a>
+
+		<a href="http://org.eclipse.ui.intro/showPage?id=concept1" id="firstLink">
+			<img border="0" src="link_obj.gif" alt="Concept1" />
+			QPME User's Guide 
+		</a>
+	
+		<a href="http://www.dvs1.informatik.tu-darmstadt.de/staff/skounev/QPME/index.html">
+			<img border="0" src="link_obj.gif" alt="Concept2" />
+			QPME Home Page</a>
+	<anchor id="anchor1" /> 
+
+  </div> 
+	<img border="0" src="images/Welcome-QPN.jpg" alt="" align="center" style="float:center;" />
+	<img border="0" src="images/WelcomeScreen-QPME-Logo.jpg" align="left" style="float:left;" alt="" />
+	<img border="0" src="images/WelcomeScreen-BuiltOnEclipse.jpg" align="right" style="float:right;" alt="" />
+
+
+</div>
+</body>
+</html>

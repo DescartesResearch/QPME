@@ -1,0 +1,531 @@
+<<<<<<< HEAD:sources/qpme-parent/qpme.qpe.core/plugin.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+      <extension
+            id="qpe.application"
+            point="org.eclipse.core.runtime.applications">
+            <application>
+                  <run class="de.tud.cs.qpe.Application"/> 
+            </application>
+      </extension>
+      <extension point="org.eclipse.ui.perspectives">
+            <perspective name="de.tud.cs.qpe.perspective" class="de.tud.cs.qpe.rcp.Perspective"
+                  id="de.tud.cs.qpe.perspective"/> 
+      </extension>
+      <extension id="QPE" point="org.eclipse.core.runtime.products">
+            <product
+                  application="qpme.qpe.core.qpe.application"
+                  name="QPME">
+               <property
+                     name="windowImages"
+                     value="branding/QPME-Icon16.gif,branding/QPME-Icon32.gif"/>
+               <property
+                     name="appName"
+                     value="QPME"/>
+               <property
+                     name="aboutImage"
+                     value="branding/QPME-AboutImage.gif"/>
+               <property
+                     name="aboutText"
+                     value="Copyright 2010"/>
+            </product>
+      </extension>
+      <extension point="org.eclipse.ui.intro">
+            <intro
+                  class="org.eclipse.ui.intro.config.CustomizableIntroPart"
+                  id="qpme.qpe.core.intro">
+            </intro>
+            <introProductBinding
+                  introId="qpme.qpe.core.intro"
+                  productId="qpme.qpe.core.QPE">
+            </introProductBinding> 
+      </extension>
+      <extension point="org.eclipse.ui.intro.config">
+            <config
+                  content="introContent.xml"
+                  id="qpe.base.introConfigId"
+                  introId="qpme.qpe.core.intro">
+               <presentation
+                     home-page-id="root">
+                  <implementation
+                        kind="html"
+                        os="win32,linux,macosx"
+                        style="content/shared.css">
+                  </implementation>
+               </presentation>
+            </config>
+            <config
+                  content="introContent.xml"
+                  id="qpme.base.introConfigId"
+                  introId="qpme.qpe.core.intro">
+               <presentation
+                     home-page-id="root">
+                  <implementation
+                        kind="html"
+                        os="win32,linux,macosx"
+                        style="content/shared.css">
+                  </implementation>
+               </presentation>
+            </config>
+            <config
+                  content="introContent.xml"
+                  id="qpme.qpe.core.introConfigId"
+                  introId="qpme.qpe.core.intro">
+               <presentation
+                     home-page-id="root">
+                  <implementation
+                        kind="html"
+                        os="win32,linux,macosx"
+                        style="content/shared.css">
+                  </implementation>
+               </presentation>
+            </config>
+      </extension>
+      <extension point="org.eclipse.ui.editors">
+            <editor name="Net Editor"
+                  contributorClass="de.tud.cs.qpe.editors.net.gef.NetEditorActionBarContributor"
+                  class="de.tud.cs.qpe.editors.net.MultipageNetEditor" id="de.tud.cs.qpe.editor.net"
+                  default="false"/> 
+            <editor name="Subnet Editor"
+                  contributorClass="de.tud.cs.qpe.editors.net.gef.NetEditorActionBarContributor"
+                  class="de.tud.cs.qpe.editors.subnet.SubnetEditor" id="de.tud.cs.qpe.editor.subnet"
+                  default="false"/> 
+            <editor class="de.tud.cs.qpe.editors.incidence.IncidenceFunctionEditor"
+                  contributorClass="de.tud.cs.qpe.editors.incidence.gef.IncidenceFunctionEditorActionBarContributor"
+                  default="false" id="de.tud.cs.qpe.editor.incidence"
+                  name="Incidence Function Editor"/>
+            <editor class="de.tud.cs.qpe.editors.query.AdvancedQueryEditor"
+                  default="false" id="de.tud.cs.qpe.editor.query.advanced"
+                  name="Advanced Query Editor"/>
+            <editor class="de.tud.cs.qpe.editors.query.SimpleQueryEditor"
+                  default="false" id="de.tud.cs.qpe.editor.query.simple"
+                  name="Simple Query Editor"/>
+            <editor id="de.tud.cs.qpe.editors.visualization"
+                  name="Chart View"
+                  class="de.tud.cs.qpe.editors.visualization.VisualizationEditor"
+                  />
+            <editor id="de.tud.cs.qpe.editors.r"
+                  name="R Integration"
+                  class="de.tud.cs.qpe.editors.r.REditor"
+                  />
+      </extension>
+      <extension point="org.eclipse.ui.popupMenus">
+            <objectContribution id="de.tud.cs.qpe.editor.net.popup"
+                  objectClass="de.tud.cs.qpe.editors.net.controller.editpart.editor.TransitionEditPart">
+                  <action id="de.tud.cs.qpe.editor.net.popup.openIncidenceFunction"
+                        class="de.tud.cs.qpe.editors.net.gef.action.OpenIncidenceFunctionDelegate"
+                        menubarPath="elementActions" label="Edit Incidence Function"/>
+            </objectContribution>
+      </extension>
+      <extension point="org.eclipse.ui.popupMenus">
+            <objectContribution id="de.tud.cs.qpe.editor.net.popup"
+                  objectClass="de.tud.cs.qpe.editors.net.controller.editpart.editor.SubnetPlaceEditPart">
+                  <action id="de.tud.cs.qpe.editor.net.popup.openSubnet"
+                        class="de.tud.cs.qpe.editors.net.gef.action.OpenSubnetDelegate"
+                        menubarPath="elementActions" label="Edit Subnet"/>
+            </objectContribution>
+      </extension>
+      <extension point="org.eclipse.ui.popupMenus">
+            <objectContribution id="de.tud.cs.qpe.editor.net.popup"
+                  objectClass="de.tud.cs.qpe.editors.net.controller.editpart.editor.PlaceTransitionEditPart">
+                  <action id="de.tud.cs.qpe.editor.net.popup.showProperties"
+                        class="de.tud.cs.qpe.editors.net.gef.action.ShowPropertyDelegate"
+                        menubarPath="properties" label="Properties..."/>
+            </objectContribution>
+      </extension>
+      <extension
+            point="org.eclipse.ui.menus">
+         <menuContribution
+               allPopups="false"
+               locationURI="menu:file">
+            <separator
+                  name="fileStart">
+            </separator>
+            <command
+                  commandId="org.eclipse.ui.newWizard"
+                  style="push">
+            </command>
+            <command
+                  commandId="qpme.qpe.core.OpenFileCommand"
+                  style="push">
+            </command>
+            <separator
+                  name="new.ext"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="org.eclipse.ui.file.close"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.file.closeAll"
+                  style="push">
+            </command>
+            <separator
+                  name="close.ext"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="org.eclipse.ui.file.save"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.file.saveAs"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.file.saveAll"
+                  style="push">
+            </command>
+            <separator
+                  name="save.ext"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="org.eclipse.ui.file.exit"
+                  style="push">
+            </command>
+            <separator
+                  name="fileEnd"
+                  visible="false">
+            </separator>
+         </menuContribution>
+         <menuContribution
+               allPopups="false"
+               locationURI="menu:help">
+            <command
+                  commandId="org.eclipse.ui.help.quickStartAction"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.help.aboutAction"
+                  style="push">
+            </command>
+         </menuContribution>
+         <menuContribution
+               allPopups="false"
+               locationURI="toolbar:org.eclipse.ui.main.toolbar">
+            <toolbar
+                  id="qpme.qpe.core.toolbar.main">
+               <command
+                     commandId="org.eclipse.ui.newWizard"
+                     style="push">
+               </command>
+               <command
+                     commandId="qpme.qpe.core.OpenFileCommand"
+                     icon="IMG_OBJ_FOLDER"
+                     style="push">
+               </command>
+               <command
+                     commandId="org.eclipse.ui.file.save"
+                     style="push">
+               </command>
+               <command
+                     commandId="org.eclipse.ui.file.saveAll"
+                     style="push">
+               </command>
+            </toolbar>
+         </menuContribution>
+      </extension>
+      <extension
+            point="org.eclipse.ui.handlers">
+         <handler
+               class="de.tud.cs.qpe.rcp.actions.file.NewAction"
+               commandId="org.eclipse.ui.newWizard">
+            <activeWhen>
+               <with
+                     variable="activeContexts">
+                  <iterate
+                        ifEmpty="false"
+                        operator="or">
+                     <equals
+                           value="qpme.qpe.core.context">
+                     </equals>
+                  </iterate>
+               </with>
+            </activeWhen>
+         </handler>
+      </extension>
+      <extension
+            point="org.eclipse.ui.contexts">
+         <context
+               id="qpme.qpe.core.context"
+               name="QPME">
+         </context>
+      </extension>
+      <extension
+            point="org.eclipse.ui.commands">
+         <command
+               defaultHandler="de.tud.cs.qpe.rcp.actions.file.OpenAction"
+               id="qpme.qpe.core.OpenFileCommand"
+               name="&amp;Open File...">
+         </command>
+      </extension>
+</plugin>
+=======
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+      <extension
+            id="qpe.application"
+            point="org.eclipse.core.runtime.applications">
+            <application>
+                  <run class="de.tud.cs.qpe.Application"/> 
+            </application>
+      </extension>
+      <extension point="org.eclipse.ui.perspectives">
+            <perspective name="de.tud.cs.qpe.perspective" class="de.tud.cs.qpe.rcp.Perspective"
+                  id="de.tud.cs.qpe.perspective"/> 
+      </extension>
+      <extension id="QPE" point="org.eclipse.core.runtime.products">
+            <product
+                  application="qpme.qpe.core.qpe.application"
+                  name="QPME">
+               <property
+                     name="windowImages"
+                     value="branding/QPME-Icon16.gif,branding/QPME-Icon32.gif"/>
+               <property
+                     name="appName"
+                     value="QPME"/>
+               <property
+                     name="aboutImage"
+                     value="branding/QPME-AboutImage.gif"/>
+               <property
+                     name="aboutText"
+                     value="Copyright 2010"/>
+            </product>
+      </extension>
+      <extension point="org.eclipse.ui.intro">
+            <intro
+                  class="org.eclipse.ui.intro.config.CustomizableIntroPart"
+                  id="qpme.qpe.core.intro">
+            </intro>
+            <introProductBinding
+                  introId="qpme.qpe.core.intro"
+                  productId="qpme.qpe.core.QPE">
+            </introProductBinding> 
+      </extension>
+      <extension point="org.eclipse.ui.intro.config">
+            <config
+                  content="introContent.xml"
+                  id="qpe.base.introConfigId"
+                  introId="qpme.qpe.core.intro">
+               <presentation
+                     home-page-id="root">
+                  <implementation
+                        kind="html"
+                        os="win32,linux,macosx"
+                        style="content/shared.css">
+                  </implementation>
+               </presentation>
+            </config>
+            <config
+                  content="introContent.xml"
+                  id="qpme.base.introConfigId"
+                  introId="qpme.qpe.core.intro">
+               <presentation
+                     home-page-id="root">
+                  <implementation
+                        kind="html"
+                        os="win32,linux,macosx"
+                        style="content/shared.css">
+                  </implementation>
+               </presentation>
+            </config>
+            <config
+                  content="introContent.xml"
+                  id="qpme.qpe.core.introConfigId"
+                  introId="qpme.qpe.core.intro">
+               <presentation
+                     home-page-id="root">
+                  <implementation
+                        kind="html"
+                        os="win32,linux,macosx"
+                        style="content/shared.css">
+                  </implementation>
+               </presentation>
+            </config>
+      </extension>
+      <extension point="org.eclipse.ui.editors">
+            <editor name="Net Editor"
+                  contributorClass="de.tud.cs.qpe.editors.net.gef.NetEditorActionBarContributor"
+                  class="de.tud.cs.qpe.editors.net.MultipageNetEditor" id="de.tud.cs.qpe.editor.net"
+                  default="false"/> 
+            <editor name="Subnet Editor"
+                  contributorClass="de.tud.cs.qpe.editors.net.gef.NetEditorActionBarContributor"
+                  class="de.tud.cs.qpe.editors.subnet.SubnetEditor" id="de.tud.cs.qpe.editor.subnet"
+                  default="false"/> 
+            <editor class="de.tud.cs.qpe.editors.incidence.IncidenceFunctionEditor"
+                  contributorClass="de.tud.cs.qpe.editors.incidence.gef.IncidenceFunctionEditorActionBarContributor"
+                  default="false" id="de.tud.cs.qpe.editor.incidence"
+                  name="Incidence Function Editor"/>
+            <editor class="de.tud.cs.qpe.editors.query.AdvancedQueryEditor"
+                  default="false" id="de.tud.cs.qpe.editor.query.advanced"
+                  name="Advanced Query Editor"/>
+            <editor class="de.tud.cs.qpe.editors.query.SimpleQueryEditor"
+                  default="false" id="de.tud.cs.qpe.editor.query.simple"
+                  name="Simple Query Editor"/>
+            <editor id="de.tud.cs.qpe.editors.visualization"
+                  name="Chart View"
+                  class="de.tud.cs.qpe.editors.visualization.VisualizationEditor"
+                  />
+            <editor id="de.tud.cs.qpe.editors.r"
+                  name="R Integration"
+                  class="de.tud.cs.qpe.editors.r.REditor"
+                  />
+      </extension>
+      <extension point="org.eclipse.ui.popupMenus">
+            <objectContribution id="de.tud.cs.qpe.editor.net.popup"
+                  objectClass="de.tud.cs.qpe.editors.net.controller.editpart.editor.TransitionEditPart">
+                  <action id="de.tud.cs.qpe.editor.net.popup.openIncidenceFunction"
+                        class="de.tud.cs.qpe.editors.net.gef.action.OpenIncidenceFunctionDelegate"
+                        menubarPath="elementActions" label="Edit Incidence Function"/>
+            </objectContribution>
+      </extension>
+      <extension point="org.eclipse.ui.popupMenus">
+            <objectContribution id="de.tud.cs.qpe.editor.net.popup"
+                  objectClass="de.tud.cs.qpe.editors.net.controller.editpart.editor.SubnetPlaceEditPart">
+                  <action id="de.tud.cs.qpe.editor.net.popup.openSubnet"
+                        class="de.tud.cs.qpe.editors.net.gef.action.OpenSubnetDelegate"
+                        menubarPath="elementActions" label="Edit Subnet"/>
+            </objectContribution>
+      </extension>
+      <extension point="org.eclipse.ui.popupMenus">
+            <objectContribution id="de.tud.cs.qpe.editor.net.popup"
+                  objectClass="de.tud.cs.qpe.editors.net.controller.editpart.editor.PlaceTransitionEditPart">
+                  <action id="de.tud.cs.qpe.editor.net.popup.showProperties"
+                        class="de.tud.cs.qpe.editors.net.gef.action.ShowPropertyDelegate"
+                        menubarPath="properties" label="Properties..."/>
+            </objectContribution>
+      </extension>
+      <extension
+            point="org.eclipse.ui.menus">
+         <menuContribution
+               allPopups="false"
+               locationURI="menu:file">
+            <separator
+                  name="fileStart">
+            </separator>
+            <command
+                  commandId="org.eclipse.ui.newWizard"
+                  style="push">
+            </command>
+            <command
+                  commandId="qpme.qpe.core.OpenFileCommand"
+                  style="push">
+            </command>
+            <separator
+                  name="new.ext"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="org.eclipse.ui.file.close"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.file.closeAll"
+                  style="push">
+            </command>
+            <separator
+                  name="close.ext"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="org.eclipse.ui.file.save"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.file.saveAs"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.file.saveAll"
+                  style="push">
+            </command>
+            <separator
+                  name="save.ext"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="org.eclipse.ui.file.exit"
+                  style="push">
+            </command>
+            <separator
+                  name="fileEnd"
+                  visible="false">
+            </separator>
+         </menuContribution>
+         <menuContribution
+               allPopups="false"
+               locationURI="menu:help">
+            <command
+                  commandId="org.eclipse.ui.help.quickStartAction"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.help.aboutAction"
+                  style="push">
+            </command>
+         </menuContribution>
+         <menuContribution
+               allPopups="false"
+               locationURI="toolbar:org.eclipse.ui.main.toolbar">
+            <toolbar
+                  id="qpme.qpe.core.toolbar.main">
+               <command
+                     commandId="org.eclipse.ui.newWizard"
+                     style="push">
+               </command>
+               <command
+                     commandId="qpme.qpe.core.OpenFileCommand"
+                     icon="IMG_OBJ_FOLDER"
+                     style="push">
+               </command>
+               <command
+                     commandId="org.eclipse.ui.file.save"
+                     style="push">
+               </command>
+               <command
+                     commandId="org.eclipse.ui.file.saveAll"
+                     style="push">
+               </command>
+            </toolbar>
+         </menuContribution>
+      </extension>
+      <extension
+            point="org.eclipse.ui.handlers">
+         <handler
+               class="de.tud.cs.qpe.rcp.actions.file.NewAction"
+               commandId="org.eclipse.ui.newWizard">
+            <activeWhen>
+               <with
+                     variable="activeContexts">
+                  <iterate
+                        ifEmpty="false"
+                        operator="or">
+                     <equals
+                           value="qpme.qpe.core.context">
+                     </equals>
+                  </iterate>
+               </with>
+            </activeWhen>
+         </handler>
+      </extension>
+      <extension
+            point="org.eclipse.ui.contexts">
+         <context
+               id="qpme.qpe.core.context"
+               name="QPME">
+         </context>
+      </extension>
+      <extension
+            point="org.eclipse.ui.commands">
+         <command
+               defaultHandler="de.tud.cs.qpe.rcp.actions.file.OpenAction"
+               id="qpme.qpe.core.OpenFileCommand"
+               name="&amp;Open File...">
+         </command>
+      </extension>
+</plugin>
+>>>>>>> d2a84ea... Restructure Source Tree:sources/qpme.qpe.core/plugin.xml
