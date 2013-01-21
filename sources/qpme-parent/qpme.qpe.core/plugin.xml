@@ -44,7 +44,7 @@
             <config
                   content="introContent.xml"
                   id="qpe.base.introConfigId"
-                  introId="qpe.base.intro">
+                  introId="qpme.qpe.core.intro">
                <presentation
                      home-page-id="root">
                   <implementation
@@ -57,7 +57,7 @@
             <config
                   content="introContent.xml"
                   id="qpme.base.introConfigId"
-                  introId="qpme.base.intro">
+                  introId="qpme.qpe.core.intro">
                <presentation
                      home-page-id="root">
                   <implementation
@@ -81,36 +81,33 @@
                </presentation>
             </config>
       </extension>
-      <extension point="org.eclipse.ui.intro.configExtension">
-            <configExtension content="ext.xml" configId="QPE_Base.configId"> </configExtension>
-      </extension>
       <extension point="org.eclipse.ui.editors">
-            <editor name="Net Editor" icon="icons/sample.gif"
+            <editor name="Net Editor"
                   contributorClass="de.tud.cs.qpe.editors.net.gef.NetEditorActionBarContributor"
                   class="de.tud.cs.qpe.editors.net.MultipageNetEditor" id="de.tud.cs.qpe.editor.net"
                   default="false"/> 
-            <editor name="Subnet Editor" icon="icons/sample.gif"
+            <editor name="Subnet Editor"
                   contributorClass="de.tud.cs.qpe.editors.net.gef.NetEditorActionBarContributor"
                   class="de.tud.cs.qpe.editors.subnet.SubnetEditor" id="de.tud.cs.qpe.editor.subnet"
                   default="false"/> 
             <editor class="de.tud.cs.qpe.editors.incidence.IncidenceFunctionEditor"
                   contributorClass="de.tud.cs.qpe.editors.incidence.gef.IncidenceFunctionEditorActionBarContributor"
-                  default="false" icon="icons/sample.gif" id="de.tud.cs.qpe.editor.incidence"
+                  default="false" id="de.tud.cs.qpe.editor.incidence"
                   name="Incidence Function Editor"/>
             <editor class="de.tud.cs.qpe.editors.query.AdvancedQueryEditor"
-                  default="false" icon="icons/sample.gif" id="de.tud.cs.qpe.editor.query.advanced"
+                  default="false" id="de.tud.cs.qpe.editor.query.advanced"
                   name="Advanced Query Editor"/>
             <editor class="de.tud.cs.qpe.editors.query.SimpleQueryEditor"
-                  default="false" icon="icons/sample.gif" id="de.tud.cs.qpe.editor.query.simple"
+                  default="false" id="de.tud.cs.qpe.editor.query.simple"
                   name="Simple Query Editor"/>
             <editor id="de.tud.cs.qpe.editors.visualization"
                   name="Chart View"
                   class="de.tud.cs.qpe.editors.visualization.VisualizationEditor"
-                  icon="icons/sample.gif"/>
+                  />
             <editor id="de.tud.cs.qpe.editors.r"
                   name="R Integration"
                   class="de.tud.cs.qpe.editors.r.REditor"
-                  icon="icons/sample.gif"/>
+                  />
       </extension>
       <extension point="org.eclipse.ui.popupMenus">
             <objectContribution id="de.tud.cs.qpe.editor.net.popup"
