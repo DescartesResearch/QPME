@@ -85,6 +85,8 @@
 		<module>../qpme.qpe.core</module>
 		<module>../qpme.simqpn.kernel</module>
 		<module>../qpme.simqpn.ui</module>
+		
+		<module>../qpme.model.migration.tests</module>
 
 		<module>../qpme.model.feature</module>
 		<module>../qpme.qpe.feature</module>
