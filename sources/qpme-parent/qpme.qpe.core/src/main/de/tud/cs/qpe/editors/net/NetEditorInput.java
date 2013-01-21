@@ -56,6 +56,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.IPersistableElement;
 
+import de.tud.cs.qpe.QPEBasePlugin;
 import de.tud.cs.qpe.model.DocumentManager;
 
 public class NetEditorInput implements IPathEditorInput {
@@ -67,7 +68,9 @@ public class NetEditorInput implements IPathEditorInput {
 		if (path == null) {
 			Document netDiagram = DocumentFactory.getInstance().createDocument();
 			content = netDiagram.addElement("net");
-			content.addNamespace("xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);			
+			content.addNamespace("xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
+			String ver = QPEBasePlugin.getDefault().getBundle().getVersion().toString();
+			content.addAttribute("qpme-version", ver);
 			content.addElement("colors");
 			content.addElement("queues");
 			content.addElement("places");
