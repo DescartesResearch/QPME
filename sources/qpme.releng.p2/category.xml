@@ -6,9 +6,8 @@
    <feature url="features/qpme.simqpn.feature_2.1.0.qualifier.jar" id="qpme.simqpn.feature" version="2.1.0.qualifier">
       <category name="qpme.category"/>
    </feature>
-   <category-def name="qpme.category" label="QPME">
-      <description>
-         QPME
-      </description>
-   </category-def>
+   <feature url="features/qpme.model.feature_2.1.0.qualifier.jar" id="qpme.model.feature" version="2.1.0.qualifier">
+      <category name="qpme.category"/>
+   </feature>
+   <category-def name="qpme.category" label="QPME (Queueing Petri net Modeling Environment)"/>
 </site>

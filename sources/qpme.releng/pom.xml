@@ -94,5 +94,6 @@
 
 		<module>../qpme.releng.targetplatform</module>
 		<module>../qpme.releng.product</module>
+		<module>../qpme.releng.p2</module>
 	</modules>
 </project>
