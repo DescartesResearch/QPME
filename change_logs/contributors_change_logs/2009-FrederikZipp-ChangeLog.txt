@@ -1,0 +1,978 @@
+------------------------------------------------------------------------
+r47 | samuel | 2009-08-06 13:32:38 +0200 (Do, 06 Aug 2009) | 1 line
+Changed paths:
+   A /tags/pre-merging/ChangeLogBeforeMerging.txt
+   D /tags/pre-merging/README.txt
+
+added change log before merging
+------------------------------------------------------------------------
+r41 | samuel | 2009-08-03 17:28:27 +0200 (Mo, 03 Aug 2009) | 1 line
+Changed paths:
+   A /tags
+   A /tags/pre-merging (from /trunk:40)
+
+Code before merging with QPME base repository.
+------------------------------------------------------------------------
+r40 | frederik | 2009-08-03 13:42:46 +0200 (Mo, 03 Aug 2009) | 1 line
+Changed paths:
+   M /trunk/qpe-base/plugin.xml
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/ApplicationActionBarAdvisor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/QpmePreferencePage.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/actions/file/PreferencesAction.java
+
+- Preferences
+------------------------------------------------------------------------
+r39 | frederik | 2009-08-03 12:23:16 +0200 (Mo, 03 Aug 2009) | 3 lines
+Changed paths:
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/PlacesColorsTable.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/Metric.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/QueryVisualizer.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/TableVisualization.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/Visualization.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/VisualizationEditor.java
+
+metric fix
+fix selection
+console output ("table")
+------------------------------------------------------------------------
+r38 | frederik | 2009-05-18 08:53:17 +0200 (Mo, 18 Mai 2009) | 1 line
+Changed paths:
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/QueueEditorPage.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/property/place/QueueingPlacePropertyComposite.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/VisualizationEditor.java
+
+work on queue editor
+------------------------------------------------------------------------
+r37 | frederik | 2009-05-18 06:52:45 +0200 (Mo, 18 Mai 2009) | 1 line
+Changed paths:
+   A /trunk/examples/new
+   A /trunk/examples/new/SjAS04Model_6AS-L5.qpe
+   A /trunk/examples/new/ispass03-02.qpe
+   A /trunk/examples/new/ispass03.qpe
+   A /trunk/examples/new/pepsy-bcmp2.qpe
+   A /trunk/examples/results-new
+   A /trunk/examples/results-new/RunStats-ord_place3-col0-ST.txt
+   A /trunk/examples/results-new/RunStats-ord_place3-col1-ST.txt
+   A /trunk/examples/results-new/SimQPN_Output_L5_2009-05-17_233920828.log
+   A /trunk/examples/results-new/SimQPN_Output_L5_2009-05-18_000631843.simqpn
+   A /trunk/examples/results-new/SimQPN_Output_new configuration 2_2009-05-17_222656995.log
+   A /trunk/examples/results-new/SimQPN_Output_new configuration 2_2009-05-17_222748922.simqpn
+   A /trunk/examples/results-new/SimQPN_Output_new configuration 2_2009-05-18_003237254.log
+   A /trunk/examples/results-new/SimQPN_Output_new configuration 2_2009-05-18_00335516.simqpn
+   A /trunk/examples/results-new/SimQPN_Output_new configuration 2_2009-05-18_005013132.log
+   A /trunk/examples/results-new/SimQPN_Output_new configuration 2_2009-05-18_00512971.simqpn
+   A /trunk/examples/results-new/SimQPN_Output_new configuration_2009-05-17_233733133.log
+   A /trunk/examples/results-new/SimQPN_Output_new configuration_2009-05-17_233849973.simqpn
+   A /trunk/examples/results-old
+   A /trunk/examples/results-old/SimQPN_Output_L5_2009-05-17_23124669.log
+   A /trunk/examples/results-old/SimQPN_Output_new configuration 2_2009-05-17_225348392.log
+   A /trunk/examples/results-old/SimQPN_Output_new configuration_2009-05-17_230952909.log
+
+add new examples
+------------------------------------------------------------------------
+r36 | frederik | 2009-05-18 06:49:59 +0200 (Mo, 18 Mai 2009) | 1 line
+Changed paths:
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/AbstractQueryEditor.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/PlacesColorsTable.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/SimpleQueryEditor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/Histogram.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/HistogramType.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/Metric.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/Place.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/SimulationResults.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/r/REditor.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/BarChartVisualization.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/ChartGroup.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/ChartVisualization.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/HistogramVisualization.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/PieChartVisualization.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/QueryVisualizer.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/SizedChart.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/SizedVisualizationComponent.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/TableVisualization.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/Visualization.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/VisualizationComponent.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/VisualizationEditor.java
+
+Histogram
+------------------------------------------------------------------------
+r35 | frederik | 2009-05-18 06:48:57 +0200 (Mo, 18 Mai 2009) | 1 line
+Changed paths:
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/Simulator.java
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/StatsDocumentBuilder.java
+
+make simulation work
+------------------------------------------------------------------------
+r34 | frederik | 2009-05-05 11:01:23 +0200 (Di, 05 Mai 2009) | 1 line
+Changed paths:
+   M /trunk/qpe-base/.classpath
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/RIntegration.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/r/REditor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/r/RIntegration.java
+
+r integration
+------------------------------------------------------------------------
+r33 | frederik | 2009-05-05 11:00:45 +0200 (Di, 05 Mai 2009) | 1 line
+Changed paths:
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/Queue.java
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/Simulator.java
+
+simulator support for central queues
+------------------------------------------------------------------------
+r32 | frederik | 2009-05-05 08:56:51 +0200 (Di, 05 Mai 2009) | 2 lines
+Changed paths:
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/SimulatorResults.java
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/plugin/wiizard/page/Page3PlaceConfigurationParametersWizardPage.java
+
+add SimulatorResults.java
+Page3PlaceConfigurationParametersWizardPage.java: set max statsLevel to 5
+------------------------------------------------------------------------
+r31 | frederik | 2009-05-05 08:55:56 +0200 (Di, 05 Mai 2009) | 1 line
+Changed paths:
+   M /trunk/qpe-base/.classpath
+   M /trunk/qpe-base/META-INF/MANIFEST.MF
+   M /trunk/qpe-base/build.properties
+   A /trunk/qpe-base/lib/JRI.jar
+   A /trunk/qpe-base/lib/native
+   A /trunk/qpe-base/lib/native/jri.dll
+   M /trunk/qpe-base/plugin.xml
+   M /trunk/qpe-base/qpe.product
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/RIntegration.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/SimpleQueryEditor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/r
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/r/REditor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/r/REditorInput.java
+
+R integration
+------------------------------------------------------------------------
+r30 | frederik | 2009-04-24 17:00:44 +0200 (Fr, 24 Apr 2009) | 1 line
+Changed paths:
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/Simulator.java
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/StatsDocumentBuilder.java
+
+add Queues to Stats[]
+------------------------------------------------------------------------
+r29 | frederik | 2009-04-24 16:59:59 +0200 (Fr, 24 Apr 2009) | 1 line
+Changed paths:
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/SimpleQueryEditor.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/Metric.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/QueryVisualizer.java
+   M /trunk/qpe-base/test-data/SimQPN_Output_L5a_2009-04-08_120353100.simqpn
+   M /trunk/qpe-base/test-data/SjAS04Model_4AS.qpe
+
+work on SimpleQueryEditor
+------------------------------------------------------------------------
+r28 | frederik | 2009-04-24 14:56:54 +0200 (Fr, 24 Apr 2009) | 1 line
+Changed paths:
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/PlacesColorsTable.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/SimpleQueryEditor.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/Aggregation.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/Metric.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/Place.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/SimulationResults.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/QueryVisualizer.java
+   M /trunk/qpe-base/test-data/SimQPN_Output_L5a_2009-04-08_120353100.simqpn
+
+work on SimpleQueryEditor
+------------------------------------------------------------------------
+r27 | frederik | 2009-04-21 12:40:12 +0200 (Di, 21 Apr 2009) | 1 line
+Changed paths:
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/AbstractQueryEditor.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/AdvancedQueryEditor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/PlacesColorsTable.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/SimpleQueryEditor.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/Place.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/Query.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/SimulationResults.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/widgets/FilterGroupComposite.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/widgets/FilterGroupPlusMinusEntry.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/widgets/MetricRow.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/widgets/PlusMinusManager.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/widgets/QueryComposite.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/widgets/SelectorComposite.java
+
+work on SimpleQueryEditor, refactoring
+------------------------------------------------------------------------
+r26 | frederik | 2009-04-20 10:49:04 +0200 (Mo, 20 Apr 2009) | 2 lines
+Changed paths:
+   M /trunk/qpe-base/plugin.xml
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/AbstractQueryEditor.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/AdvancedQueryEditor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/SimpleQueryEditor.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/MetricQuery.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/widgets/ISelectionListener.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/widgets/MetricRow.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/widgets/QueryComposite.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/widgets/SelectorComposite.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/ChartGroup.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/QueryVisualizer.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/SizedChart.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/Visualization.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/VisualizationEditor.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/actions/file/OpenAction.java
+
+- work on visualization
+- SimpleQueryEditor
+------------------------------------------------------------------------
+r25 | frederik | 2009-04-09 21:13:13 +0200 (Do, 09 Apr 2009) | 1 line
+Changed paths:
+   A /trunk/qpe-base/QPME.launch
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/BarChartVisualization.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/PieChartVisualization.java
+
+- added launch target
+------------------------------------------------------------------------
+r24 | frederik | 2009-04-09 15:16:46 +0200 (Do, 09 Apr 2009) | 1 line
+Changed paths:
+   M /trunk/qpe-base/plugin.xml
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/AdvancedQueryEditor.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/ChartGroup.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/QueryVisualizer.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/VisualizationEditor.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/VisualizationEditorInput.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/Aggregation.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/Color.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/MetricQuery.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/visualizations/BarChartVisualization.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/visualizations/PieChartVisualization.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/visualizations/Visualization.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/widgets/MetricRow.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/widgets/QueryCompositeConfiguration.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/BarChartVisualization.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/ChartGroup.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/PieChartVisualization.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/QueryVisualizer.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/Visualization.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/VisualizationEditor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/visualization/VisualizationEditorInput.java
+   A /trunk/qpe-base/test-data/SimQPN_Output_L5a_2009-04-08_120353100.simqpn
+
+- restructure packages
+------------------------------------------------------------------------
+r23 | frederik | 2009-04-08 16:49:26 +0200 (Mi, 08 Apr 2009) | 1 line
+Changed paths:
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/StatsDocumentBuilder.java
+
+- StatsDocumentBuilder.java: removed unnecessary metrics
+------------------------------------------------------------------------
+r22 | frederik | 2009-04-08 16:48:36 +0200 (Mi, 08 Apr 2009) | 3 lines
+Changed paths:
+   M /trunk/qpe-base/.classpath
+   A /trunk/qpe-base/lib/junit-4.5.jar
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/AdvancedQueryEditor.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/Aggregation.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/ChartGroup.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/Color.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/FilterGroup.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/FilterGroupComposite.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/FilterGroupPlusMinusEntry.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/IPlusMinusEntry.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/IPlusMinusEntryProvider.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/IPlusMinusListener.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/Metric.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/MetricQuery.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/MetricRow.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/MetricValue.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/Place.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/PlusMinusComposite.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/PlusMinusManager.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/Query.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/QueryComposite.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/QueryCompositeConfiguration.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/QueryEditorInput.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/QueryVisualizer.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/SelectorComposite.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/SimulationResults.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/VisualizationEditor.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/VisualizationEditorInput.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/Aggregation.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/Color.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/FilterGroup.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/Metric.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/MetricQuery.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/MetricValue.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/Place.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/Query.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/model/SimulationResults.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/visualizations/BarChartVisualization.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/visualizations/PieChartVisualization.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/visualizations/Visualization.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/widgets
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/widgets/FilterGroupComposite.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/widgets/FilterGroupPlusMinusEntry.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/widgets/IPlusMinusEntry.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/widgets/IPlusMinusEntryProvider.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/widgets/IPlusMinusListener.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/widgets/MetricRow.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/widgets/PlusMinusComposite.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/widgets/PlusMinusManager.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/widgets/QueryComposite.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/widgets/QueryCompositeConfiguration.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/widgets/SelectorComposite.java
+   A /trunk/qpe-base/src/test
+   A /trunk/qpe-base/src/test/de
+   A /trunk/qpe-base/src/test/de/tud
+   A /trunk/qpe-base/src/test/de/tud/cs
+   A /trunk/qpe-base/src/test/de/tud/cs/qpe
+   A /trunk/qpe-base/src/test/de/tud/cs/qpe/editors
+   A /trunk/qpe-base/src/test/de/tud/cs/qpe/editors/query
+   A /trunk/qpe-base/src/test/de/tud/cs/qpe/editors/query/ColorTest.java
+
+- work on visualization
+- reorganize classes in sub-packages
+- added JUnit
+------------------------------------------------------------------------
+r21 | frederik | 2009-03-27 08:44:37 +0100 (Fr, 27 Mär 2009) | 1 line
+Changed paths:
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/StatsDocumentBuilder.java
+
+less metrics
+------------------------------------------------------------------------
+r20 | frederik | 2009-03-27 08:43:52 +0100 (Fr, 27 Mär 2009) | 1 line
+Changed paths:
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/Metric.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/SimulationResults.java
+
+work on visualization
+------------------------------------------------------------------------
+r19 | frederik | 2009-03-27 08:07:29 +0100 (Fr, 27 Mär 2009) | 1 line
+Changed paths:
+   A /trunk/qpe-base/bin
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/AdvancedQueryEditor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/Aggregation.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/Color.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/EMetric.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/EVisualization.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/FilterComposite.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/FilterGroup.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/FilterGroupComposite.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/FilterGroupPlusMinusEntry.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/IPlusMinusEntryProvider.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/Metric.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/MetricQuery.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/MetricRow.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/MetricSelector.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/MetricValue.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/Place.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/PlacePlusMinusEntry.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/PlusMinusManager.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/Query.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/QueryComposite.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/QueryCompositeConfiguration.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/QueryEditorInput.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/QueryVisualizer.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/SelectorComposite.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/SimulationResults.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/VisualizationEditor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/VisualizationEditorInput.java
+   D /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/VisualizationSelector.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/visualizations
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/visualizations/BarChartVisualization.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/visualizations/PieChartVisualization.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/visualizations/Visualization.java
+   M /trunk/qpe-base/test-data/SjAS04Model_4AS.qpe
+
+work on visualization
+------------------------------------------------------------------------
+r18 | frederik | 2009-03-13 13:25:10 +0100 (Fr, 13 Mär 2009) | 1 line
+Changed paths:
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/Simulator.java
+
+- Simulator.java: return QPlaceQueueStats
+------------------------------------------------------------------------
+r17 | frederik | 2009-03-13 13:05:16 +0100 (Fr, 13 Mär 2009) | 2 lines
+Changed paths:
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/StatsDocumentBuilder.java
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/TimeHistogram.java
+
+- StatsDocumentBuilder.java: work on XML
+- TimeHistogram.java: made data accessible from outside
+------------------------------------------------------------------------
+r16 | frederik | 2009-03-06 10:03:53 +0100 (Fr, 06 Mär 2009) | 2 lines
+Changed paths:
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/StatsDocumentBuilder.java
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/plugin/wiizard/RunSimulationWizard.java
+
+- StatsDocumentBuilder.java,
+  RunSimulationWizard.java: work on XML format 
+------------------------------------------------------------------------
+r15 | frederik | 2009-02-27 03:47:54 +0100 (Fr, 27 Feb 2009) | 1 line
+Changed paths:
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/AdvancedQueryEditor.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/MetricRow.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/PlacePlusMinusEntry.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/QueryEditorInput.java
+
+work on AdvancedQueryEditor
+------------------------------------------------------------------------
+r14 | frederik | 2009-02-27 03:31:26 +0100 (Fr, 27 Feb 2009) | 2 lines
+Changed paths:
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/StatsDocumentBuilder.java
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/plugin/wiizard/RunSimulationWizard.java
+
+- RunSimulationWizard.java: write XML document to file
+- StatsDocumentBuilder.java: added name and id attributes, added colors
+------------------------------------------------------------------------
+r13 | frederik | 2009-02-27 01:51:29 +0100 (Fr, 27 Feb 2009) | 3 lines
+Changed paths:
+   M /trunk/qpe-base/plugin.xml
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/AdvancedQueryEditor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/EMetric.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/EVisualization.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/FilterComposite.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/IPlusMinusEntry.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/IPlusMinusEntryProvider.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/IPlusMinusListener.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/MetricRow.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/MetricSelector.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/PlacePlusMinusEntry.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/PlusMinusComposite.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/PlusMinusManager.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/QueryComposite.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/QueryEditorInput.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/VisualizationEditor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/query/VisualizationSelector.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/actions/file/OpenAction.java
+
+- plugin.xml: added AdvancedQueryEditor and VisualizationEditor
+- OpenAction.java: added opening of *.simqpn files with AdvancedQueryEditor
+- de.tud.cd.qpe.editors.query.*: initial work on AdvancedQueryEditor and VisualizationEditor
+------------------------------------------------------------------------
+r12 | frederik | 2009-02-27 01:46:03 +0100 (Fr, 27 Feb 2009) | 1 line
+Changed paths:
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/NetEditorInput.java
+
+- NetEditorInput.java: fix file loading error
+------------------------------------------------------------------------
+r11 | frederik | 2009-02-27 01:43:49 +0100 (Fr, 27 Feb 2009) | 1 line
+Changed paths:
+   M /trunk/qpe-base/.classpath
+   M /trunk/qpe-base/META-INF/MANIFEST.MF
+   M /trunk/qpe-base/build.properties
+   A /trunk/qpe-base/lib/jcommon-1.0.15.jar
+   A /trunk/qpe-base/lib/jfreechart-1.0.12-experimental.jar
+   A /trunk/qpe-base/lib/jfreechart-1.0.12-swt.jar
+   A /trunk/qpe-base/lib/jfreechart-1.0.12.jar
+   A /trunk/qpe-base/lib/swtgraphics2d.jar
+
+added JFreeChart libraries
+------------------------------------------------------------------------
+r10 | frederik | 2009-02-27 01:39:54 +0100 (Fr, 27 Feb 2009) | 4 lines
+Changed paths:
+   M /trunk/qpe-simqpn/META-INF/MANIFEST.MF
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/Simulator.java
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/StatsDocumentBuilder.java
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/plugin/wiizard/RunSimulationWizard.java
+
+- MANIFEST.MF: Removed erroneous bundles
+- Simulator.java: execute(): Return Stats as array
+- StatsDocumentBuilder.java: new class, build XML document for simulation results
+- RunSimulationWizard.java: use StatsDocumentBuilder
+------------------------------------------------------------------------
+r9 | frederik | 2009-02-11 16:19:30 +0100 (Mi, 11 Feb 2009) | 1 line
+Changed paths:
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/Application.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/QueueEditorPage.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/palette/templates/QueueingPlace.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/property/place/QueueingPlacePropertyComposite.java
+
+
+------------------------------------------------------------------------
+r8 | frederik | 2009-02-05 11:51:12 +0100 (Do, 05 Feb 2009) | 4 lines
+Changed paths:
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/property/place/QueueingPlacePropertyComposite.java
+
+src/main/de/tud/cs/qpe/editors/net/gef/property/place/QueueingPlacePropertyComposite.java
+- added queue reference selection combobox
+
+
+------------------------------------------------------------------------
+r7 | frederik | 2009-02-03 09:48:57 +0100 (Di, 03 Feb 2009) | 8 lines
+Changed paths:
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/MultipageNetEditor.java
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/NetEditorInput.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/QueueEditorPage.java
+
+src/main/de/tud/cs/qpe/editors/net/QueueEditorPage.java
+- added queue editor page, new file
+src/main/de/tud/cs/qpe/editors/net/MultipageNetEditor.java
+- register QueueEditorPage
+src/main/de/tud/cs/qpe/editors/net/NetEditorInput.java
+- added 'queues' XML element
+
+
+------------------------------------------------------------------------
+r6 | samuel | 2008-12-17 17:05:17 +0100 (Mi, 17 Dez 2008) | 1 line
+Changed paths:
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/AggregateStats.java
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/Place.java
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/PlaceStats.java
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/QPlace.java
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/QPlaceQueueStats.java
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/Queue.java
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/QueueStats.java
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/Simulator.java
+   M /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/Stats.java
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/TimeHistogram.java
+
+TimeHistograms, colUtil --> tkColOcp, etc
+------------------------------------------------------------------------
+r5 | frederik | 2008-12-17 12:08:36 +0100 (Mi, 17 Dez 2008) | 2 lines
+Changed paths:
+   M /trunk/qpe-base/META-INF/MANIFEST.MF
+   M /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/palette/NetEditorPaletteFactory.java
+
+fix warnings
+
+------------------------------------------------------------------------
+r4 | samuel | 2008-12-04 14:15:56 +0100 (Do, 04 Dez 2008) | 1 line
+Changed paths:
+   A /trunk/examples
+   A /trunk/examples/SjAS04Model_6AS-H6.qpe
+   A /trunk/examples/SjAS04Model_6AS-L5.qpe
+   A /trunk/examples/ispass03-02.qpe
+   A /trunk/examples/ispass03.qpe
+   A /trunk/examples/pepsy-bcmp2.qpe
+   D /trunk/put your project data here
+   A /trunk/qpe-base
+   A /trunk/qpe-base/.classpath
+   A /trunk/qpe-base/.project
+   A /trunk/qpe-base/META-INF
+   A /trunk/qpe-base/META-INF/MANIFEST.MF
+   A /trunk/qpe-base/QPME-AboutImage.gif
+   A /trunk/qpe-base/build.properties
+   A /trunk/qpe-base/config
+   A /trunk/qpe-base/config/1122549053267.log
+   A /trunk/qpe-base/config/1122549324687.log
+   A /trunk/qpe-base/config/1122549466692.log
+   A /trunk/qpe-base/config/config.ini
+   A /trunk/qpe-base/config/dev.properties
+   A /trunk/qpe-base/config/org.eclipse.core.runtime
+   A /trunk/qpe-base/config/org.eclipse.core.runtime/.contributions.2
+   A /trunk/qpe-base/config/org.eclipse.core.runtime/.extraData.1
+   A /trunk/qpe-base/config/org.eclipse.core.runtime/.extraData.2
+   A /trunk/qpe-base/config/org.eclipse.core.runtime/.mainData.1
+   A /trunk/qpe-base/config/org.eclipse.core.runtime/.mainData.2
+   A /trunk/qpe-base/config/org.eclipse.core.runtime/.manager
+   A /trunk/qpe-base/config/org.eclipse.core.runtime/.manager/.fileTable.6
+   A /trunk/qpe-base/config/org.eclipse.core.runtime/.manager/.fileTable.7
+   A /trunk/qpe-base/config/org.eclipse.core.runtime/.manager/.fileTableLock
+   A /trunk/qpe-base/config/org.eclipse.core.runtime/.orphans.2
+   A /trunk/qpe-base/config/org.eclipse.core.runtime/.table.1
+   A /trunk/qpe-base/config/org.eclipse.core.runtime/.table.2
+   A /trunk/qpe-base/config/org.eclipse.osgi
+   A /trunk/qpe-base/config/org.eclipse.osgi/.bundledata.3
+   A /trunk/qpe-base/config/org.eclipse.osgi/.lazy.3
+   A /trunk/qpe-base/config/org.eclipse.osgi/.manager
+   A /trunk/qpe-base/config/org.eclipse.osgi/.manager/.fileTable.8
+   A /trunk/qpe-base/config/org.eclipse.osgi/.manager/.fileTable.9
+   A /trunk/qpe-base/config/org.eclipse.osgi/.manager/.fileTableLock
+   A /trunk/qpe-base/config/org.eclipse.osgi/.state.3
+   A /trunk/qpe-base/config.ini
+   A /trunk/qpe-base/content
+   A /trunk/qpe-base/content/Introduction.xhtml
+   A /trunk/qpe-base/content/QPE.xhtml
+   A /trunk/qpe-base/content/SimQPN.xhtml
+   A /trunk/qpe-base/content/Troubleshooting.xhtml
+   A /trunk/qpe-base/content/concept1.xhtml
+   A /trunk/qpe-base/content/concept1.xhtml.orig
+   A /trunk/qpe-base/content/concept2.xhtml
+   A /trunk/qpe-base/content/concept2.xhtml.orig
+   A /trunk/qpe-base/content/concept3.xhtml
+   A /trunk/qpe-base/content/concept3.xhtml.orig
+   A /trunk/qpe-base/content/extContent.xhtml
+   A /trunk/qpe-base/content/images
+   A /trunk/qpe-base/content/images/QPE-ColorEditor.jpg
+   A /trunk/qpe-base/content/images/QPE-ColorEditor.jpg.big
+   A /trunk/qpe-base/content/images/QPE-IncFuncEditor.jpg
+   A /trunk/qpe-base/content/images/QPE-IncFuncEditor.jpg.big
+   A /trunk/qpe-base/content/images/QPE-Main.jpg
+   A /trunk/qpe-base/content/images/QPE-Main.jpg.big
+   A /trunk/qpe-base/content/images/SimQPN-WizardD1.jpg
+   A /trunk/qpe-base/content/images/SimQPN-WizardD2.jpg
+   A /trunk/qpe-base/content/images/SimQPN-WizardD3a.jpg
+   A /trunk/qpe-base/content/images/SimQPN-WizardD3b.jpg
+   A /trunk/qpe-base/content/images/SimQPN-WizardD3c.jpg
+   A /trunk/qpe-base/content/images/Thumbs.db
+   A /trunk/qpe-base/content/images/Welcome-QPN.jpg
+   A /trunk/qpe-base/content/images/Welcome-QPN_BIG.jpg
+   A /trunk/qpe-base/content/images/WelcomeScreen-BuiltOnEclipse.jpg
+   A /trunk/qpe-base/content/images/WelcomeScreen-QPME-Logo.jpg
+   A /trunk/qpe-base/content/images/WelcomeScreen-QPME-Logo_BIG.jpg
+   A /trunk/qpe-base/content/link_obj.gif
+   A /trunk/qpe-base/content/root.css
+   A /trunk/qpe-base/content/root.xhtml
+   A /trunk/qpe-base/content/root.xhtml.orig
+   A /trunk/qpe-base/content/shared.css
+   A /trunk/qpe-base/content/titlebanner.gif
+   A /trunk/qpe-base/docs
+   A /trunk/qpe-base/docs/06-qest-QPME-Flyer.ppt
+   A /trunk/qpe-base/docs/06-qest-QPME.ppt
+   A /trunk/qpe-base/docs/debuging
+   A /trunk/qpe-base/docs/debuging/QPE TODO LIST3.doc
+   A /trunk/qpe-base/docs/debuging/QPE-SimQPN TODO4.doc
+   A /trunk/qpe-base/docs/debuging/QPE-SimQPN-DEBUG2.doc
+   A /trunk/qpe-base/docs/debuging/QPME-TODO.doc
+   A /trunk/qpe-base/docs/debuging/todo summary.txt
+   A /trunk/qpe-base/docs/presentation.ppt
+   A /trunk/qpe-base/docs/thesis.doc
+   A /trunk/qpe-base/docs/thesis.pdf
+   A /trunk/qpe-base/docs/tips.txt
+   A /trunk/qpe-base/docs/todos
+   A /trunk/qpe-base/ext.xml
+   A /trunk/qpe-base/images
+   A /trunk/qpe-base/images/Connection.gif
+   A /trunk/qpe-base/images/ImmediateTransition.gif
+   A /trunk/qpe-base/images/OrdinaryPlace.gif
+   A /trunk/qpe-base/images/QPME-Icon16.gif
+   A /trunk/qpe-base/images/QPME-Icon32.gif
+   A /trunk/qpe-base/images/QPME-IconBIG.gif
+   A /trunk/qpe-base/images/QueueingPlace.gif
+   A /trunk/qpe-base/images/SubnetPlace.gif
+   A /trunk/qpe-base/images/TimedTransition.gif
+   A /trunk/qpe-base/images/attention.png
+   A /trunk/qpe-base/images/bookmark.png
+   A /trunk/qpe-base/images/chat.png
+   A /trunk/qpe-base/images/console.png
+   A /trunk/qpe-base/images/copy.png
+   A /trunk/qpe-base/images/cut.png
+   A /trunk/qpe-base/images/delete.png
+   A /trunk/qpe-base/images/doc_complete.png
+   A /trunk/qpe-base/images/document.png
+   A /trunk/qpe-base/images/document_html.png
+   A /trunk/qpe-base/images/document_pdf.png
+   A /trunk/qpe-base/images/edit.png
+   A /trunk/qpe-base/images/file_close.png
+   A /trunk/qpe-base/images/file_quit.png
+   A /trunk/qpe-base/images/find.png
+   A /trunk/qpe-base/images/find_next.png
+   A /trunk/qpe-base/images/find_previous.png
+   A /trunk/qpe-base/images/find_replace.png
+   A /trunk/qpe-base/images/folder_closed.png
+   A /trunk/qpe-base/images/folder_new.png
+   A /trunk/qpe-base/images/folder_open.png
+   A /trunk/qpe-base/images/folder_parent.png
+   A /trunk/qpe-base/images/folder_personalbar.png
+   A /trunk/qpe-base/images/general_move_to.png
+   A /trunk/qpe-base/images/history.png
+   A /trunk/qpe-base/images/home.png
+   A /trunk/qpe-base/images/image.png
+   A /trunk/qpe-base/images/info.png
+   A /trunk/qpe-base/images/keyboard.png
+   A /trunk/qpe-base/images/license.txt
+   A /trunk/qpe-base/images/mail.png
+   A /trunk/qpe-base/images/mail_check.png
+   A /trunk/qpe-base/images/mail_compose.png
+   A /trunk/qpe-base/images/mail_forwarded.png
+   A /trunk/qpe-base/images/mail_inbox.png
+   A /trunk/qpe-base/images/mail_outbox.png
+   A /trunk/qpe-base/images/mail_read.png
+   A /trunk/qpe-base/images/mail_send_all.png
+   A /trunk/qpe-base/images/mail_unread.png
+   A /trunk/qpe-base/images/new.png
+   A /trunk/qpe-base/images/open.png
+   A /trunk/qpe-base/images/paste.png
+   A /trunk/qpe-base/images/preferences.png
+   A /trunk/qpe-base/images/preview.png
+   A /trunk/qpe-base/images/print.png
+   A /trunk/qpe-base/images/read.png
+   A /trunk/qpe-base/images/redo.png
+   A /trunk/qpe-base/images/save.png
+   A /trunk/qpe-base/images/save_all.png
+   A /trunk/qpe-base/images/security.png
+   A /trunk/qpe-base/images/smile.png
+   A /trunk/qpe-base/images/tip.png
+   A /trunk/qpe-base/images/undo.png
+   A /trunk/qpe-base/images/user_away.png
+   A /trunk/qpe-base/images/user_offline.png
+   A /trunk/qpe-base/images/user_online.png
+   A /trunk/qpe-base/images/users.png
+   A /trunk/qpe-base/introContent.xml
+   A /trunk/qpe-base/lib
+   A /trunk/qpe-base/lib/dom4j-1.6.1.jar
+   A /trunk/qpe-base/lib/jaxen-1.1-beta-6.jar
+   A /trunk/qpe-base/plugin.xml
+   A /trunk/qpe-base/qpe.product
+   A /trunk/qpe-base/qpn.rng
+   A /trunk/qpe-base/qpnf.xsd
+   A /trunk/qpe-base/splash.bmp
+   A /trunk/qpe-base/src
+   A /trunk/qpe-base/src/main
+   A /trunk/qpe-base/src/main/de
+   A /trunk/qpe-base/src/main/de/tud
+   A /trunk/qpe-base/src/main/de/tud/cs
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/Application.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/QPEBasePlugin.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/IncidenceFunctionEditor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/IncidenceFunctionEditorInput.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/controller
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/controller/command
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/controller/command/ConnectionCreateCommand.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/controller/command/ConnectionDeleteCommand.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/controller/command/ConnectionReconnectCommand.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/controller/editpart
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/controller/editpart/ColorRefEditPart.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/controller/editpart/IncidenceFunctionEditPart.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/controller/editpart/ModeEditPart.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/controller/editpart/NamedConnectionEditPart.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/controller/editpart/PlaceEditPart.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/controller/factory
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/controller/factory/IncidenceFunctionEditPartFactory.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/gef
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/gef/IncidenceFunctionEditorActionBarContributor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/gef/IncidenceFunctionEditorContextMenuProvider.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/gef/actionbar
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/gef/actionbar/IncidenceFunctionEditorActionBarContributor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/gef/menu
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/gef/menu/IncidenceFunctionEditorContextMenuProvider.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/gef/palette
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/gef/palette/IncidenceFunctionEditorPaletteFactory.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/gef/property
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/gef/property/ConnectionPropertyComposite.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/gef/property/IncidenceFunctionPropertyPage.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/model
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/model/InputPlaceWrapper.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/model/OutputPlaceWrapper.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/model/PlaceWrapper.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/view
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/view/anchor
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/view/anchor/ModeAnchor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/view/figure
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/view/figure/ColorRefFigure.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/view/figure/ModeFigure.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/view/figure/NamedConnectionFigure.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/view/figure/PlaceFigure.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/view/layout
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/incidence/view/layout/IncidenceFunctionLayout.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/ColorEditorPage.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/MultipageNetEditor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/NetEditorInput.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/NetEditorPage.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/command
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/command/ConnectionCreateCommand.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/command/ConnectionDeleteCommand.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/command/ConnectionReconnectCommand.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/command/CopyCommand.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/command/CutCommand.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/command/PasteCommand.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/command/PlaceTransitionCreateCommand.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/command/PlaceTransitionDeleteCommand.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/command/PlaceTransitionSetConstraintCommand.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/editpart
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/editpart/editor
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/editpart/editor/ConnectionEditPart.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/editpart/editor/NetEditPart.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/editpart/editor/PlaceEditPart.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/editpart/editor/PlaceTransitionEditPart.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/editpart/editor/SubnetPlaceEditPart.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/editpart/editor/TransitionEditPart.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/editpart/outline
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/editpart/outline/DiagramTreeEditPart.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/editpart/outline/NetTreeEditPart.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/factory
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/factory/DomElementFactory.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/factory/NetEditPartFactory.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/controller/factory/NetTreeEditPartFactory.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/NetEditorActionBarContributor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/NetEditorContextMenuProvider.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/action
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/action/CopyAction.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/action/CutAction.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/action/OpenIncidenceFunctionDelegate.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/action/OpenSubnetDelegate.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/action/PasteAction.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/action/ShowPropertyDelegate.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/actionbar
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/actionbar/NetEditorActionBarContributor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/menu
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/menu/NetEditorContextMenuProvider.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/palette
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/palette/NetEditorPaletteFactory.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/palette/templates
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/palette/templates/ImmediateTransition.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/palette/templates/OrdinaryPlace.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/palette/templates/Place.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/palette/templates/PlaceTransition.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/palette/templates/QueueingPlace.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/palette/templates/SubnetPlace.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/palette/templates/TimedTransition.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/palette/templates/Transition.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/property
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/property/PlaceTransitionPropertyComposite.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/property/PlaceTransitionPropertyPage.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/property/place
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/property/place/OrdinaryPlacePropertyComposite.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/property/place/PlacePropertyComposite.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/property/place/QueueingPlacePropertyComposite.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/property/place/SubnetPlacePropertyComposite.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/property/transition
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/property/transition/ImmediateTransitionPropertyComposite.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/property/transition/TimedTransitionPropertyComposite.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/gef/property/transition/TransitionPropertyComposite.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/view
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/view/anchor
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/view/anchor/PlaceAnchor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/view/anchor/TransitionAnchor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/view/figure
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/view/figure/BaseFigure.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/view/figure/place
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/view/figure/place/OrdinaryPlaceFigure.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/view/figure/place/PlaceFigure.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/view/figure/place/QueueingPlaceFigure.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/view/figure/place/SubnetPlaceFigure.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/view/figure/transition
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/view/figure/transition/ImmediateTransitionFigure.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/view/figure/transition/TimedTransitionFigure.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/net/view/figure/transition/TransitionFigure.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/subnet
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/subnet/SubnetColorEditorPage.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/subnet/SubnetEditor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/subnet/SubnetEditorInput.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/subnet/SubnetEditorPage.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/subnet/controller
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/subnet/controller/editpart
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/subnet/controller/editpart/SubnetEditPart.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/subnet/controller/factory
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/editors/subnet/controller/factory/SubnetEditPartFactory.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/model
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/model/DocumentManager.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/ApplicationActionBarAdvisor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/ApplicationWorkbenchAdvisor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/ApplicationWorkbenchWindowAdvisor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/DynamicContentProvider.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/Perspective.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/actions
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/actions/context
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/actions/context/CopySelectionDelegate.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/actions/context/OpenIncidenceFunctionDelegate.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/actions/context/PasteDelegate.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/actions/context/ShowPropertyDelegate.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/actions/file
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/actions/file/CloseAction.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/actions/file/CloseAllAction.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/actions/file/ExitAction.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/actions/file/NewAction.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/actions/file/OpenAction.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/actions/file/SaveAction.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/actions/file/SaveAllAction.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/actions/file/SaveAsAction.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/actions/window
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/actions/window/AbstractBaseViewDelegate.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/actions/window/ConsoleViewDelegate.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/actions/window/OutlineViewDelegate.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/actions/window/ProppertiesViewDelegate.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/actions/window/TaskViewDelegate.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/task
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/rcp/task/TaskManager.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/utils
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/utils/CloseableEditor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/utils/ColorCellEditor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/utils/ColorHelper.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/utils/DoubleCellEditor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/utils/FileCellEditor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/utils/ITableLabelColorProvider.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/utils/IdGenerator.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/utils/ImageUtils.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/utils/IntegerCellEditor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/utils/InvalidArgumentException.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/utils/LabelColorProvider.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/utils/view
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/utils/view/anchor
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/utils/view/anchor/ModeAnchor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/utils/view/anchor/PlaceAnchor.java
+   A /trunk/qpe-base/src/main/de/tud/cs/qpe/utils/view/anchor/TransitionAnchor.java
+   A /trunk/qpe-base/test-data
+   A /trunk/qpe-base/test-data/SjAS04Model_4AS.qpe
+   A /trunk/qpe-base/test-data/ispass03.qpe
+   A /trunk/qpe-base/test-data/test.qpe
+   A /trunk/qpe-base/test-data/test2.xml
+   A /trunk/qpe-base/validity-rules.xml
+   A /trunk/qpe-simqpn
+   A /trunk/qpe-simqpn/.classpath
+   A /trunk/qpe-simqpn/.copyright.txt.swp
+   A /trunk/qpe-simqpn/.project
+   A /trunk/qpe-simqpn/META-INF
+   A /trunk/qpe-simqpn/META-INF/MANIFEST.MF
+   A /trunk/qpe-simqpn/build.properties
+   A /trunk/qpe-simqpn/copyright.txt
+   A /trunk/qpe-simqpn/images
+   A /trunk/qpe-simqpn/images/SimQPN.gif
+   A /trunk/qpe-simqpn/lib
+   A /trunk/qpe-simqpn/lib/colt.jar
+   A /trunk/qpe-simqpn/lib/dom4j-1.6.1.jar
+   A /trunk/qpe-simqpn/lib/jaxen-1.1-beta-6.jar
+   A /trunk/qpe-simqpn/lib/or124.jar
+   A /trunk/qpe-simqpn/plugin.xml
+   A /trunk/qpe-simqpn/run-SimQPN.bat
+   A /trunk/qpe-simqpn/src
+   A /trunk/qpe-simqpn/src/de
+   A /trunk/qpe-simqpn/src/de/tud
+   A /trunk/qpe-simqpn/src/de/tud/cs
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/console
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/console/SimQPN.java
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/AggregateStats.java
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/Event.java
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/Node.java
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/Place.java
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/PlaceStats.java
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/QPlace.java
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/QPlaceQueueStats.java
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/Queue.java
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/QueueStats.java
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/SimQPNException.java
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/Simulator.java
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/Stats.java
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/Token.java
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/kernel/Transition.java
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/plugin
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/plugin/QPESimQPNPlugin.java
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/plugin/actions
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/plugin/actions/StartSimulatorAction.java
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/plugin/dialog
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/plugin/dialog/AnalysisMethodSelectionDialog.java
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/plugin/wiizard
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/plugin/wiizard/RunSimulationWizard.java
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/plugin/wiizard/page
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/plugin/wiizard/page/BaseWizardPage.java
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/plugin/wiizard/page/Page1ConfigurationSelectionWizardPage.java
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/plugin/wiizard/page/Page2SimulationRunSettingsWizardPage.java
+   A /trunk/qpe-simqpn/src/de/tud/cs/simqpn/plugin/wiizard/page/Page3PlaceConfigurationParametersWizardPage.java
+   A /trunk/qpe-simqpn/version
+
+added QPME base code 4.12.08
+------------------------------------------------------------------------
+r3 | frederik | 2008-12-04 12:14:46 +0100 (Do, 04 Dez 2008) | 2 lines
+Changed paths:
+   M /trunk/README.txt
+
+SVN test.
+
+------------------------------------------------------------------------
+r1 | mustermann | 2006-02-17 12:58:56 +0100 (Fr, 17 Feb 2006) | 1 line
+Changed paths:
+   A /branches
+   A /branches/README.txt
+   A /branches/put branches here
+   A /svn-commit.2.tmp
+   A /svn-commit.tmp
+   A /tags
+   A /tags/README.txt
+   A /tags/put your tags here
+   A /trunk
+   A /trunk/README.txt
+   A /trunk/put your project data here
+
+Initial repository layout
+------------------------------------------------------------------------

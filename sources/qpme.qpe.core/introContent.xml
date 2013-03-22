@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<introContent>
+    <page id="root" content="content/root.xhtml"/>
+    <page id="Introduction" content="content/Introduction.xhtml"/>
+    <page id="QPE" content="content/QPE.xhtml"/>
+    <page id="SimQPN" content="content/SimQPN.xhtml"/>
+    <page id="Troubleshooting" content="content/Troubleshooting.xhtml"/>
+</introContent>

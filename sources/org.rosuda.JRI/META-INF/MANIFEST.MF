@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: JRI
+Bundle-SymbolicName: org.rosuda.JRI
+Bundle-Version: 1.0.0.qualifier
+Bundle-ClassPath: JRI.jar
+Export-Package: org.rosuda.JRI;version="1.0.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<net qpme-version="2.1.0.qualifier">
+  <colors> 
+    <color id="_1156337226576" name="class 1" real-color="#c1574f"/>  
+    <color id="_1156337226577" name="class 2" real-color="#4e474f"/> 
+  </colors>
+  <queues> 
+    <queue id="_q0" name="Q0" number-of-servers="1" strategy="IS"/>  
+    <queue id="_q1" name="Q1" number-of-servers="1" strategy="PS"/>  
+    <queue id="_q2" name="Q2" number-of-servers="1" strategy="FCFS"/>  
+    <queue id="_q3" name="Q3" number-of-servers="2" strategy="FCFS"/>  
+    <queue id="_q4" name="Q4" number-of-servers="3" strategy="FCFS"/> 
+  </queues>
+  <places> 
+    <place xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" departure-discipline="NORMAL" id="_1156337226547" name="Terminals" queue-ref="_q0" xsi:type="queueing-place">
+      <color-refs> 
+        <color-ref color-id="_1156337226576" distribution-function="Exponential" id="_1156337226578" initial-population="10" lambda="1.0E-4" maximum-capacity="0" priority="0" ranking="0" xsi:type="queueing-color-reference"> 
+          <meta-attributes> 
+            <meta-attribute batchSize="200" bucketSize="0" configuration-name="example_config" id="_1156337226642" maxBuckets="0" minBatches="30" numBMeansCorlTested="0" queueBatchSize="200" queueBucketSize="0" queueMaxBuckets="0" queueMinBatches="201" queueNumBMeansCorlTested="200" queueReqAbsPrc="50" queueReqRelPrc="0.05" queueSignLev="0.1" reqAbsPrc="50" reqRelPrc="0.05" signLev="0.1" xsi:type="simqpn-batch-means-queueing-color-configuration"/> 
+          </meta-attributes> 
+        </color-ref>  
+        <color-ref color-id="_1156337226577" distribution-function="Exponential" id="_1156337226579" initial-population="12" lambda="1.0E-4" maximum-capacity="0" priority="0" ranking="0" xsi:type="queueing-color-reference"> 
+          <meta-attributes> 
+            <meta-attribute batchSize="200" bucketSize="0" configuration-name="example_config" id="_1156337226643" maxBuckets="0" minBatches="30" numBMeansCorlTested="0" queueBatchSize="200" queueBucketSize="0" queueMaxBuckets="0" queueMinBatches="201" queueNumBMeansCorlTested="200" queueReqAbsPrc="50" queueReqRelPrc="0.05" queueSignLev="0.1" reqAbsPrc="50" reqRelPrc="0.05" signLev="0.1" xsi:type="simqpn-batch-means-queueing-color-configuration"/> 
+          </meta-attributes> 
+        </color-ref> 
+      </color-refs>
+      <meta-attributes> 
+        <meta-attribute location-x="80" location-y="253" xsi:type="location-attribute"/>  
+        <meta-attribute configuration-name="new configuration" id="_1156337226637" statsLevel="3" xsi:type="simqpn-place-configuration"/>  
+        <meta-attribute configuration-name="example_config" id="_1263657494732" statsLevel="1" xsi:type="simqpn-place-configuration"/> 
+      </meta-attributes>
+    </place>  
+    <place xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" departure-discipline="NORMAL" id="_1156337226548" name="CPU" queue-ref="_q1" xsi:type="queueing-place">
+      <color-refs> 
+        <color-ref color-id="_1156337226576" distribution-function="Exponential" id="_1156337226580" initial-population="0" lambda="0.0050" maximum-capacity="0" priority="0" ranking="0" xsi:type="queueing-color-reference"> 
+          <meta-attributes> 
+            <meta-attribute batchSize="200" bucketSize="0" configuration-name="example_config" id="_1156337226644" maxBuckets="0" minBatches="30" numBMeansCorlTested="0" queueBatchSize="200" queueBucketSize="0" queueMaxBuckets="0" queueMinBatches="201" queueNumBMeansCorlTested="200" queueReqAbsPrc="50" queueReqRelPrc="0.05" queueSignLev="0.1" reqAbsPrc="50" reqRelPrc="0.05" signLev="0.1" xsi:type="simqpn-batch-means-queueing-color-configuration"/> 
+          </meta-attributes> 
+        </color-ref>  
+        <color-ref color-id="_1156337226577" distribution-function="Exponential" id="_1156337226581" initial-population="0" lambda="0.0040" maximum-capacity="0" priority="0" ranking="0" xsi:type="queueing-color-reference"> 
+          <meta-attributes> 
+            <meta-attribute batchSize="200" bucketSize="0" configuration-name="example_config" id="_1156337226645" maxBuckets="0" minBatches="30" numBMeansCorlTested="0" queueBatchSize="200" queueBucketSize="0" queueMaxBuckets="0" queueMinBatches="201" queueNumBMeansCorlTested="200" queueReqAbsPrc="50" queueReqRelPrc="0.05" queueSignLev="0.1" reqAbsPrc="50" reqRelPrc="0.05" signLev="0.1" xsi:type="simqpn-batch-means-queueing-color-configuration"/> 
+          </meta-attributes> 
+        </color-ref> 
+      </color-refs>
+      <meta-attributes> 
+        <meta-attribute location-x="342" location-y="251" xsi:type="location-attribute"/>  
+        <meta-attribute configuration-name="example_config" id="_1156337226638" statsLevel="3" xsi:type="simqpn-place-configuration"/> 
+      </meta-attributes>
+    </place>  
+    <place xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" departure-discipline="NORMAL" id="_1156337226549" name="Disk 1" queue-ref="_q2" xsi:type="queueing-place">
+      <color-refs> 
+        <color-ref color-id="_1156337226576" distribution-function="Exponential" id="_1156337226582" initial-population="0" lambda="0.0010" maximum-capacity="0" priority="0" ranking="0" xsi:type="queueing-color-reference"> 
+          <meta-attributes> 
+            <meta-attribute batchSize="200" bucketSize="0" configuration-name="example_config" id="_1156337226646" maxBuckets="0" minBatches="30" numBMeansCorlTested="0" queueBatchSize="200" queueBucketSize="0" queueMaxBuckets="0" queueMinBatches="201" queueNumBMeansCorlTested="200" queueReqAbsPrc="50" queueReqRelPrc="0.05" queueSignLev="0.1" reqAbsPrc="50" reqRelPrc="0.05" signLev="0.1" xsi:type="simqpn-batch-means-queueing-color-configuration"/> 
+          </meta-attributes> 
+        </color-ref>  
+        <color-ref color-id="_1156337226577" distribution-function="Exponential" id="_1156337226583" initial-population="0" lambda="0.0010" maximum-capacity="0" priority="0" ranking="0" xsi:type="queueing-color-reference"> 
+          <meta-attributes> 
+            <meta-attribute batchSize="200" bucketSize="0" configuration-name="example_config" id="_1156337226647" maxBuckets="0" minBatches="30" numBMeansCorlTested="0" queueBatchSize="200" queueBucketSize="0" queueMaxBuckets="0" queueMinBatches="201" queueNumBMeansCorlTested="200" queueReqAbsPrc="50" queueReqRelPrc="0.05" queueSignLev="0.1" reqAbsPrc="50" reqRelPrc="0.05" signLev="0.1" xsi:type="simqpn-batch-means-queueing-color-configuration"/> 
+          </meta-attributes> 
+        </color-ref> 
+      </color-refs>
+      <meta-attributes> 
+        <meta-attribute location-x="658" location-y="22" xsi:type="location-attribute"/>  
+        <meta-attribute configuration-name="example_config" id="_1156337226639" statsLevel="3" xsi:type="simqpn-place-configuration"/> 
+      </meta-attributes>
+    </place>  
+    <place xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" departure-discipline="NORMAL" id="_1156337226550" name="Disk 2" queue-ref="_q3" xsi:type="queueing-place">
+      <color-refs> 
+        <color-ref color-id="_1156337226576" distribution-function="Exponential" id="_1156337226584" initial-population="0" lambda="0.0020" maximum-capacity="0" priority="0" ranking="0" xsi:type="queueing-color-reference"> 
+          <meta-attributes> 
+            <meta-attribute batchSize="200" bucketSize="0" configuration-name="example_config" id="_1156337226648" maxBuckets="0" minBatches="30" numBMeansCorlTested="0" queueBatchSize="200" queueBucketSize="0" queueMaxBuckets="0" queueMinBatches="201" queueNumBMeansCorlTested="200" queueReqAbsPrc="50" queueReqRelPrc="0.05" queueSignLev="0.1" reqAbsPrc="50" reqRelPrc="0.05" signLev="0.1" xsi:type="simqpn-batch-means-queueing-color-configuration"/> 
+          </meta-attributes> 
+        </color-ref>  
+        <color-ref color-id="_1156337226577" distribution-function="Exponential" id="_1156337226585" initial-population="0" lambda="0.0020" maximum-capacity="0" priority="0" ranking="0" xsi:type="queueing-color-reference"> 
+          <meta-attributes> 
+            <meta-attribute batchSize="200" bucketSize="0" configuration-name="example_config" id="_1156337226649" maxBuckets="0" minBatches="30" numBMeansCorlTested="0" queueBatchSize="200" queueBucketSize="0" queueMaxBuckets="0" queueMinBatches="201" queueNumBMeansCorlTested="200" queueReqAbsPrc="50" queueReqRelPrc="0.05" queueSignLev="0.1" reqAbsPrc="50" reqRelPrc="0.05" signLev="0.1" xsi:type="simqpn-batch-means-queueing-color-configuration"/> 
+          </meta-attributes> 
+        </color-ref> 
+      </color-refs>
+      <meta-attributes> 
+        <meta-attribute location-x="651" location-y="141" xsi:type="location-attribute"/>  
+        <meta-attribute configuration-name="example_config" id="_1156337226640" statsLevel="3" xsi:type="simqpn-place-configuration"/> 
+      </meta-attributes>
+    </place>  
+    <place xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" departure-discipline="NORMAL" id="_1156337226551" name="Disk 3" queue-ref="_q4" xsi:type="queueing-place">
+      <color-refs> 
+        <color-ref color-id="_1156337226576" distribution-function="Exponential" id="_1156337226586" initial-population="0" lambda="5.0E-5" maximum-capacity="0" priority="0" ranking="0" xsi:type="queueing-color-reference"> 
+          <meta-attributes> 
+            <meta-attribute batchSize="200" bucketSize="0" configuration-name="example_config" id="_1156337226650" maxBuckets="0" minBatches="30" numBMeansCorlTested="0" queueBatchSize="200" queueBucketSize="0" queueMaxBuckets="0" queueMinBatches="201" queueNumBMeansCorlTested="200" queueReqAbsPrc="50" queueReqRelPrc="0.05" queueSignLev="0.1" reqAbsPrc="50" reqRelPrc="0.05" signLev="0.1" xsi:type="simqpn-batch-means-queueing-color-configuration"/> 
+          </meta-attributes> 
+        </color-ref>  
+        <color-ref color-id="_1156337226577" distribution-function="Exponential" id="_1156337226587" initial-population="0" lambda="5.0E-5" maximum-capacity="0" priority="0" ranking="0" xsi:type="queueing-color-reference"> 
+          <meta-attributes> 
+            <meta-attribute batchSize="200" bucketSize="0" configuration-name="example_config" id="_1156337226651" maxBuckets="0" minBatches="30" numBMeansCorlTested="0" queueBatchSize="200" queueBucketSize="0" queueMaxBuckets="0" queueMinBatches="201" queueNumBMeansCorlTested="200" queueReqAbsPrc="50" queueReqRelPrc="0.05" queueSignLev="0.1" reqAbsPrc="50" reqRelPrc="0.05" signLev="0.1" xsi:type="simqpn-batch-means-queueing-color-configuration"/> 
+          </meta-attributes> 
+        </color-ref> 
+      </color-refs>
+      <meta-attributes> 
+        <meta-attribute location-x="657" location-y="330" xsi:type="location-attribute"/>  
+        <meta-attribute configuration-name="example_config" id="_1156337226641" statsLevel="3" xsi:type="simqpn-place-configuration"/> 
+      </meta-attributes>
+    </place> 
+  </places>
+  <transitions> 
+    <transition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="_1156337226552" name="t0" priority="0" weight="1.0" xsi:type="immediate-transition">
+      <modes> 
+        <mode firing-weight="1.0" id="_1156337226588" name="mode 1" real-color="#cb8816"/>  
+        <mode firing-weight="1.0" id="_1156337226591" name="mode 2" real-color="#07f1b9"/> 
+      </modes>
+      <connections> 
+        <connection count="1" id="_1156337226589" source-id="_1156337226578" target-id="_1156337226588"/>  
+        <connection count="1" id="_1156337226590" source-id="_1156337226588" target-id="_1156337226580"/>  
+        <connection count="1" id="_1156337226592" source-id="_1156337226579" target-id="_1156337226591"/>  
+        <connection count="1" id="_1156337226593" source-id="_1156337226591" target-id="_1156337226581"/> 
+      </connections>
+      <meta-attributes> 
+        <meta-attribute location-x="231" location-y="252" xsi:type="location-attribute"/> 
+      </meta-attributes>
+    </transition>  
+    <transition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="_1156337226553" name="t1" priority="0" weight="4" xsi:type="immediate-transition">
+      <modes> 
+        <mode firing-weight="1.0" id="_1156337226600" name="mode 1" real-color="#3b93cb"/>  
+        <mode firing-weight="1.0" id="_1156337226601" name="mode 2" real-color="#89500b"/> 
+      </modes>
+      <connections> 
+        <connection count="1" id="_1156337226602" source-id="_1156337226580" target-id="_1156337226600"/>  
+        <connection count="1" id="_1156337226603" source-id="_1156337226600" target-id="_1156337226582"/>  
+        <connection count="1" id="_1156337226604" source-id="_1156337226581" target-id="_1156337226601"/>  
+        <connection count="1" id="_1156337226605" source-id="_1156337226601" target-id="_1156337226583"/> 
+      </connections>
+      <meta-attributes> 
+        <meta-attribute location-x="509" location-y="23" xsi:type="location-attribute"/> 
+      </meta-attributes>
+    </transition>  
+    <transition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="_1156337226554" name="t2" priority="0" weight="5" xsi:type="immediate-transition">
+      <modes> 
+        <mode firing-weight="1.0" id="_1156337226606" name="mode 1" real-color="#b76aaf"/>  
+        <mode firing-weight="1.0" id="_1156337226607" name="mode 2" real-color="#329ebc"/> 
+      </modes>
+      <connections> 
+        <connection count="1" id="_1156337226608" source-id="_1156337226580" target-id="_1156337226606"/>  
+        <connection count="1" id="_1156337226609" source-id="_1156337226581" target-id="_1156337226607"/>  
+        <connection count="1" id="_1156337226610" source-id="_1156337226606" target-id="_1156337226584"/>  
+        <connection count="1" id="_1156337226611" source-id="_1156337226607" target-id="_1156337226585"/> 
+      </connections>
+      <meta-attributes> 
+        <meta-attribute location-x="512" location-y="141" xsi:type="location-attribute"/> 
+      </meta-attributes>
+    </transition>  
+    <transition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="_1156337226555" name="t3" priority="0" weight="1" xsi:type="immediate-transition">
+      <modes> 
+        <mode firing-weight="1.0" id="_1156337226612" name="mode 1" real-color="#51e4db"/>  
+        <mode firing-weight="1.0" id="_1156337226613" name="mode 2" real-color="#52698c"/> 
+      </modes>
+      <connections> 
+        <connection count="1" id="_1156337226614" source-id="_1156337226580" target-id="_1156337226612"/>  
+        <connection count="1" id="_1156337226615" source-id="_1156337226612" target-id="_1156337226586"/>  
+        <connection count="1" id="_1156337226616" source-id="_1156337226581" target-id="_1156337226613"/>  
+        <connection count="1" id="_1156337226617" source-id="_1156337226613" target-id="_1156337226587"/> 
+      </connections>
+      <meta-attributes> 
+        <meta-attribute location-x="515" location-y="330" xsi:type="location-attribute"/> 
+      </meta-attributes>
+    </transition>  
+    <transition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="_1156337226556" name="t5" priority="0" weight="1.0" xsi:type="immediate-transition">
+      <modes> 
+        <mode firing-weight="1.0" id="_1156337226618" name="mode 1" real-color="#15a092"/>  
+        <mode firing-weight="1.0" id="_1156337226619" name="mode 2" real-color="#4f0f23"/> 
+      </modes>
+      <connections> 
+        <connection count="1" id="_1156337226620" source-id="_1156337226582" target-id="_1156337226618"/>  
+        <connection count="1" id="_1156337226621" source-id="_1156337226618" target-id="_1156337226580"/>  
+        <connection count="1" id="_1156337226622" source-id="_1156337226583" target-id="_1156337226619"/>  
+        <connection count="1" id="_1156337226623" source-id="_1156337226619" target-id="_1156337226581"/> 
+      </connections>
+      <meta-attributes> 
+        <meta-attribute location-x="813" location-y="22" xsi:type="location-attribute"/> 
+      </meta-attributes>
+    </transition>  
+    <transition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="_1156337226557" name="t6" priority="0" weight="1.0" xsi:type="immediate-transition">
+      <modes> 
+        <mode firing-weight="1.0" id="_1156337226624" name="mode 1" real-color="#4af892"/>  
+        <mode firing-weight="1.0" id="_1156337226625" name="mode 2" real-color="#b71ea8"/> 
+      </modes>
+      <connections> 
+        <connection count="1" id="_1156337226626" source-id="_1156337226584" target-id="_1156337226624"/>  
+        <connection count="1" id="_1156337226627" source-id="_1156337226624" target-id="_1156337226580"/>  
+        <connection count="1" id="_1156337226628" source-id="_1156337226585" target-id="_1156337226625"/>  
+        <connection count="1" id="_1156337226629" source-id="_1156337226625" target-id="_1156337226581"/> 
+      </connections>
+      <meta-attributes> 
+        <meta-attribute location-x="809" location-y="141" xsi:type="location-attribute"/> 
+      </meta-attributes>
+    </transition>  
+    <transition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="_1156337226558" name="t7" priority="0" weight="1.0" xsi:type="immediate-transition">
+      <modes> 
+        <mode firing-weight="1.0" id="_1156337226630" name="mode 1" real-color="#9d5607"/>  
+        <mode firing-weight="1.0" id="_1156337226631" name="mode 2" real-color="#c6edfc"/> 
+      </modes>
+      <connections> 
+        <connection count="1" id="_1156337226632" source-id="_1156337226586" target-id="_1156337226630"/>  
+        <connection count="1" id="_1156337226633" source-id="_1156337226630" target-id="_1156337226580"/>  
+        <connection count="1" id="_1156337226634" source-id="_1156337226587" target-id="_1156337226631"/>  
+        <connection count="1" id="_1156337226635" source-id="_1156337226631" target-id="_1156337226581"/> 
+      </connections>
+      <meta-attributes> 
+        <meta-attribute location-x="811" location-y="331" xsi:type="location-attribute"/> 
+      </meta-attributes>
+    </transition>  
+    <transition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="_1156337226559" name="t4" priority="0" weight="10" xsi:type="immediate-transition">
+      <modes> 
+        <mode firing-weight="1.0" id="_1156337226594" name="mode 1" real-color="#9d299b"/>  
+        <mode firing-weight="1.0" id="_1156337226595" name="mode 2" real-color="#ed24d6"/> 
+      </modes>
+      <connections> 
+        <connection count="1" id="_1156337226596" source-id="_1156337226580" target-id="_1156337226594"/>  
+        <connection count="1" id="_1156337226597" source-id="_1156337226581" target-id="_1156337226595"/>  
+        <connection count="1" id="_1156337226598" source-id="_1156337226594" target-id="_1156337226578"/>  
+        <connection count="1" id="_1156337226599" source-id="_1156337226595" target-id="_1156337226579"/> 
+      </connections>
+      <meta-attributes> 
+        <meta-attribute location-x="196" location-y="457" xsi:type="location-attribute"/> 
+      </meta-attributes>
+    </transition> 
+  </transitions>
+  <connections> 
+    <connection id="_1156337226560" source-id="_1156337226547" target-id="_1156337226552"/>  
+    <connection id="_1156337226561" source-id="_1156337226552" target-id="_1156337226548"/>  
+    <connection id="_1156337226562" source-id="_1156337226548" target-id="_1156337226553"/>  
+    <connection id="_1156337226563" source-id="_1156337226548" target-id="_1156337226554"/>  
+    <connection id="_1156337226564" source-id="_1156337226548" target-id="_1156337226555"/>  
+    <connection id="_1156337226565" source-id="_1156337226553" target-id="_1156337226549"/>  
+    <connection id="_1156337226566" source-id="_1156337226554" target-id="_1156337226550"/>  
+    <connection id="_1156337226567" source-id="_1156337226555" target-id="_1156337226551"/>  
+    <connection id="_1156337226568" source-id="_1156337226549" target-id="_1156337226556"/>  
+    <connection id="_1156337226569" source-id="_1156337226550" target-id="_1156337226557"/>  
+    <connection id="_1156337226570" source-id="_1156337226551" target-id="_1156337226558"/>  
+    <connection id="_1156337226571" source-id="_1156337226548" target-id="_1156337226559"/>  
+    <connection id="_1156337226572" source-id="_1156337226559" target-id="_1156337226547"/>  
+    <connection id="_1156337226573" source-id="_1156337226556" target-id="_1156337226548"/>  
+    <connection id="_1156337226574" source-id="_1156337226557" target-id="_1156337226548"/>  
+    <connection id="_1156337226575" source-id="_1156337226558" target-id="_1156337226548"/> 
+  </connections>
+  <meta-attributes> 
+    <meta-attribute xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" configuration-name="example_config" id="_1156337226636" output-directory="." ramp-up-length="16E6" scenario="1" seconds-between-heart-beats="60" seconds-between-stop-checks="0" stopping-rule="RELPRC" time-before-initial-heart-beat="30000" time-between-stop-checks="60000" total-run-length="32E8" verbosity-level="1" xsi:type="simqpn-configuration"></meta-attribute> 
+  </meta-attributes>
+</net>

@@ -1,0 +1,99 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	
+	<prerequisites>
+		<maven>3.0</maven>
+	</prerequisites>
+
+	<groupId>qpme</groupId>
+	<artifactId>qpme.releng</artifactId>
+	<version>2.1.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<organization>
+		<url>http://qpme.sourceforge.net</url>
+		<name>Karlsruhe Institute of Technology (KIT)</name>
+	</organization>
+	
+	<scm>
+		<connection>scm:svn:https://svnserver.informatik.kit.edu/i43/svn/descartes/code/qpme/eclipse-src/trunk/sources/qpme</connection>
+		<developerConnection>scm:svn:https://svnserver.informatik.kit.edu/i43/svn/descartes/code/qpme/eclipse-src/trunk/sources/qpme</developerConnection>
+		<url>https://svnserver.informatik.kit.edu/i43/svn/descartes/code/qpme/eclipse-src/trunk/sources/qpme</url>
+	</scm>
+
+	<properties>
+		<tycho-version>0.16.0</tycho-version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-maven-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<extensions>true</extensions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<target>
+						<artifact>
+							<groupId>qpme</groupId>
+							<artifactId>qpme.releng.targetplatform</artifactId>
+							<version>2.1.0-SNAPSHOT</version>
+						</artifact>
+					</target>
+					<!-- configure the p2 target environments for multi-platform build -->
+					<environments>
+						<environment>
+							<os>linux</os>
+							<ws>gtk</ws>
+							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>linux</os>
+							<ws>gtk</ws>
+							<arch>x86_64</arch>
+						</environment>
+						<environment>
+							<os>win32</os>
+							<ws>win32</ws>
+							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>macosx</os>
+							<ws>cocoa</ws>
+							<arch>x86</arch>
+						</environment>
+					</environments>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<modules>
+		<module>../cern.colt</module>
+		<module>../org.dom4j</module>
+		<module>../org.jfreechart</module>
+		<module>../org.rosuda.JRI</module>
+		<module>../qpme.model.migration</module>
+		<module>../qpme.qpe.core</module>
+		<module>../qpme.simqpn.kernel</module>
+		<module>../qpme.simqpn.ui</module>
+		
+		<module>../qpme.model.migration.tests</module>
+
+		<module>../qpme.model.feature</module>
+		<module>../qpme.qpe.feature</module>
+		<module>../qpme.simqpn.feature</module>
+
+		<module>../qpme.releng.targetplatform</module>
+		<module>../qpme.releng.product</module>
+		<module>../qpme.releng.p2</module>
+	</modules>
+</project>

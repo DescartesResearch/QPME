@@ -1,0 +1,68 @@
+---------------------------------------------------------------------------------------------------------------------
+QPME ChangeLog
+---------------------------------------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------------------------------------
+Version 2.0
+---------------------------------------------------------------------------------------------------------------------
+
+New Features:
+
+  – Central queue management and support for having multiple queueing places
+    that share the same underlying physical queue.
+
+  – Advanced query engine for processing and visualization of simulation results.
+
+  – Support for simulating hierarchical QPNs using SimQPN.
+
+  – Support for defining probes that specify metrics of interest for which data
+    should be collected.
+
+  – Support for empirical and deterministic distributions.
+
+  – Improved performance and scalability of the simulation engine (SimQPN).
+
+  – Automatic detection of infinitely growing queues (model instability).
+
+  – A number of features improving user friendliness (e.g., simulation progress
+    bar and "stop simulation" button).
+
+  - New simulation configuration parameters "bucketSize" and "maxBuckets" to customize
+    histogram creation.
+
+  - New example model SPECjms2007Model.qpe included which demonstrates the use
+    of shared queues.
+
+Changes:
+
+  - Names of QPN elements (places, transitions, colors, etc.) are required to be unique.
+  
+  - Renamed Parameter "Confidence Interval Length" in simulation run wizard to "Confidence
+    Interval Half Length" to clarify its meaning.
+
+  - Check before running simulation that each immediate transition contains at least on mode
+    requiring input tokens. Warn user if that is not the case.
+
+  - Based on current Eclipse 3.6 version.
+
+
+Bugs fixed:
+
+  - Empirical distribution fixed.
+
+  - Added various checks to avoid NullPointerExceptions due to modelling errors (e.g. missing
+    queues in queueing places)
+
+  - Fixed bug in query editor only showing one of several places sharing the same name.
+
+  - Unable to load .qpe-Files with identifiers containing special characters (e.g. german umlaute)
+
+  - When opening the Incidence Function Editor nothing is displayed inside its window. Only after
+    dragging the mouse pointer, the incidence function is shown.
+
+  - Various bugs causing inconstencies in the model were fixed (e.g. when deleting elements from the
+    net, corresponding connections are removed as well)
+
+  - Various Null Pointer Exceptions fixed in simulation configuration wizard.
+
+  - Fixed focus handling in the parameters table of the simulation configuration wizard.

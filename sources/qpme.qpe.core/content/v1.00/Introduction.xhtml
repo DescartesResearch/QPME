@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Introduction</title>
+  <link rel="stylesheet" href="shared.css" type="text/css" />	
+  </head>
+
+<body>
+<h1>QPME User's Guide</h1>
+<h2>Introduction</h2>
+<!--
+CONTENTS:
+Brief tool description
+How to get QPME
+System Requirements
+Installation notes
+History of the Tool
+Acknowledgements
+Contact Information
+-->
+
+<h3>Brief tool description</h3>
+
+<p>
+This document describes the software package QPME (Queueing Petri net Modeling Environment), a performance modeling and analysis tool based on the Queueing Petri Net (QPN) modeling formalism. QPN models are more sophisticated than conventional queueing networks and stochastic Petri nets and have greater expressive power. This provides a number of important benefits since it makes it possible to model systems at a higher degree of accuracy. QPME is made of two components: QPE (QPN Editor) and SimQPN (Simulator for QPNs). QPE provides a user-friendly graphical tool for modeling using QPNs based on the Eclipse/GEF framework. SimQPN provides an efficient discrete-event simulation engine for QPNs that makes it possible to analyze models of realistically-sized systems. QPME runs on a wide range of platforms including Windows, Linux and Solaris. QPME is developed and maintained by Samuel Kounev and Christofer Dutz.
+</p>
+
+<p>
+A detailed description of the modeling approach implemented in QPME can be found in the paper <a href="http://dx.doi.org/10.1109/TSE.2006.69">"Performance Modeling and Evaluation of Distributed Component-Based Systems Using Queueing Petri Nets"</a>. Being based on QPNs, it provides the following advantages:</p>
+
+<ul>
+<li>QPN models combine the modeling power and expressiveness of queueing networks and generalized stochastic Petri nets.</li>
+<li>QPN models allow the integration of hardware and software aspects of system behavior and lend themselves very well to modeling distributed systems.</li>
+<li>The knowledge of the structure and behavior of QPNs can be exploited for fast and efficient analysis using simulation. This makes it possible to analyze models of large and complex systems ensuring that the approach scales to realistic systems.</li>
+<li>Many efficient qualitative analysis techniques from Petri net theory can be extended to QPNs and used to combine qualitative and quantitative system analysis.</li>
+<li>Last but not least, QPN models have an intuitive graphical representation that facilitates model development.</li>
+</ul>
+
+<p>
+This document presents QPME discussing its features and usage. The aim is to help the user to work with the tool without understanding its internal design and architecture. More information on the implementation details of QPME, including detailed specification of the analysis techniques implemented, can be found in the paper <a href="http://dx.doi.org/10.1016/j.peva.2005.03.004">"SimQPN - a tool and methodology for analyzing queueing Petri net models by means of simulation"</a>. For an overview of QPME, refer to the article <a href="http://doi.ieeecomputersociety.org/10.1109/QEST.2006.44">"QPME - Queueing Petri Net Modeling Environment"</a>.
+</p>
+
+<!--
+A more detailed version of the User's Guide is available in <a href="QPME-UsersGuide.pdf">PDF format</a>.
+-->
+
+<h3>System Requirements</h3>
+
+<p>
+QPE runs on all platforms supported by Eclipse including Windows, Linux, Solaris, HP-UX, IBM AIX and Apple Mac OS. The only thing required is a Java Runtime Environment (JRE) 5.0. It is recommended that QPE is run on Windows since this is the platform it has been tested on.
+</p>
+
+<p>
+SimQPN can be run either as Eclipse plugin in QPE or as a standalone Java application. Thus, even though QPE is limited to Eclipse-supported platforms, SimQPN can be run on any platform on which Java SE 5.0 is available. This makes it possible to design a model on one platform (e.g. Windows) using QPE and then analyze it on another platform (e.g. Solaris) using SimQPN.
+</p>
+
+<br/>
+<hr/>
+<p style="text-align:center;" /> Copyright (c) 2006 Samuel Kounev and Christofer Dutz
+
+</body>
+</html>
