@@ -61,5 +61,3 @@ Application" in context menu.
 NOTE: It might be necessary to update the dependencies. In this case open the 
 file "qpe.base/qpe.product", navigate to page "Dependencies" and click button 
 "Add required plug-ins". 
-
-       
