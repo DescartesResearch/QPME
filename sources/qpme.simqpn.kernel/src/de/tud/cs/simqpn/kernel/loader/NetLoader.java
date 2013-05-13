@@ -48,10 +48,10 @@ import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 
 public class NetLoader {
 
-	private List<Place> placeList;
-	private List<Transition> transitionList;
-	private List<Queue> queueList;
-	private List<Probe> probeList;
+	private List<Element> placeList;
+	private List<Element> transitionList;
+	private List<Element> queueList;
+	private List<Element> probeList;
 
 	// hashmaps to allow fast lookup of array index for a given element
 	private Map<Element, Integer> placeToIndexMap;
