@@ -14,7 +14,6 @@ import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
-import de.tud.cs.simqpn.kernel.loader.NetLoader;
 import de.tud.cs.simqpn.kernel.loader.XMLHelper;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.stats.AggregateStats;
@@ -39,7 +38,7 @@ public class Welch implements Analyzer {
 	 * @return
 	 * @exception
 	 */
-	public static AggregateStats[] runWelchMtd(Element netXML,
+	private static AggregateStats[] runWelchMtd(Element netXML,
 			String configuration, SimulatorProgress monitor)
 			throws SimQPNException {
 		XPath xpathSelector = XMLHelper.createXPath("//place");

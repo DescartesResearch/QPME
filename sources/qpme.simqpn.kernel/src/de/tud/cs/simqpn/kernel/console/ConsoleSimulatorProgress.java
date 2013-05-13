@@ -42,7 +42,6 @@
 
 package de.tud.cs.simqpn.kernel.console;
 
-import static de.tud.cs.simqpn.kernel.SimQPNConfiguration.WELCH;
 import static de.tud.cs.simqpn.kernel.util.LogUtil.formatMultilineMessage;
 
 import org.apache.log4j.Logger;

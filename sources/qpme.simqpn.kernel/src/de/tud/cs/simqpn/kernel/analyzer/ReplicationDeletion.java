@@ -44,7 +44,7 @@ public class ReplicationDeletion implements Analyzer{
 	 * @return 
 	 * @exception
 	 */
-	public static AggregateStats[] runMultRepl(Element netXML, String configuration, SimulatorProgress monitor) throws SimQPNException {
+	private static AggregateStats[] runMultRepl(Element netXML, String configuration, SimulatorProgress monitor) throws SimQPNException {
 
 		SimQPNController sim = new SimQPNController(netXML, configuration);
 		if (sim.configuration.getNumRuns() <= 1) {
