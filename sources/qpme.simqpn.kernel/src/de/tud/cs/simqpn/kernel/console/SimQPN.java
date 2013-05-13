@@ -64,8 +64,9 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 
+import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
-import de.tud.cs.simqpn.kernel.SimQPNControler;
+import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.persistency.StatsDocumentBuilder;
 import de.tud.cs.simqpn.kernel.stats.Stats;
@@ -75,12 +76,12 @@ public class SimQPN implements IApplication {
 	private static void runSimulatorOnDocument(Document netDocument,
 			String configuration, String outputFilename, String logConfigFilename, SimulatorProgress progress) throws SimQPNException {
 		Element net = netDocument.getRootElement();
-		SimQPNControler.configure(net, configuration, logConfigFilename);
-		net = SimQPNControler.prepareNet(net, configuration);
-		Stats[] result = SimQPNControler.execute(net, configuration, progress);
+		SimQPNController.configure(net, configuration, logConfigFilename);
+		net = SimQPNController.prepareNet(net, configuration);
+		Stats[] result = SimQPNController.execute(net, configuration, progress);
 		// Skip stats document generation for WELCH and REPL_DEL since the 
 		// document builder does not support these methods yet.
-		if ((result != null) && (SimQPNControler.analMethod == SimQPNControler.BATCH_MEANS)) {
+		if ((result != null) && (SimQPNController.configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS)) {
 			StatsDocumentBuilder builder = new StatsDocumentBuilder(result, net, configuration);
 			Document statsDocument = builder.buildDocument();
 
@@ -88,7 +89,7 @@ public class SimQPN implements IApplication {
 			if (outputFilename != null) {
 				resultsFile = new File(outputFilename);
 			} else {
-				resultsFile = new File(SimQPNControler.statsDir, builder.getResultFileBaseName() + ".simqpn");
+				resultsFile = new File(SimQPNController.configuration.getStatsDir(), builder.getResultFileBaseName() + ".simqpn");
 			}
 
 			System.out.println("Saving simulation result to "

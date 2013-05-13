@@ -69,7 +69,7 @@ import cern.colt.list.AbstractDoubleList;
 import cern.colt.list.DoubleArrayList;
 import cern.jet.random.AbstractContinousDistribution;
 import de.tud.cs.simqpn.kernel.SimQPNException;
-import de.tud.cs.simqpn.kernel.SimQPNControler;
+import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.stats.QPlaceQueueStats;
 
 /**
@@ -256,7 +256,7 @@ public class QPlace extends Place {
 		if (statsLevel > 0)  {
 			qPlaceQueueStats.updateTkPopStats(token.color, queueTokenPop[token.color], -1);
 			if (statsLevel >= 3) 
-				qPlaceQueueStats.updateSojTimeStats(token.color, SimQPNControler.clock - token.arrivTS);
+				qPlaceQueueStats.updateSojTimeStats(token.color, SimQPNController.clock - token.arrivTS);
 		}
 		
 		// Now remove token from queue and update queue state

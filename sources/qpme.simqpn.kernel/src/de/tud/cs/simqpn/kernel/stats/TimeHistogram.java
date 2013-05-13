@@ -46,7 +46,8 @@ package de.tud.cs.simqpn.kernel.stats;
 
 import java.io.Serializable;
 
-import de.tud.cs.simqpn.kernel.SimQPNControler;
+import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
+import de.tud.cs.simqpn.kernel.SimQPNController;
 
 public class TimeHistogram implements Serializable  {
 	private static final long serialVersionUID = 689255573778061L;
@@ -61,8 +62,8 @@ public class TimeHistogram implements Serializable  {
 	 *
 	 */	
 	public TimeHistogram()  {
-		this.numBuckets = SimQPNControler.TIME_HISTOGRAM_MIN_NUM_BUCKETS;
-		this.maxNumBuckets = SimQPNControler.TIME_HISTOGRAM_MAX_NUM_BUCKETS;
+		this.numBuckets = SimQPNConfiguration.TIME_HISTOGRAM_MIN_NUM_BUCKETS;
+		this.maxNumBuckets = SimQPNConfiguration.TIME_HISTOGRAM_MAX_NUM_BUCKETS;
 		
 		this.data = new int[numBuckets];
 		for (int i = 0; i < numBuckets; i++) this.data[i] = 0;
@@ -79,7 +80,7 @@ public class TimeHistogram implements Serializable  {
 		if (bucketSize > 0)
 			this.bucketSize = bucketSize;
 		else
-			this.bucketSize = SimQPNControler.TIME_HISTOGRAM_DEFAULT_BUCKET_SIZE;
+			this.bucketSize = SimQPNConfiguration.TIME_HISTOGRAM_DEFAULT_BUCKET_SIZE;
 	}
 
 	/**
@@ -92,7 +93,7 @@ public class TimeHistogram implements Serializable  {
 		if(maxNumBuckets > 0) {
 			this.maxNumBuckets = maxNumBuckets;
 		} else {
-			this.maxNumBuckets = SimQPNControler.TIME_HISTOGRAM_MAX_NUM_BUCKETS;
+			this.maxNumBuckets = SimQPNConfiguration.TIME_HISTOGRAM_MAX_NUM_BUCKETS;
 		}
 	}
 

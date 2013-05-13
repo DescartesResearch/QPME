@@ -52,8 +52,9 @@ import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.XPath;
 
+import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
-import de.tud.cs.simqpn.kernel.SimQPNControler;
+import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.stats.PlaceStats;
 import de.tud.cs.simqpn.kernel.stats.ProbeStats;
 import de.tud.cs.simqpn.kernel.stats.QPlaceQueueStats;
@@ -82,7 +83,7 @@ public class StatsDocumentBuilder {
 		this.doc = DocumentFactory.getInstance().createDocument();
 		Element root = this.doc.addElement("simqpn-results");
 		this.doc.setRootElement(root);
-		root.addAttribute("qpme-version", SimQPNControler.QPME_VERSION);
+		root.addAttribute("qpme-version", SimQPNController.QPME_VERSION);
 		root.addAttribute("model-file", net.attributeValue("path"));
 		String timestamp = TIMESTAMP_FORMAT.format(new Date());
 		root.addAttribute("date", timestamp);
@@ -190,7 +191,7 @@ public class StatsDocumentBuilder {
 			addMetric(color, "maxST", stats.maxST[colorIndex]);
 			addMetric(color, "meanST", stats.meanST[colorIndex]);
 			addMetric(color, "stDevST", stats.stDevST[colorIndex]);
-			if (SimQPNControler.analMethod == SimQPNControler.BATCH_MEANS
+			if (SimQPNController.configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS
 					&& stats.minBatches[colorIndex] > 0
 					&& stats.numBatchesST[colorIndex] >= stats.minBatches[colorIndex]) {
 				addMetric(color, "stdStateMeanST", stats.stdStateMeanST[colorIndex]);
@@ -221,7 +222,7 @@ public class StatsDocumentBuilder {
 			addMetric(color, "maxST", stats.maxST[colorIndex]);
 			addMetric(color, "meanST", stats.meanST[colorIndex]);
 			addMetric(color, "stDevST", stats.stDevST[colorIndex]);
-			if (SimQPNControler.analMethod == SimQPNControler.BATCH_MEANS
+			if (SimQPNController.configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS
 					&& stats.minBatches[colorIndex] > 0
 					&& stats.numBatchesST[colorIndex] >= stats.minBatches[colorIndex]) {
 				addMetric(color, "stdStateMeanST", stats.stdStateMeanST[colorIndex]);

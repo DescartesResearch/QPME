@@ -52,7 +52,7 @@ import de.tud.cs.simqpn.kernel.entities.Token;
  * @author Samuel Kounev
  * @version
  */
-public class Event {
+public class QueueEvent {
 	public double 			time;
 	public Queue			queue;
 	public Token			token;
@@ -64,7 +64,7 @@ public class Event {
 	 * @param queue      - Queue involved
 	 * @param token      - Token to be served  	  
 	 */
-	public Event(double time, Queue queue, Token token) {
+	public QueueEvent(double time, Queue queue, Token token) {
 		this.time	= time;
 		this.queue	= queue;
 		this.token	= token;		

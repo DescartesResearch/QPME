@@ -57,7 +57,7 @@ import org.apache.log4j.Logger;
 import cern.jet.random.Empirical;
 import cern.jet.random.EmpiricalWalker;
 import de.tud.cs.simqpn.kernel.SimQPNException;
-import de.tud.cs.simqpn.kernel.SimQPNControler;
+import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 
 /**
@@ -377,7 +377,7 @@ public class Transition extends Node {
 										ProbeTimestamp curStamp = tokens[i].probeData[pr];
 										if (curStamp == null) continue;
 										
-										probe.probeStats.updateSojTimeStats(c, SimQPNControler.clock - curStamp.timestamp);
+										probe.probeStats.updateSojTimeStats(c, SimQPNController.clock - curStamp.timestamp);
 									}
 								}
 								break;
@@ -385,7 +385,7 @@ public class Transition extends Node {
 							case Place.PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY:
 								if (data == null) {
 									// There is no timestamp so far for the current probe, so create it.
-									data = new ProbeTimestamp(probeIdx, SimQPNControler.clock);
+									data = new ProbeTimestamp(probeIdx, SimQPNController.clock);
 								}
 								break;
 							default:
@@ -455,12 +455,12 @@ public class Transition extends Node {
 							case Place.PROBE_ACTION_START_ON_ENTRY:
 							case Place.PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT:
 								if (timestamp == null) {
-									outData[pr] = new ProbeTimestamp(probeIdx, SimQPNControler.clock);
+									outData[pr] = new ProbeTimestamp(probeIdx, SimQPNController.clock);
 								}
 								break;
 							case Place.PROBE_ACTION_END_ON_ENTRY:
 							case Place.PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY:
-								probe.probeStats.updateSojTimeStats(c, SimQPNControler.clock - timestamp.timestamp);
+								probe.probeStats.updateSojTimeStats(c, SimQPNController.clock - timestamp.timestamp);
 								break;
 							default:
 								outData[pr] = timestamp;

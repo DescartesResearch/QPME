@@ -79,8 +79,9 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import de.tud.cs.qpe.editors.net.NetEditorInput;
 import de.tud.cs.qpe.editors.query.QueryEditorInput;
 import de.tud.cs.qpe.editors.query.SimpleQueryEditor;
+import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
-import de.tud.cs.simqpn.kernel.SimQPNControler;
+import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.persistency.StatsDocumentBuilder;
 import de.tud.cs.simqpn.kernel.stats.Stats;
@@ -99,7 +100,7 @@ public class StartSimulatorAction extends AbstractHandler {
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		Shell shell = HandlerUtil.getActiveShell(event);
-		if (SimQPNControler.simRunning) {
+		if (SimQPNController.simRunning) {
 			MessageDialog
 					.openWarning(
 							shell,
@@ -252,20 +253,21 @@ public class StartSimulatorAction extends AbstractHandler {
 			try {
 				monitor.subTask("Configure Simulator");
 
-				SimQPNControler.configure(net, configuration, null);
-				net = SimQPNControler.prepareNet(net, configuration);
-				Stats[] result = SimQPNControler.execute(net, configuration, this);
+				SimQPNController.configure(net, configuration, null);
+				net = SimQPNController.prepareNet(net, configuration);
+				Stats[] result = SimQPNController.execute(net, configuration, this);
 
 				// Skip stats document generation for WELCH and REPL_DEL since
 				// the
 				// document builder does not support these methods yet.
+				System.out.println("result "+result);
 				if ((result != null)
-						&& (SimQPNControler.analMethod == SimQPNControler.BATCH_MEANS)) {
+						&& (SimQPNController.configuration.getAnalMethod() == SimQPNController.configuration.BATCH_MEANS)) {
 					monitor.subTask("Collect Results");
 					StatsDocumentBuilder builder = new StatsDocumentBuilder(
 							result, net, configuration);
 					Document statsDocument = builder.buildDocument();
-					File resultsFile = new File(SimQPNControler.statsDir,
+					File resultsFile = new File(SimQPNController.configuration.getStatsDir(),
 							builder.getResultFileBaseName() + ".simqpn");
 					saveXmlToFile(statsDocument, resultsFile);
 
@@ -357,21 +359,21 @@ public class StartSimulatorAction extends AbstractHandler {
 		 */
 		@Override
 		public void startSimulation() {
-			this.numRuns = (SimQPNControler.analMethod == SimQPNControler.BATCH_MEANS) ? 1
-					: SimQPNControler.numRuns;
+			this.numRuns = (SimQPNController.configuration.getAnalMethod() == SimQPNController.configuration.BATCH_MEANS) ? 1
+					: SimQPNController.configuration.getNumRuns();
 			this.totalWork = numRuns * 100;
 			this.worked = 0;
 			this.totalTime = 0;
 			monitor.beginTask("Simulation", totalWork);
 
-			switch (SimQPNControler.analMethod) {
-			case SimQPNControler.BATCH_MEANS:
+			switch (SimQPNController.configuration.getAnalMethod()) {
+			case SimQPNConfiguration.BATCH_MEANS:
 				monitor.setTaskName("Simulation (Batch Means)");
 				break;
-			case SimQPNControler.REPL_DEL:
+			case SimQPNConfiguration.REPL_DEL:
 				monitor.setTaskName("Simulation (Replication/Deletion)");
 				break;
-			case SimQPNControler.WELCH:
+			case SimQPNConfiguration.WELCH:
 				monitor.setTaskName("Simulation (Method of Welch)");
 				break;
 			}
@@ -436,7 +438,7 @@ public class StartSimulatorAction extends AbstractHandler {
 			// if numRuns > 1 distribute the heartbeats approximately evenly
 			// over the simulation runs
 			int numberHeartbeats = (100 / numRuns) + 1;
-			return SimQPNControler.totRunLen / numberHeartbeats;
+			return SimQPNController.configuration.totRunLen / numberHeartbeats;
 		}
 
 		/*
@@ -481,7 +483,7 @@ public class StartSimulatorAction extends AbstractHandler {
 
 			// Remaining time display
 			if (totalTime > 0) {
-				if (SimQPNControler.stoppingRule == SimQPNControler.FIXEDLEN) {
+				if (SimQPNController.configuration.stoppingRule == SimQPNConfiguration.FIXEDLEN) {
 					status.append("Remaining Time: ");
 				} else {
 					status.append("Maximum Remaining Time: ");
@@ -503,17 +505,17 @@ public class StartSimulatorAction extends AbstractHandler {
 			}
 
 			// Number of run
-			if (SimQPNControler.analMethod != SimQPNControler.BATCH_MEANS) {
+			if (SimQPNController.configuration.getAnalMethod() != SimQPNConfiguration.BATCH_MEANS) {
 				status.append("Run: ").append(currentRun).append("/")
 						.append(numRuns).append("\n");
 			}
 
 			// Phase
 			status.append("Phase: ");
-			if (SimQPNControler.analMethod == SimQPNControler.WELCH) {
+			if (SimQPNController.configuration.getAnalMethod() == SimQPNConfiguration.WELCH) {
 				status.append("Determine Warm-up Period Length");
 			} else {
-				if (SimQPNControler.inRampUp) {
+				if (SimQPNController.configuration.inRampUp) {
 					status.append("Warm-Up Period");
 				} else {
 					status.append("Steady State Period");
@@ -522,7 +524,7 @@ public class StartSimulatorAction extends AbstractHandler {
 			status.append("\n");
 
 			// Failed place name
-			if (SimQPNControler.stoppingRule != SimQPNControler.FIXEDLEN
+			if (SimQPNController.configuration.stoppingRule != SimQPNConfiguration.FIXEDLEN
 					&& (failedPlace != null)) {
 				status.append("There are not enough statistics for place ")
 						.append(failedPlace)

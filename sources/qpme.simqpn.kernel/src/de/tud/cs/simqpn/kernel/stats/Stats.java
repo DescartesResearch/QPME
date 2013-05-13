@@ -44,7 +44,7 @@
  */
 package de.tud.cs.simqpn.kernel.stats;
 
-import de.tud.cs.simqpn.kernel.SimQPNControler;
+import de.tud.cs.simqpn.kernel.SimQPNController;
 
 /**
  * Class Stats
@@ -80,7 +80,7 @@ public class Stats {
 	public double		runWallClockTime;		// Total duration of the run in seconds. 
 		
 	public String 		fileSep 	= System.getProperty("file.separator");
-	public String 		statsDir 	= SimQPNControler.statsDir;
+	public String 		statsDir 	= SimQPNController.configuration.getStatsDir();
 	
 	/* NOTE:
 	 * statsLevel determines the amount of statistics to be gathered during the run:

@@ -44,7 +44,7 @@ package de.tud.cs.simqpn.kernel.stats;
 import org.apache.log4j.Logger;
 
 import de.tud.cs.simqpn.kernel.SimQPNException;
-import de.tud.cs.simqpn.kernel.SimQPNControler;
+import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.entities.Queue;
 import de.tud.cs.simqpn.kernel.util.LogUtil.ReportLevel;
 
@@ -125,7 +125,7 @@ public class QueueStats extends Stats implements java.io.Serializable {
 			for (int p=0; p < queue.qPlaces.length; p++)
 				for (int c=0; c < queue.qPlaces[p].numColors; c++)
 					lastTotTkPop += queue.qPlaces[p].queueTokenPop[c];				
-			lastTkPopClock = SimQPNControler.clock;
+			lastTkPopClock = SimQPNController.clock;
 		}
 	}
 
@@ -140,7 +140,7 @@ public class QueueStats extends Stats implements java.io.Serializable {
 	public void start() throws SimQPNException  {	
 		init();
 		inRampUp = false;
-		endRampUpClock = SimQPNControler.clock;	
+		endRampUpClock = SimQPNController.clock;	
 	}
 
 	/**
@@ -156,9 +156,9 @@ public class QueueStats extends Stats implements java.io.Serializable {
 	public void finish() throws SimQPNException  {		
 		if (statsLevel >= 2) //NOTE: This makes sure areaQueUtil is complete!
 			updateTotTkPopStats(0);
-		endRunClock = SimQPNControler.clock;
+		endRunClock = SimQPNController.clock;
 		msrmPrdLen = endRunClock - endRampUpClock;		
-		runWallClockTime = SimQPNControler.runWallClockTime;
+		runWallClockTime = SimQPNController.configuration.runWallClockTime;
 		processStats(); 
 	}
 		
@@ -171,12 +171,12 @@ public class QueueStats extends Stats implements java.io.Serializable {
 	 */
 	public void updateTotTkPopStats(int delta) {
 		if (inRampUp) return;		
-		double elapsedTime = SimQPNControler.clock - lastTkPopClock;
+		double elapsedTime = SimQPNController.clock - lastTkPopClock;
 		if (elapsedTime > 0) {
 			if (numServers > 1)	//NOTE: WATCH OUT with IS queues here! Below we assume that for such queues numServers == 0.				
 				areaQueUtil += elapsedTime * (lastTotTkPop > numServers ? 1 : (((double) lastTotTkPop) / numServers));																						
 			else areaQueUtil += elapsedTime * (lastTotTkPop > 0 ? 1 : 0);  
-			lastTkPopClock = SimQPNControler.clock;				
+			lastTkPopClock = SimQPNController.clock;				
 		}			
 		lastTotTkPop += delta;									
 	}

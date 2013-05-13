@@ -57,9 +57,10 @@ import cern.jet.random.AbstractContinousDistribution;
 import cern.jet.random.Empirical;
 import cern.jet.random.EmpiricalWalker;
 import cern.jet.random.Exponential;
+import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
-import de.tud.cs.simqpn.kernel.SimQPNControler;
-import de.tud.cs.simqpn.kernel.executor.Event;
+import de.tud.cs.simqpn.kernel.SimQPNController;
+import de.tud.cs.simqpn.kernel.executor.QueueEvent;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.stats.QueueStats;
 
@@ -99,7 +100,7 @@ public class Queue {
 	public boolean		eventsUpToDate;		// PS queues: True if currently scheduled events for this queue (if any) 
 											//            reflect the latest token popolation of the queue.											
 	public boolean		eventScheduled;		// PS queues: True if there is currently a service completion event scheduled for this queue.
-	public Event		nextEvent;			// PS queues: Next service completion event scheduled for this queue.
+	public QueueEvent		nextEvent;			// PS queues: Next service completion event scheduled for this queue.
 	public boolean 		expPS;				// PS queues: true  = Processor-Sharing with exponential service times.
 											//            false = Processor-Sharing with non-exponential service times.	                                        
 	public int			tkSchedPl;			// PS queues: expPS==false: Queueing place containing the next token scheduled to complete service.	
@@ -118,7 +119,7 @@ public class Queue {
 	private long		maxEpochPopulation;	// Overflow Detection: the maximum token population in the current epoch
 	private long		totalMaxPopulation; // Overflow Detection: the total maximum token population in the queue
 	private int			epochMsrmCnt;		// Overflow Detection: the number of measurements that were taken in the current epoch
-	private long		epochLength = SimQPNControler.OVERFLOW_DET_START_EPOCH_LENGTH;	// Overflow Detection: the length (number of measurements) of one epoch
+	private long		epochLength = SimQPNConfiguration.OVERFLOW_DET_START_EPOCH_LENGTH;	// Overflow Detection: the length (number of measurements) of one epoch
 	private long		maxPopulationAtRisingStart;
 	private int			cntConsRisingEpoch; // Overflow Detection: the number of consecutive epochs in which the maximum population has grown
 	private boolean		deactivateWarning = false;;
@@ -296,9 +297,9 @@ public class Queue {
 					for (int c=0; c < nC; c++, i++)  {
 						if (i == color) {
 							if (qPlaces[p].queueTokens[c] != null) {
-								SimQPNControler.scheduleEvent(SimQPNControler.clock + servTime, this, (Token) qPlaces[p].queueTokens[c].get(0));
+								SimQPNController.scheduleEvent(SimQPNController.clock + servTime, this, (Token) qPlaces[p].queueTokens[c].get(0));
 							} else {
-								SimQPNControler.scheduleEvent(SimQPNControler.clock + servTime, this, new Token(qPlaces[p], c));
+								SimQPNController.scheduleEvent(SimQPNController.clock + servTime, this, new Token(qPlaces[p], c));
 							}
 							done = true;
 							break;
@@ -334,11 +335,11 @@ public class Queue {
 				if (numServers > 1 && totQueTokCnt > 1)   // "-/G/n-PS" queues 					
 					servTime /= ((totQueTokCnt <= numServers) ? totQueTokCnt : numServers);
 				if (qPlaces[tkSchedPl].queueTokens[tkSchedCol] != null) {
-					SimQPNControler.scheduleEvent(SimQPNControler.clock + servTime, this, (Token) qPlaces[tkSchedPl].queueTokens[tkSchedCol].get(tkSchedPos));
+					SimQPNController.scheduleEvent(SimQPNController.clock + servTime, this, (Token) qPlaces[tkSchedPl].queueTokens[tkSchedCol].get(tkSchedPos));
 				} else {
-					SimQPNControler.scheduleEvent(SimQPNControler.clock + servTime, this, new Token(qPlaces[tkSchedPl], tkSchedCol));
+					SimQPNController.scheduleEvent(SimQPNController.clock + servTime, this, new Token(qPlaces[tkSchedPl], tkSchedCol));
 				}
-				lastEventClock = SimQPNControler.clock;	
+				lastEventClock = SimQPNController.clock;	
 				lastEventTkCnt = totQueTokCnt;
 				eventScheduled = true;
 			}
@@ -363,7 +364,7 @@ public class Queue {
 		 * 
 		 * On old JVMs that do not have the above bug fixed, if two events have the exact same time, the wrong one might be removed!   
 		 */
-		if (!SimQPNControler.eventList.remove(nextEvent))  {		
+		if (!SimQPNController.eventList.remove(nextEvent))  {		
 			log.error("Failed to remove scheduled event from event list!");
 			throw new SimQPNException();
 		}			
@@ -394,7 +395,7 @@ public class Queue {
 	public void updateResidServTimes() {		
 		int numTk;
 		double curRST;
-		double timeServed = (SimQPNControler.clock - lastEventClock) / lastEventTkCnt;			// Default for "-/G/1-PS"		
+		double timeServed = (SimQPNController.clock - lastEventClock) / lastEventTkCnt;			// Default for "-/G/1-PS"		
 		if (numServers > 1 && lastEventTkCnt > 1) 					
 			timeServed *= ((lastEventTkCnt <= numServers) ? lastEventTkCnt : numServers);	// "-/G/n-PS" queues
 		/* NOTE: Alternative code:
@@ -440,7 +441,7 @@ public class Queue {
 		if (tkPopulation > maxEpochPopulation) maxEpochPopulation = tkPopulation;
 		epochMsrmCnt++;
 		
-		if (SimQPNControler.clock <= 1.0) {
+		if (SimQPNController.clock <= 1.0) {
 			// Skip overflow detection at the beginning of the simulation.
 			// No representative results can be determined during startup.
 			cntConsRisingEpoch = 0;
@@ -458,14 +459,14 @@ public class Queue {
 				// in each epoch a new maximum is reached. Otherwise an upper bound is finally reached.
 				cntConsRisingEpoch = 0;
 				maxPopulationAtRisingStart = totalMaxPopulation;
-				if ((epochLength * 2) <= SimQPNControler.OVERFLOW_DET_MAX_EPOCH_LENGTH) {
+				if ((epochLength * 2) <= SimQPNConfiguration.OVERFLOW_DET_MAX_EPOCH_LENGTH) {
 					epochLength *= 2;
 				}
 			}
 			maxEpochPopulation = 0;
 			epochMsrmCnt = 0;
 			
-			if (totalMaxPopulation < SimQPNControler.OVERFLOW_DET_DETECTION_THRESHOLD) {
+			if (totalMaxPopulation < SimQPNConfiguration.OVERFLOW_DET_DETECTION_THRESHOLD) {
 				// If total population is below the detection threshold, do not
 				// count consecutive rising epochs. Thus the overflow detection is
 				// disabled if the queue population is low.
@@ -475,11 +476,11 @@ public class Queue {
 				// part of the condition is for fast growing queues, the second
 				// part for slowly growing ones.
 				if (((totalMaxPopulation > 10 * maxPopulationAtRisingStart) 
-							&& (cntConsRisingEpoch > SimQPNControler.OVERFLOW_DET_MIN_CONS_RISING_EPOCHS))
-					|| ((cntConsRisingEpoch > SimQPNControler.OVERFLOW_DET_MAX_CONS_RISING_EPOCHS) 
+							&& (cntConsRisingEpoch > SimQPNConfiguration.OVERFLOW_DET_MIN_CONS_RISING_EPOCHS))
+					|| ((cntConsRisingEpoch > SimQPNConfiguration.OVERFLOW_DET_MAX_CONS_RISING_EPOCHS) 
 							&& (totalMaxPopulation > 2 * maxPopulationAtRisingStart))) {
 						if (!deactivateWarning) {
-							SimQPNControler.progressMonitor.warning("Queue \"" + name + "\" is exceedingly growing. An overflow might occur.");
+							SimQPNController.progressMonitor.warning("Queue \"" + name + "\" is exceedingly growing. An overflow might occur.");
 							deactivateWarning = true;
 						}
 						cntConsRisingEpoch = 0;
@@ -497,8 +498,8 @@ public class Queue {
 				double servTime = qPl.randServTimeGen[color].nextDouble();	
 				if (servTime < 0) servTime = 0;
 				Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[i] : new Token(qPl, color);
-				tk.arrivTS = SimQPNControler.clock;
-				SimQPNControler.scheduleEvent(SimQPNControler.clock + servTime, this, tk);								
+				tk.arrivTS = SimQPNController.clock;
+				SimQPNController.scheduleEvent(SimQPNController.clock + servTime, this, tk);								
 			}								 								
 		}
 		else if (queueDiscip == FCFS) {
@@ -508,8 +509,8 @@ public class Queue {
 				double servTime = qPl.randServTimeGen[color].nextDouble();
 				if (servTime < 0) servTime = 0;
 				Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[n] : new Token(qPl, color);
-				tk.arrivTS = SimQPNControler.clock;
-				SimQPNControler.scheduleEvent(SimQPNControler.clock + servTime, this, tk);
+				tk.arrivTS = SimQPNController.clock;
+				SimQPNController.scheduleEvent(SimQPNController.clock + servTime, this, tk);
 				numBusyServers++; n++;
 				// Update Stats
 				if (qPl.statsLevel >= 3)   
@@ -518,7 +519,7 @@ public class Queue {
 			while (n < count) {
 				//  Place the rest of the tokens in the waitingLine
 				Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[n] : new Token(qPl, color);
-				tk.arrivTS = SimQPNControler.clock;
+				tk.arrivTS = SimQPNController.clock;
 				waitingLine.addLast(tk);				
 				n++;					
 			}						
@@ -536,7 +537,7 @@ public class Queue {
 				// if we get tokens from caller or we have to measure the sojourn times, store the individual tokens.
 				for (int i = 0; i < count; i++) {
 					Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[i] : new Token(qPl, color);
-					tk.arrivTS = SimQPNControler.clock;
+					tk.arrivTS = SimQPNController.clock;
 					qPl.queueTokens[color].add(tk);
 				}
 			}
@@ -572,10 +573,10 @@ public class Queue {
 				QPlace qPl = (QPlace) tk.place;				
 				double servTime = qPl.randServTimeGen[tk.color].nextDouble();	
 				if (servTime < 0) servTime = 0;
-				SimQPNControler.scheduleEvent(SimQPNControler.clock + servTime, this, tk);
+				SimQPNController.scheduleEvent(SimQPNController.clock + servTime, this, tk);
 				// Update stats				
 				if (qPl.statsLevel >= 3)
-					qPl.qPlaceQueueStats.updateDelayTimeStats(tk.color, SimQPNControler.clock - tk.arrivTS);				
+					qPl.qPlaceQueueStats.updateDelayTimeStats(tk.color, SimQPNController.clock - tk.arrivTS);				
 			}
 			else numBusyServers--;							
 		}
