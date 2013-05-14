@@ -76,9 +76,7 @@ public class SimQPN implements IApplication {
 	private static void runSimulatorOnDocument(Document netDocument,
 			String configurationName, String outputFilename, String logConfigFilename, SimulatorProgress progress) throws SimQPNException {
 		Element net = netDocument.getRootElement();
-		SimQPNController sim = new SimQPNController(net, configurationName);
-		sim.configure(net, configurationName, logConfigFilename);
-		net = sim.prepareNet(net, configurationName);
+		SimQPNController sim = new SimQPNController(net, configurationName, logConfigFilename);
 		Stats[] result = sim.execute(net, configurationName, progress);
 		// Skip stats document generation for WELCH and REPL_DEL since the 
 		// document builder does not support these methods yet.

@@ -46,7 +46,7 @@ public class ReplicationDeletion implements Analyzer{
 	 */
 	private static AggregateStats[] runMultRepl(Element netXML, String configuration, SimulatorProgress monitor) throws SimQPNException {
 
-		SimQPNController sim = new SimQPNController(netXML, configuration);
+		SimQPNController sim = new SimQPNController(netXML, configuration, null);
 		if (sim.configuration.getNumRuns() <= 1) {
 			log.error("numRuns should be > 1!");
 			throw new SimQPNException();
@@ -177,7 +177,7 @@ public class ReplicationDeletion implements Analyzer{
 			if (progressMonitor.isCanceled())
 				break;
 
-			sim = new SimQPNController(netXML, configuration);
+			sim = new SimQPNController(netXML, configuration, null);
 			places = sim.getNet().getPlaces();
 		}
 

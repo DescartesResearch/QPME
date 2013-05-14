@@ -213,7 +213,7 @@ public class Welch implements Analyzer {
 			if (progressMonitor.isCanceled())
 				break;
 
-			sim = new SimQPNController(netXML, configuration);
+			sim = new SimQPNController(netXML, configuration, null);
 			places = sim.getNet().getPlaces();
 		}
 

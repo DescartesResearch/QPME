@@ -2,10 +2,13 @@ package de.tud.cs.simqpn.kernel.loader;
 
 import static de.tud.cs.simqpn.kernel.util.LogUtil.formatDetailMessage;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.dom4j.Attribute;
 import org.dom4j.Element;
 import org.dom4j.XPath;
 
@@ -15,13 +18,151 @@ import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.Probe;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
+import de.tud.cs.simqpn.kernel.util.LogUtil;
+import de.tud.cs.simqpn.kernel.util.LogUtil.ReportLevel;
 
 public class ConfigurationLoader {
 	private static Logger log = Logger.getLogger(ConfigurationLoader.class);
 
-	public SimQPNConfiguration configureSimulatorSettings(Element netXML,
-			String configurationString, SimQPNConfiguration configuration)
+	public static SimQPNConfiguration configure(Element netElement,
+			String configurationString, String logConfigFilename)
 			throws SimQPNException {
+		// BEGIN-CONFIG
+		// ------------------------------------------------------------------------------------------------------
+
+		/*
+		 * Global run configuration parameters: 1. "Analysis Method"
+		 * (analMethod) == BATCH_MEANS, REPL_DEL or WELCH 2.
+		 * "Maximum Number of Runs" (numRuns) 3. "Output Directory" (statsDir)
+		 * 
+		 * numRuns should only be available if analMethod is REPL_DEL or WELCH.
+		 * 
+		 * IMPORTANT: runMode is implied from the chosen analysis method: - If
+		 * the user chooses BATCH_MEANS or REPL_DEL, runMode is set to NORMAL. -
+		 * If the user chooses WELCH, runMode is set to INIT_TRANS.
+		 * 
+		 * The QPN to be simulated is defined in the getReady() method.
+		 * 
+		 * Depending on the selected analysis method different parameters must
+		 * be configured - see methods getReady and runWelchMtd for detailed
+		 * information.
+		 * 
+		 * IMPORTANT: The order in which things are done must remain
+		 * unchanged!!!
+		 */
+		SimQPNConfiguration configuration = new SimQPNConfiguration();
+
+		// Initialize logging
+		if (logConfigFilename != null) {
+			LogUtil.configureCustomLogging(logConfigFilename);
+		} else {
+			XPath xpathSelector = XMLHelper
+					.createXPath("/net/meta-attributes/meta-attribute[@xsi:type = 'simqpn-configuration' and @configuration-name = '"
+							+ configurationString + "']/@output-directory");
+			Attribute outputDirAttribute = (Attribute) xpathSelector
+					.selectSingleNode(netElement);
+			try {
+				LogUtil.configureDefaultLogging(
+						outputDirAttribute.getStringValue(), "SimQPN_Output_"
+								+ configurationString);
+			} catch (IOException e) {
+				log.error(
+						"Cannot create simulation output log file! Please check output directory path.",
+						e);
+				throw new SimQPNException();
+			}
+		}
+
+		Element simulatorSettings = ConfigurationLoader.getSettings(netElement,
+				configurationString);
+
+		if (simulatorSettings.attributeValue("verbosity-level") == null) {
+			log.error(formatDetailMessage(
+					"Configuration parameter \"verbosity-level\" is not configured!",
+					"configuration", configurationString));
+			throw new SimQPNException();
+		}
+		SimQPNConfiguration.setDebugLevel(Integer.parseInt(simulatorSettings
+				.attributeValue("verbosity-level")));
+		switch (SimQPNConfiguration.getDebugLevel()) {
+		case 0:
+			Logger.getRootLogger().setLevel(ReportLevel.REPORT);
+			break;
+		case 1:
+			Logger.getRootLogger().setLevel(Level.INFO);
+			break;
+		case 2:
+			Logger.getRootLogger().setLevel(Level.DEBUG);
+			break;
+		default:
+			Logger.getRootLogger().setLevel(Level.TRACE);
+			break;
+		}
+		log.debug("debugLevel = " + SimQPNConfiguration.getDebugLevel() + ";");
+
+		// There are 3 possible scenarios (combinations of runMode and
+		// analMethod):
+		log.debug("Scenario set to: "
+				+ simulatorSettings.attributeValue("scenario"));
+		switch (Integer.parseInt(simulatorSettings.attributeValue("scenario",
+				"-1"))) {
+		// Scenario 1:
+		case 1: {
+			configuration.runMode = SimQPNConfiguration.NORMAL;
+			configuration.setAnalMethod(SimQPNConfiguration.BATCH_MEANS);
+			log.debug("-- runMode = NORMAL");
+			log.debug("-- analMethod = BATCH_MEANS");
+			break;
+		}
+		// Scenario 2:
+		case 2: {
+			configuration.runMode = SimQPNConfiguration.NORMAL;
+			configuration.setAnalMethod(SimQPNConfiguration.REPL_DEL);
+			log.debug("-- runMode = NORMAL");
+			log.debug("-- analMethod = REPL_DEL");
+			if (simulatorSettings.attributeValue("number-of-runs") == null) {
+				log.error("\"number-of-runs\" parameter for Replication/Deletion Method not specified!");
+				throw new SimQPNException();
+			}
+			configuration.setNumRuns(Integer.parseInt(simulatorSettings
+					.attributeValue("number-of-runs")));
+			log.debug("-- numRuns = " + configuration.getNumRuns());
+			break;
+		}
+		// Scenario 3:
+		case 3: {
+			configuration.runMode = SimQPNConfiguration.INIT_TRANS;
+			configuration.setAnalMethod(SimQPNConfiguration.WELCH);
+			log.debug("-- runMode = INIT_TRANS");
+			log.debug("-- analMethod = WELCH");
+			if (simulatorSettings.attributeValue("number-of-runs") == null) {
+				log.error("\"number-of-runs\" parameter for Method of Welch not specified!");
+				throw new SimQPNException();
+			}
+			configuration.setNumRuns(Integer.parseInt(simulatorSettings
+					.attributeValue("number-of-runs")));
+			log.debug("-- numRuns = " + configuration.getNumRuns());
+			break;
+		}
+		default: {
+			log.error("Invalid analysis method (scenario) specified!");
+			throw new SimQPNException();
+		}
+		}
+		;
+
+		configuration.setStatsDir(simulatorSettings
+				.attributeValue("output-directory"));
+		log.debug("statsDir = " + configuration.getStatsDir());
+
+		// END-CONFIG
+		// ------------------------------------------------------------------------------------------------------
+		return configuration;
+	}
+
+	public static SimQPNConfiguration configureSimulatorSettings(
+			Element netXML, String configurationString,
+			SimQPNConfiguration configuration) throws SimQPNException {
 		log.debug("/////////////////////////////////////////////");
 		log.debug("// Misc settings");
 
@@ -149,7 +290,7 @@ public class ConfigurationLoader {
 	 * 
 	 * @throws SimQPNException
 	 */
-	public SimQPNConfiguration configureBatchMeansMethod(Element netXML,
+	public static SimQPNConfiguration configureBatchMeansMethod(Element netXML,
 			SimQPNController sim) throws SimQPNException {
 		/*
 		 * "Advanced Configuration Options" only applicable to the BATCH_MEANS
