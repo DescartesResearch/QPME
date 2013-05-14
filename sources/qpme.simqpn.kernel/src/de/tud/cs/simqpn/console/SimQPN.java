@@ -188,12 +188,14 @@ public class SimQPN implements IApplication {
 									outputFilename, logConfigFilename, new ConsoleSimulatorProgress());
 						} catch (SimQPNException e) {
 							e.printStackTrace();
+							return new Integer(1); // signal error
 						}
 					}					
 				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			return new Integer(1); // signal error
 		}
 		
 		return IApplication.EXIT_OK;
