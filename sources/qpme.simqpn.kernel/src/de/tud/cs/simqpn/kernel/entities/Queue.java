@@ -95,7 +95,7 @@ public class Queue {
 	
 	public int			numServers;			// FCFS queues: Number of servers in queueing station.
 	public int			numBusyServers;		// FCFS queues: Number of currently busy servers.
-	public LinkedList	waitingLine;		// FCFS queues: List of tokens waiting for service (waiting area of the queue).			 								
+	public LinkedList<Token>	waitingLine;		// FCFS queues: List of tokens waiting for service (waiting area of the queue).			 								
 	
 	public boolean		eventsUpToDate;		// PS queues: True if currently scheduled events for this queue (if any) 
 											//            reflect the latest token popolation of the queue.											
@@ -146,7 +146,7 @@ public class Queue {
 		// FCFS Queues			
 		if (queueDiscip == FCFS)  {			
 			this.numBusyServers = 0;
-			this.waitingLine 	= new LinkedList();			 
+			this.waitingLine 	= new LinkedList<Token>();			 
 		}
 		// PS Queues			
 		if (queueDiscip == PS) {			 
@@ -231,9 +231,9 @@ public class Queue {
 	 * @return
 	 * @exception
 	 */
-	public void finish(SimQPNController sim) throws SimQPNException { 
+	public void finish(double runWallClockTime, double clock) throws SimQPNException { 
 		if (statsLevel > 0)	
-			queueStats.finish(sim);					
+			queueStats.finish(clock, runWallClockTime);					
 	}
 	
 	/**
@@ -251,6 +251,8 @@ public class Queue {
 	/**
 	 * Method updateEvents (Used only for PS queues).
 	 * Schedules next service completion event (if any) according to current token population.
+	 * 
+	 * JUERGEN: calls scheduleEvent()
 	 * 
 	 * @param 
 	 * @return
@@ -297,9 +299,9 @@ public class Queue {
 					for (int c=0; c < nC; c++, i++)  {
 						if (i == color) {
 							if (qPlaces[p].queueTokens[c] != null) {
-								SimQPNController.scheduleEvent(sim.clock + servTime, this, (Token) qPlaces[p].queueTokens[c].get(0));
+								sim.scheduleEvent(sim.clock + servTime, this, (Token) qPlaces[p].queueTokens[c].get(0));
 							} else {
-								SimQPNController.scheduleEvent(sim.clock + servTime, this, new Token(qPlaces[p], c));
+								sim.scheduleEvent(sim.clock + servTime, this, new Token(qPlaces[p], c));
 							}
 							done = true;
 							break;
@@ -335,9 +337,9 @@ public class Queue {
 				if (numServers > 1 && totQueTokCnt > 1)   // "-/G/n-PS" queues 					
 					servTime /= ((totQueTokCnt <= numServers) ? totQueTokCnt : numServers);
 				if (qPlaces[tkSchedPl].queueTokens[tkSchedCol] != null) {
-					SimQPNController.scheduleEvent(sim.clock + servTime, this, (Token) qPlaces[tkSchedPl].queueTokens[tkSchedCol].get(tkSchedPos));
+					sim.scheduleEvent(sim.clock + servTime, this, (Token) qPlaces[tkSchedPl].queueTokens[tkSchedCol].get(tkSchedPos));
 				} else {
-					SimQPNController.scheduleEvent(sim.clock + servTime, this, new Token(qPlaces[tkSchedPl], tkSchedCol));
+					sim.scheduleEvent(sim.clock + servTime, this, new Token(qPlaces[tkSchedPl], tkSchedCol));
 				}
 				lastEventClock = sim.clock;	
 				lastEventTkCnt = totQueTokCnt;
@@ -421,6 +423,8 @@ public class Queue {
 	/**
 	 * Method addTokens - deposits N tokens of particular color
 	 * 
+	 * JUERGEN: calls scheduleEvent()
+	 * 
 	 * @param color - color of tokens
 	 * @param count - number of tokens to deposit
 	 * @param tokensToBeAdded - individual tokens (if tracking = true)
@@ -499,7 +503,7 @@ public class Queue {
 				if (servTime < 0) servTime = 0;
 				Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[i] : new Token(qPl, color);
 				tk.arrivTS = sim.clock;
-				SimQPNController.scheduleEvent(sim.clock + servTime, this, tk);								
+				sim.scheduleEvent(sim.clock + servTime, this, tk);								
 			}								 								
 		}
 		else if (queueDiscip == FCFS) {
@@ -510,11 +514,11 @@ public class Queue {
 				if (servTime < 0) servTime = 0;
 				Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[n] : new Token(qPl, color);
 				tk.arrivTS = sim.clock;
-				SimQPNController.scheduleEvent(sim.clock + servTime, this, tk);
+				sim.scheduleEvent(sim.clock + servTime, this, tk);
 				numBusyServers++; n++;
 				// Update Stats
 				if (qPl.statsLevel >= 3)   
-					qPl.qPlaceQueueStats.updateDelayTimeStats(color, 0, sim);																 
+					qPl.qPlaceQueueStats.updateDelayTimeStats(color, 0, sim.configuration);																 
 			}						
 			while (n < count) {
 				//  Place the rest of the tokens in the waitingLine
@@ -552,6 +556,8 @@ public class Queue {
 	
 	/**
 	 * Method completeService - completes service of a token and schedules next waiting token for service.                      
+	 * 
+	 * JUERGEN: calls scheduleEvent()
 	 *
 	 * @param token - token completing service
 	 * @return
@@ -569,14 +575,14 @@ public class Queue {
 		}
 		else if (queueDiscip == FCFS) {
 			if (waitingLine.size() > 0) {
-				Token tk = (Token) waitingLine.removeFirst();				
+				Token tk = waitingLine.removeFirst();				
 				QPlace qPl = (QPlace) tk.place;				
 				double servTime = qPl.randServTimeGen[tk.color].nextDouble();	
 				if (servTime < 0) servTime = 0;
-				SimQPNController.scheduleEvent(sim.clock + servTime, this, tk);
+				sim.scheduleEvent(sim.clock + servTime, this, tk);
 				// Update stats				
 				if (qPl.statsLevel >= 3)
-					qPl.qPlaceQueueStats.updateDelayTimeStats(tk.color, sim.clock - tk.arrivTS, sim);				
+					qPl.qPlaceQueueStats.updateDelayTimeStats(tk.color, sim.clock - tk.arrivTS, sim.configuration);				
 			}
 			else numBusyServers--;							
 		}

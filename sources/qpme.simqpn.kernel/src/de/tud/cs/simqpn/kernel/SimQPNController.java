@@ -288,7 +288,7 @@ public class SimQPNController {
 	 * @return 
 	 * @exception
 	 */
-	public static void scheduleEvent(double time, Queue queue, Token token) {
+	public void scheduleEvent(double time, Queue queue, Token token) {
 		QueueEvent ev = new QueueEvent(time, queue, token);
 		eventList.add(ev);
 		queue.nextEvent = ev;
@@ -377,11 +377,11 @@ public class SimQPNController {
 				if (configuration.getAnalMethod() == SimQPNConfiguration.WELCH)
 					break;
 				for (int p = 0; p < getNet().getNumPlaces(); p++)
-					getNet().getPlace(p).start(this);
+					getNet().getPlace(p).start(configuration, clock);
 				for (int q = 0; q < getNet().getNumQueues(); q++)
 					getNet().getQueue(q).start(clock);
 				for (int pr = 0; pr < getNet().getNumProbes(); pr++)
-					getNet().getProbe(pr).start(this);
+					getNet().getProbe(pr).start(configuration, clock);
 
 				progressMonitor.finishWarmUp();
 			}
@@ -559,11 +559,11 @@ public class SimQPNController {
 				for (int p = 0; p < getNet().getNumPlaces(); p++) {
 					pl = getNet().getPlace(p);
 					if (pl.statsLevel >= 3) {
-						if (!pl.placeStats.enoughStats(this)) {
+						if (!pl.placeStats.enoughStats(configuration)) {
 							done = false;
 							break;
 						}
-						if ((pl instanceof QPlace) && !(((QPlace) pl).qPlaceQueueStats.enoughStats(this))) {
+						if ((pl instanceof QPlace) && !(((QPlace) pl).qPlaceQueueStats.enoughStats(configuration))) {
 							done = false;
 							break;
 						}
@@ -579,7 +579,7 @@ public class SimQPNController {
 					for (int pr = 0; pr < getNet().getNumProbes(); pr++) {
 						probe = getNet().getProbe(pr);
 						if (probe.statsLevel >= 3) {
-							if (!probe.probeStats.enoughStats(this)) {
+							if (!probe.probeStats.enoughStats(configuration)) {
 								done = false;
 								break;
 							}
@@ -629,11 +629,11 @@ public class SimQPNController {
 		// Complete statistics collection (make sure this is done AFTER the above statements)
 		if (configuration.getAnalMethod() != SimQPNConfiguration.WELCH) {		
 			for (int p = 0; p < getNet().getNumPlaces(); p++)
-				getNet().getPlace(p).finish(this);
+				getNet().getPlace(p).finish(configuration, clock);
 			for (int q = 0; q < getNet().getNumQueues(); q++)  //NOTE: queues[*].finish() should be called after places[*].finish()! 
-				getNet().getQueue(q).finish(this);
+				getNet().getQueue(q).finish(configuration.runWallClockTime, clock);
 			for (int pr = 0; pr < getNet().getNumProbes(); pr++)
-				getNet().getProbe(pr).finish(this);
+				getNet().getProbe(pr).finish(configuration, clock);
 		}
 		return this;
 	} // end of run() method

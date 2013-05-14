@@ -56,6 +56,7 @@ import org.apache.log4j.Logger;
 
 import cern.jet.random.Empirical;
 import cern.jet.random.EmpiricalWalker;
+import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
@@ -357,7 +358,7 @@ public class Transition extends Node {
 				n = inFunc[mode][p][c];
 				if (n != 0) {
 					if (n > maxN) maxN = n;
-					Token[] tokens = pl.removeTokens(c, n, tkCopyBuffer, sim);
+					Token[] tokens = pl.removeTokens(c, n, tkCopyBuffer, sim.configuration, sim.clock);
 					prC = pl.probeInstrumentations[c].length;
 					
 					if(prC > 0) {
@@ -377,7 +378,7 @@ public class Transition extends Node {
 										ProbeTimestamp curStamp = tokens[i].probeData[pr];
 										if (curStamp == null) continue;
 										
-										probe.probeStats.updateSojTimeStats(c, sim.clock - curStamp.timestamp, sim);
+										probe.probeStats.updateSojTimeStats(c, sim.clock - curStamp.timestamp, sim.configuration);
 									}
 								}
 								break;
@@ -460,7 +461,7 @@ public class Transition extends Node {
 								break;
 							case Place.PROBE_ACTION_END_ON_ENTRY:
 							case Place.PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY:
-								probe.probeStats.updateSojTimeStats(c, sim.clock - timestamp.timestamp, sim);
+								probe.probeStats.updateSojTimeStats(c, sim.clock - timestamp.timestamp, sim.configuration);
 								break;
 							default:
 								outData[pr] = timestamp;

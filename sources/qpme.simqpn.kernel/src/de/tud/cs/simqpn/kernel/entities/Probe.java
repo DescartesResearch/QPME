@@ -54,6 +54,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.dom4j.Element;
 
+import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.stats.ProbeStats;
@@ -248,9 +249,9 @@ public class Probe {
 	 * @return
 	 * @exception
 	 */
-	public void start(SimQPNController sim) throws SimQPNException {	
+	public void start(SimQPNConfiguration configuration, double clock) throws SimQPNException {	
 		if (statsLevel > 0)	
-			probeStats.start(sim);					
+			probeStats.start(configuration, clock);					
 	}
 	
 	/**
@@ -261,10 +262,10 @@ public class Probe {
 	 * @return
 	 * @exception
 	 */
-	public void finish(SimQPNController sim) throws SimQPNException {
+	public void finish(SimQPNConfiguration configuration, double clock) throws SimQPNException {
 		// Complete statistics collection
 		if (statsLevel > 0)	
-			probeStats.finish(sim);					
+			probeStats.finish(configuration, clock);					
 	}
 
 	/**

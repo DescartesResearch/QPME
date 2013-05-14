@@ -62,12 +62,15 @@ package de.tud.cs.simqpn.kernel.entities;
 
 import java.util.ArrayList;
 
+import javax.security.auth.login.Configuration;
+
 import org.apache.log4j.Logger;
 import org.dom4j.Element;
 
 import cern.colt.list.AbstractDoubleList;
 import cern.colt.list.DoubleArrayList;
 import cern.jet.random.AbstractContinousDistribution;
+import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.stats.QPlaceQueueStats;
@@ -184,11 +187,11 @@ public class QPlace extends Place {
 	 * @exception
 	 */
 	@Override
-	public void start(SimQPNController sim) throws SimQPNException {	
+	public void start(SimQPNConfiguration configuration, double clock) throws SimQPNException {	
 		if (statsLevel > 0)  {		
 			// Start statistics collection
-			qPlaceQueueStats.start(queueTokenPop, sim);
-			super.start(sim);
+			qPlaceQueueStats.start(queueTokenPop, configuration, clock);
+			super.start(configuration, clock);
 		}					
 	}
 
@@ -201,11 +204,11 @@ public class QPlace extends Place {
 	 * @exception
 	 */
 	@Override
-	public void finish(SimQPNController sim) throws SimQPNException {
+	public void finish(SimQPNConfiguration configuration, double clock) throws SimQPNException {
 		if (statsLevel > 0)  {
 			// Complete statistics collection
-			qPlaceQueueStats.finish(queueTokenPop, sim);								
-			super.finish(sim);
+			qPlaceQueueStats.finish(queueTokenPop, configuration, clock);								
+			super.finish(configuration, clock);
 		}
 	}
 
@@ -256,7 +259,7 @@ public class QPlace extends Place {
 		if (statsLevel > 0)  {
 			qPlaceQueueStats.updateTkPopStats(token.color, queueTokenPop[token.color], -1, sim);
 			if (statsLevel >= 3) 
-				qPlaceQueueStats.updateSojTimeStats(token.color, sim.clock - token.arrivTS, sim);
+				qPlaceQueueStats.updateSojTimeStats(token.color, sim.clock - token.arrivTS, sim.configuration);
 		}
 		
 		// Now remove token from queue and update queue state
