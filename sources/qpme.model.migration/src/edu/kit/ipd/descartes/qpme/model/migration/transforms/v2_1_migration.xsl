@@ -149,6 +149,9 @@
 				<xsl:when test="../../@type='subnet-place'">
 					<xsl:attribute name="xsi:type">subnet-color-reference</xsl:attribute>
 				</xsl:when>
+				<xsl:when test="name(../..)='probe'">
+					<xsl:attribute name="xsi:type">probe-color-reference</xsl:attribute>
+				</xsl:when>
 				<xsl:otherwise>
 					<xsl:message terminate="yes">
 						Unknown place type.
