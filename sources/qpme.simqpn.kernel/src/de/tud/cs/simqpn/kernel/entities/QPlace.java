@@ -147,8 +147,8 @@ public class QPlace extends Place {
 	 */
 	@SuppressWarnings("rawtypes")
 	@Override
-	public void init() throws SimQPNException {
-		super.init();
+	public void init(double clock) throws SimQPNException {
+		super.init(clock);
 		
 		//SDK-TODO: This check might cause problems for some distributions where meanServTimes is not initialized!
 		if ((statsLevel > 0) && (queue.expPS || qPlaceQueueStats.indrStats)) {
@@ -256,7 +256,7 @@ public class QPlace extends Place {
 		if (statsLevel > 0)  {
 			qPlaceQueueStats.updateTkPopStats(token.color, queueTokenPop[token.color], -1, sim);
 			if (statsLevel >= 3) 
-				qPlaceQueueStats.updateSojTimeStats(token.color, SimQPNController.clock - token.arrivTS, sim);
+				qPlaceQueueStats.updateSojTimeStats(token.color, sim.clock - token.arrivTS, sim);
 		}
 		
 		// Now remove token from queue and update queue state

@@ -209,7 +209,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 			//NOTE: lastTotTkPop is updated in super.updateTkPopStats() below.			
 		} 
 		//NOTE: updateTkPopStats is called after the above since it updates lastTkPopClock and lastTotTkPop!
-		super.updateTkPopStats(color, oldTkPop, delta, sim); 
+		super.updateTkPopStats(color, oldTkPop, delta, sim.clock); 
 	}
 
 	/**

@@ -85,31 +85,12 @@ package de.tud.cs.simqpn.kernel;
 // Please do not remove any comments! 
 // You can add your comments/answers with a "CHRIS" label.
  
-import static de.tud.cs.simqpn.kernel.util.LogUtil.formatDetailMessage;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.SimpleDateFormat;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.PriorityQueue;
 
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamSource;
-
-import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.dom4j.Attribute;
 import org.dom4j.Element;
-import org.dom4j.XPath;
-import org.dom4j.io.DocumentResult;
-import org.dom4j.io.DocumentSource;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
 
 import cern.jet.random.Empirical;
 import cern.jet.random.EmpiricalWalker;
@@ -125,14 +106,12 @@ import de.tud.cs.simqpn.kernel.entities.Token;
 import de.tud.cs.simqpn.kernel.entities.Transition;
 import de.tud.cs.simqpn.kernel.executor.QueueEvent;
 import de.tud.cs.simqpn.kernel.loader.ConfigurationLoader;
+import de.tud.cs.simqpn.kernel.loader.NetFlattener;
 import de.tud.cs.simqpn.kernel.loader.NetLoader;
-import de.tud.cs.simqpn.kernel.loader.XMLHelper;
 import de.tud.cs.simqpn.kernel.loader.XMLValidator;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.stats.Stats;
-import de.tud.cs.simqpn.kernel.util.LogUtil;
-import de.tud.cs.simqpn.kernel.util.LogUtil.ReportLevel;
 
 /**
  * Class Simulator
@@ -159,7 +138,7 @@ public class SimQPNController {
 	private Net net;
 
 	// Check if using double for time is really needed and if overhead is tolerable. Consider switching to float.
-	public static double clock;					// Global simulation clock. Time is usually measured in milliseconds.
+	public double clock;					// Global simulation clock. Time is usually measured in milliseconds.
 	public static 
 		PriorityQueue<QueueEvent> eventList =		// Global simulation event list. Contains events scheduled for processing at specified points in time.
 	      new PriorityQueue<QueueEvent>(10, 
@@ -192,8 +171,9 @@ public class SimQPNController {
 		// Random Number Generation (Note: needs to be initialized before starting the model definition)
 		RandomNumberGenerator.initialize();
 		configuration = ConfigurationLoader.configure(netXML, configurationName, logConfigFilename);
-		netXML = prepareNet(netXML, configurationName); //flattens HQPNS
+		netXML = NetFlattener.prepareNet(netXML, configurationName, configuration.getStatsDir()); //flattens HQPNS
 		net = new NetLoader().load(netXML, configurationName, this);
+		getReady(netXML, configurationName);
 	}
 
 	/**
@@ -203,7 +183,7 @@ public class SimQPNController {
 	 * @return
 	 * @exception
 	 */
-	public void getReady(Element netXML, String configurationName) throws SimQPNException {
+	private void getReady(Element netXML, String configurationName) throws SimQPNException {
 		configuration = ConfigurationLoader.configureSimulatorSettings(netXML, configurationName, configuration);
 
 		// CONFIG: Whether to use indirect estimators for FCFS queues
@@ -223,47 +203,6 @@ public class SimQPNController {
 
 
 	
-	/**
-	 * Prepares the net for simulation. Should be called after Simulator.configure and
-	 * before Simulator.execute
-	 */
-	public Element prepareNet(Element net, String configurationString) throws SimQPNException {
-		Element result = net;
-		XPath xpathSelector = XMLHelper.createXPath("//place[@xsi:type = 'subnet-place']");
-		if(xpathSelector.selectSingleNode(net) != null) {
-			try {
-				// There are subnet-places in the net; replace the subnet place by their subnet
-				InputStream xslt = SimQPNController.class.getResourceAsStream("/de/tud/cs/simqpn/transforms/hqpn_transform.xsl");
-				TransformerFactory transformFactory = TransformerFactory.newInstance();
-				Transformer hqpnTransform = transformFactory.newTransformer(new StreamSource(xslt));
-				DocumentSource source = new DocumentSource(net.getDocument());
-				DocumentResult flattenNet = new DocumentResult();
-				hqpnTransform.transform(source, flattenNet);
-				result = flattenNet.getDocument().getRootElement();
-				// Save the transformed net to disk for debug purposes
-				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HHmmssS");
-				File f = new File(configuration.getStatsDir(), "SimQPN_FlatHQPN_" + configurationString + "_" + dateFormat.format(new Date()) + ".qpe");
-				XMLWriter writer = null;
-				try {
-					writer = new XMLWriter(new FileOutputStream(f), OutputFormat.createPrettyPrint());
-					writer.write(result.getDocument());
-				} catch (IOException e) {
-					e.printStackTrace();
-				} finally {
-					if (writer != null) {
-						try {
-							writer.close();
-						} catch (IOException e) {
-						}
-					}
-				}
-			} catch (Exception e) {
-				log.error("Could not merge subnets into a flattened net.", e);
-				throw new SimQPNException();
-			}
-		}			
-		return result;
-	}
 
 	/**
 	 * Method execute - executes the simulation run
@@ -333,7 +272,7 @@ public class SimQPNController {
 		for (int i = 0; i < getNet().getNumProbes(); i++)
 			getNet().getProbe(i).init();
 		for (int i = 0; i < getNet().getNumPlaces(); i++)
-			getNet().getPlace(i).init();
+			getNet().getPlace(i).init(clock);
 		for (int i = 0; i < getNet().getNumTrans(); i++)
 			getNet().getTrans(i).init();
 		for (int i = 0; i < getNet().getNumQueues(); i++)
@@ -440,7 +379,7 @@ public class SimQPNController {
 				for (int p = 0; p < getNet().getNumPlaces(); p++)
 					getNet().getPlace(p).start(this);
 				for (int q = 0; q < getNet().getNumQueues(); q++)
-					getNet().getQueue(q).start();
+					getNet().getQueue(q).start(clock);
 				for (int pr = 0; pr < getNet().getNumProbes(); pr++)
 					getNet().getProbe(pr).start(this);
 
@@ -525,7 +464,7 @@ public class SimQPNController {
 			// Step 2: Make sure all service completion events in PS QPlaces have been scheduled
 			for (int q = 0; q < getNet().getNumQueues(); q++)
 				if (getNet().getQueue(q).queueDiscip == Queue.PS && (!getNet().getQueue(q).eventsUpToDate))
-					getNet().getQueue(q).updateEvents();
+					getNet().getQueue(q).updateEvents(this);
 			/* Alternative Code
 			for (int p = 0; p < numPlaces; p++)
 				if (places[p] instanceof QPlace) {
@@ -566,12 +505,12 @@ public class SimQPNController {
 			if(beforeInitHeartBeat) {
 				long curTimeMsrm = System.currentTimeMillis();
 				if(((curTimeMsrm - lastTimeMsrm) >= SimQPNConfiguration.MAX_INITIAL_HEARTBEAT)
-						|| (SimQPNController.clock >= maxProgressInterval)) {
+						|| (clock >= maxProgressInterval)) {
 					
-					if(SimQPNController.clock >= maxProgressInterval) {
+					if(clock >= maxProgressInterval) {
 						timeBtwHeartBeats = maxProgressInterval;
 					} else {
-						timeBtwHeartBeats = (SimQPNController.clock / (curTimeMsrm - lastTimeMsrm)) * progressUpdateRate;
+						timeBtwHeartBeats = (clock / (curTimeMsrm - lastTimeMsrm)) * progressUpdateRate;
 					}
 					beforeInitHeartBeat = false;
 					if (configuration.timeBtwChkStops == 0) {
@@ -584,11 +523,11 @@ public class SimQPNController {
 					clock = totRunL;
 				}
 			} else {
-				if(SimQPNController.clock >= nextHeartBeat) {
+				if(clock >= nextHeartBeat) {
 					long curTimeMsrm = System.currentTimeMillis();
 					progressMonitor.updateSimulationProgress(clock / (totRunL - 1) * 100, (curTimeMsrm - lastTimeMsrm));					
 					lastTimeMsrm = curTimeMsrm;
-					nextHeartBeat = SimQPNController.clock + timeBtwHeartBeats;
+					nextHeartBeat = clock + timeBtwHeartBeats;
 					
 					if (progressMonitor.isCanceled()) {
 						clock = totRunL;
@@ -655,9 +594,9 @@ public class SimQPNController {
 				}
 
 				if (configuration.timeBtwChkStops > 0)
-					nextChkAfter = SimQPNController.clock + configuration.timeBtwChkStops;
+					nextChkAfter = clock + configuration.timeBtwChkStops;
 				else
-					nextChkAfter = SimQPNController.clock + clockTimePerSec * configuration.secondsBtwChkStops;
+					nextChkAfter = clock + clockTimePerSec * configuration.secondsBtwChkStops;
 			}
 
 		}

@@ -377,7 +377,7 @@ public class Transition extends Node {
 										ProbeTimestamp curStamp = tokens[i].probeData[pr];
 										if (curStamp == null) continue;
 										
-										probe.probeStats.updateSojTimeStats(c, SimQPNController.clock - curStamp.timestamp, sim);
+										probe.probeStats.updateSojTimeStats(c, sim.clock - curStamp.timestamp, sim);
 									}
 								}
 								break;
@@ -385,7 +385,7 @@ public class Transition extends Node {
 							case Place.PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY:
 								if (data == null) {
 									// There is no timestamp so far for the current probe, so create it.
-									data = new ProbeTimestamp(probeIdx, SimQPNController.clock);
+									data = new ProbeTimestamp(probeIdx, sim.clock);
 								}
 								break;
 							default:
@@ -455,12 +455,12 @@ public class Transition extends Node {
 							case Place.PROBE_ACTION_START_ON_ENTRY:
 							case Place.PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT:
 								if (timestamp == null) {
-									outData[pr] = new ProbeTimestamp(probeIdx, SimQPNController.clock);
+									outData[pr] = new ProbeTimestamp(probeIdx, sim.clock);
 								}
 								break;
 							case Place.PROBE_ACTION_END_ON_ENTRY:
 							case Place.PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY:
-								probe.probeStats.updateSojTimeStats(c, SimQPNController.clock - timestamp.timestamp, sim);
+								probe.probeStats.updateSojTimeStats(c, sim.clock - timestamp.timestamp, sim);
 								break;
 							default:
 								outData[pr] = timestamp;

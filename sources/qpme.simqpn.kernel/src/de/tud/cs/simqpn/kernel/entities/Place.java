@@ -191,7 +191,7 @@ public class Place extends Node {
 	 * @exception
 	 */
 	@SuppressWarnings("unchecked")
-	public void init() throws SimQPNException {
+	public void init(double clock) throws SimQPNException {
 		
 		if (depDiscip == NORMAL)  {
 			availTokens = tokenPop; //Note: from here on, availTokens and tokenPop point to the same array!
@@ -223,7 +223,7 @@ public class Place extends Node {
 		if (statsLevel >= 3) {			
 			for (int c = 0; c < numColors; c++) {
 				for (int i = 0; i < tokenPop[c]; i++) {
-					tokArrivTS[c].addLast(new Double(SimQPNController.clock));
+					tokArrivTS[c].addLast(new Double(clock));
 				}
 			}
 		}
@@ -235,7 +235,7 @@ public class Place extends Node {
 			// Create timestamps for all probes associated with this place
 			ProbeTimestamp[] timestamps = new ProbeTimestamp[prC];
 			for (int pr = 0; pr < prC; pr++) {
-				timestamps[pr] = new ProbeTimestamp(probeInstrumentations[c][pr].id, SimQPNController.clock);
+				timestamps[pr] = new ProbeTimestamp(probeInstrumentations[c][pr].id, clock);
 			}
 			
 			// Create tokens
@@ -308,10 +308,10 @@ public class Place extends Node {
 				
 		// Update Stats		
 		if (statsLevel > 0) {
-			placeStats.updateTkPopStats(color, tokenPop[color], count, sim);						
+			placeStats.updateTkPopStats(color, tokenPop[color], count, sim.clock);						
 			if (statsLevel >= 3) {
 				for (int i = 0; i < count; i++) 
-					tokArrivTS[color].addLast(new Double(SimQPNController.clock));
+					tokArrivTS[color].addLast(new Double(sim.clock));
 			}
 		}
 		// Now add tokens and update affected transitions
@@ -373,12 +373,12 @@ public class Place extends Node {
 		}*/						
 		// Update Stats
 		if (statsLevel > 0) {
-			placeStats.updateTkPopStats(color, tokenPop[color], (-1)*count, sim);				
+			placeStats.updateTkPopStats(color, tokenPop[color], (-1)*count, sim.clock);				
 			if (statsLevel >= 3) {
 				Double arrivTS;
 				for (int i = 0; i < count; i++) {
 					arrivTS = (Double) tokArrivTS[color].removeFirst();
-					placeStats.updateSojTimeStats(color, SimQPNController.clock - arrivTS.doubleValue(), sim);
+					placeStats.updateSojTimeStats(color, sim.clock - arrivTS.doubleValue(), sim);
 				}
 			}				
 		}

@@ -373,7 +373,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	public void finish(int[] tokenPop, SimQPNController sim) throws SimQPNException  {
 		if (statsLevel >= 2)  //NOTE: This makes sure areaTkPop, areaTkColOcp and areaTkOcp (and areaQueUtilQPl for QPlaceQueueStats) are complete!
 			for (int c = 0; c < numColors; c++)
-				updateTkPopStats(c, tokenPop[c], 0, sim);
+				updateTkPopStats(c, tokenPop[c], 0, sim.clock);
 		endRunClock = sim.clock;
 		msrmPrdLen = endRunClock - endRampUpClock;		
 		runWallClockTime = sim.configuration.runWallClockTime;
@@ -393,7 +393,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 * @param oldTkPop  - old token population
 	 * @param delta     - difference between new and old token population
 	 */
-	public void updateTkPopStats(int color, int oldTkPop, int delta, SimQPNController sim) {
+	public void updateTkPopStats(int color, int oldTkPop, int delta, double clock) {
 		if (inRampUp) return;
 		if (delta > 0)
 			arrivCnt[color] += delta;
@@ -405,16 +405,16 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 				minTkPop[color] = newTkPop;
 			if (newTkPop > maxTkPop[color])
 				maxTkPop[color] = newTkPop;
-			double elapsedTime = sim.clock - lastColTkPopClock[color];
+			double elapsedTime = clock - lastColTkPopClock[color];
 			if (elapsedTime > 0) {
 				areaTkPop[color] += elapsedTime * oldTkPop;
 				areaTkColOcp[color] += elapsedTime * (oldTkPop > 0 ? 1 : 0);
-				lastColTkPopClock[color] = sim.clock;
+				lastColTkPopClock[color] = clock;
 			}														
-			elapsedTime = sim.clock - lastTkPopClock;			
+			elapsedTime = clock - lastTkPopClock;			
 			if (elapsedTime > 0) {																																			
 				areaTkOcp += elapsedTime * (lastTotTkPop > 0 ? 1 : 0);  
-				lastTkPopClock = sim.clock;			
+				lastTkPopClock = clock;			
 			}			
 			lastTotTkPop += delta;			
 		}
