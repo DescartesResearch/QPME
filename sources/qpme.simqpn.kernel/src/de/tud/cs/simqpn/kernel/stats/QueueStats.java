@@ -99,8 +99,8 @@ public class QueueStats extends Stats implements java.io.Serializable {
 	 * @param Queue			- reference to respective Queue object
 	 * 
 	 */	
-	public QueueStats(int id, String name, int numColors, int statsLevel, int queueDiscip, int numServers, Queue queue) throws SimQPNException  {
-		super(id, name, QUEUE, numColors, statsLevel);
+	public QueueStats(int id, String name, int numColors, int statsLevel, int queueDiscip, int numServers, Queue queue, SimQPNController sim) throws SimQPNException  {
+		super(id, name, QUEUE, numColors, statsLevel, sim);
 		this.queueDiscip	= queueDiscip;
 		this.numServers		= numServers;	
 		this.queue			= queue;
@@ -153,12 +153,12 @@ public class QueueStats extends Stats implements java.io.Serializable {
 	 * @return
 	 * @exception
 	 */
-	public void finish() throws SimQPNException  {		
+	public void finish(SimQPNController sim) throws SimQPNException  {		
 		if (statsLevel >= 2) //NOTE: This makes sure areaQueUtil is complete!
 			updateTotTkPopStats(0);
 		endRunClock = SimQPNController.clock;
 		msrmPrdLen = endRunClock - endRampUpClock;		
-		runWallClockTime = SimQPNController.configuration.runWallClockTime;
+		runWallClockTime = sim.configuration.runWallClockTime;
 		processStats(); 
 	}
 		

@@ -317,7 +317,7 @@ public class Transition extends Node {
 	 * @return
 	 * @exception
 	 */
-	public void fire() throws SimQPNException {
+	public void fire(SimQPNController sim) throws SimQPNException {
 
 		int nM = numModes;
 		// Choose mode to fire based on weights
@@ -357,7 +357,7 @@ public class Transition extends Node {
 				n = inFunc[mode][p][c];
 				if (n != 0) {
 					if (n > maxN) maxN = n;
-					Token[] tokens = pl.removeTokens(c, n, tkCopyBuffer);
+					Token[] tokens = pl.removeTokens(c, n, tkCopyBuffer, sim);
 					prC = pl.probeInstrumentations[c].length;
 					
 					if(prC > 0) {
@@ -377,7 +377,7 @@ public class Transition extends Node {
 										ProbeTimestamp curStamp = tokens[i].probeData[pr];
 										if (curStamp == null) continue;
 										
-										probe.probeStats.updateSojTimeStats(c, SimQPNController.clock - curStamp.timestamp);
+										probe.probeStats.updateSojTimeStats(c, SimQPNController.clock - curStamp.timestamp, sim);
 									}
 								}
 								break;
@@ -460,7 +460,7 @@ public class Transition extends Node {
 								break;
 							case Place.PROBE_ACTION_END_ON_ENTRY:
 							case Place.PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY:
-								probe.probeStats.updateSojTimeStats(c, SimQPNController.clock - timestamp.timestamp);
+								probe.probeStats.updateSojTimeStats(c, SimQPNController.clock - timestamp.timestamp, sim);
 								break;
 							default:
 								outData[pr] = timestamp;
@@ -471,9 +471,9 @@ public class Transition extends Node {
 						for (int i = 0; i < n; i++) {
 							tkCopyBuffer[i] = new Token(pl, c, outData);
 						}
-						pl.addTokens(c, n, tkCopyBuffer); // Note: the contents of tkCopyBuffer are all set to null.
+						pl.addTokens(c, n, tkCopyBuffer, sim); // Note: the contents of tkCopyBuffer are all set to null.
 					} else {
-						pl.addTokens(c, n, null);
+						pl.addTokens(c, n, null, sim);
 					}
 				}
 			}

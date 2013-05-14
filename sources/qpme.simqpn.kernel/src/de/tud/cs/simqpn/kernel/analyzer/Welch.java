@@ -26,8 +26,8 @@ public class Welch implements Analyzer {
 
 	@Override
 	public Stats[] analyze(Element XMLNet, String configuration,
-			SimulatorProgress monitor) throws SimQPNException {
-		runWelchMtd(XMLNet, configuration, monitor);
+			SimulatorProgress monitor, SimQPNController sim) throws SimQPNException {
+		runWelchMtd(XMLNet, configuration, monitor, sim);
 		return null;
 	}
 
@@ -39,14 +39,14 @@ public class Welch implements Analyzer {
 	 * @exception
 	 */
 	private static AggregateStats[] runWelchMtd(Element netXML,
-			String configuration, SimulatorProgress monitor)
+			String configuration, SimulatorProgress monitor, SimQPNController sim)
 			throws SimQPNException {
 		XPath xpathSelector = XMLHelper.createXPath("//place");
 		List<Element> placeList = xpathSelector.selectNodes(netXML);
 
 		progressMonitor = monitor;
 
-		SimQPNController sim = new SimQPNController(netXML, configuration);
+		//SimQPNController sim = new SimQPNController(netXML, configuration);
 		
 		if (sim.configuration.getNumRuns() < 5) {
 			log.warn(formatMultilineMessage(
@@ -71,12 +71,12 @@ public class Welch implements Analyzer {
 			if (pl.statsLevel > 0) {
 				if (pl instanceof QPlace) {
 					aggrStats[p * 2] = new AggregateStats(pl.id, pl.name,
-							Stats.QUE_PLACE_QUEUE, pl.numColors, pl.statsLevel);
+							Stats.QUE_PLACE_QUEUE, pl.numColors, pl.statsLevel, sim);
 					aggrStats[(p * 2) + 1] = new AggregateStats(pl.id, pl.name,
-							Stats.QUE_PLACE_DEP, pl.numColors, pl.statsLevel);
+							Stats.QUE_PLACE_DEP, pl.numColors, pl.statsLevel, sim);
 				} else {
 					aggrStats[p * 2] = new AggregateStats(pl.id, pl.name,
-							Stats.ORD_PLACE, pl.numColors, pl.statsLevel);
+							Stats.ORD_PLACE, pl.numColors, pl.statsLevel, sim);
 					aggrStats[(p * 2) + 1] = null;
 				}
 			} else {
@@ -202,10 +202,10 @@ public class Welch implements Analyzer {
 				if (pl.statsLevel > 0) {
 					if (pl instanceof QPlace) {
 						QPlace qPl = (QPlace) pl;
-						aggrStats[p * 2].saveStats(qPl.qPlaceQueueStats);
-						aggrStats[(p * 2) + 1].saveStats(qPl.placeStats);
+						aggrStats[p * 2].saveStats(qPl.qPlaceQueueStats, sim);
+						aggrStats[(p * 2) + 1].saveStats(qPl.placeStats, sim);
 					} else {
-						aggrStats[p * 2].saveStats(pl.placeStats);
+						aggrStats[p * 2].saveStats(pl.placeStats, sim);
 					}
 				}
 			}
@@ -221,7 +221,7 @@ public class Welch implements Analyzer {
 
 		for (int i = 0; i < 2 * numPlaces; i++)
 			if (aggrStats[i] != null)
-				aggrStats[i].finish();
+				aggrStats[i].finish(sim);
 
 		progressMonitor = null;
 

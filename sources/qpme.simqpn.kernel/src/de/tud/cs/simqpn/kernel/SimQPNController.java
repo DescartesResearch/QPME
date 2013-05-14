@@ -94,11 +94,8 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.PriorityQueue;
 
-import javax.xml.XMLConstants;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
@@ -157,10 +154,9 @@ public class SimQPNController {
 	public static boolean simRunning;			// True if simulation is currently running.
 
 	
-	public static SimQPNConfiguration configuration;
-	
-	// Progress monitoring
-	public static SimulatorProgress progressMonitor;
+	public SimQPNConfiguration configuration;
+	public static SimulatorProgress progressMonitor;	// Progress monitoring
+	private Net net;
 
 	// Check if using double for time is really needed and if overhead is tolerable. Consider switching to float.
 	public static double clock;					// Global simulation clock. Time is usually measured in milliseconds.
@@ -185,8 +181,6 @@ public class SimQPNController {
 	 *   
 	 */
 	
-	// XML Configuration.
-	private Net net;
 	
 	/**
 	 * Constructor
@@ -198,10 +192,10 @@ public class SimQPNController {
 
 		// Random Number Generation (Note: needs to be initialized before starting the model definition)
 		RandomNumberGenerator.initialize();
+		configuration = configure(netXML, configurationName, null);
+		netXML = prepareNet(netXML, configurationName); //flattens HQPNS
+		this.net = (new NetLoader()).load(netXML, configurationName, this);
 
-		this.net = (new NetLoader()).load(netXML, configurationName);
-
-		this.getReady(netXML, configurationName);
 	}
 
 	/**
@@ -211,10 +205,11 @@ public class SimQPNController {
 	 * @return
 	 * @exception
 	 */
-	private void getReady(Element netXML, String configurationString) throws SimQPNException {
+	public void getReady(Element netXML, String configurationName) throws SimQPNException {
 		// BEGIN-CONFIG
 		// ------------------------------------------------------------------------------------------------------
-		this.configuration = (new ConfigurationLoader()).configureSimulatorSettings(netXML, configurationString);
+		configuration = (new ConfigurationLoader()).configureSimulatorSettings(netXML, configurationName, configuration);
+
 		// CONFIG: Whether to use indirect estimators for FCFS queues
 		for (int p = 0; p < getNet().getNumPlaces(); p++) {
 			Place pl = getNet().getPlace(p);
@@ -224,9 +219,8 @@ public class SimQPNController {
 			}
 		}
 
-		this.configuration = (new ConfigurationLoader()).configureBatchMeansMethod(netXML, this);
+		configuration = new ConfigurationLoader().configureBatchMeansMethod(netXML, this);
 
-		//configureBatchMeansMethod();
 		// END-CONFIG
 		// ---------------------------------------------------------------------------------------------------------
 
@@ -234,8 +228,7 @@ public class SimQPNController {
 		initializeWorkingVariables();
 	}
 	
-
-	public static void configure(Element netElement, String configurationString, String logConfigFilename) throws SimQPNException {
+	public SimQPNConfiguration configure(Element netElement, String configurationString, String logConfigFilename) throws SimQPNException {
 		// BEGIN-CONFIG
 		// ------------------------------------------------------------------------------------------------------
 
@@ -259,7 +252,7 @@ public class SimQPNController {
 		 * IMPORTANT: The order in which things are done must remain unchanged!!!
 		 * 
 		 */
-		configuration = new SimQPNConfiguration();
+		SimQPNConfiguration configuration = new SimQPNConfiguration();
 
 		// Initialize logging
 		if (logConfigFilename != null) {
@@ -351,6 +344,7 @@ public class SimQPNController {
 		
 		// END-CONFIG
 		// ------------------------------------------------------------------------------------------------------
+		return configuration;
 	}
 
 
@@ -359,7 +353,7 @@ public class SimQPNController {
 	 * Prepares the net for simulation. Should be called after Simulator.configure and
 	 * before Simulator.execute
 	 */
-	public static Element prepareNet(Element net, String configuration) throws SimQPNException {
+	public Element prepareNet(Element net, String configurationString) throws SimQPNException {
 		Element result = net;
 		XPath xpathSelector = XMLHelper.createXPath("//place[@xsi:type = 'subnet-place']");
 		if(xpathSelector.selectSingleNode(net) != null) {
@@ -372,10 +366,9 @@ public class SimQPNController {
 				DocumentResult flattenNet = new DocumentResult();
 				hqpnTransform.transform(source, flattenNet);
 				result = flattenNet.getDocument().getRootElement();
-				
 				// Save the transformed net to disk for debug purposes
 				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HHmmssS");
-				File f = new File(SimQPNConfiguration.getStatsDir(), "SimQPN_FlatHQPN_" + configuration + "_" + dateFormat.format(new Date()) + ".qpe");
+				File f = new File(configuration.getStatsDir(), "SimQPN_FlatHQPN_" + configurationString + "_" + dateFormat.format(new Date()) + ".qpe");
 				XMLWriter writer = null;
 				try {
 					writer = new XMLWriter(new FileOutputStream(f), OutputFormat.createPrettyPrint());
@@ -405,7 +398,7 @@ public class SimQPNController {
 	 * @return
 	 * @exception
 	 */
-	public static Stats[] execute(Element XMLNet, String configurationString, SimulatorProgress monitor) throws SimQPNException {
+	public Stats[] execute(Element XMLNet, String configurationString, SimulatorProgress monitor) throws SimQPNException {
 		
 		// TODO: Make the Stdout output print to $statsDir/Output.txt
 		// CHRIS: Not done yet
@@ -419,18 +412,18 @@ public class SimQPNController {
 				
 		try {
 			XMLValidator.validateInputNet(XMLNet);
-			if (configuration.runMode == configuration.NORMAL) {
-				if (configuration.getAnalMethod() == configuration.BATCH_MEANS) { // Method of non-overlapping batch means
-					result = new BatchMeans().analyze(XMLNet, configurationString, monitor);
-				} else if (configuration.getAnalMethod() == configuration.REPL_DEL) { // Replication/Deletion Approach (Method of Independent Replications) 				
-					result = new ReplicationDeletion().analyze(XMLNet, configurationString, monitor);
+			if (configuration.runMode == SimQPNConfiguration.NORMAL) {
+				if (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS) { // Method of non-overlapping batch means
+					result = new BatchMeans().analyze(XMLNet, configurationString, monitor, this);
+				} else if (configuration.getAnalMethod() == SimQPNConfiguration.REPL_DEL) { // Replication/Deletion Approach (Method of Independent Replications) 				
+					result = new ReplicationDeletion().analyze(XMLNet, configurationString, monitor, this);
 				} else {
 					log.error("Illegal analysis method specified!");
 					throw new SimQPNException();				
 				}
-			} else if (configuration.runMode == configuration.INIT_TRANS) {
-				if (configuration.getAnalMethod() == configuration.WELCH) {
-					result = new Welch().analyze(XMLNet, configurationString, monitor);
+			} else if (configuration.runMode == SimQPNConfiguration.INIT_TRANS) {
+				if (configuration.getAnalMethod() == SimQPNConfiguration.WELCH) {
+					result = new Welch().analyze(XMLNet, configurationString, monitor, this);
 				} else {
 					log.error("Analysis method " + configuration.getAnalMethod() + " not supported in INIT_TRANS mode!");
 					throw new SimQPNException();
@@ -470,7 +463,7 @@ public class SimQPNController {
 		for (int i = 0; i < getNet().getNumTrans(); i++)
 			getNet().getTrans(i).init();
 		for (int i = 0; i < getNet().getNumQueues(); i++)
-			getNet().getQueue(i).init();
+			getNet().getQueue(i).init(this);
 	}
 	
 	/**
@@ -482,7 +475,6 @@ public class SimQPNController {
 	 * @return 
 	 * @exception
 	 */
-	@SuppressWarnings("unchecked")
 	public static void scheduleEvent(double time, Queue queue, Token token) {
 		QueueEvent ev = new QueueEvent(time, queue, token);
 		eventList.add(ev);
@@ -569,14 +561,14 @@ public class SimQPNController {
 			if (configuration.inRampUp && clock > rampUpL) {
 				configuration.inRampUp = false;
 				configuration.endRampUpClock = clock;
-				if (configuration.getAnalMethod() == configuration.WELCH)
+				if (configuration.getAnalMethod() == SimQPNConfiguration.WELCH)
 					break;
 				for (int p = 0; p < getNet().getNumPlaces(); p++)
-					getNet().getPlace(p).start();
+					getNet().getPlace(p).start(this);
 				for (int q = 0; q < getNet().getNumQueues(); q++)
 					getNet().getQueue(q).start();
 				for (int pr = 0; pr < getNet().getNumProbes(); pr++)
-					getNet().getProbe(pr).start();
+					getNet().getProbe(pr).start(this);
 
 				progressMonitor.finishWarmUp();
 			}
@@ -608,7 +600,7 @@ public class SimQPNController {
 					nextTrans = getNet().getTrans(enTransIDs[randTransGen.nextInt()]);
 				}
 
-				nextTrans.fire();		// Fire transition
+				nextTrans.fire(this);		// Fire transition
 
 				// Update transStatus
 				int p, t, nP, nT;
@@ -678,7 +670,7 @@ public class SimQPNController {
 				clock = ev.time;
 
 				QPlace qpl = (QPlace) ev.token.place;
-				qpl.completeService(ev.token);
+				qpl.completeService(ev.token, this);
 
 				// Check if some transitions were enabled and update transStatus				
 				int t, nT;
@@ -699,7 +691,7 @@ public class SimQPNController {
 			// Step 4: Heart Beat
 			if(beforeInitHeartBeat) {
 				long curTimeMsrm = System.currentTimeMillis();
-				if(((curTimeMsrm - lastTimeMsrm) >= configuration.MAX_INITIAL_HEARTBEAT)
+				if(((curTimeMsrm - lastTimeMsrm) >= SimQPNConfiguration.MAX_INITIAL_HEARTBEAT)
 						|| (SimQPNController.clock >= maxProgressInterval)) {
 					
 					if(SimQPNController.clock >= maxProgressInterval) {
@@ -745,7 +737,7 @@ public class SimQPNController {
 			*/
 
 			// Step 5: Check Stopping Criterion
-			if (configuration.stoppingRule != configuration.FIXEDLEN && (!configuration.inRampUp) && clock > nextChkAfter) {
+			if (configuration.stoppingRule != SimQPNConfiguration.FIXEDLEN && (!configuration.inRampUp) && clock > nextChkAfter) {
 				double elapsedSecs = (System.currentTimeMillis() - configuration.beginRunWallClock) / 1000;				
 				double clockTimePerSec = clock / elapsedSecs;	
 				boolean done = true;
@@ -754,11 +746,11 @@ public class SimQPNController {
 				for (int p = 0; p < getNet().getNumPlaces(); p++) {
 					pl = getNet().getPlace(p);
 					if (pl.statsLevel >= 3) {
-						if (!pl.placeStats.enoughStats()) {
+						if (!pl.placeStats.enoughStats(this)) {
 							done = false;
 							break;
 						}
-						if ((pl instanceof QPlace) && !(((QPlace) pl).qPlaceQueueStats.enoughStats())) {
+						if ((pl instanceof QPlace) && !(((QPlace) pl).qPlaceQueueStats.enoughStats(this))) {
 							done = false;
 							break;
 						}
@@ -774,7 +766,7 @@ public class SimQPNController {
 					for (int pr = 0; pr < getNet().getNumProbes(); pr++) {
 						probe = getNet().getProbe(pr);
 						if (probe.statsLevel >= 3) {
-							if (!probe.probeStats.enoughStats()) {
+							if (!probe.probeStats.enoughStats(this)) {
 								done = false;
 								break;
 							}
@@ -804,7 +796,7 @@ public class SimQPNController {
 					+ "The required precision may not have been reached!");
 		} else {
 			if (clock >= configuration.totRunLen)  {
-				if (configuration.stoppingRule != configuration.FIXEDLEN)  {
+				if (configuration.stoppingRule != SimQPNConfiguration.FIXEDLEN)  {
 					progressMonitor.warning("The simulation was stopped because of reaching max totalRunLen.\n"
 							+ "The required precision may not have been reached!");
 				}
@@ -822,13 +814,13 @@ public class SimQPNController {
 
 		
 		// Complete statistics collection (make sure this is done AFTER the above statements)
-		if (configuration.getAnalMethod() != configuration.WELCH) {		
+		if (configuration.getAnalMethod() != SimQPNConfiguration.WELCH) {		
 			for (int p = 0; p < getNet().getNumPlaces(); p++)
-				getNet().getPlace(p).finish();
+				getNet().getPlace(p).finish(this);
 			for (int q = 0; q < getNet().getNumQueues(); q++)  //NOTE: queues[*].finish() should be called after places[*].finish()! 
-				getNet().getQueue(q).finish();
+				getNet().getQueue(q).finish(this);
 			for (int pr = 0; pr < getNet().getNumProbes(); pr++)
-				getNet().getProbe(pr).finish();
+				getNet().getProbe(pr).finish(this);
 		}
 		return this;
 	} // end of run() method

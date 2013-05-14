@@ -40,7 +40,7 @@
  * 
  */
 
-package de.tud.cs.simqpn.kernel.console;
+package de.tud.cs.simqpn.kernel.monitor;
 
 import static de.tud.cs.simqpn.kernel.util.LogUtil.formatMultilineMessage;
 
@@ -48,7 +48,6 @@ import org.apache.log4j.Logger;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNController;
-import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
 /**
  * Prints the simulation progress on the console. Used in standalone simulation mode.

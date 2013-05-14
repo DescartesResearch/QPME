@@ -130,8 +130,8 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	 * @param numServers    - FCFS queues: number of servers in queueing station 
 	 * @param meanServTimes - mean service times of tokens
 	 */	
-	public QPlaceQueueStats(int id, String name, String[] colors, int statsLevel, int queueDiscip, int numServers, double[] meanServTimes) throws SimQPNException {
-		super(id, name, QUE_PLACE_QUEUE, colors, statsLevel);
+	public QPlaceQueueStats(int id, String name, String[] colors, int statsLevel, int queueDiscip, int numServers, double[] meanServTimes, SimQPNController sim) throws SimQPNException {
+		super(id, name, QUE_PLACE_QUEUE, colors, statsLevel, sim);
 		this.queueDiscip	= queueDiscip;
 		this.numServers		= numServers;			
 		this.meanServTimes  = meanServTimes;
@@ -143,7 +143,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 			this.indrStats	= (queueDiscip == Queue.FCFS);		// indrStats is by default true for FCFS queues
 			this.meanDT					=	new double[numColors];
 			this.stDevDT				=	new double[numColors];			
-			if (SimQPNController.configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS)  {
+			if (sim.configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS)  {
 				this.stdStateMeanDT			=	new double[numColors];
 				this.varStdStateMeanDT		=	new double[numColors];
 				this.stDevStdStateMeanDT	=	new double[numColors];
@@ -177,8 +177,8 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	 * @return
 	 * @exception
 	 */
-	public void init(int[] tokenPop) throws SimQPNException {
-		super.init(tokenPop);
+	public void init(int[] tokenPop, SimQPNController sim) throws SimQPNException {
+		super.init(tokenPop, sim);
 		
 		if (statsLevel >= 2)  			
 			areaQueUtilQPl = 0;						
@@ -196,10 +196,10 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	 * @param oldTkPop	- old token population
 	 * @param delta		- difference between new and old token population
 	 */
-	public void updateTkPopStats(int color, int oldTkPop, int delta)  {
+	public void updateTkPopStats(int color, int oldTkPop, int delta, SimQPNController sim)  {
 		if (inRampUp) return;						
 		if (statsLevel >= 2)  {						
-			double elapsedTime = SimQPNController.clock - lastTkPopClock;
+			double elapsedTime = sim.clock - lastTkPopClock;
 			if (elapsedTime > 0) {
 				if (numServers > 1)	//NOTE: WATCH OUT with IS queues here! Below we assume that for such queues numServers == 0.				
 					areaQueUtilQPl += elapsedTime * (lastTotTkPop > numServers ? 1 : (((double) lastTotTkPop) / numServers));																						
@@ -209,7 +209,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 			//NOTE: lastTotTkPop is updated in super.updateTkPopStats() below.			
 		} 
 		//NOTE: updateTkPopStats is called after the above since it updates lastTkPopClock and lastTotTkPop!
-		super.updateTkPopStats(color, oldTkPop, delta); 
+		super.updateTkPopStats(color, oldTkPop, delta, sim); 
 	}
 
 	/**
@@ -218,9 +218,9 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	 * @param color		- token color
 	 * @param sojTime	- sojourn time of token in queue	 
 	 */
-	public void updateSojTimeStats(int color, double sojTime) throws SimQPNException {
-		if (indrStats || (inRampUp && SimQPNController.configuration.getAnalMethod() != SimQPNConfiguration.WELCH)) return;
-		super.updateSojTimeStats(color, sojTime);
+	public void updateSojTimeStats(int color, double sojTime, SimQPNController sim) throws SimQPNException {
+		if (indrStats || (inRampUp && sim.configuration.getAnalMethod() != SimQPNConfiguration.WELCH)) return;
+		super.updateSojTimeStats(color, sojTime, sim);
 	}
 
 	/**
@@ -230,17 +230,17 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	 * @param delayTime	- delay time of token in waiting area of the queue
 	 * 	 
 	 */
-	public void updateDelayTimeStats(int color, double delayTime) throws SimQPNException {				
-		if ((!indrStats) || (inRampUp && SimQPNController.configuration.getAnalMethod() != SimQPNConfiguration.WELCH)) return;
-		super.updateSojTimeStats(color, delayTime);		
+	public void updateDelayTimeStats(int color, double delayTime, SimQPNController sim) throws SimQPNException {				
+		if ((!indrStats) || (inRampUp && sim.configuration.getAnalMethod() != SimQPNConfiguration.WELCH)) return;
+		super.updateSojTimeStats(color, delayTime, sim);		
 	}	
 	
 	/**
 	 * Method processStats - processes gathered statistics (summarizes data)
 	 *                        	 
 	 */	
-	public void processStats() throws SimQPNException {		
-		super.processStats();
+	public void processStats(SimQPNController sim) throws SimQPNException {		
+		super.processStats(sim);
 		if (statsLevel >= 2)
 			queueUtilQPl = areaQueUtilQPl / msrmPrdLen;		
 		if (statsLevel >= 3 && indrStats)  {
@@ -248,7 +248,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 				meanDT[c] 	= sumST[c] / numST[c];
 				stDevDT[c]	= Math.sqrt(Descriptive.sampleVariance(numST[c], sumST[c], sumSqST[c]));
 				meanST[c] 	= meanDT[c] + meanServTimes[c];				
-				if (SimQPNController.configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && minBatches[c] > 0)  {								
+				if (sim.configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && minBatches[c] > 0)  {								
 					// Steady State Statistics
 					if (numBatchesST[c] >= minBatches[c])  {					
 						stdStateMeanDT[c] = sumBMeansST[c] / numBatchesST[c];															
@@ -271,7 +271,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	 *                      
 	 *  	 
 	 */	
-	public void printReport() throws SimQPNException {
+	public void printReport(SimQPNController sim) throws SimQPNException {
 		
 		if (!completed) {
 			log.error("QPlaceQueueStats " + name + ": Attempting to access statistics before data collection has finished!");
@@ -305,7 +305,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 //					Simulator.logln("numST=" + numST[c] + " minST=" + minST[c] + " maxST=" + maxST[c]);										
 					report.append("meanST=").append(meanST[c]);
 					report.append(" stDevST=").append(stDevST[c]).append("\n");				
-					if (SimQPNController.configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && minBatches[c] > 0)  {	
+					if (sim.configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && minBatches[c] > 0)  {	
 						report.append("\n");
 						report.append("Steady State Statistics: ");
 						if (numBatchesST[c] >= minBatches[c])  {											 													
@@ -330,7 +330,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 					report.append("meanDT=").append(meanDT[c]).append(" stDevDT=").append(stDevDT[c]).append("\n");															
 					report.append("Indirect estimate of meanST=").append(meanST[c]).append("\n");			
 					report.append("Indirect estimate of meanTkPop=").append(thrPut * meanST[c]).append("\n");					
-					if (SimQPNController.configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && minBatches[c] > 0)  {					
+					if (sim.configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && minBatches[c] > 0)  {					
 						report.append("\n");
 						report.append("Steady State Statistics: \n");
 						if (numBatchesST[c] >= minBatches[c])  {																									

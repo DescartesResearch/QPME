@@ -80,7 +80,7 @@ public class Stats {
 	public double		runWallClockTime;		// Total duration of the run in seconds. 
 		
 	public String 		fileSep 	= System.getProperty("file.separator");
-	public String 		statsDir 	= SimQPNController.configuration.getStatsDir();
+	public String 		statsDir; //OLD 	= SimQPNController.configuration.getStatsDir();
 	
 	/* NOTE:
 	 * statsLevel determines the amount of statistics to be gathered during the run:
@@ -100,7 +100,8 @@ public class Stats {
 	 * @param numColors   - number of colors
 	 * @param statsLevel  - determines the amount of statistics to be gathered during the run
 	 */
-	public Stats(int id, String name, int type, int numColors, int statsLevel) {		
+	public Stats(int id, String name, int type, int numColors, int statsLevel, SimQPNController sim) {		
+		this.statsDir = sim.configuration.getStatsDir();
 		this.id 				= id;
 		this.name 				= name;		
 		this.type				= type;

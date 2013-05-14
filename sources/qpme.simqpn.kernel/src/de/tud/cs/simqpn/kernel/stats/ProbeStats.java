@@ -43,6 +43,7 @@ package de.tud.cs.simqpn.kernel.stats;
 
 import java.util.Arrays;
 
+import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 
 /**
@@ -66,8 +67,8 @@ public class ProbeStats extends PlaceStats {
 	 * @param statsLevel	- determines the amount of statistics to be gathered during the run
 	 *            
 	 */
-	public ProbeStats(int id, String name, String[] colors, int statsLevel) throws SimQPNException {
-		super(id, name, PROBE, colors, statsLevel);
+	public ProbeStats(int id, String name, String[] colors, int statsLevel, SimQPNController sim) throws SimQPNException {
+		super(id, name, PROBE, colors, statsLevel, sim);
 	}
 
 	/* (non-Javadoc)
@@ -107,10 +108,10 @@ public class ProbeStats extends PlaceStats {
 	 * 
 	 * @exception SimQPNException
 	 */
-	public void start() throws SimQPNException {
+	public void start(SimQPNController sim) throws SimQPNException {
 		int[] tokenPop = new int[colors.length];
 		Arrays.fill(tokenPop, 0);
-		this.start(tokenPop);
+		this.start(tokenPop, sim);
 	}
 	
 	/**
@@ -120,10 +121,10 @@ public class ProbeStats extends PlaceStats {
 	 * Note: Completes accumulated areas under the curve.   
 	 * @exception SimQPNException
 	 */
-	public void finish() throws SimQPNException {
+	public void finish(SimQPNController sim) throws SimQPNException {
 		int[] tokenPop = new int[colors.length];
 		Arrays.fill(tokenPop, 0);
-		this.finish(tokenPop);
+		this.finish(tokenPop, sim);
 	}
 	
 	

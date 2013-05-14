@@ -187,7 +187,7 @@ public class Queue {
 	 * @return
 	 * @exception
 	 */
-	public void init() throws SimQPNException  {
+	public void init(SimQPNController sim) throws SimQPNException  {
 		statsLevel = 10; 
 		
 		if (qPlaces == null) {
@@ -209,7 +209,7 @@ public class Queue {
 			randColorGen = new EmpiricalWalker(pdf, Empirical.NO_INTERPOLATION, RandomNumberGenerator.nextRandNumGen());							
 		}		
 		if (statsLevel > 0)  //NOTE: This is intentionally done here after qPlaces has been initialized!
-			queueStats = new QueueStats(id, name, totNumColors, statsLevel, queueDiscip, numServers, this);
+			queueStats = new QueueStats(id, name, totNumColors, statsLevel, queueDiscip, numServers, this, sim);
 	}
 		
 	/**
@@ -231,9 +231,9 @@ public class Queue {
 	 * @return
 	 * @exception
 	 */
-	public void finish() throws SimQPNException { 
+	public void finish(SimQPNController sim) throws SimQPNException { 
 		if (statsLevel > 0)	
-			queueStats.finish();					
+			queueStats.finish(sim);					
 	}
 	
 	/**
@@ -428,7 +428,7 @@ public class Queue {
 	 * @exception
 	 */
 	@SuppressWarnings("unchecked")
-	public void addTokens(QPlace qPl, int color, int count, Token[] tokensToBeAdded) throws SimQPNException {	
+	public void addTokens(QPlace qPl, int color, int count, Token[] tokensToBeAdded, SimQPNController sim) throws SimQPNException {	
 		
 		tkPopulation += count;
 		
@@ -514,7 +514,7 @@ public class Queue {
 				numBusyServers++; n++;
 				// Update Stats
 				if (qPl.statsLevel >= 3)   
-					qPl.qPlaceQueueStats.updateDelayTimeStats(color, 0);																 
+					qPl.qPlaceQueueStats.updateDelayTimeStats(color, 0, sim);																 
 			}						
 			while (n < count) {
 				//  Place the rest of the tokens in the waitingLine
@@ -557,7 +557,7 @@ public class Queue {
 	 * @return
 	 * @exception
 	 */
-	public void completeService(Token token) throws SimQPNException {
+	public void completeService(Token token, SimQPNController sim) throws SimQPNException {
 		
 		tkPopulation--;
 
@@ -576,7 +576,7 @@ public class Queue {
 				SimQPNController.scheduleEvent(SimQPNController.clock + servTime, this, tk);
 				// Update stats				
 				if (qPl.statsLevel >= 3)
-					qPl.qPlaceQueueStats.updateDelayTimeStats(tk.color, SimQPNController.clock - tk.arrivTS);				
+					qPl.qPlaceQueueStats.updateDelayTimeStats(tk.color, SimQPNController.clock - tk.arrivTS, sim);				
 			}
 			else numBusyServers--;							
 		}

@@ -121,8 +121,8 @@ public class QPlace extends Place {
 	 * @param element     - reference to the XML element representing the place
 	 * 
 	 */
-	public QPlace(int id, String name, String[] colors, int numInTrans, int numOutTrans, int numProbes, int statsLevel, int depDiscip, Queue queue, Element element) throws SimQPNException {		
-		super(id, name, colors, numInTrans, numOutTrans, numProbes, statsLevel, depDiscip, element);
+	public QPlace(int id, String name, String[] colors, int numInTrans, int numOutTrans, int numProbes, int statsLevel, int depDiscip, Queue queue, Element element, SimQPNController sim) throws SimQPNException {		
+		super(id, name, colors, numInTrans, numOutTrans, numProbes, statsLevel, depDiscip, element, sim);
 		
 		this.queue						= queue;
 		this.meanServTimes				= new double[numColors];
@@ -135,7 +135,7 @@ public class QPlace extends Place {
 			this.queueTokenPop[c] 		= 0;
 		
 		if (statsLevel > 0) 
-			qPlaceQueueStats = new QPlaceQueueStats(id, name, colors, statsLevel, queue.queueDiscip, queue.numServers, meanServTimes);
+			qPlaceQueueStats = new QPlaceQueueStats(id, name, colors, statsLevel, queue.queueDiscip, queue.numServers, meanServTimes, sim);
 	}
 	
 	/**
@@ -184,11 +184,11 @@ public class QPlace extends Place {
 	 * @exception
 	 */
 	@Override
-	public void start() throws SimQPNException {	
+	public void start(SimQPNController sim) throws SimQPNException {	
 		if (statsLevel > 0)  {		
 			// Start statistics collection
-			qPlaceQueueStats.start(queueTokenPop);
-			super.start();
+			qPlaceQueueStats.start(queueTokenPop, sim);
+			super.start(sim);
 		}					
 	}
 
@@ -201,11 +201,11 @@ public class QPlace extends Place {
 	 * @exception
 	 */
 	@Override
-	public void finish() throws SimQPNException {
+	public void finish(SimQPNController sim) throws SimQPNException {
 		if (statsLevel > 0)  {
 			// Complete statistics collection
-			qPlaceQueueStats.finish(queueTokenPop);								
-			super.finish();
+			qPlaceQueueStats.finish(queueTokenPop, sim);								
+			super.finish(sim);
 		}
 	}
 
@@ -220,7 +220,7 @@ public class QPlace extends Place {
 	 * @exception
 	 */
 	@Override
-	public void addTokens(int color, int count, Token[] tokensToBeAdded) throws SimQPNException {	
+	public void addTokens(int color, int count, Token[] tokensToBeAdded, SimQPNController sim) throws SimQPNException {	
 		if (count <= 0) { // DEBUG
 			log.error("Attempted to add nonpositive number of tokens to queue " + name);
 			throw new SimQPNException();
@@ -228,13 +228,13 @@ public class QPlace extends Place {
 		
 		// Update Stats	(below more...) (Note: watch out the order of this and next statement)
 		if (statsLevel > 0)
-			qPlaceQueueStats.updateTkPopStats(color, queueTokenPop[color], count);																	
+			qPlaceQueueStats.updateTkPopStats(color, queueTokenPop[color], count, sim);																	
 		 				
 		queueTokenPop[color] += count;
 		if (individualTokens[color]) {
-			queue.addTokens(this, color, count, tokensToBeAdded);
+			queue.addTokens(this, color, count, tokensToBeAdded, sim);
 		} else {
-			queue.addTokens(this, color, count, null);
+			queue.addTokens(this, color, count, null, sim);
 		}
 	}
 	
@@ -246,7 +246,7 @@ public class QPlace extends Place {
 	 * @return
 	 * @exception
 	 */
-	public void completeService(Token token) throws SimQPNException {
+	public void completeService(Token token, SimQPNController sim) throws SimQPNException {
 		if (queueTokenPop[token.color] < 1) {
 			log.error("Attempted to remove a token from queue " + name + " which is empty!");
 			throw new SimQPNException();
@@ -254,29 +254,29 @@ public class QPlace extends Place {
 
 		// Update stats (below more...) (Note: watch out the order of this and next statement)
 		if (statsLevel > 0)  {
-			qPlaceQueueStats.updateTkPopStats(token.color, queueTokenPop[token.color], -1);
+			qPlaceQueueStats.updateTkPopStats(token.color, queueTokenPop[token.color], -1, sim);
 			if (statsLevel >= 3) 
-				qPlaceQueueStats.updateSojTimeStats(token.color, SimQPNController.clock - token.arrivTS);
+				qPlaceQueueStats.updateSojTimeStats(token.color, SimQPNController.clock - token.arrivTS, sim);
 		}
 		
 		// Now remove token from queue and update queue state
 		queueTokenPop[token.color]--;
 				
-		queue.completeService(token);
+		queue.completeService(token, sim);
 		
 		// Finally move token to depository
 		if (individualTokens[token.color]) {
 			tkCopyBuffer[0] = token;
-			super.addTokens(token.color, 1, tkCopyBuffer);
+			super.addTokens(token.color, 1, tkCopyBuffer, sim);
 		} else {
-			super.addTokens(token.color, 1, null);
+			super.addTokens(token.color, 1, null, sim);
 		}
 	}
 		
-	public void report() throws SimQPNException  {		
+	public void report(SimQPNController sim) throws SimQPNException  {		
 		if (statsLevel > 0) {
-			qPlaceQueueStats.printReport();
-			super.report();
+			qPlaceQueueStats.printReport(sim);
+			super.report(sim);
 			queue.report();
 		}
 	}

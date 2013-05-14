@@ -136,7 +136,7 @@ public class Place extends Node {
 	 * @param element     - reference to the XML element representing the place
 	 */
 	@SuppressWarnings("rawtypes")
-	public Place(int id, String name, String[] colors, int numInTrans, int numOutTrans, int numProbes, int statsLevel, int depDiscip, Element element) throws SimQPNException {
+	public Place(int id, String name, String[] colors, int numInTrans, int numOutTrans, int numProbes, int statsLevel, int depDiscip, Element element, SimQPNController sim) throws SimQPNException {
 		super(id, name);		
 		this.colors			       = colors;	
 		this.numColors		       = colors.length;	
@@ -163,9 +163,9 @@ public class Place extends Node {
 		}
 		if (statsLevel > 0) {
 			if (this instanceof QPlace)
-				placeStats = new PlaceStats(id, name, Stats.QUE_PLACE_DEP, colors, statsLevel);
+				placeStats = new PlaceStats(id, name, Stats.QUE_PLACE_DEP, colors, statsLevel, sim);
 			else
-				placeStats = new PlaceStats(id, name, Stats.ORD_PLACE, colors, statsLevel);				 			
+				placeStats = new PlaceStats(id, name, Stats.ORD_PLACE, colors, statsLevel, sim);				 			
 			if (statsLevel >= 3) {
 				this.tokArrivTS = new LinkedList[numColors];
 				for (int c = 0; c < numColors; c++)
@@ -255,9 +255,9 @@ public class Place extends Node {
 	 * @return
 	 * @exception
 	 */
-	public void start() throws SimQPNException {	
+	public void start(SimQPNController sim) throws SimQPNException {	
 		if (statsLevel > 0)	
-			placeStats.start(tokenPop);					
+			placeStats.start(tokenPop, sim);					
 	}
 	
 	/**
@@ -268,10 +268,10 @@ public class Place extends Node {
 	 * @return
 	 * @exception
 	 */
-	public void finish() throws SimQPNException {
+	public void finish(SimQPNController sim) throws SimQPNException {
 		// Complete statistics collection
 		if (statsLevel > 0)	
-			placeStats.finish(tokenPop);					
+			placeStats.finish(tokenPop, sim);					
 	}
 
 	/**
@@ -281,11 +281,11 @@ public class Place extends Node {
 	 * @return
 	 * @exception
 	 */
-	public void report() throws SimQPNException {
+	public void report(SimQPNController sim) throws SimQPNException {
 		if (statsLevel > 0) {
-			placeStats.printReport();					
+			placeStats.printReport(sim);					
 			/* cdutz */ 
-			placeStats.addReportMetaData(element);
+			placeStats.addReportMetaData(element, sim);
 		}
 	}
 
@@ -300,7 +300,7 @@ public class Place extends Node {
 	 * @exception
 	 */
 	@SuppressWarnings("unchecked")
-	public void addTokens(int color, int count, Token[] tokensToBeAdded) throws SimQPNException {
+	public void addTokens(int color, int count, Token[] tokensToBeAdded, SimQPNController sim) throws SimQPNException {
 		if (count <= 0) { // DEBUG
 			log.error("Attempted to add nonpositive number of tokens to place " + name);
 			throw new SimQPNException();
@@ -308,7 +308,7 @@ public class Place extends Node {
 				
 		// Update Stats		
 		if (statsLevel > 0) {
-			placeStats.updateTkPopStats(color, tokenPop[color], count);						
+			placeStats.updateTkPopStats(color, tokenPop[color], count, sim);						
 			if (statsLevel >= 3) {
 				for (int i = 0; i < count; i++) 
 					tokArrivTS[color].addLast(new Double(SimQPNController.clock));
@@ -361,7 +361,7 @@ public class Place extends Node {
 	 * @return removed tokens (if tracking is enabled)
 	 * @exception
 	 */
-	public Token[] removeTokens(int color, int count, Token[] returnBuffer) throws SimQPNException {
+	public Token[] removeTokens(int color, int count, Token[] returnBuffer, SimQPNController sim) throws SimQPNException {
 		/* //DEBUG
 		if (count <= 0) { 
 			Simulator.logln("Error: Attempted to remove nonpositive number of tokens from place " + name);
@@ -373,12 +373,12 @@ public class Place extends Node {
 		}*/						
 		// Update Stats
 		if (statsLevel > 0) {
-			placeStats.updateTkPopStats(color, tokenPop[color], (-1)*count);				
+			placeStats.updateTkPopStats(color, tokenPop[color], (-1)*count, sim);				
 			if (statsLevel >= 3) {
 				Double arrivTS;
 				for (int i = 0; i < count; i++) {
 					arrivTS = (Double) tokArrivTS[color].removeFirst();
-					placeStats.updateSojTimeStats(color, SimQPNController.clock - arrivTS.doubleValue());
+					placeStats.updateSojTimeStats(color, SimQPNController.clock - arrivTS.doubleValue(), sim);
 				}
 			}				
 		}

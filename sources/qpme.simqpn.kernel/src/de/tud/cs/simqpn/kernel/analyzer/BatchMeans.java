@@ -18,7 +18,7 @@ public class BatchMeans implements Analyzer {
 
 	@Override
 	public Stats[] analyze(Element XMLNet, String configuration,
-			SimulatorProgress monitor) throws SimQPNException {
+			SimulatorProgress monitor, SimQPNController sim) throws SimQPNException {
 		SimulatorResults results = runBatchMeans(XMLNet, configuration, monitor);
 
 		List<Stats> stats = new ArrayList<Stats>();
@@ -27,7 +27,7 @@ public class BatchMeans implements Analyzer {
 			if (results.getPlaces()[p] instanceof QPlace) {
 				stats.add(((QPlace) results.getPlaces()[p]).qPlaceQueueStats);
 			}
-			results.getPlaces()[p].report();
+			results.getPlaces()[p].report(sim);
 		}
 		if (results.getQueues() != null) {
 			for (Queue queue : results.getQueues()) {
@@ -38,7 +38,7 @@ public class BatchMeans implements Analyzer {
 		}
 		for (int pr = 0; pr < results.getProbes().length; pr++) {
 			stats.add(results.getProbes()[pr].probeStats);
-			results.getProbes()[pr].report();
+			results.getProbes()[pr].report(sim);
 		}
 		return (Stats[]) stats.toArray(new Stats[stats.size()]);
 	}
@@ -57,6 +57,9 @@ public class BatchMeans implements Analyzer {
 		progressMonitor = monitor;
 		progressMonitor.startSimulation();
 		SimQPNController sim = new SimQPNController(netXML, configuration);
+		System.out.println("[1] "+sim.configuration);
+		sim.getReady(netXML, configuration);
+		System.out.println("[2] "+sim.configuration);
 		progressMonitor.startSimulationRun(1);
 		sim = sim.run();
 		progressMonitor.finishSimulationRun();

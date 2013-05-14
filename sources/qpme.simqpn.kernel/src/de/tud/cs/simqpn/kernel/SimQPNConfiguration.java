@@ -85,84 +85,6 @@ package de.tud.cs.simqpn.kernel;
 // Please do not remove any comments! 
 // You can add your comments/answers with a "CHRIS" label.
  
-import static de.tud.cs.simqpn.kernel.util.LogUtil.formatDetailMessage;
-import static de.tud.cs.simqpn.kernel.util.LogUtil.formatMultilineMessage;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.PriorityQueue;
-
-import javax.xml.XMLConstants;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamSource;
-
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.dom4j.Attribute;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import org.dom4j.Namespace;
-import org.dom4j.QName;
-import org.dom4j.XPath;
-import org.dom4j.io.DocumentResult;
-import org.dom4j.io.DocumentSource;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
-
-import cern.jet.random.AbstractContinousDistribution;
-import cern.jet.random.Beta;
-import cern.jet.random.BreitWigner;
-import cern.jet.random.BreitWignerMeanSquare;
-import cern.jet.random.ChiSquare;
-import cern.jet.random.Empirical;
-import cern.jet.random.EmpiricalWalker;
-import cern.jet.random.Exponential;
-import cern.jet.random.ExponentialPower;
-import cern.jet.random.Gamma;
-import cern.jet.random.Hyperbolic;
-import cern.jet.random.Logarithmic;
-import cern.jet.random.Normal;
-import cern.jet.random.StudentT;
-import cern.jet.random.Uniform;
-import cern.jet.random.VonMises;
-import de.tud.cs.simqpn.kernel.analyzer.BatchMeans;
-import de.tud.cs.simqpn.kernel.analyzer.ReplicationDeletion;
-import de.tud.cs.simqpn.kernel.analyzer.SimulatorResults;
-import de.tud.cs.simqpn.kernel.analyzer.Welch;
-import de.tud.cs.simqpn.kernel.entities.Net;
-import de.tud.cs.simqpn.kernel.entities.Place;
-import de.tud.cs.simqpn.kernel.entities.Probe;
-import de.tud.cs.simqpn.kernel.entities.QPlace;
-import de.tud.cs.simqpn.kernel.entities.Queue;
-import de.tud.cs.simqpn.kernel.entities.Token;
-import de.tud.cs.simqpn.kernel.entities.Transition;
-import de.tud.cs.simqpn.kernel.executor.QueueEvent;
-import de.tud.cs.simqpn.kernel.loader.ConfigurationLoader;
-import de.tud.cs.simqpn.kernel.loader.NetLoader;
-import de.tud.cs.simqpn.kernel.loader.XMLHelper;
-import de.tud.cs.simqpn.kernel.loader.XMLValidator;
-import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
-import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
-import de.tud.cs.simqpn.kernel.stats.AggregateStats;
-import de.tud.cs.simqpn.kernel.stats.Stats;
-import de.tud.cs.simqpn.kernel.util.LogUtil;
-import de.tud.cs.simqpn.kernel.util.LogUtil.ReportLevel;
 
 /**
  * Class Simulator
@@ -199,21 +121,21 @@ public class SimQPNConfiguration {
 												// Maximum time until initial heartbeat. Important for long running
 												//   simulations with slow simulation clock progress.
 	
-	private static int numRuns;					// Maximum number of runs.
+	private int numRuns;					// Maximum number of runs.
 	public static boolean useStdStateStats; 	// For (MULT_REPL, statsLevel >= 3): Specifies whether to use ordinary
 												//   or steady state sojourn times when estimating averages and c.i.
-	private static String statsDir;
+	private String statsDir;
 
-	public static int runMode;
-	private static int analMethod;				// Output data analysis method.
-	public static int stoppingRule;				// Simulation stopping criterion.
+	public int runMode;
+	private int analMethod;				// Output data analysis method.
+	public int stoppingRule;				// Simulation stopping criterion.
 	private static int debugLevel;				// Debug level - TODO: currently not used consistently!
-	public static double rampUpLen;				// Duration of the ramp up period.
-	public static double totRunLen;				// Maximum total duration of the simulation run (incl. rampUpLen).
-	public static double timeBtwChkStops;		// Time between checks if stopping criterion is fulfilled. 
+	public double rampUpLen;				// Duration of the ramp up period.
+	public double totRunLen;				// Maximum total duration of the simulation run (incl. rampUpLen).
+	public double timeBtwChkStops;		// Time between checks if stopping criterion is fulfilled. 
 												//   If set to 0, it is automatically adjusted to result in roughtly 
 												//   secondsBtwChkStops sec between checks.
-	public static double secondsBtwChkStops;	// Seconds between checks if stopping criterion is fulfilled. TODO: Add to User's Guide. 
+	public double secondsBtwChkStops;	// Seconds between checks if stopping criterion is fulfilled. TODO: Add to User's Guide. 
 												//   Used only when timeBtwChkStops == 0.
 	/* ORIGINAL HEARTBEAT IMPLEMENTATION
 	public static double timeInitHeartBeat;		// Time when the first progress update is made. After this
@@ -233,14 +155,14 @@ public class SimQPNConfiguration {
 	 *      if enough data is available to provide required precision.
 	 */
 	
-	public static boolean inRampUp;				// True if still in RampUp period (no measurements taken).
+	public boolean inRampUp;				// True if still in RampUp period (no measurements taken).
 	//public static boolean simRunning;			// True if simulation is currently running.
-	public static double endRampUpClock;		// Clock at the end of RampUp, i.e. beginning of the measurement period.
-	public static double endRunClock;			// Clock at the end of the run.
-	public static double msrmPrdLen;			// Duration of the measurement period (endRunClock - endRampUpClock).
-	public static double beginRunWallClock;		// currentTimeMillis at the begin of the run (wall clock time).
-	public static double endRunWallClock;		// currentTimeMillis at the end of the run (wall clock time).
-	public static double runWallClockTime;		// Total duration of the run in seconds.
+	public double endRampUpClock;		// Clock at the end of RampUp, i.e. beginning of the measurement period.
+	public double endRunClock;			// Clock at the end of the run.
+	public double msrmPrdLen;			// Duration of the measurement period (endRunClock - endRampUpClock).
+	public double beginRunWallClock;		// currentTimeMillis at the begin of the run (wall clock time).
+	public double endRunWallClock;		// currentTimeMillis at the end of the run (wall clock time).
+	public double runWallClockTime;		// Total duration of the run in seconds.
 	
 	// Time histogram configuration parameters.
 	public static final int       TIME_HISTOGRAM_MIN_NUM_BUCKETS = 2;
@@ -254,11 +176,11 @@ public class SimQPNConfiguration {
 	public static final int  OVERFLOW_DET_MIN_CONS_RISING_EPOCHS = 30;
 	public static final int  OVERFLOW_DET_MAX_CONS_RISING_EPOCHS = 100;
 
-	public static int getAnalMethod() {
+	public int getAnalMethod() {
 		return analMethod;
 	}
 	public void setAnalMethod(int analMethod) {
-		SimQPNConfiguration.analMethod = analMethod;
+		this.analMethod = analMethod;
 	}
 	public static int getDebugLevel() {
 		return debugLevel;
@@ -266,17 +188,17 @@ public class SimQPNConfiguration {
 	public static void setDebugLevel(int debugLevel) {
 		SimQPNConfiguration.debugLevel = debugLevel;
 	}
-	public static String getStatsDir() {
+	public String getStatsDir() {
 		return statsDir;
 	}
-	public static void setStatsDir(String statsDir) {
-		SimQPNConfiguration.statsDir = statsDir;
+	public void setStatsDir(String statsDir) {
+		this.statsDir = statsDir;
 	}
-	public static int getNumRuns() {
+	public int getNumRuns() {
 		return numRuns;
 	}
-	public static void setNumRuns(int numRuns) {
-		SimQPNConfiguration.numRuns = numRuns;
+	public void setNumRuns(int numRuns) {
+		this.numRuns = numRuns;
 	}
 
 }

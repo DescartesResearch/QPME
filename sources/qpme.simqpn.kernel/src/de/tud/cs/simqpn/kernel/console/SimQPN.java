@@ -74,22 +74,23 @@ import de.tud.cs.simqpn.kernel.stats.Stats;
 public class SimQPN implements IApplication {
 
 	private static void runSimulatorOnDocument(Document netDocument,
-			String configuration, String outputFilename, String logConfigFilename, SimulatorProgress progress) throws SimQPNException {
+			String configurationName, String outputFilename, String logConfigFilename, SimulatorProgress progress) throws SimQPNException {
 		Element net = netDocument.getRootElement();
-		SimQPNController.configure(net, configuration, logConfigFilename);
-		net = SimQPNController.prepareNet(net, configuration);
-		Stats[] result = SimQPNController.execute(net, configuration, progress);
+		SimQPNController sim = new SimQPNController(net, configurationName);
+		sim.configure(net, configurationName, logConfigFilename);
+		net = sim.prepareNet(net, configurationName);
+		Stats[] result = sim.execute(net, configurationName, progress);
 		// Skip stats document generation for WELCH and REPL_DEL since the 
 		// document builder does not support these methods yet.
-		if ((result != null) && (SimQPNController.configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS)) {
-			StatsDocumentBuilder builder = new StatsDocumentBuilder(result, net, configuration);
-			Document statsDocument = builder.buildDocument();
+		if ((result != null) && (sim.configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS)) {
+			StatsDocumentBuilder builder = new StatsDocumentBuilder(result, net, configurationName);
+			Document statsDocument = builder.buildDocument(sim);
 
 			File resultsFile = null;
 			if (outputFilename != null) {
 				resultsFile = new File(outputFilename);
 			} else {
-				resultsFile = new File(SimQPNController.configuration.getStatsDir(), builder.getResultFileBaseName() + ".simqpn");
+				resultsFile = new File(sim.configuration.getStatsDir(), builder.getResultFileBaseName() + ".simqpn");
 			}
 
 			System.out.println("Saving simulation result to "

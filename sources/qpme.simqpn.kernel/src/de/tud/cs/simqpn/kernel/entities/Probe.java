@@ -54,6 +54,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.dom4j.Element;
 
+import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.stats.ProbeStats;
 
@@ -88,7 +89,7 @@ public class Probe {
 	
 	public Element		  element;
 	
-	public Probe(int id, String xmlId, String name, String[] colors, Place startPlace, int startTrigger, Place endPlace, int endTrigger, int statsLevel, Element element) throws SimQPNException {
+	public Probe(int id, String xmlId, String name, String[] colors, Place startPlace, int startTrigger, Place endPlace, int endTrigger, int statsLevel, Element element, SimQPNController sim) throws SimQPNException {
 		this.id = id;
 		this.xmlId = xmlId;
 		this.name = name;
@@ -101,7 +102,7 @@ public class Probe {
 		this.element = element;
 		
 		if (statsLevel > 0) {
-			probeStats = new ProbeStats(id, name, colors, statsLevel);
+			probeStats = new ProbeStats(id, name, colors, statsLevel, sim);
 		}
 	}
 	
@@ -247,9 +248,9 @@ public class Probe {
 	 * @return
 	 * @exception
 	 */
-	public void start() throws SimQPNException {	
+	public void start(SimQPNController sim) throws SimQPNException {	
 		if (statsLevel > 0)	
-			probeStats.start();					
+			probeStats.start(sim);					
 	}
 	
 	/**
@@ -260,10 +261,10 @@ public class Probe {
 	 * @return
 	 * @exception
 	 */
-	public void finish() throws SimQPNException {
+	public void finish(SimQPNController sim) throws SimQPNException {
 		// Complete statistics collection
 		if (statsLevel > 0)	
-			probeStats.finish();					
+			probeStats.finish(sim);					
 	}
 
 	/**
@@ -273,10 +274,10 @@ public class Probe {
 	 * @return
 	 * @exception
 	 */
-	public void report() throws SimQPNException {
+	public void report(SimQPNController sim) throws SimQPNException {
 		if (statsLevel > 0) {
-			probeStats.printReport();					
-			probeStats.addReportMetaData(element);
+			probeStats.printReport(sim);					
+			probeStats.addReportMetaData(element, sim);
 		}
 	}
 	

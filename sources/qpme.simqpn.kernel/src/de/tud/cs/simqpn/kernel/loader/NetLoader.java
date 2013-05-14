@@ -36,6 +36,7 @@ import cern.jet.random.Normal;
 import cern.jet.random.StudentT;
 import cern.jet.random.Uniform;
 import cern.jet.random.VonMises;
+import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
@@ -64,22 +65,21 @@ public class NetLoader {
 	private Map<String, Integer> sourceIdToNumConnectionsMap = new HashMap<String, Integer>();
 	private Map<String, Integer> targetIdToNumConnectionsMap = new HashMap<String, Integer>();
 
-	
-	//	public int getNumConnectionsWithSourceId(String id) {
-//	Integer num = sourceIdToNumConnectionsMap.get(id);
-//	if (num != null) {
-//		return num.intValue();
-//	}
-//	return 0;
-//}
+	// public int getNumConnectionsWithSourceId(String id) {
+	// Integer num = sourceIdToNumConnectionsMap.get(id);
+	// if (num != null) {
+	// return num.intValue();
+	// }
+	// return 0;
+	// }
 
-//public int getNumConnectionsWithTargetId(String id) {
-//	Integer num = targetIdToNumConnectionsMap.get(id);
-//	if (num != null) {
-//		return num.intValue();
-//	}
-//	return 0;
-//}
+	// public int getNumConnectionsWithTargetId(String id) {
+	// Integer num = targetIdToNumConnectionsMap.get(id);
+	// if (num != null) {
+	// return num.intValue();
+	// }
+	// return 0;
+	// }
 	private static final QName XSI_TYPE_ATTRIBUTE = new QName("type",
 			new Namespace("xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI));
 
@@ -92,17 +92,16 @@ public class NetLoader {
 	 * @return
 	 * @throws SimQPNException
 	 */
-	public Net load(Element netXML, String configuration)
+	public Net load(Element netXML, String configuration, SimQPNController sim)
 			throws SimQPNException {
 		placeToIndexMap = new HashMap<Element, Integer>();
 		transitionToIndexMap = new HashMap<Element, Integer>();
 		queueToIndexMap = new HashMap<Element, Integer>();
-		
-		 sourceIdToNumConnectionsMap = new HashMap<String, Integer>();
-		 targetIdToNumConnectionsMap = new HashMap<String, Integer>();
 
+		sourceIdToNumConnectionsMap = new HashMap<String, Integer>();
+		targetIdToNumConnectionsMap = new HashMap<String, Integer>();
 
-		Net net = parse(netXML, configuration);
+		Net net = parse(netXML, configuration, sim);
 
 		return net;
 	}
@@ -114,7 +113,7 @@ public class NetLoader {
 	 * @return
 	 * @throws SimQPNException
 	 */
-	private Net parse(Element netXML, String configuration)
+	private Net parse(Element netXML, String configuration, SimQPNController sim)
 			throws SimQPNException {
 		Net net = new Net();
 		net.setConfiguration(configuration);
@@ -136,16 +135,19 @@ public class NetLoader {
 				String sourceId = e.attributeValue("source-id");
 				String targetId = e.attributeValue("target-id");
 
-				Integer numSourceIdConnections = sourceIdToNumConnectionsMap.get(sourceId);
+				Integer numSourceIdConnections = sourceIdToNumConnectionsMap
+						.get(sourceId);
 
 				if (numSourceIdConnections == null) {
 					numSourceIdConnections = new Integer(1);
 				} else {
 					numSourceIdConnections++;
 				}
-				sourceIdToNumConnectionsMap.put(sourceId, numSourceIdConnections);
+				sourceIdToNumConnectionsMap.put(sourceId,
+						numSourceIdConnections);
 
-				Integer numTargetIdConnections = targetIdToNumConnectionsMap.get(targetId);
+				Integer numTargetIdConnections = targetIdToNumConnectionsMap
+						.get(targetId);
 
 				if (numTargetIdConnections == null) {
 					numTargetIdConnections = new Integer(1);
@@ -168,7 +170,7 @@ public class NetLoader {
 				}
 			}
 		}
-		net = getReady(netXML, net);
+		net = getReady(netXML, net, sim);
 		return net;
 	}
 
@@ -179,7 +181,8 @@ public class NetLoader {
 	 * @return
 	 * @exception
 	 */
-	private Net getReady(Element netXML, Net net) throws SimQPNException {
+	private Net getReady(Element netXML, Net net, SimQPNController sim)
+			throws SimQPNException {
 		/*
 		 * This is the method where the QPN to be simulated is defined. The QPN
 		 * specification is currently hard-coded.
@@ -198,7 +201,7 @@ public class NetLoader {
 		// -----------------------------------------------------------------------------------------------------------
 		// CREATE PLACES
 		// -----------------------------------------------------------------------------------------------------------
-		net = createPlaces(netXML, net);
+		net = createPlaces(netXML, net, sim);
 		// -----------------------------------------------------------------------------------------------------------
 		// CREATE TRANSITIONS
 		// -----------------------------------------------------------------------------------------------------------
@@ -225,7 +228,7 @@ public class NetLoader {
 		// -----------------------------------------------------------------------------------------------------------
 		// CREATE PROBES
 		// -----------------------------------------------------------------------------------------------------------
-		net = createProbes(netXML, net);
+		net = createProbes(netXML, net, sim);
 		// --------------------------------------------------------------------------------------------------------
 		// CONFIGURE PROBE ATTACHMENT TO PLACES
 		// --------------------------------------------------------------------------------------------------------
@@ -281,7 +284,8 @@ public class NetLoader {
 	 * @return
 	 * @throws SimQPNException
 	 */
-	private Net createPlaces(Element netXML, Net net) throws SimQPNException {
+	private Net createPlaces(Element netXML, Net net, SimQPNController sim)
+			throws SimQPNException {
 		/**
 		 * @param int id - global id of the place - IMPORTANT: must be equal to
 		 *        the index in the array!!!!!!!
@@ -442,8 +446,10 @@ public class NetLoader {
 			// the ids are concidered unique, the correct connection element
 			// will be selected.
 
-			int numOutgoingConnections = sourceIdToNumConnectionsMap.get(place.attributeValue("id"));
-			int numIncomingConnections = targetIdToNumConnectionsMap.get(place.attributeValue("id"));
+			int numOutgoingConnections = sourceIdToNumConnectionsMap.get(place
+					.attributeValue("id"));
+			int numIncomingConnections = targetIdToNumConnectionsMap.get(place
+					.attributeValue("id"));
 
 			Element metaAttribute = XMLHelper.getSettings(place,
 					net.getConfiguration());
@@ -547,7 +553,7 @@ public class NetLoader {
 						numOutgoingConnections, // # outgoing connections
 						net.getNumProbes(), statsLevel, // stats level
 						dDis, // departure discipline
-						place); // Reference to the place' XML element
+						place, sim); // Reference to the place' XML element
 				placeToIndexMap.put(place, i);
 				if (log.isDebugEnabled()) {
 					log.debug("places[" + i + "] = new Place(" + i + ", '"
@@ -569,7 +575,7 @@ public class NetLoader {
 							net.getNumProbes(), statsLevel, // stats level
 							dDis, // departure discipline
 							queue, // Reference to the integrated Queue
-							place); // Reference to the place' XML element
+							place, sim); // Reference to the place' XML element
 					placeToIndexMap.put(place, i);
 					if (log.isDebugEnabled()) {
 						log.debug("places[" + i + "] = new QPlace(" + i + ", '"
@@ -678,10 +684,10 @@ public class NetLoader {
 				throw new SimQPNException();
 			}
 
-			int numOutgoingConnections = sourceIdToNumConnectionsMap.get(transition
-							.attributeValue("id"));
-			int numIncomingConnections = targetIdToNumConnectionsMap.get(transition
-							.attributeValue("id"));
+			int numOutgoingConnections = sourceIdToNumConnectionsMap
+					.get(transition.attributeValue("id"));
+			int numIncomingConnections = targetIdToNumConnectionsMap
+					.get(transition.attributeValue("id"));
 
 			if (transition.attributeValue("weight") == null) {
 				log.error(formatDetailMessage("Transition weight not set!",
@@ -714,7 +720,8 @@ public class NetLoader {
 		return net;
 	}
 
-	private Net createProbes(Element netXML, Net net) throws SimQPNException {
+	private Net createProbes(Element netXML, Net net, SimQPNController sim)
+			throws SimQPNException {
 		XPath xpathSelector;
 
 		log.debug("/////////////////////////////////////////////");
@@ -849,7 +856,7 @@ public class NetLoader {
 					probe.attributeValue("id"), // xml id
 					probe.attributeValue("name"), // name
 					colors, startPlace, startTrigger, endPlace, endTrigger,
-					statsLevel, probe);
+					statsLevel, probe, sim);
 			if (log.isDebugEnabled()) {
 				log.debug("probes[" + i + "] = new Probe(" + i + ", '"
 						+ probe.attributeValue("name") + "', " + colors + ", "

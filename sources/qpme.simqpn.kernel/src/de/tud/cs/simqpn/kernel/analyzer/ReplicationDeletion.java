@@ -26,11 +26,11 @@ public class ReplicationDeletion implements Analyzer{
 
 	@Override
 	public Stats[] analyze(Element XMLNet, String configuration,
-			SimulatorProgress monitor) throws SimQPNException {
+			SimulatorProgress monitor, SimQPNController sim) throws SimQPNException {
 		AggregateStats[] aggrStats = runMultRepl(XMLNet, configuration, monitor);
 		for (int i = 0; i < aggrStats.length; i++)
 			if (aggrStats[i] != null)
-				aggrStats[i].printReport();
+				aggrStats[i].printReport(sim);
 		return aggrStats;
 	}
 	
@@ -74,10 +74,10 @@ public class ReplicationDeletion implements Analyzer{
 			pl = places[p];
 			if (pl.statsLevel > 0) {
 				if (pl instanceof QPlace) {
-					aggrStats[p * 2] = new AggregateStats(pl.id, pl.name, Stats.QUE_PLACE_QUEUE, pl.numColors, pl.statsLevel);
-					aggrStats[(p * 2) + 1] = new AggregateStats(pl.id, pl.name, Stats.QUE_PLACE_DEP, pl.numColors, pl.statsLevel);
+					aggrStats[p * 2] = new AggregateStats(pl.id, pl.name, Stats.QUE_PLACE_QUEUE, pl.numColors, pl.statsLevel, sim);
+					aggrStats[(p * 2) + 1] = new AggregateStats(pl.id, pl.name, Stats.QUE_PLACE_DEP, pl.numColors, pl.statsLevel, sim);
 				} else {
-					aggrStats[p * 2] = new AggregateStats(pl.id, pl.name, Stats.ORD_PLACE, pl.numColors, pl.statsLevel);
+					aggrStats[p * 2] = new AggregateStats(pl.id, pl.name, Stats.ORD_PLACE, pl.numColors, pl.statsLevel, sim);
 					aggrStats[(p * 2) + 1] = null;
 				}
 			} else {
@@ -166,10 +166,10 @@ public class ReplicationDeletion implements Analyzer{
 				if (pl.statsLevel > 0) {
 					if (pl instanceof QPlace) {
 						QPlace qPl = (QPlace) pl;
-						aggrStats[p * 2].saveStats(qPl.qPlaceQueueStats);
-						aggrStats[(p * 2) + 1].saveStats(qPl.placeStats);
+						aggrStats[p * 2].saveStats(qPl.qPlaceQueueStats, sim);
+						aggrStats[(p * 2) + 1].saveStats(qPl.placeStats, sim);
 					} else {
-						aggrStats[p * 2].saveStats(pl.placeStats);
+						aggrStats[p * 2].saveStats(pl.placeStats, sim);
 					}
 				}
 			}
@@ -185,7 +185,7 @@ public class ReplicationDeletion implements Analyzer{
 
 		for (int i = 0; i < 2 * numPlaces; i++)
 			if (aggrStats[i] != null)
-				aggrStats[i].finish();
+				aggrStats[i].finish(sim);
 		
 		progressMonitor = null;
 
