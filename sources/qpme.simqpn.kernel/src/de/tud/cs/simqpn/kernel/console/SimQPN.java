@@ -80,7 +80,7 @@ public class SimQPN implements IApplication {
 		Stats[] result = sim.execute(net, configurationName, progress);
 		// Skip stats document generation for WELCH and REPL_DEL since the 
 		// document builder does not support these methods yet.
-		if ((result != null) && (sim.configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS)) {
+		if ((result != null) && (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS)) {
 			StatsDocumentBuilder builder = new StatsDocumentBuilder(result, net, configurationName);
 			Document statsDocument = builder.buildDocument(sim);
 
@@ -88,7 +88,7 @@ public class SimQPN implements IApplication {
 			if (outputFilename != null) {
 				resultsFile = new File(outputFilename);
 			} else {
-				resultsFile = new File(sim.configuration.getStatsDir(), builder.getResultFileBaseName() + ".simqpn");
+				resultsFile = new File(sim.getConfiguration().getStatsDir(), builder.getResultFileBaseName() + ".simqpn");
 			}
 
 			System.out.println("Saving simulation result to "

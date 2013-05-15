@@ -57,6 +57,7 @@ import org.dom4j.Element;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.SimQPNException;
+import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.stats.ProbeStats;
 
 /**
@@ -90,7 +91,7 @@ public class Probe {
 	
 	public Element		  element;
 	
-	public Probe(int id, String xmlId, String name, String[] colors, Place startPlace, int startTrigger, Place endPlace, int endTrigger, int statsLevel, Element element, SimQPNController sim) throws SimQPNException {
+	public Probe(int id, String xmlId, String name, String[] colors, Place startPlace, int startTrigger, Place endPlace, int endTrigger, int statsLevel, Element element, SimQPNConfiguration configuration) throws SimQPNException {
 		this.id = id;
 		this.xmlId = xmlId;
 		this.name = name;
@@ -103,7 +104,7 @@ public class Probe {
 		this.element = element;
 		
 		if (statsLevel > 0) {
-			probeStats = new ProbeStats(id, name, colors, statsLevel, sim);
+			probeStats = new ProbeStats(id, name, colors, statsLevel, configuration);
 		}
 	}
 	
@@ -249,9 +250,9 @@ public class Probe {
 	 * @return
 	 * @exception
 	 */
-	public void start(SimQPNConfiguration configuration, double clock) throws SimQPNException {	
+	public void start(Executor executor) throws SimQPNException {	
 		if (statsLevel > 0)	
-			probeStats.start(configuration, clock);					
+			probeStats.start(executor);					
 	}
 	
 	/**
@@ -275,10 +276,10 @@ public class Probe {
 	 * @return
 	 * @exception
 	 */
-	public void report(SimQPNController sim) throws SimQPNException {
+	public void report(SimQPNConfiguration configuration) throws SimQPNException {
 		if (statsLevel > 0) {
-			probeStats.printReport(sim);					
-			probeStats.addReportMetaData(element, sim);
+			probeStats.printReport(configuration);					
+			probeStats.addReportMetaData(element, configuration);
 		}
 	}
 	

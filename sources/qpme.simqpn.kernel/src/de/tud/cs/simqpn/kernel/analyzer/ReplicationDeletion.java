@@ -9,11 +9,13 @@ import org.apache.log4j.Logger;
 import org.dom4j.Element;
 import org.dom4j.XPath;
 
+import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
+import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.loader.XMLHelper;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.stats.AggregateStats;
@@ -25,12 +27,14 @@ public class ReplicationDeletion implements Analyzer{
 	private static Logger log = Logger.getLogger(SimQPNController.class);
 
 	@Override
-	public Stats[] analyze(Element XMLNet, String configuration,
-			SimulatorProgress monitor, SimQPNController sim) throws SimQPNException {
-		AggregateStats[] aggrStats = runMultRepl(XMLNet, configuration, monitor);
-		for (int i = 0; i < aggrStats.length; i++)
-			if (aggrStats[i] != null)
-				aggrStats[i].printReport(sim);
+	public Stats[] analyze(Net net, SimQPNConfiguration configuration,
+			SimulatorProgress monitor) throws SimQPNException {
+		throw (new SimQPNException());
+	}
+	
+	public Stats[] analyze2(Net net, SimQPNConfiguration configuration,
+			SimulatorProgress monitor, Element netXML, String configurationName) throws SimQPNException {
+		AggregateStats[] aggrStats = runMultRepl(net, configuration, monitor, netXML, configurationName);
 		return aggrStats;
 	}
 	
@@ -44,23 +48,23 @@ public class ReplicationDeletion implements Analyzer{
 	 * @return 
 	 * @exception
 	 */
-	private static AggregateStats[] runMultRepl(Element netXML, String configuration, SimulatorProgress monitor) throws SimQPNException {
+	private static AggregateStats[] runMultRepl(Net net, SimQPNConfiguration configuration, SimulatorProgress monitor, Element netXML, String configurationName) throws SimQPNException {
 
-		SimQPNController sim = new SimQPNController(netXML, configuration, null);
-		if (sim.configuration.getNumRuns() <= 1) {
+		//SimQPNController sim = new SimQPNController(netXML, configuration, null);
+		if (configuration.getNumRuns() <= 1) {
 			log.error("numRuns should be > 1!");
 			throw new SimQPNException();
 		}	
 
 		// useStdStateStats configurable only in MULT_REPL mode
-		sim.configuration.useStdStateStats = false;
+		configuration.useStdStateStats = false;
 		//   - automatically set to true in CVRG_EST mode.
 		//   - automatically set to false in NORMAL:REPL_DEL mode. 					
 		
 		progressMonitor = monitor;
 
-		int numPlaces = sim.getNet().getNumPlaces();
-		Place[] places = sim.getNet().getPlaces();
+		int numPlaces = net.getNumPlaces();
+		Place[] places = net.getPlaces();
 		/** OLD: List placeList = sim.net.getPlaceList();*/
 		XPath xpathSelector = XMLHelper.createXPath("//place");
 		List<Element> placeList = xpathSelector.selectNodes(netXML);
@@ -74,10 +78,10 @@ public class ReplicationDeletion implements Analyzer{
 			pl = places[p];
 			if (pl.statsLevel > 0) {
 				if (pl instanceof QPlace) {
-					aggrStats[p * 2] = new AggregateStats(pl.id, pl.name, Stats.QUE_PLACE_QUEUE, pl.numColors, pl.statsLevel, sim);
-					aggrStats[(p * 2) + 1] = new AggregateStats(pl.id, pl.name, Stats.QUE_PLACE_DEP, pl.numColors, pl.statsLevel, sim);
+					aggrStats[p * 2] = new AggregateStats(pl.id, pl.name, Stats.QUE_PLACE_QUEUE, pl.numColors, pl.statsLevel, configuration);
+					aggrStats[(p * 2) + 1] = new AggregateStats(pl.id, pl.name, Stats.QUE_PLACE_DEP, pl.numColors, pl.statsLevel, configuration);
 				} else {
-					aggrStats[p * 2] = new AggregateStats(pl.id, pl.name, Stats.ORD_PLACE, pl.numColors, pl.statsLevel, sim);
+					aggrStats[p * 2] = new AggregateStats(pl.id, pl.name, Stats.ORD_PLACE, pl.numColors, pl.statsLevel, configuration);
 					aggrStats[(p * 2) + 1] = null;
 				}
 			} else {
@@ -114,7 +118,7 @@ public class ReplicationDeletion implements Analyzer{
 				Iterator colorRefIterator = xpathSelector.selectNodes(place).iterator();
 				for (int c = 0; colorRefIterator.hasNext(); c++) {
 					Element colorRef = (Element) colorRefIterator.next();
-					Element element = XMLHelper.getSettings(colorRef, configuration);						
+					Element element = XMLHelper.getSettings(colorRef, configurationName);						
 					if (pl instanceof QPlace) {													
 						if(element == null || element.attributeValue("queueSignLevAvgST") == null) {								
 							log.error(formatDetailMessage(
@@ -156,9 +160,10 @@ public class ReplicationDeletion implements Analyzer{
 		progressMonitor.startSimulation();
 
 		// Run replication loop
-		for (int i = 0; i < sim.configuration.getNumRuns(); i++) {
+		for (int i = 0; i < configuration.getNumRuns(); i++) {
 			progressMonitor.startSimulationRun(i + 1);
-			sim.run();
+			//sim.run();
+			Executor executor = new Executor(net, configuration, monitor);
 			progressMonitor.finishSimulationRun();
 
 			for (int p = 0; p < numPlaces; p++) {
@@ -166,10 +171,10 @@ public class ReplicationDeletion implements Analyzer{
 				if (pl.statsLevel > 0) {
 					if (pl instanceof QPlace) {
 						QPlace qPl = (QPlace) pl;
-						aggrStats[p * 2].saveStats(qPl.qPlaceQueueStats, sim);
-						aggrStats[(p * 2) + 1].saveStats(qPl.placeStats, sim);
+						aggrStats[p * 2].saveStats(qPl.qPlaceQueueStats, executor);
+						aggrStats[(p * 2) + 1].saveStats(qPl.placeStats, executor);
 					} else {
-						aggrStats[p * 2].saveStats(pl.placeStats, sim);
+						aggrStats[p * 2].saveStats(pl.placeStats, executor);
 					}
 				}
 			}
@@ -177,17 +182,21 @@ public class ReplicationDeletion implements Analyzer{
 			if (progressMonitor.isCanceled())
 				break;
 
-			sim = new SimQPNController(netXML, configuration, null);
-			places = sim.getNet().getPlaces();
+			//TODO create coppy of executor an redo
+//OLD			sim = new SimQPNController(netXML, configuration, null);
+//OLD			places = sim.getNet().getPlaces();
 		}
 
 		progressMonitor.finishSimulation();
 
 		for (int i = 0; i < 2 * numPlaces; i++)
 			if (aggrStats[i] != null)
-				aggrStats[i].finish(sim);
+				aggrStats[i].finish(configuration);
 		
 		progressMonitor = null;
+		for (int i = 0; i < aggrStats.length; i++)
+			if (aggrStats[i] != null)
+				aggrStats[i].printReport(configuration);
 
 		return aggrStats;
 	}

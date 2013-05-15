@@ -18,6 +18,8 @@ import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.Probe;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
+import de.tud.cs.simqpn.kernel.stats.AggregateStats;
+import de.tud.cs.simqpn.kernel.stats.Stats;
 import de.tud.cs.simqpn.kernel.util.LogUtil;
 import de.tud.cs.simqpn.kernel.util.LogUtil.ReportLevel;
 
@@ -320,7 +322,7 @@ public class ConfigurationLoader {
 		 */
 
 		// CONFIG: BATCH_MEANS Method Initialization Parameters
-		if (sim.configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS) {
+		if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS) {
 			XPath xpathSelector = XMLHelper.createXPath("//place");
 			List<Element> placeList = xpathSelector.selectNodes(netXML);
 			xpathSelector = XMLHelper.createXPath("//probe");
@@ -1235,7 +1237,7 @@ public class ConfigurationLoader {
 				}
 			}
 		}
-		return sim.configuration;
+		return sim.getConfiguration();
 	}
 
 	public static Element getSettings(Element element, String configurationName) {

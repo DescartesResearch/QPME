@@ -73,6 +73,7 @@ import cern.jet.random.AbstractContinousDistribution;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.SimQPNController;
+import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.stats.QPlaceQueueStats;
 
 /**
@@ -124,8 +125,8 @@ public class QPlace extends Place {
 	 * @param element     - reference to the XML element representing the place
 	 * 
 	 */
-	public QPlace(int id, String name, String[] colors, int numInTrans, int numOutTrans, int numProbes, int statsLevel, int depDiscip, Queue queue, Element element, SimQPNController sim) throws SimQPNException {		
-		super(id, name, colors, numInTrans, numOutTrans, numProbes, statsLevel, depDiscip, element, sim);
+	public QPlace(int id, String name, String[] colors, int numInTrans, int numOutTrans, int numProbes, int statsLevel, int depDiscip, Queue queue, Element element, SimQPNConfiguration configuration) throws SimQPNException {		
+		super(id, name, colors, numInTrans, numOutTrans, numProbes, statsLevel, depDiscip, element, configuration);
 		
 		this.queue						= queue;
 		this.meanServTimes				= new double[numColors];
@@ -138,7 +139,7 @@ public class QPlace extends Place {
 			this.queueTokenPop[c] 		= 0;
 		
 		if (statsLevel > 0) 
-			qPlaceQueueStats = new QPlaceQueueStats(id, name, colors, statsLevel, queue.queueDiscip, queue.numServers, meanServTimes, sim);
+			qPlaceQueueStats = new QPlaceQueueStats(id, name, colors, statsLevel, queue.queueDiscip, queue.numServers, meanServTimes, configuration);
 	}
 	
 	/**
@@ -187,11 +188,11 @@ public class QPlace extends Place {
 	 * @exception
 	 */
 	@Override
-	public void start(SimQPNConfiguration configuration, double clock) throws SimQPNException {	
+	public void start(Executor executor) throws SimQPNException {	
 		if (statsLevel > 0)  {		
 			// Start statistics collection
-			qPlaceQueueStats.start(queueTokenPop, configuration, clock);
-			super.start(configuration, clock);
+			qPlaceQueueStats.start(queueTokenPop, executor);
+			super.start(executor);
 		}					
 	}
 
@@ -223,7 +224,7 @@ public class QPlace extends Place {
 	 * @exception
 	 */
 	@Override
-	public void addTokens(int color, int count, Token[] tokensToBeAdded, SimQPNController sim) throws SimQPNException {	
+	public void addTokens(int color, int count, Token[] tokensToBeAdded, Executor sim) throws SimQPNException {	
 		if (count <= 0) { // DEBUG
 			log.error("Attempted to add nonpositive number of tokens to queue " + name);
 			throw new SimQPNException();
@@ -249,7 +250,7 @@ public class QPlace extends Place {
 	 * @return
 	 * @exception
 	 */
-	public void completeService(Token token, SimQPNController sim) throws SimQPNException {
+	public void completeService(Token token, Executor sim) throws SimQPNException {
 		if (queueTokenPop[token.color] < 1) {
 			log.error("Attempted to remove a token from queue " + name + " which is empty!");
 			throw new SimQPNException();
@@ -259,7 +260,7 @@ public class QPlace extends Place {
 		if (statsLevel > 0)  {
 			qPlaceQueueStats.updateTkPopStats(token.color, queueTokenPop[token.color], -1, sim);
 			if (statsLevel >= 3) 
-				qPlaceQueueStats.updateSojTimeStats(token.color, sim.clock - token.arrivTS, sim.configuration);
+				qPlaceQueueStats.updateSojTimeStats(token.color, sim.getClock() - token.arrivTS, sim);
 		}
 		
 		// Now remove token from queue and update queue state
@@ -276,10 +277,10 @@ public class QPlace extends Place {
 		}
 	}
 		
-	public void report(SimQPNController sim) throws SimQPNException  {		
+	public void report(SimQPNConfiguration configuration) throws SimQPNException  {		
 		if (statsLevel > 0) {
-			qPlaceQueueStats.printReport(sim);
-			super.report(sim);
+			qPlaceQueueStats.printReport(configuration);
+			super.report(configuration);
 			queue.report();
 		}
 	}

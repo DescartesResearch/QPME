@@ -46,6 +46,7 @@ import java.util.Arrays;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.SimQPNException;
+import de.tud.cs.simqpn.kernel.executor.Executor;
 
 /**
  * Calculates the stats for a probe. This class reuses the algorithms for
@@ -68,8 +69,8 @@ public class ProbeStats extends PlaceStats {
 	 * @param statsLevel	- determines the amount of statistics to be gathered during the run
 	 *            
 	 */
-	public ProbeStats(int id, String name, String[] colors, int statsLevel, SimQPNController sim) throws SimQPNException {
-		super(id, name, PROBE, colors, statsLevel, sim);
+	public ProbeStats(int id, String name, String[] colors, int statsLevel, SimQPNConfiguration configuration) throws SimQPNException {
+		super(id, name, PROBE, colors, statsLevel, configuration);
 	}
 
 	/* (non-Javadoc)
@@ -109,10 +110,10 @@ public class ProbeStats extends PlaceStats {
 	 * 
 	 * @exception SimQPNException
 	 */
-	public void start(SimQPNConfiguration configuration, double clock) throws SimQPNException {
+	public void start(Executor executor) throws SimQPNException {
 		int[] tokenPop = new int[colors.length];
 		Arrays.fill(tokenPop, 0);
-		this.start(tokenPop, configuration, clock);
+		this.start(tokenPop, executor);
 	}
 	
 	/**
