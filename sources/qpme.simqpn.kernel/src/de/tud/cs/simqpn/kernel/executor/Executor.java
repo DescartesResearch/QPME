@@ -3,32 +3,31 @@ package de.tud.cs.simqpn.kernel.executor;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
-import javax.security.auth.login.Configuration;
-
 import org.apache.log4j.Logger;
 
 import cern.jet.random.Empirical;
 import cern.jet.random.EmpiricalWalker;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
-import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.Probe;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.Queue;
+import de.tud.cs.simqpn.kernel.entities.Token;
 import de.tud.cs.simqpn.kernel.entities.Transition;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 
 public class Executor {
 
-	private static Logger log = Logger.getLogger(SimQPNController.class);
+	private static Logger log = Logger.getLogger(Executor.class);
 
 	// Check if using double for time is really needed and if overhead is
 	// tolerable. Consider switching to float.
 	private double clock; // Global simulation clock. Time is usually measured
-							// in milliseconds.
+
+	// in milliseconds.
 	public static PriorityQueue<QueueEvent> eventList = // Global simulation
 														// event list. Contains
 														// events scheduled for
@@ -45,7 +44,10 @@ public class Executor {
 										// running.
 
 	private SimQPNConfiguration configuration;
+
 	private SimulatorProgress progressMonitor; // Progress monitoring
+
+
 	private Net net;
 
 	public Executor(Net net, SimQPNConfiguration configuration,
@@ -62,7 +64,7 @@ public class Executor {
 	 * @return
 	 * @exception
 	 */
-	public SimQPNController run() throws SimQPNException {
+	public Net run() throws SimQPNException {
 		// SimonSpinner: TEMP CHANGE
 		// try {
 		// System.in.read();
@@ -147,7 +149,7 @@ public class Executor {
 				for (int p = 0; p < net.getNumPlaces(); p++)
 					net.getPlace(p).start(this);
 				for (int q = 0; q < net.getNumQueues(); q++)
-					net.getQueue(q).start();
+					net.getQueue(q).start(clock);
 				for (int pr = 0; pr < net.getNumProbes(); pr++)
 					net.getProbe(pr).start(this);
 
@@ -237,7 +239,7 @@ public class Executor {
 			for (int q = 0; q < net.getNumQueues(); q++)
 				if (net.getQueue(q).queueDiscip == Queue.PS
 						&& (!net.getQueue(q).eventsUpToDate))
-					net.getQueue(q).updateEvents();
+					net.getQueue(q).updateEvents(this);
 			/*
 			 * Alternative Code for (int p = 0; p < numPlaces; p++) if
 			 * (places[p] instanceof QPlace) { QPlace qpl = (QPlace) places[p];
@@ -277,12 +279,12 @@ public class Executor {
 			if (beforeInitHeartBeat) {
 				long curTimeMsrm = System.currentTimeMillis();
 				if (((curTimeMsrm - lastTimeMsrm) >= SimQPNConfiguration.MAX_INITIAL_HEARTBEAT)
-						|| (SimQPNController.getClock() >= maxProgressInterval)) {
+						|| (clock >= maxProgressInterval)) {
 
-					if (SimQPNController.getClock() >= maxProgressInterval) {
+					if (clock >= maxProgressInterval) {
 						timeBtwHeartBeats = maxProgressInterval;
 					} else {
-						timeBtwHeartBeats = (SimQPNController.getClock() / (curTimeMsrm - lastTimeMsrm))
+						timeBtwHeartBeats = (clock / (curTimeMsrm - lastTimeMsrm))
 								* progressUpdateRate;
 					}
 					beforeInitHeartBeat = false;
@@ -296,13 +298,13 @@ public class Executor {
 					clock = totRunL;
 				}
 			} else {
-				if (SimQPNController.getClock() >= nextHeartBeat) {
+				if (clock >= nextHeartBeat) {
 					long curTimeMsrm = System.currentTimeMillis();
 					progressMonitor
 							.updateSimulationProgress(clock / (totRunL - 1)
 									* 100, (curTimeMsrm - lastTimeMsrm));
 					lastTimeMsrm = curTimeMsrm;
-					nextHeartBeat = SimQPNController.getClock() + timeBtwHeartBeats;
+					nextHeartBeat = clock + timeBtwHeartBeats;
 
 					if (progressMonitor.isCanceled()) {
 						clock = totRunL;
@@ -377,10 +379,10 @@ public class Executor {
 				}
 
 				if (configuration.timeBtwChkStops > 0)
-					nextChkAfter = SimQPNController.getClock()
+					nextChkAfter = clock
 							+ configuration.timeBtwChkStops;
 				else
-					nextChkAfter = SimQPNController.getClock() + clockTimePerSec
+					nextChkAfter = clock + clockTimePerSec
 							* configuration.secondsBtwChkStops;
 			}
 
@@ -432,7 +434,46 @@ public class Executor {
 			for (int pr = 0; pr < net.getNumProbes(); pr++)
 				net.getProbe(pr).finish(this);
 		}
-		return this;
+		return net;
 	} // end of run() method
+	
+	/**
+	 * Method scheduleEvent - schedules an event 
+	 * 
+	 * @param time		- Time at which the event should be processed
+	 * @param queue		- Queue involved
+	 * @param token		- Token that is to completes service 	
+	 * @return 
+	 * @exception
+	 */
+	public static void scheduleEvent(double time, Queue queue, Token token) {
+		QueueEvent ev = new QueueEvent(time, queue, token);
+		eventList.add(ev);
+		queue.nextEvent = ev;
+	}
+
+	public double getClock() {
+		return clock;
+	}
+
+	public void setClock(double clock) {
+		this.clock = clock;
+	}
+
+	public SimQPNConfiguration getConfiguration() {
+		return configuration;
+	}
+
+	public void setConfiguration(SimQPNConfiguration configuration) {
+		this.configuration = configuration;
+	}
+	public SimulatorProgress getProgressMonitor() {
+		return progressMonitor;
+	}
+
+	public void setProgressMonitor(SimulatorProgress progressMonitor) {
+		this.progressMonitor = progressMonitor;
+	}
 
 }
+

@@ -71,6 +71,7 @@ import cern.jet.random.AbstractContinousDistribution;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.SimQPNController;
+import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.stats.QPlaceQueueStats;
 
 /**
@@ -185,7 +186,7 @@ public class QPlace extends Place {
 	 * @exception
 	 */
 	@Override
-	public void start(SimQPNController sim) throws SimQPNException {	
+	public void start(Executor sim) throws SimQPNException {	
 		if (statsLevel > 0)  {		
 			// Start statistics collection
 			qPlaceQueueStats.start(queueTokenPop, sim);
@@ -202,7 +203,7 @@ public class QPlace extends Place {
 	 * @exception
 	 */
 	@Override
-	public void finish(SimQPNController sim) throws SimQPNException {
+	public void finish(Executor sim) throws SimQPNException {
 		if (statsLevel > 0)  {
 			// Complete statistics collection
 			qPlaceQueueStats.finish(queueTokenPop, sim);								
@@ -221,7 +222,7 @@ public class QPlace extends Place {
 	 * @exception
 	 */
 	@Override
-	public void addTokens(int color, int count, Token[] tokensToBeAdded, SimQPNController sim) throws SimQPNException {	
+	public void addTokens(int color, int count, Token[] tokensToBeAdded, Executor sim) throws SimQPNException {	
 		if (count <= 0) { // DEBUG
 			log.error("Attempted to add nonpositive number of tokens to queue " + name);
 			throw new SimQPNException();
@@ -247,7 +248,7 @@ public class QPlace extends Place {
 	 * @return
 	 * @exception
 	 */
-	public void completeService(Token token, SimQPNController sim) throws SimQPNException {
+	public void completeService(Token token, Executor sim) throws SimQPNException {
 		if (queueTokenPop[token.color] < 1) {
 			log.error("Attempted to remove a token from queue " + name + " which is empty!");
 			throw new SimQPNException();
@@ -277,7 +278,7 @@ public class QPlace extends Place {
 	public void report(SimQPNController sim) throws SimQPNException  {		
 		if (statsLevel > 0) {
 			qPlaceQueueStats.printReport(sim);
-			super.report(sim);
+			super.report(sim.getConfiguration());
 			queue.report();
 		}
 	}

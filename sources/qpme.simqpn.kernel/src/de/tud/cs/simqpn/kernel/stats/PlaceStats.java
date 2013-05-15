@@ -75,6 +75,7 @@ import cern.jet.stat.Probability;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.SimQPNController;
+import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.util.LogUtil.ReportLevel;
 
 /**
@@ -284,7 +285,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 * @return
 	 * @exception
 	 */
-	public void init(int[] tokenPop, SimQPNController sim) throws SimQPNException {
+	public void init(int[] tokenPop, Executor executor) throws SimQPNException {
 		// statsLevel >= 1
 		for (int c = 0; c < numColors; c++)  {
 			arrivCnt[c]					= 0; //TODO: Should we instead set arrivCnt to tokenPop[c] here? Currently, we could have deptCnt > arrivCnt if there are tokens in the place in the initial marking.
@@ -297,11 +298,11 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 				areaTkPop[c] 			= 0;
 				areaTkColOcp[c] 		= 0;
 				lastTotTkPop			+= tokenPop[c];
-				lastColTkPopClock[c]	= sim.getClock();
+				lastColTkPopClock[c]	= executor.getClock();
 				minTkPop[c] 			= tokenPop[c];
 				maxTkPop[c] 			= tokenPop[c];
 			}
-			lastTkPopClock				= sim.getClock();			
+			lastTkPopClock				= executor.getClock();			
 		}
 		if (statsLevel >= 3)
 			for (int c = 0; c < numColors; c++) {
@@ -310,7 +311,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 				sumST[c] 				= 0;
 				sumSqST[c] 				= 0;
 				numST[c] 				= 0;
-				if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS
+				if (executor.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS
 						&& minBatches[c] > 0) {
 					sumBatchST[c] 		= 0;
 					sumBMeansST[c] 		= 0;
@@ -354,10 +355,10 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 * @return
 	 * @exception
 	 */
-	public void start(int[] tokenPop, SimQPNController sim) throws SimQPNException {		
-		init(tokenPop, sim);
+	public void start(int[] tokenPop, Executor executor) throws SimQPNException {		
+		init(tokenPop, executor);
 		inRampUp = false;
-		endRampUpClock = sim.getClock();
+		endRampUpClock = executor.getClock();
 	}
 
 	/**
@@ -370,19 +371,19 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 * @return
 	 * @exception
 	 */
-	public void finish(int[] tokenPop, SimQPNController sim) throws SimQPNException  {
+	public void finish(int[] tokenPop, Executor executor) throws SimQPNException  {
 		if (statsLevel >= 2)  //NOTE: This makes sure areaTkPop, areaTkColOcp and areaTkOcp (and areaQueUtilQPl for QPlaceQueueStats) are complete!
 			for (int c = 0; c < numColors; c++)
-				updateTkPopStats(c, tokenPop[c], 0, sim.getClock());
-		endRunClock = sim.getClock();
+				updateTkPopStats(c, tokenPop[c], 0, executor.getClock());
+		endRunClock = executor.getClock();
 		msrmPrdLen = endRunClock - endRampUpClock;		
-		runWallClockTime = sim.getConfiguration().runWallClockTime;
+		runWallClockTime = executor.getConfiguration().runWallClockTime;
 
 		if (statsLevel >= 5)
 			for (int c = 0; c < numColors; c++)
 				fileST[c].close();
 
-		processStats(sim);
+		processStats(executor);
 	}
 
 	
@@ -426,8 +427,8 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 * @param color   -  token color
 	 * @param sojTime -  sojourn time of token in place
 	 */
-	public void updateSojTimeStats(int color, double sojTime, SimQPNController sim) throws SimQPNException {
-		if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.WELCH) {
+	public void updateSojTimeStats(int color, double sojTime, Executor executor) throws SimQPNException {
+		if (executor.getConfiguration().getAnalMethod() == SimQPNConfiguration.WELCH) {
 			if (maxObsrvST[color] <= 0) return;		// Do not consider colors with nonpositive maxObsrvST
 			int numObsrv = obsrvST[color].size();
 			if (numObsrv == maxObsrvST[color]) return;
@@ -456,7 +457,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 		sumSqST[color]	+= sojTime * sojTime;
 		numST[color]++;
 
-		if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS
+		if (executor.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS
 				&& minBatches[color] > 0) {
 			sumBatchST[color] += sojTime;
 			if (numST[color] % batchSizeST[color] == 0) {
@@ -685,10 +686,10 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 *                      with the required precision. Applicable only for statLevel >= 3 in 
 	 *                      modes ABSPRC and RELPRC.  
 	 */
-	public boolean enoughStats(SimQPNController sim) throws SimQPNException {
+	public boolean enoughStats(Executor executor) throws SimQPNException {
 		if (statsLevel < 3) return true;
 
-		if (sim.getConfiguration().getAnalMethod() != SimQPNConfiguration.BATCH_MEANS) {
+		if (executor.getConfiguration().getAnalMethod() != SimQPNConfiguration.BATCH_MEANS) {
 			log.error(formatMultilineMessage(
 					"PlaceStats.enoughStats should only be called when BATCH_MEANS method is used!",
 					"Please check your configuration parameters"
@@ -718,7 +719,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			}
 			varStdStateMeanST = Descriptive.sampleVariance(numBatchesST[c], sumBMeansST[c], sumBMeansSqST[c]);
 			ciHalfLenST = Probability.studentTInverse(signLevST[c], numBatchesST[c] - 1) * Math.sqrt(varStdStateMeanST / numBatchesST[c]);
-			if ((sim.getConfiguration().stoppingRule == SimQPNConfiguration.ABSPRC) && (ciHalfLenST > reqAbsPrc[c])) {
+			if ((executor.getConfiguration().stoppingRule == SimQPNConfiguration.ABSPRC) && (ciHalfLenST > reqAbsPrc[c])) {
 				if (log.isTraceEnabled()) {
 					log.trace(formatMultilineMessage(
 							"Checking for enough stats in " + getTypeDescription() + " " + name,
@@ -727,7 +728,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 				}
 				passed = false;
 				break;
-			} else if (sim.getConfiguration().stoppingRule == SimQPNConfiguration.RELPRC) {
+			} else if (executor.getConfiguration().stoppingRule == SimQPNConfiguration.RELPRC) {
 				stdStateMeanST = sumBMeansST[c] / numBatchesST[c];
 				if (this instanceof QPlaceQueueStats) {
 					QPlaceQueueStats qSt = (QPlaceQueueStats) this;
@@ -766,7 +767,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 * Method processStats - processes gathered statistics (summarizes data)
 	 * 
 	 */
-	public void processStats(SimQPNController sim) throws SimQPNException {
+	public void processStats(Executor executor) throws SimQPNException {
 		stdStateStatsAv = true;
 		
 		if (statsLevel >= 2)
@@ -783,7 +784,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 				meanST[c] = sumST[c] / numST[c];
 				stDevST[c] = Math.sqrt(Descriptive.sampleVariance(numST[c],
 						sumST[c], sumSqST[c]));
-				if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && minBatches[c] > 0) {
+				if (executor.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && minBatches[c] > 0) {
 					// Steady State Statistics
 					if (numBatchesST[c] >= minBatches[c]) {
 						stdStateMeanST[c] = sumBMeansST[c] / numBatchesST[c];
@@ -809,7 +810,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 * Method printReport - prints a summary of the computed statistics
 	 * 
 	 */
-	public void printReport(SimQPNController sim) throws SimQPNException {
+	public void printReport(SimQPNConfiguration configuration) throws SimQPNException {
 
 		if (!completed) {
 			log.error("PlaceStats " + name + ": Attempting to access statistics before data collection has finished!");
@@ -830,7 +831,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			
 			printColorPopulationStats(report, c);
 			
-			printColorSojournTimeStats(report, c, sim);
+			printColorSojournTimeStats(report, c, configuration);
 		}
 		
 		report.append("\n\n");
@@ -844,13 +845,13 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 * @param report 
 	 * @param c color index
 	 */
-	protected void printColorSojournTimeStats(StringBuilder report, int c, SimQPNController sim) {
+	protected void printColorSojournTimeStats(StringBuilder report, int c, SimQPNConfiguration configuration) {
 		if (statsLevel >= 3) {
 			report.append("-----\n");
 			// Simulator.logln("numST=" + numST[c] + " minST=" + minST[c] + " maxST=" + maxST[c]);
 			report.append("meanST=").append(meanST[c]);
 			report.append(" stDevST=").append(stDevST[c]).append("\n");				
-			if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && minBatches[c] > 0) {
+			if (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && minBatches[c] > 0) {
 				report.append("\n");
 				report.append("Steady State Statistics: ");
 				if (numBatchesST[c] >= minBatches[c]) {
@@ -925,7 +926,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	}
 
 	/* ADDED BY CDUTZ */
-	public void addReportMetaData(Element element, SimQPNController sim) {
+	public void addReportMetaData(Element element, SimQPNConfiguration configuration) {
 		// Iterate through all color-refs and set the result-data for each one.
 		Iterator colorRefIterator = element
 				.elementIterator("color-refs/color-ref");
@@ -963,7 +964,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 							.toString(meanST[c]));
 					metaAttribute.addAttribute("stDevST", Double
 							.toString(stDevST[c]));
-					if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS
+					if (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS
 							&& minBatches[c] > 0) {
 						if (numBatchesST[c] >= minBatches[c]) {
 							metaAttribute.addAttribute("numBatchesST", Double

@@ -18,6 +18,8 @@ import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.Probe;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
+import de.tud.cs.simqpn.kernel.stats.AggregateStats;
+import de.tud.cs.simqpn.kernel.stats.Stats;
 import de.tud.cs.simqpn.kernel.util.LogUtil;
 import de.tud.cs.simqpn.kernel.util.LogUtil.ReportLevel;
 

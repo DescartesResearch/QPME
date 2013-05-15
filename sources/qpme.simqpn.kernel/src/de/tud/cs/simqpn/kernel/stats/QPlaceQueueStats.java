@@ -68,6 +68,7 @@ import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.entities.Queue;
+import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.util.LogUtil.ReportLevel;
 
 /**
@@ -177,7 +178,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	 * @return
 	 * @exception
 	 */
-	public void init(int[] tokenPop, SimQPNController sim) throws SimQPNException {
+	public void init(int[] tokenPop, Executor sim) throws SimQPNException {
 		super.init(tokenPop, sim);
 		
 		if (statsLevel >= 2)  			
@@ -196,7 +197,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	 * @param oldTkPop	- old token population
 	 * @param delta		- difference between new and old token population
 	 */
-	public void updateTkPopStats(int color, int oldTkPop, int delta, SimQPNController sim)  {
+	public void updateTkPopStats(int color, int oldTkPop, int delta, Executor sim)  {
 		if (inRampUp) return;						
 		if (statsLevel >= 2)  {						
 			double elapsedTime = sim.getClock() - lastTkPopClock;
@@ -218,7 +219,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	 * @param color		- token color
 	 * @param sojTime	- sojourn time of token in queue	 
 	 */
-	public void updateSojTimeStats(int color, double sojTime, SimQPNController sim) throws SimQPNException {
+	public void updateSojTimeStats(int color, double sojTime, Executor sim) throws SimQPNException {
 		if (indrStats || (inRampUp && sim.getConfiguration().getAnalMethod() != SimQPNConfiguration.WELCH)) return;
 		super.updateSojTimeStats(color, sojTime, sim);
 	}
@@ -230,7 +231,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	 * @param delayTime	- delay time of token in waiting area of the queue
 	 * 	 
 	 */
-	public void updateDelayTimeStats(int color, double delayTime, SimQPNController sim) throws SimQPNException {				
+	public void updateDelayTimeStats(int color, double delayTime, Executor sim) throws SimQPNException {				
 		if ((!indrStats) || (inRampUp && sim.getConfiguration().getAnalMethod() != SimQPNConfiguration.WELCH)) return;
 		super.updateSojTimeStats(color, delayTime, sim);		
 	}	
@@ -239,7 +240,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	 * Method processStats - processes gathered statistics (summarizes data)
 	 *                        	 
 	 */	
-	public void processStats(SimQPNController sim) throws SimQPNException {		
+	public void processStats(Executor sim) throws SimQPNException {		
 		super.processStats(sim);
 		if (statsLevel >= 2)
 			queueUtilQPl = areaQueUtilQPl / msrmPrdLen;		

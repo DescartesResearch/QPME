@@ -58,6 +58,7 @@ import cern.jet.random.Empirical;
 import cern.jet.random.EmpiricalWalker;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.SimQPNController;
+import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 
 /**
@@ -317,7 +318,7 @@ public class Transition extends Node {
 	 * @return
 	 * @exception
 	 */
-	public void fire(SimQPNController sim) throws SimQPNException {
+	public void fire(Executor executor) throws SimQPNException {
 
 		int nM = numModes;
 		// Choose mode to fire based on weights
@@ -357,7 +358,7 @@ public class Transition extends Node {
 				n = inFunc[mode][p][c];
 				if (n != 0) {
 					if (n > maxN) maxN = n;
-					Token[] tokens = pl.removeTokens(c, n, tkCopyBuffer, sim);
+					Token[] tokens = pl.removeTokens(c, n, tkCopyBuffer, executor);
 					prC = pl.probeInstrumentations[c].length;
 					
 					if(prC > 0) {
@@ -377,7 +378,7 @@ public class Transition extends Node {
 										ProbeTimestamp curStamp = tokens[i].probeData[pr];
 										if (curStamp == null) continue;
 										
-										probe.probeStats.updateSojTimeStats(c, sim.getClock() - curStamp.timestamp, sim);
+										probe.probeStats.updateSojTimeStats(c, executor.getClock() - curStamp.timestamp, executor);
 									}
 								}
 								break;
@@ -385,7 +386,7 @@ public class Transition extends Node {
 							case Place.PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY:
 								if (data == null) {
 									// There is no timestamp so far for the current probe, so create it.
-									data = new ProbeTimestamp(probeIdx, sim.getClock());
+									data = new ProbeTimestamp(probeIdx, executor.getClock());
 								}
 								break;
 							default:
@@ -455,12 +456,12 @@ public class Transition extends Node {
 							case Place.PROBE_ACTION_START_ON_ENTRY:
 							case Place.PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT:
 								if (timestamp == null) {
-									outData[pr] = new ProbeTimestamp(probeIdx, sim.getClock());
+									outData[pr] = new ProbeTimestamp(probeIdx, executor.getClock());
 								}
 								break;
 							case Place.PROBE_ACTION_END_ON_ENTRY:
 							case Place.PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY:
-								probe.probeStats.updateSojTimeStats(c, sim.getClock() - timestamp.timestamp, sim);
+								probe.probeStats.updateSojTimeStats(c, executor.getClock() - timestamp.timestamp, executor);
 								break;
 							default:
 								outData[pr] = timestamp;
@@ -471,9 +472,9 @@ public class Transition extends Node {
 						for (int i = 0; i < n; i++) {
 							tkCopyBuffer[i] = new Token(pl, c, outData);
 						}
-						pl.addTokens(c, n, tkCopyBuffer, sim); // Note: the contents of tkCopyBuffer are all set to null.
+						pl.addTokens(c, n, tkCopyBuffer, executor); // Note: the contents of tkCopyBuffer are all set to null.
 					} else {
-						pl.addTokens(c, n, null, sim);
+						pl.addTokens(c, n, null, executor);
 					}
 				}
 			}

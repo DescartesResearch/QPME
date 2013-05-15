@@ -60,6 +60,7 @@ import cern.jet.random.Exponential;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.SimQPNController;
+import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.executor.QueueEvent;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.stats.QueueStats;
@@ -231,9 +232,9 @@ public class Queue {
 	 * @return
 	 * @exception
 	 */
-	public void finish(SimQPNController sim) throws SimQPNException { 
+	public void finish(Executor executor) throws SimQPNException { 
 		if (statsLevel > 0)	
-			queueStats.finish(sim);					
+			queueStats.finish(executor);					
 	}
 	
 	/**
@@ -256,7 +257,7 @@ public class Queue {
 	 * @return
 	 * @exception
 	 */
-	public void updateEvents(SimQPNController sim) throws SimQPNException {
+	public void updateEvents(Executor sim) throws SimQPNException {
 		if (eventsUpToDate) return;
 
 		int totQueTokCnt = 0;
@@ -297,9 +298,9 @@ public class Queue {
 					for (int c=0; c < nC; c++, i++)  {
 						if (i == color) {
 							if (qPlaces[p].queueTokens[c] != null) {
-								SimQPNController.scheduleEvent(sim.getClock() + servTime, this, (Token) qPlaces[p].queueTokens[c].get(0));
+								Executor.scheduleEvent(sim.getClock() + servTime, this, (Token) qPlaces[p].queueTokens[c].get(0));
 							} else {
-								SimQPNController.scheduleEvent(sim.getClock() + servTime, this, new Token(qPlaces[p], c));
+								Executor.scheduleEvent(sim.getClock() + servTime, this, new Token(qPlaces[p], c));
 							}
 							done = true;
 							break;
@@ -335,9 +336,9 @@ public class Queue {
 				if (numServers > 1 && totQueTokCnt > 1)   // "-/G/n-PS" queues 					
 					servTime /= ((totQueTokCnt <= numServers) ? totQueTokCnt : numServers);
 				if (qPlaces[tkSchedPl].queueTokens[tkSchedCol] != null) {
-					SimQPNController.scheduleEvent(sim.getClock() + servTime, this, (Token) qPlaces[tkSchedPl].queueTokens[tkSchedCol].get(tkSchedPos));
+					Executor.scheduleEvent(sim.getClock() + servTime, this, (Token) qPlaces[tkSchedPl].queueTokens[tkSchedCol].get(tkSchedPos));
 				} else {
-					SimQPNController.scheduleEvent(sim.getClock() + servTime, this, new Token(qPlaces[tkSchedPl], tkSchedCol));
+					Executor.scheduleEvent(sim.getClock() + servTime, this, new Token(qPlaces[tkSchedPl], tkSchedCol));
 				}
 				lastEventClock = sim.getClock();	
 				lastEventTkCnt = totQueTokCnt;
@@ -364,7 +365,7 @@ public class Queue {
 		 * 
 		 * On old JVMs that do not have the above bug fixed, if two events have the exact same time, the wrong one might be removed!   
 		 */
-		if (!SimQPNController.eventList.remove(nextEvent))  {		
+		if (!Executor.eventList.remove(nextEvent))  {		
 			log.error("Failed to remove scheduled event from event list!");
 			throw new SimQPNException();
 		}			
@@ -428,7 +429,7 @@ public class Queue {
 	 * @exception
 	 */
 	@SuppressWarnings("unchecked")
-	public void addTokens(QPlace qPl, int color, int count, Token[] tokensToBeAdded, SimQPNController sim) throws SimQPNException {	
+	public void addTokens(QPlace qPl, int color, int count, Token[] tokensToBeAdded, Executor executor) throws SimQPNException {	
 		
 		tkPopulation += count;
 		
@@ -441,7 +442,7 @@ public class Queue {
 		if (tkPopulation > maxEpochPopulation) maxEpochPopulation = tkPopulation;
 		epochMsrmCnt++;
 		
-		if (sim.getClock() <= 1.0) {
+		if (executor.getClock() <= 1.0) {
 			// Skip overflow detection at the beginning of the simulation.
 			// No representative results can be determined during startup.
 			cntConsRisingEpoch = 0;
@@ -480,7 +481,7 @@ public class Queue {
 					|| ((cntConsRisingEpoch > SimQPNConfiguration.OVERFLOW_DET_MAX_CONS_RISING_EPOCHS) 
 							&& (totalMaxPopulation > 2 * maxPopulationAtRisingStart))) {
 						if (!deactivateWarning) {
-							SimQPNController.getProgressMonitor().warning("Queue \"" + name + "\" is exceedingly growing. An overflow might occur.");
+							executor.getProgressMonitor().warning("Queue \"" + name + "\" is exceedingly growing. An overflow might occur.");
 							deactivateWarning = true;
 						}
 						cntConsRisingEpoch = 0;
@@ -490,7 +491,7 @@ public class Queue {
 		}
 		
 		if (statsLevel >= 2) // NOTE: For statsLevel=1, we don't need to do anything since throughput data is calculated as sum of the throughputs of all QPlaces the Queue is part of.
-			queueStats.updateTotTkPopStats(count, sim.getClock());	 
+			queueStats.updateTotTkPopStats(count, executor.getClock());	 
 		
 		if (queueDiscip == IS) {
 			// Schedule service completion events						
@@ -498,8 +499,8 @@ public class Queue {
 				double servTime = qPl.randServTimeGen[color].nextDouble();	
 				if (servTime < 0) servTime = 0;
 				Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[i] : new Token(qPl, color);
-				tk.arrivTS = sim.getClock();
-				SimQPNController.scheduleEvent(sim.getClock() + servTime, this, tk);								
+				tk.arrivTS = executor.getClock();
+				Executor.scheduleEvent(executor.getClock() + servTime, this, tk);								
 			}								 								
 		}
 		else if (queueDiscip == FCFS) {
@@ -509,24 +510,24 @@ public class Queue {
 				double servTime = qPl.randServTimeGen[color].nextDouble();
 				if (servTime < 0) servTime = 0;
 				Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[n] : new Token(qPl, color);
-				tk.arrivTS = sim.getClock();
-				SimQPNController.scheduleEvent(sim.getClock() + servTime, this, tk);
+				tk.arrivTS = executor.getClock();
+				Executor.scheduleEvent(executor.getClock() + servTime, this, tk);
 				numBusyServers++; n++;
 				// Update Stats
 				if (qPl.statsLevel >= 3)   
-					qPl.qPlaceQueueStats.updateDelayTimeStats(color, 0, sim);																 
+					qPl.qPlaceQueueStats.updateDelayTimeStats(color, 0, executor);																 
 			}						
 			while (n < count) {
 				//  Place the rest of the tokens in the waitingLine
 				Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[n] : new Token(qPl, color);
-				tk.arrivTS = sim.getClock();
+				tk.arrivTS = executor.getClock();
 				waitingLine.addLast(tk);				
 				n++;					
 			}						
 		}
 		else if (queueDiscip == PS) {
 			if (!expPS) {
-				if (eventScheduled)	updateResidServTimes(sim.getClock());	//NOTE: WATCH OUT! Method should be called before the new tokens have been added to queueTokResidServTimes!  
+				if (eventScheduled)	updateResidServTimes(executor.getClock());	//NOTE: WATCH OUT! Method should be called before the new tokens have been added to queueTokResidServTimes!  
 				for (int i = 0; i < count; i++)  {
 					double servTime = qPl.randServTimeGen[color].nextDouble();
 					if (servTime < 0) servTime = 0;
@@ -537,7 +538,7 @@ public class Queue {
 				// if we get tokens from caller or we have to measure the sojourn times, store the individual tokens.
 				for (int i = 0; i < count; i++) {
 					Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[i] : new Token(qPl, color);
-					tk.arrivTS = sim.getClock();
+					tk.arrivTS = executor.getClock();
 					qPl.queueTokens[color].add(tk);
 				}
 			}
@@ -557,7 +558,7 @@ public class Queue {
 	 * @return
 	 * @exception
 	 */
-	public void completeService(Token token, SimQPNController sim) throws SimQPNException {
+	public void completeService(Token token, Executor sim) throws SimQPNException {
 		
 		tkPopulation--;
 
@@ -573,7 +574,7 @@ public class Queue {
 				QPlace qPl = (QPlace) tk.place;				
 				double servTime = qPl.randServTimeGen[tk.color].nextDouble();	
 				if (servTime < 0) servTime = 0;
-				SimQPNController.scheduleEvent(sim.getClock() + servTime, this, tk);
+				Executor.scheduleEvent(sim.getClock() + servTime, this, tk);
 				// Update stats				
 				if (qPl.statsLevel >= 3)
 					qPl.qPlaceQueueStats.updateDelayTimeStats(tk.color, sim.getClock() - tk.arrivTS, sim);				

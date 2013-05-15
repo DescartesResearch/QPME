@@ -61,6 +61,7 @@ import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.SimQPNController;
+import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.util.LogUtil.ReportLevel;
 
 /**
@@ -316,7 +317,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 	 * 
 	 */
 	@SuppressWarnings("unchecked")
-	public void saveStats(PlaceStats stats, SimQPNController sim) throws SimQPNException {		
+	public void saveStats(PlaceStats stats, Executor sim) throws SimQPNException {		
 		if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.WELCH)  {			
 			if (statsLevel < 3) return;			
 			for (int c = 0; c < numColors; c++)  {				
@@ -466,7 +467,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 	 * 
 	 * Used only in mode CVRG_EST.
 	 */
-	public boolean enoughBadCIs(SimQPNController sim) {				
+	public boolean enoughBadCIs(Executor executor) {				
 		if (enghBadCIs) return true;
 		
 		enghBadCIs = true;		
@@ -486,7 +487,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 			sumRunLen = 0; sumSqRunLen = 0;	
 			for (int c = 0; c < numColors; c++) numCvrgs[c] = 0;									 									
 			for (int i=0; i < replStats.size(); i++)  {
-				addStats((PlaceStats) replStats.get(i), sim);
+				addStats((PlaceStats) replStats.get(i), executor);
 			}
 			// Discard replStats to free memory
 			replStats.clear();
@@ -501,7 +502,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 	 * Should be called only for successful runs to be considered in the analysis
 	 * 
 	 */
-	public void addStats(PlaceStats stats, SimQPNController sim)  {
+	public void addStats(PlaceStats stats, Executor sim)  {
 		/* redundant since this is checked in saveStats
 		// Make sure the run was long enough
 		if (Simulator.useStdStateStats && (!stats.stdStateStatsAv)) {
@@ -579,11 +580,11 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 	 * Method finish - completes the data collection process
 	 *                    	 
 	 */
-	public void finish(SimQPNController sim) throws SimQPNException {
+	public void finish(SimQPNConfiguration configuration) throws SimQPNException {
 		if (statsLevel >= 5) 		
 			for (int c = 0; c < numColors; c++)
 				fileST[c].close();				
-		processStats(sim);
+		processStats(configuration);
 	}
 
 	/**
@@ -639,11 +640,11 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 	 * Method processStats - processes gathered statistics (summarizes data)
 	 *                        	 
 	 */	
-	public void processStats(SimQPNController sim) throws SimQPNException {
+	public void processStats(SimQPNConfiguration configuration) throws SimQPNException {
 		
 		if (numRepls < 1) return;
 		
-		if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.WELCH)  {			
+		if (configuration.getAnalMethod() == SimQPNConfiguration.WELCH)  {			
 			if (statsLevel < 3) return;			
 			for (int c = 0; c < numColors; c++)  {
 				if (sumKthObsrvST[c] == null) return; // color with maxObsrvST[c] <= 0 				
@@ -694,7 +695,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 				stDevAvgST[c]		= Math.sqrt(varAvgST[c]);
 				ciHalfLenAvgST[c]	= Probability.studentTInverse(signLevAvgST[c], numAvgST[c] - 1) * Math.sqrt(varAvgST[c] / numAvgST[c]); 
 				confLevelAvgST[c]	= (int) (100 * (1 - signLevAvgST[c]));				
-				if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && sim.getConfiguration().useStdStateStats)  {  								
+				if (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && configuration.useStdStateStats)  {  								
 					avgBatchSizeST[c]	= sumBatchSizesST[c] / numRepls;					
 					avgNumBatchesST[c]	= sumNumBatchesST[c] / numRepls;					 
 				}																					
@@ -712,7 +713,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 	 * Method printReport - prints a summary of the computed statistics
 	 *                    	 
 	 */
-	public void printReport(SimQPNController sim) throws SimQPNException {
+	public void printReport(SimQPNConfiguration configuration) throws SimQPNException {
 		//...
 		if (!completed) {
 			log.error("AggregateStats " + name + ": Attempting to access statistics before data collection has finished!");
@@ -758,12 +759,12 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 			}
 			if (statsLevel >= 3) {												
 				report.append("-----\n");
-				if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && sim.getConfiguration().useStdStateStats)					
+				if (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && configuration.useStdStateStats)					
 					report.append("avgBatchSizeST[c]=").append(avgBatchSizeST[c]).append(" avgNumBatchesST[c]=").append(avgNumBatchesST[c]).append("\n");				
 				report.append("meanAvgST[c]=").append(meanAvgST[c]).append(" stDevAvgST[c]=").append(stDevAvgST[c]).append("\n");					
 				report.append("\n");																																							
 				report.append(confLevelAvgST[c]).append("% c.i. = ").append(meanAvgST[c]).append(" +/- ").append(ciHalfLenAvgST[c]).append("\n");			
-				if (sim.getConfiguration().runMode == SimQPNConfiguration.CVRG_EST && trueAvgST[c] >= 0) {					
+				if (configuration.runMode == SimQPNConfiguration.CVRG_EST && trueAvgST[c] >= 0) {					
 					report.append("trueAvgST[c]=").append(trueAvgST[c]).append(" estCvrg[c]=").append(estCvrg[c]).append("\n");					
 					int confLevelCvrg	= (int) (100 * (1 - signLevCvrg));					
 					report.append(confLevelCvrg).append("% c.i. (from F-distr.) = [").append(trCvrgLowerLimit[c]).append(", ").append(trCvrgUpperLimit[c]).append("]\n");

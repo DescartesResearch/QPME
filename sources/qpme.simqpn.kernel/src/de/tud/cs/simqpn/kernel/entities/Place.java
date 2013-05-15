@@ -65,6 +65,7 @@ import org.dom4j.Element;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.SimQPNController;
+import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.stats.PlaceStats;
 import de.tud.cs.simqpn.kernel.stats.Stats;
  
@@ -256,9 +257,9 @@ public class Place extends Node {
 	 * @return
 	 * @exception
 	 */
-	public void start(SimQPNController sim) throws SimQPNException {	
+	public void start(Executor executor) throws SimQPNException {	
 		if (statsLevel > 0)	
-			placeStats.start(tokenPop, sim);					
+			placeStats.start(tokenPop, executor);					
 	}
 	
 	/**
@@ -269,10 +270,10 @@ public class Place extends Node {
 	 * @return
 	 * @exception
 	 */
-	public void finish(SimQPNController sim) throws SimQPNException {
+	public void finish(Executor executor) throws SimQPNException {
 		// Complete statistics collection
 		if (statsLevel > 0)	
-			placeStats.finish(tokenPop, sim);					
+			placeStats.finish(tokenPop, executor);					
 	}
 
 	/**
@@ -282,11 +283,11 @@ public class Place extends Node {
 	 * @return
 	 * @exception
 	 */
-	public void report(SimQPNController sim) throws SimQPNException {
+	public void report(SimQPNConfiguration configuration) throws SimQPNException {
 		if (statsLevel > 0) {
-			placeStats.printReport(sim);					
+			placeStats.printReport(configuration);					
 			/* cdutz */ 
-			placeStats.addReportMetaData(element, sim);
+			placeStats.addReportMetaData(element, configuration);
 		}
 	}
 
@@ -301,7 +302,7 @@ public class Place extends Node {
 	 * @exception
 	 */
 	@SuppressWarnings("unchecked")
-	public void addTokens(int color, int count, Token[] tokensToBeAdded, SimQPNController sim) throws SimQPNException {
+	public void addTokens(int color, int count, Token[] tokensToBeAdded, Executor executor) throws SimQPNException {
 		if (count <= 0) { // DEBUG
 			log.error("Attempted to add nonpositive number of tokens to place " + name);
 			throw new SimQPNException();
@@ -309,10 +310,10 @@ public class Place extends Node {
 				
 		// Update Stats		
 		if (statsLevel > 0) {
-			placeStats.updateTkPopStats(color, tokenPop[color], count, sim.getClock());						
+			placeStats.updateTkPopStats(color, tokenPop[color], count, executor.getClock());						
 			if (statsLevel >= 3) {
 				for (int i = 0; i < count; i++) 
-					tokArrivTS[color].addLast(new Double(sim.getClock()));
+					tokArrivTS[color].addLast(new Double(executor.getClock()));
 			}
 		}
 		// Now add tokens and update affected transitions
@@ -362,7 +363,7 @@ public class Place extends Node {
 	 * @return removed tokens (if tracking is enabled)
 	 * @exception
 	 */
-	public Token[] removeTokens(int color, int count, Token[] returnBuffer, SimQPNController sim) throws SimQPNException {
+	public Token[] removeTokens(int color, int count, Token[] returnBuffer, Executor executor) throws SimQPNException {
 		/* //DEBUG
 		if (count <= 0) { 
 			Simulator.logln("Error: Attempted to remove nonpositive number of tokens from place " + name);
@@ -374,12 +375,12 @@ public class Place extends Node {
 		}*/						
 		// Update Stats
 		if (statsLevel > 0) {
-			placeStats.updateTkPopStats(color, tokenPop[color], (-1)*count, sim.getClock());				
+			placeStats.updateTkPopStats(color, tokenPop[color], (-1)*count, executor.getClock());				
 			if (statsLevel >= 3) {
 				Double arrivTS;
 				for (int i = 0; i < count; i++) {
 					arrivTS = (Double) tokArrivTS[color].removeFirst();
-					placeStats.updateSojTimeStats(color, sim.getClock() - arrivTS.doubleValue(), sim);
+					placeStats.updateSojTimeStats(color, executor.getClock() - arrivTS.doubleValue(), executor);
 				}
 			}				
 		}

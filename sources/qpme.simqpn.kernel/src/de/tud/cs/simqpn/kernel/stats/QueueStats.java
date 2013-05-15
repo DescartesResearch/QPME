@@ -47,6 +47,7 @@ import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.entities.Queue;
+import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.util.LogUtil.ReportLevel;
 
 /**
@@ -154,12 +155,12 @@ public class QueueStats extends Stats implements java.io.Serializable {
 	 * @return
 	 * @exception
 	 */
-	public void finish(SimQPNController sim) throws SimQPNException  {		
+	public void finish(Executor executor) throws SimQPNException  {		
 		if (statsLevel >= 2) //NOTE: This makes sure areaQueUtil is complete!
-			updateTotTkPopStats(0, sim.getClock());
-		endRunClock = sim.getClock();
+			updateTotTkPopStats(0, executor.getClock());
+		endRunClock = executor.getClock();
 		msrmPrdLen = endRunClock - endRampUpClock;		
-		runWallClockTime = sim.getConfiguration().runWallClockTime;
+		runWallClockTime = executor.getConfiguration().runWallClockTime;
 		processStats(); 
 	}
 		

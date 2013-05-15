@@ -46,6 +46,7 @@ import java.util.Arrays;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.SimQPNException;
+import de.tud.cs.simqpn.kernel.executor.Executor;
 
 /**
  * Calculates the stats for a probe. This class reuses the algorithms for
@@ -109,7 +110,7 @@ public class ProbeStats extends PlaceStats {
 	 * 
 	 * @exception SimQPNException
 	 */
-	public void start(SimQPNController sim) throws SimQPNException {
+	public void start(Executor sim) throws SimQPNException {
 		int[] tokenPop = new int[colors.length];
 		Arrays.fill(tokenPop, 0);
 		this.start(tokenPop, sim);
@@ -122,10 +123,10 @@ public class ProbeStats extends PlaceStats {
 	 * Note: Completes accumulated areas under the curve.   
 	 * @exception SimQPNException
 	 */
-	public void finish(SimQPNController sim) throws SimQPNException {
+	public void finish(Executor executor) throws SimQPNException {
 		int[] tokenPop = new int[colors.length];
 		Arrays.fill(tokenPop, 0);
-		this.finish(tokenPop, sim);
+		this.finish(tokenPop, executor);
 	}
 	
 	
