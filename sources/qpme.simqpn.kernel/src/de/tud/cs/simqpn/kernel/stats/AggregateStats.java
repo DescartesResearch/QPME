@@ -188,8 +188,8 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 	 * @param numColors   - number of colors
 	 * @param statsLevel  - determines the amount of statistics to be gathered during the run
 	 */
-	public AggregateStats(int id, String name, int type, int numColors, int statsLevel, SimQPNController sim) throws SimQPNException {
-		super(id, name, type, numColors, statsLevel, sim);		
+	public AggregateStats(int id, String name, int type, int numColors, int statsLevel, SimQPNConfiguration configuration) throws SimQPNException {
+		super(id, name, type, numColors, statsLevel, configuration);		
 
 		this.numRepls			= 0;
 		this.numTooShortRepls	= 0;			
@@ -251,13 +251,13 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 			for (int c = 0; c < numColors; c++) 
 				this.signLevAvgST[c]	= 0.1; 			// e.g. 0.05 ---> 95% c.i.; 0.1 ---> 90%
 			
-			if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.WELCH)  {											
+			if (configuration.getAnalMethod() == SimQPNConfiguration.WELCH)  {											
 				this.sumKthObsrvST = new AbstractDoubleList[numColors];				
 				this.avgKthObsrvST = new AbstractDoubleList[numColors];
 				for (int c = 0; c < numColors; c++) 
 					this.sumKthObsrvST[c] = null;  // used to detect colors that shouldn't be considered in the analysis	
 			}											
-			if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && sim.getConfiguration().useStdStateStats)  {				
+			if (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && configuration.useStdStateStats)  {				
 				this.sumBatchSizesST	= new int[numColors];
 				this.avgBatchSizeST		= new int[numColors];
 				this.sumNumBatchesST	= new int[numColors];
@@ -267,7 +267,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 					this.sumNumBatchesST[c] = 0;
 				}					 				
 			}					
-			if (sim.getConfiguration().runMode == SimQPNConfiguration.CVRG_EST)  {				
+			if (configuration.runMode == SimQPNConfiguration.CVRG_EST)  {				
 				this.trueAvgST			= new double[numColors];				
 				this.numCvrgs			= new int[numColors];
 				this.estCvrg			= new double[numColors];

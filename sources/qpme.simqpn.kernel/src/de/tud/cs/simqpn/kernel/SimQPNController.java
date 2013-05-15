@@ -175,7 +175,7 @@ public class SimQPNController {
 		RandomNumberGenerator.initialize();
 		setConfiguration(ConfigurationLoader.configure(netXML, configurationName, logConfigFilename));
 		netXML = NetFlattener.prepareNet(netXML, configurationName, getConfiguration().getStatsDir()); //flattens HQPNS
-		net = new NetLoader().load(netXML, configurationName, this);
+		net = new NetLoader().load(netXML, configurationName, configuration);
 		getReady(netXML, configurationName);
 	}
 
@@ -280,7 +280,7 @@ public class SimQPNController {
 		for (int i = 0; i < getNet().getNumTrans(); i++)
 			getNet().getTrans(i).init();
 		for (int i = 0; i < getNet().getNumQueues(); i++)
-			getNet().getQueue(i).init(this);
+			getNet().getQueue(i).init(configuration);
 	}
 	
 	/**

@@ -68,6 +68,7 @@ import org.dom4j.Element;
 import cern.colt.list.AbstractDoubleList;
 import cern.colt.list.DoubleArrayList;
 import cern.jet.random.AbstractContinousDistribution;
+import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.stats.QPlaceQueueStats;
@@ -121,8 +122,8 @@ public class QPlace extends Place {
 	 * @param element     - reference to the XML element representing the place
 	 * 
 	 */
-	public QPlace(int id, String name, String[] colors, int numInTrans, int numOutTrans, int numProbes, int statsLevel, int depDiscip, Queue queue, Element element, SimQPNController sim) throws SimQPNException {		
-		super(id, name, colors, numInTrans, numOutTrans, numProbes, statsLevel, depDiscip, element, sim);
+	public QPlace(int id, String name, String[] colors, int numInTrans, int numOutTrans, int numProbes, int statsLevel, int depDiscip, Queue queue, Element element, SimQPNConfiguration configuration) throws SimQPNException {		
+		super(id, name, colors, numInTrans, numOutTrans, numProbes, statsLevel, depDiscip, element, configuration);
 		
 		this.queue						= queue;
 		this.meanServTimes				= new double[numColors];
@@ -135,7 +136,7 @@ public class QPlace extends Place {
 			this.queueTokenPop[c] 		= 0;
 		
 		if (statsLevel > 0) 
-			qPlaceQueueStats = new QPlaceQueueStats(id, name, colors, statsLevel, queue.queueDiscip, queue.numServers, meanServTimes, sim);
+			qPlaceQueueStats = new QPlaceQueueStats(id, name, colors, statsLevel, queue.queueDiscip, queue.numServers, meanServTimes, configuration);
 	}
 	
 	/**

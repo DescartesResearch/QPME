@@ -43,6 +43,7 @@ package de.tud.cs.simqpn.kernel.stats;
 
 import org.apache.log4j.Logger;
 
+import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.entities.Queue;
@@ -99,8 +100,8 @@ public class QueueStats extends Stats implements java.io.Serializable {
 	 * @param Queue			- reference to respective Queue object
 	 * 
 	 */	
-	public QueueStats(int id, String name, int numColors, int statsLevel, int queueDiscip, int numServers, Queue queue, SimQPNController sim) throws SimQPNException  {
-		super(id, name, QUEUE, numColors, statsLevel, sim);
+	public QueueStats(int id, String name, int numColors, int statsLevel, int queueDiscip, int numServers, Queue queue, SimQPNConfiguration configuration) throws SimQPNException  {
+		super(id, name, QUEUE, numColors, statsLevel, configuration);
 		this.queueDiscip	= queueDiscip;
 		this.numServers		= numServers;	
 		this.queue			= queue;

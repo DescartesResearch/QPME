@@ -130,8 +130,8 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	 * @param numServers    - FCFS queues: number of servers in queueing station 
 	 * @param meanServTimes - mean service times of tokens
 	 */	
-	public QPlaceQueueStats(int id, String name, String[] colors, int statsLevel, int queueDiscip, int numServers, double[] meanServTimes, SimQPNController sim) throws SimQPNException {
-		super(id, name, QUE_PLACE_QUEUE, colors, statsLevel, sim);
+	public QPlaceQueueStats(int id, String name, String[] colors, int statsLevel, int queueDiscip, int numServers, double[] meanServTimes, SimQPNConfiguration configuration) throws SimQPNException {
+		super(id, name, QUE_PLACE_QUEUE, colors, statsLevel, configuration);
 		this.queueDiscip	= queueDiscip;
 		this.numServers		= numServers;			
 		this.meanServTimes  = meanServTimes;
@@ -143,7 +143,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 			this.indrStats	= (queueDiscip == Queue.FCFS);		// indrStats is by default true for FCFS queues
 			this.meanDT					=	new double[numColors];
 			this.stDevDT				=	new double[numColors];			
-			if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS)  {
+			if (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS)  {
 				this.stdStateMeanDT			=	new double[numColors];
 				this.varStdStateMeanDT		=	new double[numColors];
 				this.stDevStdStateMeanDT	=	new double[numColors];

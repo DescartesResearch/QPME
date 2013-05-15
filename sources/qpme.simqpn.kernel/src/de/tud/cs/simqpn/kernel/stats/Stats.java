@@ -44,6 +44,7 @@
  */
 package de.tud.cs.simqpn.kernel.stats;
 
+import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNController;
 
 /**
@@ -100,8 +101,8 @@ public class Stats {
 	 * @param numColors   - number of colors
 	 * @param statsLevel  - determines the amount of statistics to be gathered during the run
 	 */
-	public Stats(int id, String name, int type, int numColors, int statsLevel, SimQPNController sim) {		
-		this.statsDir = sim.getConfiguration().getStatsDir();
+	public Stats(int id, String name, int type, int numColors, int statsLevel, SimQPNConfiguration configuration) {		
+		this.statsDir 			= configuration.getStatsDir();
 		this.id 				= id;
 		this.name 				= name;		
 		this.type				= type;

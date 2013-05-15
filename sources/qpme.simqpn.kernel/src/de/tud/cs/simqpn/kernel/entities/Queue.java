@@ -187,7 +187,7 @@ public class Queue {
 	 * @return
 	 * @exception
 	 */
-	public void init(SimQPNController sim) throws SimQPNException  {
+	public void init(SimQPNConfiguration configuration) throws SimQPNException  {
 		statsLevel = 10; 
 		
 		if (qPlaces == null) {
@@ -209,7 +209,7 @@ public class Queue {
 			randColorGen = new EmpiricalWalker(pdf, Empirical.NO_INTERPOLATION, RandomNumberGenerator.nextRandNumGen());							
 		}		
 		if (statsLevel > 0)  //NOTE: This is intentionally done here after qPlaces has been initialized!
-			queueStats = new QueueStats(id, name, totNumColors, statsLevel, queueDiscip, numServers, this, sim);
+			queueStats = new QueueStats(id, name, totNumColors, statsLevel, queueDiscip, numServers, this, configuration);
 	}
 		
 	/**

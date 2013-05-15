@@ -54,6 +54,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.dom4j.Element;
 
+import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.stats.ProbeStats;
@@ -89,7 +90,7 @@ public class Probe {
 	
 	public Element		  element;
 	
-	public Probe(int id, String xmlId, String name, String[] colors, Place startPlace, int startTrigger, Place endPlace, int endTrigger, int statsLevel, Element element, SimQPNController sim) throws SimQPNException {
+	public Probe(int id, String xmlId, String name, String[] colors, Place startPlace, int startTrigger, Place endPlace, int endTrigger, int statsLevel, Element element, SimQPNConfiguration configuration) throws SimQPNException {
 		this.id = id;
 		this.xmlId = xmlId;
 		this.name = name;
@@ -102,7 +103,7 @@ public class Probe {
 		this.element = element;
 		
 		if (statsLevel > 0) {
-			probeStats = new ProbeStats(id, name, colors, statsLevel, sim);
+			probeStats = new ProbeStats(id, name, colors, statsLevel, configuration);
 		}
 	}
 	

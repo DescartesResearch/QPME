@@ -71,12 +71,12 @@ public class Welch implements Analyzer {
 			if (pl.statsLevel > 0) {
 				if (pl instanceof QPlace) {
 					aggrStats[p * 2] = new AggregateStats(pl.id, pl.name,
-							Stats.QUE_PLACE_QUEUE, pl.numColors, pl.statsLevel, sim);
+							Stats.QUE_PLACE_QUEUE, pl.numColors, pl.statsLevel, sim.getConfiguration());
 					aggrStats[(p * 2) + 1] = new AggregateStats(pl.id, pl.name,
-							Stats.QUE_PLACE_DEP, pl.numColors, pl.statsLevel, sim);
+							Stats.QUE_PLACE_DEP, pl.numColors, pl.statsLevel, sim.getConfiguration());
 				} else {
 					aggrStats[p * 2] = new AggregateStats(pl.id, pl.name,
-							Stats.ORD_PLACE, pl.numColors, pl.statsLevel, sim);
+							Stats.ORD_PLACE, pl.numColors, pl.statsLevel, sim.getConfiguration());
 					aggrStats[(p * 2) + 1] = null;
 				}
 			} else {

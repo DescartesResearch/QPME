@@ -62,6 +62,7 @@ import java.util.LinkedList;
 import org.apache.log4j.Logger;
 import org.dom4j.Element;
 
+import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.stats.PlaceStats;
@@ -136,7 +137,7 @@ public class Place extends Node {
 	 * @param element     - reference to the XML element representing the place
 	 */
 	@SuppressWarnings("rawtypes")
-	public Place(int id, String name, String[] colors, int numInTrans, int numOutTrans, int numProbes, int statsLevel, int depDiscip, Element element, SimQPNController sim) throws SimQPNException {
+	public Place(int id, String name, String[] colors, int numInTrans, int numOutTrans, int numProbes, int statsLevel, int depDiscip, Element element, SimQPNConfiguration configuration) throws SimQPNException {
 		super(id, name);		
 		this.colors			       = colors;	
 		this.numColors		       = colors.length;	
@@ -163,9 +164,9 @@ public class Place extends Node {
 		}
 		if (statsLevel > 0) {
 			if (this instanceof QPlace)
-				placeStats = new PlaceStats(id, name, Stats.QUE_PLACE_DEP, colors, statsLevel, sim);
+				placeStats = new PlaceStats(id, name, Stats.QUE_PLACE_DEP, colors, statsLevel, configuration);
 			else
-				placeStats = new PlaceStats(id, name, Stats.ORD_PLACE, colors, statsLevel, sim);				 			
+				placeStats = new PlaceStats(id, name, Stats.ORD_PLACE, colors, statsLevel, configuration);				 			
 			if (statsLevel >= 3) {
 				this.tokArrivTS = new LinkedList[numColors];
 				for (int c = 0; c < numColors; c++)

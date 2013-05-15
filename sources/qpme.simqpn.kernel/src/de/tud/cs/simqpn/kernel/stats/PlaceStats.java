@@ -180,8 +180,8 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 * @param statsLevel	- determines the amount of statistics to be gathered during the run
 	 *            
 	 */
-	public PlaceStats(int id, String name, int type, String[] colors, int statsLevel, SimQPNController sim) throws SimQPNException {
-		super(id, name, type, colors.length, statsLevel, sim);
+	public PlaceStats(int id, String name, int type, String[] colors, int statsLevel, SimQPNConfiguration configuration) throws SimQPNException {
+		super(id, name, type, colors.length, statsLevel, configuration);
 		this.colors = colors;
 		
 		// statsLevel >= 1
@@ -206,7 +206,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			this.numST 								= new int[numColors];
 			this.meanST 							= new double[numColors];
 			this.stDevST 							= new double[numColors];
-			if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.WELCH) {
+			if (configuration.getAnalMethod() == SimQPNConfiguration.WELCH) {
 				this.minObsrvST 					= new int[numColors];
 				this.maxObsrvST 					= new int[numColors];
 				this.obsrvST 						= new AbstractDoubleList[numColors];
@@ -217,7 +217,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 					this.obsrvST[c] 				= new DoubleArrayList();  // Note: Max capacity will be set later so that the user has a chance to modify maxObsrvST.
 				}
 			}
-			if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS) {
+			if (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS) {
 				this.signLevST 						= new double[numColors];
 				this.reqAbsPrc 						= new double[numColors];
 				this.reqRelPrc 						= new double[numColors];

@@ -43,6 +43,7 @@ package de.tud.cs.simqpn.kernel.stats;
 
 import java.util.Arrays;
 
+import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 
@@ -67,8 +68,8 @@ public class ProbeStats extends PlaceStats {
 	 * @param statsLevel	- determines the amount of statistics to be gathered during the run
 	 *            
 	 */
-	public ProbeStats(int id, String name, String[] colors, int statsLevel, SimQPNController sim) throws SimQPNException {
-		super(id, name, PROBE, colors, statsLevel, sim);
+	public ProbeStats(int id, String name, String[] colors, int statsLevel, SimQPNConfiguration configuration) throws SimQPNException {
+		super(id, name, PROBE, colors, statsLevel, configuration);
 	}
 
 	/* (non-Javadoc)
