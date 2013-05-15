@@ -155,10 +155,10 @@ public class QueueStats extends Stats implements java.io.Serializable {
 	 */
 	public void finish(SimQPNController sim) throws SimQPNException  {		
 		if (statsLevel >= 2) //NOTE: This makes sure areaQueUtil is complete!
-			updateTotTkPopStats(0, sim.clock);
-		endRunClock = sim.clock;
+			updateTotTkPopStats(0, sim.getClock());
+		endRunClock = sim.getClock();
 		msrmPrdLen = endRunClock - endRampUpClock;		
-		runWallClockTime = sim.configuration.runWallClockTime;
+		runWallClockTime = sim.getConfiguration().runWallClockTime;
 		processStats(); 
 	}
 		

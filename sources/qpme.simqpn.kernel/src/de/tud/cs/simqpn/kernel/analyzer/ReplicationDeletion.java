@@ -47,13 +47,13 @@ public class ReplicationDeletion implements Analyzer{
 	private static AggregateStats[] runMultRepl(Element netXML, String configuration, SimulatorProgress monitor) throws SimQPNException {
 
 		SimQPNController sim = new SimQPNController(netXML, configuration, null);
-		if (sim.configuration.getNumRuns() <= 1) {
+		if (sim.getConfiguration().getNumRuns() <= 1) {
 			log.error("numRuns should be > 1!");
 			throw new SimQPNException();
 		}	
 
 		// useStdStateStats configurable only in MULT_REPL mode
-		sim.configuration.useStdStateStats = false;
+		sim.getConfiguration().useStdStateStats = false;
 		//   - automatically set to true in CVRG_EST mode.
 		//   - automatically set to false in NORMAL:REPL_DEL mode. 					
 		
@@ -156,7 +156,7 @@ public class ReplicationDeletion implements Analyzer{
 		progressMonitor.startSimulation();
 
 		// Run replication loop
-		for (int i = 0; i < sim.configuration.getNumRuns(); i++) {
+		for (int i = 0; i < sim.getConfiguration().getNumRuns(); i++) {
 			progressMonitor.startSimulationRun(i + 1);
 			sim.run();
 			progressMonitor.finishSimulationRun();

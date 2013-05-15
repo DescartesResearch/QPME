@@ -130,15 +130,18 @@ public class SimQPNController {
 	public static final String QPME_VERSION = "2.1.0";	
 	
 	private static Logger log = Logger.getLogger(SimQPNController.class);
-	public static boolean simRunning;			// True if simulation is currently running.
+
+	private SimQPNConfiguration configuration;
+	private static SimulatorProgress progressMonitor;	// Progress monitoring
+	private Net net;
+	private static boolean simRunning; // True if simulation is currently running.
 
 	
-	public SimQPNConfiguration configuration;
-	public static SimulatorProgress progressMonitor;	// Progress monitoring
-	private Net net;
-
-	// Check if using double for time is really needed and if overhead is tolerable. Consider switching to float.
-	public double clock;					// Global simulation clock. Time is usually measured in milliseconds.
+	// TODO Check if using double for time is really needed and if overhead is tolerable. Consider switching to float.
+	/**
+	 * Global simulation clock. Time is usually measured in milliseconds.
+	 */
+	private double clock;						
 	public static 
 		PriorityQueue<QueueEvent> eventList =		// Global simulation event list. Contains events scheduled for processing at specified points in time.
 	      new PriorityQueue<QueueEvent>(10, 
@@ -170,8 +173,8 @@ public class SimQPNController {
 	public SimQPNController(Element netXML, String configurationName, String logConfigFilename) throws SimQPNException {
 		// Random Number Generation (Note: needs to be initialized before starting the model definition)
 		RandomNumberGenerator.initialize();
-		configuration = ConfigurationLoader.configure(netXML, configurationName, logConfigFilename);
-		netXML = NetFlattener.prepareNet(netXML, configurationName, configuration.getStatsDir()); //flattens HQPNS
+		setConfiguration(ConfigurationLoader.configure(netXML, configurationName, logConfigFilename));
+		netXML = NetFlattener.prepareNet(netXML, configurationName, getConfiguration().getStatsDir()); //flattens HQPNS
 		net = new NetLoader().load(netXML, configurationName, this);
 		getReady(netXML, configurationName);
 	}
@@ -184,7 +187,7 @@ public class SimQPNController {
 	 * @exception
 	 */
 	private void getReady(Element netXML, String configurationName) throws SimQPNException {
-		configuration = ConfigurationLoader.configureSimulatorSettings(netXML, configurationName, configuration);
+		setConfiguration(ConfigurationLoader.configureSimulatorSettings(netXML, configurationName, getConfiguration()));
 
 		// CONFIG: Whether to use indirect estimators for FCFS queues
 		for (int p = 0; p < getNet().getNumPlaces(); p++) {
@@ -195,7 +198,7 @@ public class SimQPNController {
 			}
 		}
 
-		configuration = ConfigurationLoader.configureBatchMeansMethod(netXML, this);
+		setConfiguration(ConfigurationLoader.configureBatchMeansMethod(netXML, this));
 
 		initializeWorkingVariables();
 	}
@@ -216,29 +219,30 @@ public class SimQPNController {
 		// TODO: Make the Stdout output print to $statsDir/Output.txt
 		// CHRIS: Not done yet
 
-		progressMonitor = monitor;
+		setProgressMonitor(monitor);
 
 		Stats[] result = null;
 		
-		simRunning = true;
+		setSimRunning(true); // True if simulation is currently running.
+
 		// NOTE: In the following, if the simulation is interrupted, simRunning should be reset. 		  
 				
 		try {
-			XMLValidator.validateInputNet(XMLNet);
-			if (configuration.runMode == SimQPNConfiguration.NORMAL) {
-				if (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS) { // Method of non-overlapping batch means
+			XMLValidator.validateInputNet(XMLNet); //TODO Think about moving this into Constructor
+			if (getConfiguration().runMode == SimQPNConfiguration.NORMAL) {
+				if (getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS) { // Method of non-overlapping batch means
 					result = new BatchMeans().analyze(XMLNet, configurationString, monitor, this);
-				} else if (configuration.getAnalMethod() == SimQPNConfiguration.REPL_DEL) { // Replication/Deletion Approach (Method of Independent Replications) 				
+				} else if (getConfiguration().getAnalMethod() == SimQPNConfiguration.REPL_DEL) { // Replication/Deletion Approach (Method of Independent Replications) 				
 					result = new ReplicationDeletion().analyze(XMLNet, configurationString, monitor, this);
 				} else {
 					log.error("Illegal analysis method specified!");
 					throw new SimQPNException();				
 				}
-			} else if (configuration.runMode == SimQPNConfiguration.INIT_TRANS) {
-				if (configuration.getAnalMethod() == SimQPNConfiguration.WELCH) {
+			} else if (getConfiguration().runMode == SimQPNConfiguration.INIT_TRANS) {
+				if (getConfiguration().getAnalMethod() == SimQPNConfiguration.WELCH) {
 					result = new Welch().analyze(XMLNet, configurationString, monitor, this);
 				} else {
-					log.error("Analysis method " + configuration.getAnalMethod() + " not supported in INIT_TRANS mode!");
+					log.error("Analysis method " + getConfiguration().getAnalMethod() + " not supported in INIT_TRANS mode!");
 					throw new SimQPNException();
 				}
 			} else {
@@ -246,22 +250,22 @@ public class SimQPNController {
 				throw new SimQPNException();
 			}				
 		} finally {		
-			simRunning = false;	
+			setSimRunning(false);	
 			LogManager.shutdown();
 		}
 		return result;
 	}
 	
 	private void initializeWorkingVariables() throws SimQPNException {
-		configuration.inRampUp = true;
-		configuration.endRampUpClock = 0;
-		configuration.endRunClock = 0;
-		configuration.msrmPrdLen = 0; // Set at the end of the run when the actual length is known.
-		configuration.beginRunWallClock = 0;
-		configuration.endRunWallClock = 0;
-		configuration.runWallClockTime = 0;
+		getConfiguration().inRampUp = true;
+		getConfiguration().endRampUpClock = 0;
+		getConfiguration().endRunClock = 0;
+		getConfiguration().msrmPrdLen = 0; // Set at the end of the run when the actual length is known.
+		getConfiguration().beginRunWallClock = 0;
+		getConfiguration().endRunWallClock = 0;
+		getConfiguration().runWallClockTime = 0;
 
-		clock = 0;	// Note that it has been assumed throughout the code that
+		setClock(0);	// Note that it has been assumed throughout the code that
 		   			// the simulation starts at virtual time 0.
 
 		eventList.clear();
@@ -272,7 +276,7 @@ public class SimQPNController {
 		for (int i = 0; i < getNet().getNumProbes(); i++)
 			getNet().getProbe(i).init();
 		for (int i = 0; i < getNet().getNumPlaces(); i++)
-			getNet().getPlace(i).init(clock);
+			getNet().getPlace(i).init(getClock());
 		for (int i = 0; i < getNet().getNumTrans(); i++)
 			getNet().getTrans(i).init();
 		for (int i = 0; i < getNet().getNumQueues(); i++)
@@ -292,18 +296,6 @@ public class SimQPNController {
 		QueueEvent ev = new QueueEvent(time, queue, token);
 		eventList.add(ev);
 		queue.nextEvent = ev;
-		
-		/* Old LinkedList implementation of the event list
-		int i = eventList.size() - 1;
-		while (i >= 0) {
-			Event ev = (Event) eventList.get(i);
-			if (ev.time <= time)
-				break;
-			else
-				i--;
-		}
-		eventList.add(i + 1, new Event(time, queue, token));
-		*/
 	}
 
 	/**
@@ -348,16 +340,16 @@ public class SimQPNController {
 		// Note: Here we use a default distribution. The actual distribution is set each time before using randTransGen. 		
 
 		// Note: we store totRunLen and rampUpLen in local variables to improve performance of the while loop below.		
-		double totRunL = configuration.totRunLen;
-		double rampUpL = configuration.rampUpLen;
-		double nextChkAfter = configuration.timeBtwChkStops > 0 ? configuration.timeBtwChkStops : totRunL; // If secondsBtwChkStops is used, disable checking of stopping criterion
+		double totRunL = getConfiguration().totRunLen;
+		double rampUpL = getConfiguration().rampUpLen;
+		double nextChkAfter = getConfiguration().timeBtwChkStops > 0 ? getConfiguration().timeBtwChkStops : totRunL; // If secondsBtwChkStops is used, disable checking of stopping criterion
 																			   // until beforeInitHeartBeat == false. By setting nextChkAfter = totRunL
 																			   // stopping criterion checking is disabled.
 		/* ORIGINAL HEARTBEAT IMPLEMENTATION
 		double nextChkAfter = timeBtwChkStops > 0 ? timeBtwChkStops : timeInitHeartBeat;
 		*/
 
-		configuration.beginRunWallClock = System.currentTimeMillis();
+		getConfiguration().beginRunWallClock = System.currentTimeMillis();
 
 
 		boolean beforeInitHeartBeat = true;		// Flag indicating when we are still before the first heart beat (progress update).
@@ -365,25 +357,25 @@ public class SimQPNController {
 		double nextHeartBeat = 0.0;				// Simulation run time of the next heart beat.
 		double timeBtwHeartBeats = 0.0;			// How often progress updates are made (in logical simulation time units).
 		long lastTimeMsrm = System.currentTimeMillis();		// The value of the last wall clock time measurement. Used for progress updates.
-		double maxProgressInterval = progressMonitor.getMaxUpdateLogicalTimeInterval();
-		long progressUpdateRate = progressMonitor.getMaxUpdateRealTimeInterval();
+		double maxProgressInterval = getProgressMonitor().getMaxUpdateLogicalTimeInterval();
+		long progressUpdateRate = getProgressMonitor().getMaxUpdateRealTimeInterval();
 		
 		// BEGIN MAIN SIMULATION LOOP ---------------------------------------------------------------------------------
-		while (clock < totRunL) { 
+		while (getClock() < totRunL) { 
 
-			if (configuration.inRampUp && clock > rampUpL) {
-				configuration.inRampUp = false;
-				configuration.endRampUpClock = clock;
-				if (configuration.getAnalMethod() == SimQPNConfiguration.WELCH)
+			if (getConfiguration().inRampUp && getClock() > rampUpL) {
+				getConfiguration().inRampUp = false;
+				getConfiguration().endRampUpClock = getClock();
+				if (getConfiguration().getAnalMethod() == SimQPNConfiguration.WELCH)
 					break;
 				for (int p = 0; p < getNet().getNumPlaces(); p++)
 					getNet().getPlace(p).start(this);
 				for (int q = 0; q < getNet().getNumQueues(); q++)
-					getNet().getQueue(q).start(clock);
+					getNet().getQueue(q).start(getClock());
 				for (int pr = 0; pr < getNet().getNumProbes(); pr++)
 					getNet().getProbe(pr).start(this);
 
-				progressMonitor.finishWarmUp();
+				getProgressMonitor().finishWarmUp();
 			}
 
 			// Step 1: Fire until no transitions are enabled.
@@ -451,8 +443,8 @@ public class SimQPNController {
 				// possible for the user to cancel the simulation
 				// anyway.
 				if (fireCnt > 10000000) {
-					if (progressMonitor.isCanceled()) {
-						clock = totRunL;
+					if (getProgressMonitor().isCanceled()) {
+						setClock(totRunL);
 						break;
 					}
 					fireCnt = 0;
@@ -480,7 +472,7 @@ public class SimQPNController {
 				// Event ev = (Event) eventList.remove(0); // Old LinkedList implementation of the event list.
 								
 				// Advance simulation time
-				clock = ev.time;
+				setClock(ev.time);
 
 				QPlace qpl = (QPlace) ev.token.place;
 				qpl.completeService(ev.token, this);
@@ -505,32 +497,32 @@ public class SimQPNController {
 			if(beforeInitHeartBeat) {
 				long curTimeMsrm = System.currentTimeMillis();
 				if(((curTimeMsrm - lastTimeMsrm) >= SimQPNConfiguration.MAX_INITIAL_HEARTBEAT)
-						|| (clock >= maxProgressInterval)) {
+						|| (getClock() >= maxProgressInterval)) {
 					
-					if(clock >= maxProgressInterval) {
+					if(getClock() >= maxProgressInterval) {
 						timeBtwHeartBeats = maxProgressInterval;
 					} else {
-						timeBtwHeartBeats = (clock / (curTimeMsrm - lastTimeMsrm)) * progressUpdateRate;
+						timeBtwHeartBeats = (getClock() / (curTimeMsrm - lastTimeMsrm)) * progressUpdateRate;
 					}
 					beforeInitHeartBeat = false;
-					if (configuration.timeBtwChkStops == 0) {
+					if (getConfiguration().timeBtwChkStops == 0) {
 						// enable checking of stopping criterion
-						nextChkAfter = clock;
+						nextChkAfter = getClock();
 					}
 				}
 				
-				if (progressMonitor.isCanceled()) {
-					clock = totRunL;
+				if (getProgressMonitor().isCanceled()) {
+					setClock(totRunL);
 				}
 			} else {
-				if(clock >= nextHeartBeat) {
+				if(getClock() >= nextHeartBeat) {
 					long curTimeMsrm = System.currentTimeMillis();
-					progressMonitor.updateSimulationProgress(clock / (totRunL - 1) * 100, (curTimeMsrm - lastTimeMsrm));					
+					getProgressMonitor().updateSimulationProgress(getClock() / (totRunL - 1) * 100, (curTimeMsrm - lastTimeMsrm));					
 					lastTimeMsrm = curTimeMsrm;
-					nextHeartBeat = clock + timeBtwHeartBeats;
+					nextHeartBeat = getClock() + timeBtwHeartBeats;
 					
-					if (progressMonitor.isCanceled()) {
-						clock = totRunL;
+					if (getProgressMonitor().isCanceled()) {
+						setClock(totRunL);
 					}
 				}
 			}
@@ -550,9 +542,9 @@ public class SimQPNController {
 			*/
 
 			// Step 5: Check Stopping Criterion
-			if (configuration.stoppingRule != SimQPNConfiguration.FIXEDLEN && (!configuration.inRampUp) && clock > nextChkAfter) {
-				double elapsedSecs = (System.currentTimeMillis() - configuration.beginRunWallClock) / 1000;				
-				double clockTimePerSec = clock / elapsedSecs;	
+			if (getConfiguration().stoppingRule != SimQPNConfiguration.FIXEDLEN && (!getConfiguration().inRampUp) && getClock() > nextChkAfter) {
+				double elapsedSecs = (System.currentTimeMillis() - getConfiguration().beginRunWallClock) / 1000;				
+				double clockTimePerSec = getClock() / elapsedSecs;	
 				boolean done = true;
 				Place pl = null;
 
@@ -572,7 +564,7 @@ public class SimQPNController {
 
 				if (!done) {
 					// The test already failed for a place.
-					progressMonitor.precisionCheck(done, pl.name);
+					getProgressMonitor().precisionCheck(done, pl.name);
 				} else {
 					// Check also the probes, whether they have enough samples
 					Probe probe = null;
@@ -586,31 +578,31 @@ public class SimQPNController {
 						}
 					}
 					if (done) {
-						progressMonitor.precisionCheck(done, null);
+						getProgressMonitor().precisionCheck(done, null);
 						break; // exit while loop
 					} else {
-						progressMonitor.precisionCheck(done, probe.name); //TODO: distinguish between places and probes.
+						getProgressMonitor().precisionCheck(done, probe.name); //TODO: distinguish between places and probes.
 					}
 				}
 
-				if (configuration.timeBtwChkStops > 0)
-					nextChkAfter = clock + configuration.timeBtwChkStops;
+				if (getConfiguration().timeBtwChkStops > 0)
+					nextChkAfter = getClock() + getConfiguration().timeBtwChkStops;
 				else
-					nextChkAfter = clock + clockTimePerSec * configuration.secondsBtwChkStops;
+					nextChkAfter = getClock() + clockTimePerSec * getConfiguration().secondsBtwChkStops;
 			}
 
 		}
 
 		// END MAIN SIMULATION LOOP ---------------------------------------------------------------------------------
-		progressMonitor.updateSimulationProgress(100, 0);
+		getProgressMonitor().updateSimulationProgress(100, 0);
 		
-		if (progressMonitor.isCanceled()) {
-			progressMonitor.warning("The simulation was canceled by the user.\n"
+		if (getProgressMonitor().isCanceled()) {
+			getProgressMonitor().warning("The simulation was canceled by the user.\n"
 					+ "The required precision may not have been reached!");
 		} else {
-			if (clock >= configuration.totRunLen)  {
-				if (configuration.stoppingRule != SimQPNConfiguration.FIXEDLEN)  {
-					progressMonitor.warning("The simulation was stopped because of reaching max totalRunLen.\n"
+			if (getClock() >= getConfiguration().totRunLen)  {
+				if (getConfiguration().stoppingRule != SimQPNConfiguration.FIXEDLEN)  {
+					getProgressMonitor().warning("The simulation was stopped because of reaching max totalRunLen.\n"
 							+ "The required precision may not have been reached!");
 				}
 				else
@@ -618,16 +610,16 @@ public class SimQPNController {
 			}
 		}
 		
-		configuration.endRunClock = clock;
-		configuration.msrmPrdLen = configuration.endRunClock - configuration.endRampUpClock;
-		configuration.endRunWallClock = System.currentTimeMillis();
-		configuration.runWallClockTime = (configuration.endRunWallClock - configuration.beginRunWallClock) / 1000;	// total time elapsed in seconds 
+		getConfiguration().endRunClock = getClock();
+		getConfiguration().msrmPrdLen = getConfiguration().endRunClock - getConfiguration().endRampUpClock;
+		getConfiguration().endRunWallClock = System.currentTimeMillis();
+		getConfiguration().runWallClockTime = (getConfiguration().endRunWallClock - getConfiguration().beginRunWallClock) / 1000;	// total time elapsed in seconds 
 		
-		log.info("msrmPrdLen= " + configuration.msrmPrdLen + " totalRunLen= " + configuration.endRunClock + " runWallClockTime=" + (int) (configuration.runWallClockTime / 60) + " min (=" + configuration.runWallClockTime + " sec)");
+		log.info("msrmPrdLen= " + getConfiguration().msrmPrdLen + " totalRunLen= " + getConfiguration().endRunClock + " runWallClockTime=" + (int) (getConfiguration().runWallClockTime / 60) + " min (=" + getConfiguration().runWallClockTime + " sec)");
 
 		
 		// Complete statistics collection (make sure this is done AFTER the above statements)
-		if (configuration.getAnalMethod() != SimQPNConfiguration.WELCH) {		
+		if (getConfiguration().getAnalMethod() != SimQPNConfiguration.WELCH) {		
 			for (int p = 0; p < getNet().getNumPlaces(); p++)
 				getNet().getPlace(p).finish(this);
 			for (int q = 0; q < getNet().getNumQueues(); q++)  //NOTE: queues[*].finish() should be called after places[*].finish()! 
@@ -645,6 +637,38 @@ public class SimQPNController {
 
 	public void setNet(Net net) {
 		this.net = net;
+	}
+
+	public SimQPNConfiguration getConfiguration() {
+		return configuration;
+	}
+
+	public void setConfiguration(SimQPNConfiguration configuration) {
+		this.configuration = configuration;
+	}
+
+	public static SimulatorProgress getProgressMonitor() {
+		return progressMonitor;
+	}
+
+	public static void setProgressMonitor(SimulatorProgress progressMonitor) {
+		SimQPNController.progressMonitor = progressMonitor;
+	}
+
+	public double getClock() {
+		return clock;
+	}
+
+	public void setClock(double clock) {
+		this.clock = clock;
+	}
+
+	public static boolean isSimRunning() {
+		return simRunning;
+	}
+
+	public static void setSimRunning(boolean simRunning) {
+		SimQPNController.simRunning = simRunning;
 	}
 
 } // end of Class Simulator

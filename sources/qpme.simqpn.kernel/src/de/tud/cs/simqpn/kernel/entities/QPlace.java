@@ -256,7 +256,7 @@ public class QPlace extends Place {
 		if (statsLevel > 0)  {
 			qPlaceQueueStats.updateTkPopStats(token.color, queueTokenPop[token.color], -1, sim);
 			if (statsLevel >= 3) 
-				qPlaceQueueStats.updateSojTimeStats(token.color, sim.clock - token.arrivTS, sim);
+				qPlaceQueueStats.updateSojTimeStats(token.color, sim.getClock() - token.arrivTS, sim);
 		}
 		
 		// Now remove token from queue and update queue state

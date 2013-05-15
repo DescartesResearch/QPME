@@ -101,7 +101,7 @@ public class Stats {
 	 * @param statsLevel  - determines the amount of statistics to be gathered during the run
 	 */
 	public Stats(int id, String name, int type, int numColors, int statsLevel, SimQPNController sim) {		
-		this.statsDir = sim.configuration.getStatsDir();
+		this.statsDir = sim.getConfiguration().getStatsDir();
 		this.id 				= id;
 		this.name 				= name;		
 		this.type				= type;

@@ -48,11 +48,11 @@ public class Welch implements Analyzer {
 
 		//SimQPNController sim = new SimQPNController(netXML, configuration);
 		
-		if (sim.configuration.getNumRuns() < 5) {
+		if (sim.getConfiguration().getNumRuns() < 5) {
 			log.warn(formatMultilineMessage(
 					"Number of runs for the method of Welch should be at least 5!",
 					"Setting numRuns to 5."));
-			sim.configuration.setNumRuns(5);
+			sim.getConfiguration().setNumRuns(5);
 		}
 
 
@@ -88,7 +88,7 @@ public class Welch implements Analyzer {
 		progressMonitor.startSimulation();
 
 		// Run replication loop
-		for (int i = 0; i < sim.configuration.getNumRuns(); i++) {
+		for (int i = 0; i < sim.getConfiguration().getNumRuns(); i++) {
 			/*
 			 * BEGIN-CONFIG
 			 * ------------------------------------------------------

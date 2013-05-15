@@ -308,10 +308,10 @@ public class Place extends Node {
 				
 		// Update Stats		
 		if (statsLevel > 0) {
-			placeStats.updateTkPopStats(color, tokenPop[color], count, sim.clock);						
+			placeStats.updateTkPopStats(color, tokenPop[color], count, sim.getClock());						
 			if (statsLevel >= 3) {
 				for (int i = 0; i < count; i++) 
-					tokArrivTS[color].addLast(new Double(sim.clock));
+					tokArrivTS[color].addLast(new Double(sim.getClock()));
 			}
 		}
 		// Now add tokens and update affected transitions
@@ -373,12 +373,12 @@ public class Place extends Node {
 		}*/						
 		// Update Stats
 		if (statsLevel > 0) {
-			placeStats.updateTkPopStats(color, tokenPop[color], (-1)*count, sim.clock);				
+			placeStats.updateTkPopStats(color, tokenPop[color], (-1)*count, sim.getClock());				
 			if (statsLevel >= 3) {
 				Double arrivTS;
 				for (int i = 0; i < count; i++) {
 					arrivTS = (Double) tokArrivTS[color].removeFirst();
-					placeStats.updateSojTimeStats(color, sim.clock - arrivTS.doubleValue(), sim);
+					placeStats.updateSojTimeStats(color, sim.getClock() - arrivTS.doubleValue(), sim);
 				}
 			}				
 		}

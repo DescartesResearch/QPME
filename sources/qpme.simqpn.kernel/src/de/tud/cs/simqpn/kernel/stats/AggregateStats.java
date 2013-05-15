@@ -251,13 +251,13 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 			for (int c = 0; c < numColors; c++) 
 				this.signLevAvgST[c]	= 0.1; 			// e.g. 0.05 ---> 95% c.i.; 0.1 ---> 90%
 			
-			if (sim.configuration.getAnalMethod() == SimQPNConfiguration.WELCH)  {											
+			if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.WELCH)  {											
 				this.sumKthObsrvST = new AbstractDoubleList[numColors];				
 				this.avgKthObsrvST = new AbstractDoubleList[numColors];
 				for (int c = 0; c < numColors; c++) 
 					this.sumKthObsrvST[c] = null;  // used to detect colors that shouldn't be considered in the analysis	
 			}											
-			if (sim.configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && sim.configuration.useStdStateStats)  {				
+			if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && sim.getConfiguration().useStdStateStats)  {				
 				this.sumBatchSizesST	= new int[numColors];
 				this.avgBatchSizeST		= new int[numColors];
 				this.sumNumBatchesST	= new int[numColors];
@@ -267,7 +267,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 					this.sumNumBatchesST[c] = 0;
 				}					 				
 			}					
-			if (sim.configuration.runMode == SimQPNConfiguration.CVRG_EST)  {				
+			if (sim.getConfiguration().runMode == SimQPNConfiguration.CVRG_EST)  {				
 				this.trueAvgST			= new double[numColors];				
 				this.numCvrgs			= new int[numColors];
 				this.estCvrg			= new double[numColors];
@@ -317,7 +317,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 	 */
 	@SuppressWarnings("unchecked")
 	public void saveStats(PlaceStats stats, SimQPNController sim) throws SimQPNException {		
-		if (sim.configuration.getAnalMethod() == SimQPNConfiguration.WELCH)  {			
+		if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.WELCH)  {			
 			if (statsLevel < 3) return;			
 			for (int c = 0; c < numColors; c++)  {				
 				if (stats.maxObsrvST[c] <= 0) return;								
@@ -359,12 +359,12 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 		}
 
 		// Make sure the run was long enough
-		if (sim.configuration.useStdStateStats && (!stats.stdStateStatsAv))  {
+		if (sim.getConfiguration().useStdStateStats && (!stats.stdStateStatsAv))  {
 			numTooShortRepls++;
 			log.info("Replication skipped, since it was too short and no steady state data was available.");
 			return;
 		} 								
-		if (sim.configuration.runMode == SimQPNConfiguration.CVRG_EST && statsLevel >= 3 && (!enghBadCIs))  {
+		if (sim.getConfiguration().runMode == SimQPNConfiguration.CVRG_EST && statsLevel >= 3 && (!enghBadCIs))  {
 			replStats.add(stats);
 			numSavedRepls++;			
 			double runLen = stats.endRunClock;			
@@ -512,7 +512,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 		
 		double runLen = stats.endRunClock;		
 		// Skip short runs in CVRG_EST mode
-		if (sim.configuration.runMode == SimQPNConfiguration.CVRG_EST && statsLevel >= 3 && runLen < reqMinRunLen)  {
+		if (sim.getConfiguration().runMode == SimQPNConfiguration.CVRG_EST && statsLevel >= 3 && runLen < reqMinRunLen)  {
 			numTooShortRepls++;
 			return;
 		} 
@@ -551,17 +551,17 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 		// StatsLevel 3:
 		if (statsLevel >= 3)
 			for (int c = 0; c < numColors; c++)  {
-				double avgST =  sim.configuration.useStdStateStats ? stats.stdStateMeanST[c] : stats.meanST[c];					
+				double avgST =  sim.getConfiguration().useStdStateStats ? stats.stdStateMeanST[c] : stats.meanST[c];					
 				if (numRepls == 1 || avgST < minAvgST[c]) minAvgST[c] = avgST;
 				if (numRepls == 1 || avgST > maxAvgST[c]) maxAvgST[c] = avgST;				
 				sumAvgST[c]	  += avgST;								
 				sumSqAvgST[c] += avgST * avgST; 
 				numAvgST[c]++;														
-				if (sim.configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && sim.configuration.useStdStateStats)  {										
+				if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && sim.getConfiguration().useStdStateStats)  {										
 					sumBatchSizesST[c]	+= stats.batchSizeST[c];
 					sumNumBatchesST[c]	+= stats.numBatchesST[c];
 				}								
-				if (sim.configuration.runMode == SimQPNConfiguration.CVRG_EST && trueAvgST[c] >= 0) {
+				if (sim.getConfiguration().runMode == SimQPNConfiguration.CVRG_EST && trueAvgST[c] >= 0) {
 					double leftEnd = avgST - stats.ciHalfLenST[c];
 					double rightEnd = avgST + stats.ciHalfLenST[c];						 					
 					if ((trueAvgST[c] >= leftEnd) && (trueAvgST[c] <= rightEnd)) numCvrgs[c]++;
@@ -570,7 +570,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 		// StatsLevel 5:
 		if (statsLevel >= 5) 
 			for (int c = 0; c < numColors; c++)  {
-				double avgST =  sim.configuration.useStdStateStats ? stats.stdStateMeanST[c] : stats.meanST[c];		
+				double avgST =  sim.getConfiguration().useStdStateStats ? stats.stdStateMeanST[c] : stats.meanST[c];		
 				fileST[c].println(avgST); 
 			}
 	}
@@ -643,7 +643,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 		
 		if (numRepls < 1) return;
 		
-		if (sim.configuration.getAnalMethod() == SimQPNConfiguration.WELCH)  {			
+		if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.WELCH)  {			
 			if (statsLevel < 3) return;			
 			for (int c = 0; c < numColors; c++)  {
 				if (sumKthObsrvST[c] == null) return; // color with maxObsrvST[c] <= 0 				
@@ -694,7 +694,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 				stDevAvgST[c]		= Math.sqrt(varAvgST[c]);
 				ciHalfLenAvgST[c]	= Probability.studentTInverse(signLevAvgST[c], numAvgST[c] - 1) * Math.sqrt(varAvgST[c] / numAvgST[c]); 
 				confLevelAvgST[c]	= (int) (100 * (1 - signLevAvgST[c]));				
-				if (sim.configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && sim.configuration.useStdStateStats)  {  								
+				if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && sim.getConfiguration().useStdStateStats)  {  								
 					avgBatchSizeST[c]	= sumBatchSizesST[c] / numRepls;					
 					avgNumBatchesST[c]	= sumNumBatchesST[c] / numRepls;					 
 				}																					
@@ -758,12 +758,12 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 			}
 			if (statsLevel >= 3) {												
 				report.append("-----\n");
-				if (sim.configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && sim.configuration.useStdStateStats)					
+				if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && sim.getConfiguration().useStdStateStats)					
 					report.append("avgBatchSizeST[c]=").append(avgBatchSizeST[c]).append(" avgNumBatchesST[c]=").append(avgNumBatchesST[c]).append("\n");				
 				report.append("meanAvgST[c]=").append(meanAvgST[c]).append(" stDevAvgST[c]=").append(stDevAvgST[c]).append("\n");					
 				report.append("\n");																																							
 				report.append(confLevelAvgST[c]).append("% c.i. = ").append(meanAvgST[c]).append(" +/- ").append(ciHalfLenAvgST[c]).append("\n");			
-				if (sim.configuration.runMode == SimQPNConfiguration.CVRG_EST && trueAvgST[c] >= 0) {					
+				if (sim.getConfiguration().runMode == SimQPNConfiguration.CVRG_EST && trueAvgST[c] >= 0) {					
 					report.append("trueAvgST[c]=").append(trueAvgST[c]).append(" estCvrg[c]=").append(estCvrg[c]).append("\n");					
 					int confLevelCvrg	= (int) (100 * (1 - signLevCvrg));					
 					report.append(confLevelCvrg).append("% c.i. (from F-distr.) = [").append(trCvrgLowerLimit[c]).append(", ").append(trCvrgUpperLimit[c]).append("]\n");
