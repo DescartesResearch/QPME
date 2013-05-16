@@ -79,6 +79,7 @@ public class StatsDocumentBuilder {
 		this.configuration = configuration;
 	}
 
+	//TODO param NET + SIMQPNConfiguration 
 	public Document buildDocument(SimQPNController sim) throws SimQPNException {
 		this.doc = DocumentFactory.getInstance().createDocument();
 		Element root = this.doc.addElement("simqpn-results");
