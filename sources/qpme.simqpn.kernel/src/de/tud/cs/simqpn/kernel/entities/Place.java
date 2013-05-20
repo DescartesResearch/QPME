@@ -64,7 +64,6 @@ import org.dom4j.Element;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
-import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.stats.PlaceStats;
 import de.tud.cs.simqpn.kernel.stats.Stats;
@@ -121,8 +120,72 @@ public class Place extends Node {
 	
 	public PlaceStats		placeStats;	 
 	
-	public Element			element;	
+	public Element			element;
 
+	/**
+	 * Clones the passed place
+	 * @param place
+	 * @param configuration
+	 * @throws SimQPNException
+	 */
+	public Place(Place place, SimQPNConfiguration configuration) throws SimQPNException {
+		super(place.id,place.name);
+		this.colors 				= place.colors;
+		this.numColors		    	= colors.length;	
+		this.tokenPop				= new int[numColors];
+		this.availTokens			= new int[numColors]; 
+		this.statsLevel		   		= place.statsLevel;
+		this.depDiscip		      	= place.depDiscip;
+		this.tokens			       	= place.tokens.clone();//new LinkedList[numColors];
+		this.individualTokens	   	= place.individualTokens.clone();//new boolean[numColors];
+		this.probeActions          	= new int[numColors][place.probeActions[0].length];//numProbes
+		this.probeInstrumentations 	= new Probe[numColors][]; //JUERGEN: seems sufficiently initialized
+		this.element		       	= place.element;
+		
+		for (int c = 0; c < numColors; c++)  { 
+			this.tokenPop[c] 	= place.tokenPop[c];
+			this.availTokens[c]	= place.availTokens[c];
+		}
+		
+		if (depDiscip == FIFO)	{
+			//TODO Test this. This has not been tested, because the example nets did not have FIFO queues
+			this.depQueue = (LinkedList) place.depQueue.clone();
+			this.depReady = place.depReady;		
+		}
+		
+		
+		if (statsLevel > 0) {
+			if (this instanceof QPlace)
+				placeStats = new PlaceStats(id, name, Stats.QUE_PLACE_DEP, colors, statsLevel, configuration);
+			else
+				placeStats = new PlaceStats(id, name, Stats.ORD_PLACE, colors, statsLevel, configuration);				 			
+			if (statsLevel >= 3) {
+				this.tokArrivTS = new LinkedList[numColors];
+				for (int c = 0; c < numColors; c++)
+					this.tokArrivTS[c] = (LinkedList) place.tokArrivTS[c].clone();
+			}				
+		}
+		
+		// By default tracking is disabled
+		Arrays.fill(individualTokens, false);
+		for (int c = 0; c < numColors; c++) {
+			Arrays.fill(probeActions[c], PROBE_ACTION_NONE);
+			probeInstrumentations[c] = new Probe[0];
+		}
+	}
+	
+	public void finishCloning(Place placeToClone, Transition[] trans){
+		this.inTrans		      	= new Transition[placeToClone.inTrans.length];
+		for(int i=0; i<placeToClone.inTrans.length; i++){
+			this.inTrans[i] = trans[placeToClone.inTrans[i].id];
+		}
+		this.outTrans				= new Transition[placeToClone.outTrans.length];
+		for(int i=0; i<placeToClone.outTrans.length; i++){
+			this.outTrans[i] = trans[placeToClone.outTrans[i].id];
+		}
+
+	}
+	
 	/**
 	 * 
 	 * Constructor

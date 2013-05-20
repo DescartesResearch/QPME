@@ -268,7 +268,7 @@ public class StartSimulatorAction extends AbstractHandler {
 					monitor.subTask("Collect Results");
 					StatsDocumentBuilder builder = new StatsDocumentBuilder(
 							result, net, configuration);
-					Document statsDocument = builder.buildDocument(sim);
+					Document statsDocument = builder.buildDocument(sim.getConfiguration());
 					File resultsFile = new File(sim.getConfiguration().getStatsDir(),
 							builder.getResultFileBaseName() + ".simqpn");
 					saveXmlToFile(statsDocument, resultsFile);

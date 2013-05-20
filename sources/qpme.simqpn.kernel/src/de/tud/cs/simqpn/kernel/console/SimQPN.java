@@ -82,7 +82,7 @@ public class SimQPN implements IApplication {
 		// document builder does not support these methods yet.
 		if ((result != null) && (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS)) {
 			StatsDocumentBuilder builder = new StatsDocumentBuilder(result, net, configurationName);
-			Document statsDocument = builder.buildDocument(sim);
+			Document statsDocument = builder.buildDocument(sim.getConfiguration());
 
 			File resultsFile = null;
 			if (outputFilename != null) {

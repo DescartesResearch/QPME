@@ -176,6 +176,35 @@ public class SimQPNConfiguration {
 	public static final int  OVERFLOW_DET_MIN_CONS_RISING_EPOCHS = 30;
 	public static final int  OVERFLOW_DET_MAX_CONS_RISING_EPOCHS = 100;
 
+	/**
+	 * 
+	 */
+	public SimQPNConfiguration() {
+	}
+		
+	/**
+	 * Creates a copy of the passed configuration
+	 * @param configuration
+	 */
+	public SimQPNConfiguration(SimQPNConfiguration configuration) {
+		this.numRuns 			= configuration.numRuns;
+		this.statsDir 			= configuration.statsDir;
+		this.runMode 			= configuration.runMode;
+		this.analMethod 		= configuration.analMethod;				// Output data analysis method.
+		this.stoppingRule 		= configuration.stoppingRule;				// Simulation stopping criterion.
+		this.rampUpLen			= configuration.rampUpLen;				// Duration of the ramp up period.
+		this.totRunLen			= configuration.totRunLen;				// Maximum total duration of the simulation run (incl. rampUpLen).
+		this.timeBtwChkStops	= configuration.timeBtwChkStops;		// Time between checks if stopping criterion is fulfilled. 
+		this.secondsBtwChkStops = configuration.secondsBtwChkStops;	// Seconds between checks if stopping criterion is fulfilled. TODO: Add to User's Guide. 		
+		this.inRampUp 			= configuration.inRampUp;				// True if still in RampUp period (no measurements taken).
+		this.endRampUpClock		= configuration.endRampUpClock;		// Clock at the end of RampUp, i.e. beginning of the measurement period.
+		this.endRunClock		= configuration.endRunClock;			// Clock at the end of the run.
+		this.msrmPrdLen			= configuration.msrmPrdLen;			// Duration of the measurement period (endRunClock - endRampUpClock).
+		this.beginRunWallClock	= configuration.beginRunWallClock;		// currentTimeMillis at the begin of the run (wall clock time).
+		this.endRunWallClock	= configuration.endRunWallClock;		// currentTimeMillis at the end of the run (wall clock time).
+		this.runWallClockTime	= configuration.runWallClockTime;		// Total duration of the run in seconds.
+	}
+
 	public int getAnalMethod() {
 		return analMethod;
 	}

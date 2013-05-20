@@ -28,7 +28,7 @@ public class Executor {
 	private double clock; // Global simulation clock. Time is usually measured
 
 	// in milliseconds.
-	public static PriorityQueue<QueueEvent> eventList = // Global simulation
+	public PriorityQueue<QueueEvent> eventList = // Global simulation
 														// event list. Contains
 														// events scheduled for
 														// processing at
@@ -65,14 +65,8 @@ public class Executor {
 	 * @exception
 	 */
 	public Net run() throws SimQPNException {
-		// SimonSpinner: TEMP CHANGE
-		// try {
-		// System.in.read();
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// }
-		// SimonSpinner: TEMP CHANGE
-
+		System.out.println("eventList.size() "+eventList.size()); //TODO DELETE
+		
 		boolean[] transStatus; // Transition status: true = enabled, false =
 								// disabled
 		int enTransCnt = 0;
@@ -233,7 +227,11 @@ public class Executor {
 					fireCnt++;
 				}
 			} // end firing enabled transitions
-
+			
+			
+			System.out.println("-->after[1] eventList size is "+eventList.size());
+			
+			
 			// Step 2: Make sure all service completion events in PS QPlaces
 			// have been scheduled
 			for (int q = 0; q < net.getNumQueues(); q++)
@@ -246,6 +244,7 @@ public class Executor {
 			 * if ((qpl.queue.queueDiscip == Queue.PS) &&
 			 * (!qpl.queue.eventsUpToDate)) qpl.queue.updateEvents(); }
 			 */
+			System.out.println("-->after[2] eventList size is "+eventList.size());
 
 			// Step 3: Process next event in event list
 			if (eventList.size() > 0) {
@@ -446,7 +445,8 @@ public class Executor {
 	 * @return 
 	 * @exception
 	 */
-	public static void scheduleEvent(double time, Queue queue, Token token) {
+	public void scheduleEvent(double time, Queue queue, Token token) {
+		System.out.println("SCHEDULE EVENT CALLED");
 		QueueEvent ev = new QueueEvent(time, queue, token);
 		eventList.add(ev);
 		queue.nextEvent = ev;

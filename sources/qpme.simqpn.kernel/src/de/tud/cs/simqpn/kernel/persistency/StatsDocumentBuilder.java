@@ -62,6 +62,11 @@ import de.tud.cs.simqpn.kernel.stats.QueueStats;
 import de.tud.cs.simqpn.kernel.stats.Stats;
 import de.tud.cs.simqpn.kernel.stats.TimeHistogram;
 
+
+
+/**
+* TODO Think about: Change Constructor parameters to Net and SIMQPNConfiguration. This has high impact on whole class
+*/
 public class StatsDocumentBuilder {
 
 	private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HHmmssS");
@@ -71,16 +76,16 @@ public class StatsDocumentBuilder {
 	private final Stats[] data;
 	private Document doc;
 	private final Element net;
-	private final String configuration;
+	private final String configurationName;
 
-	public StatsDocumentBuilder(Stats[] data, Element net, String configuration) {
+
+	public StatsDocumentBuilder(Stats[] data, Element net, String configurationName) {
 		this.data = data;
 		this.net = net;
-		this.configuration = configuration;
+		this.configurationName = configurationName;
 	}
 
-	//TODO param NET + SIMQPNConfiguration 
-	public Document buildDocument(SimQPNController sim) throws SimQPNException {
+	public Document buildDocument(SimQPNConfiguration configuration) throws SimQPNException {
 		this.doc = DocumentFactory.getInstance().createDocument();
 		Element root = this.doc.addElement("simqpn-results");
 		this.doc.setRootElement(root);
@@ -89,25 +94,24 @@ public class StatsDocumentBuilder {
 		String timestamp = TIMESTAMP_FORMAT.format(new Date());
 		root.addAttribute("date", timestamp);
 		root.addAttribute("name", getResultFileBaseName());
-		root.addAttribute("configuration-name", this.configuration);
+		root.addAttribute("configuration-name", this.configurationName);
 		for (Stats stats : this.data) {
 			if (stats != null) {
 				if (!stats.completed) {
 					log.error("AggregateStats " + stats.name + " Error: Attempting to access statistics before data collection has finished!");
 					throw new SimQPNException();
 				}
-				addStats(stats, this.doc.getRootElement(), sim);
+				addStats(stats, this.doc.getRootElement(), configuration);
 			}
 		}
-//		this.doc.add(this.net);
 		return this.doc;
 	}
 
 	public String getResultFileBaseName() {
-		return "SimQPN_Output_" + this.configuration + "_" + TIMESTAMP_FORMAT.format(new Date());
+		return "SimQPN_Output_" + this.configurationName + "_" + TIMESTAMP_FORMAT.format(new Date());
 	}
 	
-	private void addStats(Stats stats, Element parent, SimQPNController sim) {
+	private void addStats(Stats stats, Element parent, SimQPNConfiguration configuration) {
 		Element place = parent.addElement("observed-element");
 		switch (stats.type) {
 		case Stats.ORD_PLACE:
@@ -140,11 +144,11 @@ public class StatsDocumentBuilder {
 		}
 		place.addAttribute("stats-level", Integer.toString(stats.statsLevel));
 		if (stats.colors != null) {
-			addColors(stats, place, sim);
+			addColors(stats, place, configuration);
 		}
 	}
 
-	private void addColors(Stats stats, Element place, SimQPNController sim) {
+	private void addColors(Stats stats, Element place, SimQPNConfiguration configuration) {
 		for (int colorIndex = 0; colorIndex < stats.colors.length; colorIndex++) {
 			String colorName = stats.colors[colorIndex];
 			Element color = place.addElement("color");
@@ -154,13 +158,13 @@ public class StatsDocumentBuilder {
 			switch (stats.type) {
 			case Stats.ORD_PLACE:
 			case Stats.QUE_PLACE_DEP:
-				addOrdinaryPlaceMetrics((PlaceStats) stats, color, colorIndex, sim);
+				addOrdinaryPlaceMetrics((PlaceStats) stats, color, colorIndex, configuration);
 				break;
 			case Stats.QUE_PLACE_QUEUE:
-				addQPlaceQueueMetrics((QPlaceQueueStats) stats, color, colorIndex, sim);
+				addQPlaceQueueMetrics((QPlaceQueueStats) stats, color, colorIndex, configuration);
 				break;
 			case Stats.PROBE:
-				addProbeMetrics((ProbeStats) stats, color, colorIndex, sim);
+				addProbeMetrics((ProbeStats) stats, color, colorIndex, configuration);
 				break;
 			case Stats.QUEUE:
 				// nothing
@@ -174,7 +178,7 @@ public class StatsDocumentBuilder {
 		}
 	}
 	
-	private void addOrdinaryPlaceMetrics(PlaceStats stats, Element color, int colorIndex, SimQPNController sim) {
+	private void addOrdinaryPlaceMetrics(PlaceStats stats, Element color, int colorIndex, SimQPNConfiguration configuration) {
 		if (stats.statsLevel >= 1) {
 			addMetric(color, "arrivThrPut", stats.arrivThrPut[colorIndex]);
 			addMetric(color, "deptThrPut", stats.deptThrPut[colorIndex]);
@@ -192,7 +196,7 @@ public class StatsDocumentBuilder {
 			addMetric(color, "maxST", stats.maxST[colorIndex]);
 			addMetric(color, "meanST", stats.meanST[colorIndex]);
 			addMetric(color, "stDevST", stats.stDevST[colorIndex]);
-			if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS
+			if (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS
 					&& stats.minBatches[colorIndex] > 0
 					&& stats.numBatchesST[colorIndex] >= stats.minBatches[colorIndex]) {
 				addMetric(color, "stdStateMeanST", stats.stdStateMeanST[colorIndex]);
@@ -205,7 +209,7 @@ public class StatsDocumentBuilder {
 		}
 	}
 	
-	private void addProbeMetrics(ProbeStats stats, Element color, int colorIndex, SimQPNController sim) {
+	private void addProbeMetrics(ProbeStats stats, Element color, int colorIndex, SimQPNConfiguration configuration) {
 		if (stats.statsLevel >= 1) {
 			addMetric(color, "arrivThrPut", stats.arrivThrPut[colorIndex]);
 			addMetric(color, "deptThrPut", stats.deptThrPut[colorIndex]);
@@ -223,7 +227,7 @@ public class StatsDocumentBuilder {
 			addMetric(color, "maxST", stats.maxST[colorIndex]);
 			addMetric(color, "meanST", stats.meanST[colorIndex]);
 			addMetric(color, "stDevST", stats.stDevST[colorIndex]);
-			if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS
+			if (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS
 					&& stats.minBatches[colorIndex] > 0
 					&& stats.numBatchesST[colorIndex] >= stats.minBatches[colorIndex]) {
 				addMetric(color, "stdStateMeanST", stats.stdStateMeanST[colorIndex]);
@@ -241,8 +245,8 @@ public class StatsDocumentBuilder {
 			addMetric(place, "queueUtilQPl", stats.queueUtilQPl);
 	}
 	
-	private void addQPlaceQueueMetrics(QPlaceQueueStats stats, Element color, int colorIndex, SimQPNController sim) {
-		addOrdinaryPlaceMetrics(stats, color, colorIndex, sim);
+	private void addQPlaceQueueMetrics(QPlaceQueueStats stats, Element color, int colorIndex, SimQPNConfiguration configuration) {
+		addOrdinaryPlaceMetrics(stats, color, colorIndex, configuration);
 	}
 
 	private void addQueueMetrics(QueueStats stats, Element place) {

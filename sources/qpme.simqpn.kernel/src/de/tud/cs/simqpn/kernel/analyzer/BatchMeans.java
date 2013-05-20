@@ -3,10 +3,7 @@ package de.tud.cs.simqpn.kernel.analyzer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.dom4j.Element;
-
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
-import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.QPlace;

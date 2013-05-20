@@ -29,6 +29,7 @@ public class ReplicationDeletion implements Analyzer{
 	@Override
 	public Stats[] analyze(Net net, SimQPNConfiguration configuration,
 			SimulatorProgress monitor) throws SimQPNException {
+		log.error("Replication/Deletion actually not supported!");
 		throw (new SimQPNException());
 	}
 	
@@ -162,12 +163,18 @@ public class ReplicationDeletion implements Analyzer{
 		// Run replication loop
 		for (int i = 0; i < configuration.getNumRuns(); i++) {
 			progressMonitor.startSimulationRun(i + 1);
-			//sim.run();
-			Executor executor = new Executor(net, configuration, monitor);
+			SimQPNConfiguration configurationCopy = new SimQPNConfiguration(configuration);
+			Net netCoppy = new Net(net, configurationCopy);
+			netCoppy.finishCloning(net, configuration);
+			System.out.println("run "+(i+1)+" started");
+
+			Executor executor = new Executor(netCoppy, configurationCopy, monitor);
+			netCoppy = executor.run();
+			
 			progressMonitor.finishSimulationRun();
 
 			for (int p = 0; p < numPlaces; p++) {
-				pl = places[p];
+				pl = netCoppy.getPlace(p);
 				if (pl.statsLevel > 0) {
 					if (pl instanceof QPlace) {
 						QPlace qPl = (QPlace) pl;

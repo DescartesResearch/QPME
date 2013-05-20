@@ -58,7 +58,6 @@ import cern.jet.random.Empirical;
 import cern.jet.random.EmpiricalWalker;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
-import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 
@@ -70,7 +69,7 @@ import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
  */
 
 public class Transition extends Node {
-	
+
 	private static Logger log = Logger.getLogger(Transition.class);
 
 	public int numModes;
@@ -87,18 +86,86 @@ public class Transition extends Node {
 									// (enabled/disabled) of a mode
 	public int enModesCnt; // Number of currently enabled modes
 
-	private Token[] tkCopyBuffer; // INTERNAL: [1..maxNumTokens] with maxNumTokens=max(outFunc[mode, outPlace, color])
-											// a buffer for copying tokens 
-	private int[] tkIndexBuffer; // INTERNAL: [1..maxNumTokens] with maxNumTokens=max(outFunc[mode, outPlace, color])
-											// a buffer for temporarily storing tokens indexes
-	private ProbeTimestamp[] probeData; // INTERNAL: [1..numProbes] buffer to copy probe timestamps between tokens
-	private boolean conflictWarnings = true; // INTERNAL: flag controlling whether warning for conflicting 
-												// timestamps are generated for this transition.
+	private Token[] tkCopyBuffer; // INTERNAL: [1..maxNumTokens] with
+									// maxNumTokens=max(outFunc[mode, outPlace,
+									// color])
+									// a buffer for copying tokens
+	private int[] tkIndexBuffer; // INTERNAL: [1..maxNumTokens] with
+									// maxNumTokens=max(outFunc[mode, outPlace,
+									// color])
+									// a buffer for temporarily storing tokens
+									// indexes
+	private ProbeTimestamp[] probeData; // INTERNAL: [1..numProbes] buffer to
+										// copy probe timestamps between tokens
+	private boolean conflictWarnings = true; // INTERNAL: flag controlling
+												// whether warning for
+												// conflicting
+												// timestamps are generated for
+												// this transition.
 
 	public EmpiricalWalker randModeGen; // Random number generator for
 										// generating modes to fire
-	
+
 	private Random randGen = new Random();
+
+	public Transition(Transition transition, Place[] places,
+			SimQPNConfiguration configuration) throws SimQPNException {
+		super(transition.id, transition.name);
+		this.numModes = transition.numModes;
+		this.transWeight = transition.transWeight;
+		this.modeWeights = new double[transition.numModes];
+		this.inPlaces = new Place[transition.inPlaces.length];
+		this.outPlaces = new Place[transition.outPlaces.length];
+
+		for (int i = 0; i < transition.inPlaces.length; i++) {
+			this.inPlaces[i] = places[transition.inPlaces[i].id];
+		}
+		for (int i = 0; i < transition.outPlaces.length; i++) {
+			this.outPlaces[i] = places[transition.outPlaces[i].id];
+		}
+
+		this.inFunc = transition.inFunc.clone();// [mode, inPlace, color]
+		this.outFunc = transition.outFunc.clone();
+
+		this.modeStatus = transition.modeStatus.clone();
+
+		this.enModesCnt = transition.enModesCnt;
+		this.probeData = transition.probeData;// new ProbeTimestamp[numProbes];
+
+		// Create randModeGen
+		double[] pdf = new double[numModes];
+		for (int m = 0; m < numModes; m++)
+			pdf[m] = 1;
+		this.randModeGen = new EmpiricalWalker(pdf, Empirical.NO_INTERPOLATION,
+				RandomNumberGenerator.nextRandNumGen());
+		// Note: Here we use a default distribution. The actual distribution is
+		// set each time before using randModeGen.
+		
+		this.tkCopyBuffer = transition.tkCopyBuffer.clone(); //JUERGEN: seems sufficient in our context
+		this.tkIndexBuffer = transition.tkIndexBuffer.clone(); //JUERGEN: OK
+//		System.out.println("tkCopyBuffer");	//TODO JUERGEN DELETE
+//		System.out.println("\tlength"+transition.tkCopyBuffer.length);//TODO JUERGEN DELETE
+//		System.out.println("\t[0]"+transition.tkCopyBuffer[0]); //TODO JUERGEN DELETE
+//		System.out.println("\tlength"+this.tkCopyBuffer.length+"<-this");//TODO JUERGEN DELETE
+//		System.out.println("\t[0]"+this.tkCopyBuffer[0]+"<-this");//TODO JUERGEN DELETE
+
+//		System.out.println("PROBEDATA");
+//		System.out.println("transition.probeData "+transition.probeData.length);
+//		System.out.println("this.probeData"+ this.probeData.length);
+
+	}
+
+	public void finishCloning(Transition transitionToClone, Place[] places) {
+		this.inPlaces = new Place[transitionToClone.inPlaces.length];
+		for (int i = 0; i < transitionToClone.inPlaces.length; i++) {
+			this.inPlaces[i] = places[transitionToClone.inPlaces[i].id];
+		}
+		this.outPlaces = new Place[transitionToClone.outPlaces.length];
+		for (int i = 0; i < transitionToClone.outPlaces.length; i++) {
+			this.outPlaces[i] = places[transitionToClone.outPlaces[i].id];
+		}
+
+	}
 
 	/**
 	 * Constructor
@@ -117,7 +184,8 @@ public class Transition extends Node {
 	 *            - transition weight
 	 */
 	public Transition(int id, String name, int numModes, int numInPlaces,
-			int numOutPlaces, int numProbes, double transWeight) throws SimQPNException {
+			int numOutPlaces, int numProbes, double transWeight)
+			throws SimQPNException {
 		super(id, name);
 		this.numModes = numModes;
 		this.transWeight = transWeight;
@@ -175,7 +243,7 @@ public class Transition extends Node {
 				enModesCnt++;
 			}
 		}
-		
+
 		// Init token copy buffer
 		int maxNumTokens = 0;
 		for (m = 0; m < nM; m++) {
@@ -358,69 +426,93 @@ public class Transition extends Node {
 			for (c = 0; c < nC; c++) {
 				n = inFunc[mode][p][c];
 				if (n != 0) {
-					if (n > maxN) maxN = n;
+					if (n > maxN)
+						maxN = n;
 
-					Token[] tokens = pl.removeTokens(c, n, tkCopyBuffer, executor);
+					Token[] tokens = pl.removeTokens(c, n, tkCopyBuffer,
+							executor);
 					prC = pl.probeInstrumentations[c].length;
-					
-					if(prC > 0) {
-						// The input place is instrumented with probes, so look for timestamp data
-						// Iterate over all probes relevant to the current input place
+
+					if (prC > 0) {
+						// The input place is instrumented with probes, so look
+						// for timestamp data
+						// Iterate over all probes relevant to the current input
+						// place
 						for (int pr = 0; pr < prC; pr++) {
 							probe = pl.probeInstrumentations[c][pr];
 							probeIdx = probe.id;
 							probeAction = pl.probeActions[c][probeIdx];
 							ProbeTimestamp data = probeData[probeIdx];
-							
-							switch(probeAction) {
+
+							switch (probeAction) {
 							case Place.PROBE_ACTION_END_ON_EXIT:
 							case Place.PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT:
 								if (pl.individualTokens[c]) {
 									for (int i = 0; i < n; i++) {
 										ProbeTimestamp curStamp = tokens[i].probeData[pr];
-										if (curStamp == null) continue;
-										
-										probe.probeStats.updateSojTimeStats(c, executor.getClock() - curStamp.timestamp, executor);
+										if (curStamp == null)
+											continue;
+
+										probe.probeStats.updateSojTimeStats(c,
+												executor.getClock()
+														- curStamp.timestamp,
+												executor);
 									}
 								}
 								break;
 							case Place.PROBE_ACTION_START_ON_EXIT:
 							case Place.PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY:
 								if (data == null) {
-									// There is no timestamp so far for the current probe, so create it.
-									data = new ProbeTimestamp(probeIdx, executor.getClock());
+									// There is no timestamp so far for the
+									// current probe, so create it.
+									data = new ProbeTimestamp(probeIdx,
+											executor.getClock());
 								}
 								break;
 							default:
 								if (pl.individualTokens[c]) {
 									boolean conflict = false;
-									int j = 0; //the actual number of tokens with timestamps
-									// Filter out null timestamps and check that there are no conflicting timestamps
+									int j = 0; // the actual number of tokens
+												// with timestamps
+									// Filter out null timestamps and check that
+									// there are no conflicting timestamps
 									for (int i = 0; i < n; i++) {
 										ProbeTimestamp curStamp = tokens[i].probeData[pr];
-										if (curStamp == null) continue;
-										
+										if (curStamp == null)
+											continue;
+
 										tkIndexBuffer[j] = i;
 										j++;
-										
+
 										if (data == null) {
-											data = curStamp;									
+											data = curStamp;
 										} else if (data.timestamp != curStamp.timestamp) {
 											conflict = true;
 											if (conflictWarnings) {
 												log.warn(formatMultilineMessage(
-														"Conflicting timestamps for probe " + probe.name + " at transition " + name + " and mode " + mode + ".",
+														"Conflicting timestamps for probe "
+																+ probe.name
+																+ " at transition "
+																+ name
+																+ " and mode "
+																+ mode + ".",
 														"One randomly chosen timestamp will be used. Other timestamps are dumped.",
-														"Further occurences of this warning are disabled for this transition."
-														));
-												conflictWarnings = false; // no further warnings for this mode
+														"Further occurences of this warning are disabled for this transition."));
+												conflictWarnings = false; // no
+																			// further
+																			// warnings
+																			// for
+																			// this
+																			// mode
 											}
 										}
 									}
-									
+
 									if (conflict) {
-										// Choose a timestamp from one tokens in the list randomly								
-										int randTokenIndex = tkIndexBuffer[randGen.nextInt(j)];
+										// Choose a timestamp from one tokens in
+										// the list randomly
+										int randTokenIndex = tkIndexBuffer[randGen
+												.nextInt(j)];
 										data = tokens[randTokenIndex].probeData[pr];
 									}
 								}
@@ -432,9 +524,11 @@ public class Transition extends Node {
 				}
 			}
 		}
-		for (int i = 0; i < maxN; i++) tkCopyBuffer[i] = null; // NOTE: set all references in the token buffer to null, 
-															   // so that they can be deleted by the GC.
-		
+		for (int i = 0; i < maxN; i++)
+			tkCopyBuffer[i] = null; // NOTE: set all references in the token
+									// buffer to null,
+									// so that they can be deleted by the GC.
+
 		// Step 2: Deposit output tokens
 		nP = outPlaces.length;
 		for (p = 0; p < nP; p++) {
@@ -454,16 +548,21 @@ public class Transition extends Node {
 							probeIdx = probe.id;
 							probeAction = pl.probeActions[c][probeIdx];
 							ProbeTimestamp timestamp = probeData[probeIdx];
-							switch(probeAction) {
+							switch (probeAction) {
 							case Place.PROBE_ACTION_START_ON_ENTRY:
 							case Place.PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT:
 								if (timestamp == null) {
-									outData[pr] = new ProbeTimestamp(probeIdx, executor.getClock());
+									outData[pr] = new ProbeTimestamp(probeIdx,
+											executor.getClock());
 								}
 								break;
 							case Place.PROBE_ACTION_END_ON_ENTRY:
 							case Place.PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY:
-								probe.probeStats.updateSojTimeStats(c, executor.getClock() - timestamp.timestamp, executor);
+								probe.probeStats
+										.updateSojTimeStats(c,
+												executor.getClock()
+														- timestamp.timestamp,
+												executor);
 								break;
 							default:
 								outData[pr] = timestamp;
@@ -474,25 +573,33 @@ public class Transition extends Node {
 						for (int i = 0; i < n; i++) {
 							tkCopyBuffer[i] = new Token(pl, c, outData);
 						}
-						pl.addTokens(c, n, tkCopyBuffer, executor); // Note: the contents of tkCopyBuffer are all set to null.
+						pl.addTokens(c, n, tkCopyBuffer, executor); // Note: the
+																	// contents
+																	// of
+																	// tkCopyBuffer
+																	// are all
+																	// set to
+																	// null.
 					} else {
 						pl.addTokens(c, n, null, executor);
 					}
 				}
 			}
 		}
-		
-		// ATTENTION: all elements of probeData must be reset to null, so that 
+
+		// ATTENTION: all elements of probeData must be reset to null, so that
 		// the next fire works correctly.
 		for (int i = 0; i < probeData.length; i++) {
 			probeData[i] = null;
 		}
 
 	} // end fire()
-	
+
 	/**
 	 * Get the index of an output place in this transition.
-	 * @param place output place
+	 * 
+	 * @param place
+	 *            output place
 	 * @return index of place (or -1 if place is not an output place)
 	 */
 	public int getIndexOfOutputPlace(Place place) {
@@ -503,10 +610,12 @@ public class Transition extends Node {
 		}
 		return -1;
 	}
-	
+
 	/**
 	 * Get the index of an input place in this transition.
-	 * @param place input place
+	 * 
+	 * @param place
+	 *            input place
 	 * @return index of place (or -1 if place is not an input place)
 	 */
 	public int getIndexOfInputPlace(Place place) {

@@ -218,6 +218,37 @@ public class SimQPNController {
 												// into Constructor
 
 	}
+	
+	private void initializeWorkingVariables() throws SimQPNException {
+		getConfiguration().inRampUp = true;
+		getConfiguration().endRampUpClock = 0;
+		getConfiguration().endRunClock = 0;
+		getConfiguration().msrmPrdLen = 0; // Set at the end of the run when the
+											// actual length is known.
+		getConfiguration().beginRunWallClock = 0;
+		getConfiguration().endRunWallClock = 0;
+		getConfiguration().runWallClockTime = 0;
+
+		setClock(0); // Note that it has been assumed throughout the code that
+		// the simulation starts at virtual time 0.
+
+		eventList.clear();
+		// eventList = new LinkedList(); // Old LinkedList implementation of the
+		// event list.
+
+		// Make sure clock has been initialized before calling init below
+		// Call places[i].init() first and then thans[i].init() and
+		// queues[i].init()
+		for (int i = 0; i < getNet().getNumProbes(); i++)
+			getNet().getProbe(i).init();
+		for (int i = 0; i < getNet().getNumPlaces(); i++)
+			getNet().getPlace(i).init(getClock());
+		for (int i = 0; i < getNet().getNumTrans(); i++)
+			getNet().getTrans(i).init();
+		for (int i = 0; i < getNet().getNumQueues(); i++)
+			getNet().getQueue(i).init(configuration);
+		//System.out.println("initializeWorkingVariables" + eventList.size()); //TODO delete
+	}
 
 	/**
 	 * Method execute - executes the simulation run
@@ -286,411 +317,6 @@ public class SimQPNController {
 		}
 		return result;
 	}
-
-	private void initializeWorkingVariables() throws SimQPNException {
-		getConfiguration().inRampUp = true;
-		getConfiguration().endRampUpClock = 0;
-		getConfiguration().endRunClock = 0;
-		getConfiguration().msrmPrdLen = 0; // Set at the end of the run when the
-											// actual length is known.
-		getConfiguration().beginRunWallClock = 0;
-		getConfiguration().endRunWallClock = 0;
-		getConfiguration().runWallClockTime = 0;
-
-		setClock(0); // Note that it has been assumed throughout the code that
-		// the simulation starts at virtual time 0.
-
-		eventList.clear();
-		// eventList = new LinkedList(); // Old LinkedList implementation of the
-		// event list.
-
-		// Make sure clock has been initialized before calling init below
-		// Call places[i].init() first and then thans[i].init() and
-		// queues[i].init()
-		for (int i = 0; i < getNet().getNumProbes(); i++)
-			getNet().getProbe(i).init();
-		for (int i = 0; i < getNet().getNumPlaces(); i++)
-			getNet().getPlace(i).init(getClock());
-		for (int i = 0; i < getNet().getNumTrans(); i++)
-			getNet().getTrans(i).init();
-		for (int i = 0; i < getNet().getNumQueues(); i++)
-			getNet().getQueue(i).init(configuration);
-	}
-
-	// /**
-	// * Method run - starts the simulation run.
-	// *
-	// * @param
-	// * @return
-	// * @exception
-	// */
-	// public SimQPNController run() throws SimQPNException {
-	// // SimonSpinner: TEMP CHANGE
-	// // try {
-	// // System.in.read();
-	// // } catch (IOException e) {
-	// // e.printStackTrace();
-	// // }
-	// // SimonSpinner: TEMP CHANGE
-	//
-	// boolean[] transStatus; // Transition status: true = enabled, false =
-	// disabled
-	// int enTransCnt = 0;
-	// int[] enTransIDs = new int[getNet().getNumTrans()];
-	//
-	// EmpiricalWalker randTransGen; // Random number generator for generating
-	// next transition to fire.
-	//
-	// // Initialize transStatus and enTransCnt
-	// transStatus = new boolean[getNet().getNumTrans()];
-	// for (int i = 0; i < getNet().getNumTrans(); i++) {
-	// if (getNet().getTrans(i).enabled()) {
-	// transStatus[i] = true;
-	// enTransCnt++;
-	// } else {
-	// transStatus[i] = false;
-	// }
-	// }
-	//
-	// // Create randTransGen
-	// double[] pdf = new double[getNet().getNumTrans()];
-	// for (int t = 0; t < getNet().getNumTrans(); t++)
-	// pdf[t] = 1;
-	//
-	// randTransGen = new EmpiricalWalker(pdf, Empirical.NO_INTERPOLATION,
-	// RandomNumberGenerator.nextRandNumGen());
-	// // Note: Here we use a default distribution. The actual distribution is
-	// set each time before using randTransGen.
-	//
-	// // Note: we store totRunLen and rampUpLen in local variables to improve
-	// performance of the while loop below.
-	// double totRunL = getConfiguration().totRunLen;
-	// double rampUpL = getConfiguration().rampUpLen;
-	// double nextChkAfter = getConfiguration().timeBtwChkStops > 0 ?
-	// getConfiguration().timeBtwChkStops : totRunL; // If secondsBtwChkStops is
-	// used, disable checking of stopping criterion
-	// // until beforeInitHeartBeat == false. By setting nextChkAfter = totRunL
-	// // stopping criterion checking is disabled.
-	// /* ORIGINAL HEARTBEAT IMPLEMENTATION
-	// double nextChkAfter = timeBtwChkStops > 0 ? timeBtwChkStops :
-	// timeInitHeartBeat;
-	// */
-	//
-	// getConfiguration().beginRunWallClock = System.currentTimeMillis();
-	//
-	//
-	// boolean beforeInitHeartBeat = true; // Flag indicating when we are still
-	// before the first heart beat (progress update).
-	// // If true, the value of timeBtwHeartBeats is still measured, and set to
-	// 0.
-	// double nextHeartBeat = 0.0; // Simulation run time of the next heart
-	// beat.
-	// double timeBtwHeartBeats = 0.0; // How often progress updates are made
-	// (in logical simulation time units).
-	// long lastTimeMsrm = System.currentTimeMillis(); // The value of the last
-	// wall clock time measurement. Used for progress updates.
-	// double maxProgressInterval =
-	// getProgressMonitor().getMaxUpdateLogicalTimeInterval();
-	// long progressUpdateRate =
-	// getProgressMonitor().getMaxUpdateRealTimeInterval();
-	//
-	// // BEGIN MAIN SIMULATION LOOP
-	// ---------------------------------------------------------------------------------
-	// while (getClock() < totRunL) {
-	//
-	// if (getConfiguration().inRampUp && getClock() > rampUpL) {
-	// getConfiguration().inRampUp = false;
-	// getConfiguration().endRampUpClock = getClock();
-	// if (getConfiguration().getAnalMethod() == SimQPNConfiguration.WELCH)
-	// break;
-	// for (int p = 0; p < getNet().getNumPlaces(); p++)
-	// getNet().getPlace(p).start(this);
-	// for (int q = 0; q < getNet().getNumQueues(); q++)
-	// getNet().getQueue(q).start(getClock());
-	// for (int pr = 0; pr < getNet().getNumProbes(); pr++)
-	// getNet().getProbe(pr).start(this);
-	//
-	// getProgressMonitor().finishWarmUp();
-	// }
-	//
-	// // Step 1: Fire until no transitions are enabled.
-	// int fireCnt = 0;
-	// while (enTransCnt > 0) {
-	// Transition nextTrans; // transition to fire next
-	//
-	// if (enTransCnt == 1) {
-	// nextTrans = null;
-	// for (int t = 0; t < getNet().getNumTrans(); t++) {
-	// if (transStatus[t]) {
-	// nextTrans = getNet().getTrans(t);
-	// break;
-	// }
-	// }
-	// } else {
-	// // Choose transition to fire based on weights
-	// pdf = new double[enTransCnt];
-	// for (int t = 0, e = 0; t < getNet().getNumTrans(); t++) {
-	// if (transStatus[t]) {
-	// pdf[e] = getNet().getTrans(t).transWeight;
-	// enTransIDs[e] = t;
-	// e++;
-	// }
-	// }
-	// randTransGen.setState2(pdf);
-	// nextTrans = getNet().getTrans(enTransIDs[randTransGen.nextInt()]);
-	// }
-	//
-	// nextTrans.fire(this); // Fire transition
-	//
-	// // Update transStatus
-	// int p, t, nP, nT;
-	// Place pl;
-	// Transition tr;
-	// // Check if some transitions were disabled (newly-disabled transitions)
-	// nP = nextTrans.inPlaces.length;
-	// for (p = 0; p < nP; p++) {
-	// pl = nextTrans.inPlaces[p];
-	// nT = pl.outTrans.length;
-	// for (t = 0; t < nT; t++) {
-	// tr = pl.outTrans[t];
-	// if ((!tr.enabled()) && transStatus[tr.id]) {
-	// transStatus[tr.id] = false;
-	// enTransCnt--;
-	// }
-	// }
-	// }
-	// // Check if some transitions were enabled (newly-enabled transitions)
-	// nP = nextTrans.outPlaces.length;
-	// for (p = 0; p < nP; p++) {
-	// pl = nextTrans.outPlaces[p];
-	// nT = pl.outTrans.length;
-	// for (t = 0; t < nT; t++) {
-	// tr = pl.outTrans[t];
-	// if (tr.enabled() && (!transStatus[tr.id])) {
-	// transStatus[tr.id] = true;
-	// enTransCnt++;
-	// }
-	// }
-	// }
-	//
-	// // If there are always transitions enabled,
-	// // this results in an infinite loop. Make it
-	// // possible for the user to cancel the simulation
-	// // anyway.
-	// if (fireCnt > 10000000) {
-	// if (getProgressMonitor().isCanceled()) {
-	// setClock(totRunL);
-	// break;
-	// }
-	// fireCnt = 0;
-	// } else {
-	// fireCnt++;
-	// }
-	// } // end firing enabled transitions
-	//
-	// // Step 2: Make sure all service completion events in PS QPlaces have
-	// been scheduled
-	// for (int q = 0; q < getNet().getNumQueues(); q++)
-	// if (getNet().getQueue(q).queueDiscip == Queue.PS &&
-	// (!getNet().getQueue(q).eventsUpToDate))
-	// getNet().getQueue(q).updateEvents(this);
-	// /* Alternative Code
-	// for (int p = 0; p < numPlaces; p++)
-	// if (places[p] instanceof QPlace) {
-	// QPlace qpl = (QPlace) places[p];
-	// if ((qpl.queue.queueDiscip == Queue.PS) && (!qpl.queue.eventsUpToDate))
-	// qpl.queue.updateEvents();
-	// }
-	// */
-	//
-	// // Step 3: Process next event in event list
-	// if (eventList.size() > 0) {
-	// QueueEvent ev = eventList.poll();
-	// // Event ev = (Event) eventList.remove(0); // Old LinkedList
-	// implementation of the event list.
-	//
-	// // Advance simulation time
-	// setClock(ev.time);
-	//
-	// QPlace qpl = (QPlace) ev.token.place;
-	// qpl.completeService(ev.token, this);
-	//
-	// // Check if some transitions were enabled and update transStatus
-	// int t, nT;
-	// Transition tr;
-	// nT = qpl.outTrans.length;
-	// for (t = 0; t < nT; t++) {
-	// tr = qpl.outTrans[t];
-	// if (tr.enabled() && (!transStatus[tr.id])) {
-	// transStatus[tr.id] = true;
-	// enTransCnt++;
-	// }
-	// }
-	// } else {
-	// log.error("QPN is not live.");
-	// throw new SimQPNException();
-	// }
-	//
-	// // Step 4: Heart Beat
-	// if(beforeInitHeartBeat) {
-	// long curTimeMsrm = System.currentTimeMillis();
-	// if(((curTimeMsrm - lastTimeMsrm) >=
-	// SimQPNConfiguration.MAX_INITIAL_HEARTBEAT)
-	// || (getClock() >= maxProgressInterval)) {
-	//
-	// if(getClock() >= maxProgressInterval) {
-	// timeBtwHeartBeats = maxProgressInterval;
-	// } else {
-	// timeBtwHeartBeats = (getClock() / (curTimeMsrm - lastTimeMsrm)) *
-	// progressUpdateRate;
-	// }
-	// beforeInitHeartBeat = false;
-	// if (getConfiguration().timeBtwChkStops == 0) {
-	// // enable checking of stopping criterion
-	// nextChkAfter = getClock();
-	// }
-	// }
-	//
-	// if (getProgressMonitor().isCanceled()) {
-	// setClock(totRunL);
-	// }
-	// } else {
-	// if(getClock() >= nextHeartBeat) {
-	// long curTimeMsrm = System.currentTimeMillis();
-	// getProgressMonitor().updateSimulationProgress(getClock() / (totRunL - 1)
-	// * 100, (curTimeMsrm - lastTimeMsrm));
-	// lastTimeMsrm = curTimeMsrm;
-	// nextHeartBeat = getClock() + timeBtwHeartBeats;
-	//
-	// if (getProgressMonitor().isCanceled()) {
-	// setClock(totRunL);
-	// }
-	// }
-	// }
-	//
-	// /* ORIGINAL HEARTBEAT IMPLEMENTATION
-	// if (runMode == NORMAL && analMethod != REPL_DEL && clock > nextHeartBeat)
-	// {
-	// double elapsedSecs = (System.currentTimeMillis() - beginRunWallClock) /
-	// 1000;
-	// double clockTimePerSec = clock / elapsedSecs;
-	// log("Info: Simulation time = " + (long) clock +
-	// "  Elapsed wall clock time = ");
-	// if (nextHeartBeat == timeInitHeartBeat) // check if this is the initial
-	// heart beat
-	// logln((int) elapsedSecs + " sec");
-	// else
-	// logln((int) (elapsedSecs / 60) + " min");
-	// nextHeartBeat = Simulator.clock + clockTimePerSec * (secsBtwHeartBeats +
-	// 10);
-	// // Make sure at least secsBtwHeartBeats seconds have elapsed at next
-	// heart beat
-	// }
-	// */
-	//
-	// // Step 5: Check Stopping Criterion
-	// if (getConfiguration().stoppingRule != SimQPNConfiguration.FIXEDLEN &&
-	// (!getConfiguration().inRampUp) && getClock() > nextChkAfter) {
-	// double elapsedSecs = (System.currentTimeMillis() -
-	// getConfiguration().beginRunWallClock) / 1000;
-	// double clockTimePerSec = getClock() / elapsedSecs;
-	// boolean done = true;
-	// Place pl = null;
-	//
-	// for (int p = 0; p < getNet().getNumPlaces(); p++) {
-	// pl = getNet().getPlace(p);
-	// if (pl.statsLevel >= 3) {
-	// if (!pl.placeStats.enoughStats(this)) {
-	// done = false;
-	// break;
-	// }
-	// if ((pl instanceof QPlace) && !(((QPlace)
-	// pl).qPlaceQueueStats.enoughStats(this))) {
-	// done = false;
-	// break;
-	// }
-	// }
-	// }
-	//
-	// if (!done) {
-	// // The test already failed for a place.
-	// getProgressMonitor().precisionCheck(done, pl.name);
-	// } else {
-	// // Check also the probes, whether they have enough samples
-	// Probe probe = null;
-	// for (int pr = 0; pr < getNet().getNumProbes(); pr++) {
-	// probe = getNet().getProbe(pr);
-	// if (probe.statsLevel >= 3) {
-	// if (!probe.probeStats.enoughStats(this)) {
-	// done = false;
-	// break;
-	// }
-	// }
-	// }
-	// if (done) {
-	// getProgressMonitor().precisionCheck(done, null);
-	// break; // exit while loop
-	// } else {
-	// getProgressMonitor().precisionCheck(done, probe.name); //TODO:
-	// distinguish between places and probes.
-	// }
-	// }
-	//
-	// if (getConfiguration().timeBtwChkStops > 0)
-	// nextChkAfter = getClock() + getConfiguration().timeBtwChkStops;
-	// else
-	// nextChkAfter = getClock() + clockTimePerSec *
-	// getConfiguration().secondsBtwChkStops;
-	// }
-	//
-	// }
-	//
-	// // END MAIN SIMULATION LOOP
-	// ---------------------------------------------------------------------------------
-	// getProgressMonitor().updateSimulationProgress(100, 0);
-	//
-	// if (getProgressMonitor().isCanceled()) {
-	// getProgressMonitor().warning("The simulation was canceled by the user.\n"
-	// + "The required precision may not have been reached!");
-	// } else {
-	// if (getClock() >= getConfiguration().totRunLen) {
-	// if (getConfiguration().stoppingRule != SimQPNConfiguration.FIXEDLEN) {
-	// getProgressMonitor().warning("The simulation was stopped because of reaching max totalRunLen.\n"
-	// + "The required precision may not have been reached!");
-	// }
-	// else
-	// log.info("STOPPING because max totalRunLen is reached!");
-	// }
-	// }
-	//
-	// getConfiguration().endRunClock = getClock();
-	// getConfiguration().msrmPrdLen = getConfiguration().endRunClock -
-	// getConfiguration().endRampUpClock;
-	// getConfiguration().endRunWallClock = System.currentTimeMillis();
-	// getConfiguration().runWallClockTime = (getConfiguration().endRunWallClock
-	// - getConfiguration().beginRunWallClock) / 1000; // total time elapsed in
-	// seconds
-	//
-	// log.info("msrmPrdLen= " + getConfiguration().msrmPrdLen +
-	// " totalRunLen= " + getConfiguration().endRunClock + " runWallClockTime="
-	// + (int) (getConfiguration().runWallClockTime / 60) + " min (=" +
-	// getConfiguration().runWallClockTime + " sec)");
-	//
-	//
-	// // Complete statistics collection (make sure this is done AFTER the above
-	// statements)
-	// if (getConfiguration().getAnalMethod() != SimQPNConfiguration.WELCH) {
-	// for (int p = 0; p < getNet().getNumPlaces(); p++)
-	// getNet().getPlace(p).finish(this);
-	// for (int q = 0; q < getNet().getNumQueues(); q++) //NOTE:
-	// queues[*].finish() should be called after places[*].finish()!
-	// getNet().getQueue(q).finish(this);
-	// for (int pr = 0; pr < getNet().getNumProbes(); pr++)
-	// getNet().getProbe(pr).finish(this);
-	// }
-	// return this;
-	// } // end of run() method
-	//
 
 	public Net getNet() {
 		return net;

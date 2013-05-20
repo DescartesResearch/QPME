@@ -196,7 +196,7 @@ public class NetLoader {
 		// -----------------------------------------------------------------------------------------------------------
 		// CONFIGURE TRANSITION MODE WEIGHTS
 		// -----------------------------------------------------------------------------------------------------------
-		net = this.configureTransitionModeWeights(net);
+		net = configureTransitionModeWeights(net);
 		// -----------------------------------------------------------------------------------------------------------
 		// CONFIGURE TRANSITION INPUT/OUTPUT FUNCTIONS [mode, inPlace, color]
 		// -----------------------------------------------------------------------------------------------------------
@@ -569,7 +569,6 @@ public class NetLoader {
 								+ ")");
 					}
 					queue.addQPlace((QPlace) places[i]);
-					// As was: queue.addQPlace((QPlace) net.getPlaceElement(i));
 				} catch (NoSuchElementException ex) {
 					log.error(formatDetailMessage("No queue defined!",
 							"place-num", Integer.toString(i), "place.id",
