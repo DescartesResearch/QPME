@@ -50,30 +50,75 @@ public class ReplicationDeletion implements Analyzer{
 	 * @exception
 	 */
 	private static AggregateStats[] runMultRepl(Net net, SimQPNConfiguration configuration, SimulatorProgress monitor, Element netXML, String configurationName) throws SimQPNException {
-
-		//SimQPNController sim = new SimQPNController(netXML, configuration, null);
 		if (configuration.getNumRuns() <= 1) {
 			log.error("numRuns should be > 1!");
 			throw new SimQPNException();
-		}	
+		}				
 
-		// useStdStateStats configurable only in MULT_REPL mode
-		configuration.useStdStateStats = false;
-		//   - automatically set to true in CVRG_EST mode.
-		//   - automatically set to false in NORMAL:REPL_DEL mode. 					
+		configuration.setUseStdStateStats(false);
 		
+		AggregateStats[] aggrStats = createStatsArray(net, configuration, netXML);
+		int numPlaces = net.getNumPlaces();
 		progressMonitor = monitor;
+		progressMonitor.startSimulation();
 
+		// Run replication loop
+		for (int i = 0; i < configuration.getNumRuns(); i++) {
+			progressMonitor.startSimulationRun(i + 1);
+
+			Net netCopy = new Net(net, configuration);
+			netCopy.finishCloning(net, configuration);
+			Executor executor = new Executor(netCopy, configuration, monitor);
+			netCopy = executor.run();
+			
+			progressMonitor.finishSimulationRun();
+
+			putStatisticsIntoArray(configuration, aggrStats, numPlaces, netCopy);
+
+			if (progressMonitor.isCanceled())
+				break;
+		}
+
+		progressMonitor.finishSimulation();
+
+		for (int i = 0; i < 2 * numPlaces; i++)
+			if (aggrStats[i] != null)
+				aggrStats[i].finish(configuration);
+		
+		progressMonitor = null;
+		for (int i = 0; i < aggrStats.length; i++)
+			if (aggrStats[i] != null)
+				aggrStats[i].printReport(configuration);
+
+		return aggrStats;
+	}
+
+	private static void putStatisticsIntoArray(
+			SimQPNConfiguration configuration, AggregateStats[] aggrStats,
+			int numPlaces, Net netCopy) throws SimQPNException {
+		for (int p = 0; p < numPlaces; p++) {
+			Place pl = netCopy.getPlace(p);
+			if (pl.statsLevel > 0) {
+				if (pl instanceof QPlace) {
+					QPlace qPl = (QPlace) pl;
+					aggrStats[p * 2].saveStats(qPl.qPlaceQueueStats, configuration);
+					aggrStats[(p * 2) + 1].saveStats(qPl.placeStats, configuration);
+				} else {
+					aggrStats[p * 2].saveStats(pl.placeStats, configuration);
+				}
+			}
+		}
+	}
+	
+	private static AggregateStats[] createStatsArray(Net net, SimQPNConfiguration configuration, Element netXML) throws SimQPNException{
+		
+		Place pl;
 		int numPlaces = net.getNumPlaces();
 		Place[] places = net.getPlaces();
-		/** OLD: List placeList = sim.net.getPlaceList();*/
-		XPath xpathSelector = XMLHelper.createXPath("//place");
-		List<Element> placeList = xpathSelector.selectNodes(netXML);
 
 		AggregateStats[] aggrStats = new AggregateStats[numPlaces * 2]; 
 		// Note: aggrStats should be large enough to accomodate 2 stats per place in case all places are queueing places.
 		
-		Place pl;
 
 		for (int p = 0; p < numPlaces; p++) {
 			pl = places[p];
@@ -110,6 +155,10 @@ public class ReplicationDeletion implements Analyzer{
 			pl = net.getPlace(p);
 
 		 */
+		/** OLD: List placeList = sim.net.getPlaceList();*/
+		XPath xpathSelector = XMLHelper.createXPath("//place");
+		List<Element> placeList = xpathSelector.selectNodes(netXML);
+
 		Iterator placeIterator = placeList.iterator();		
 		for (int p = 0; placeIterator.hasNext(); p++) {
 			Element place = (Element) placeIterator.next();
@@ -119,7 +168,7 @@ public class ReplicationDeletion implements Analyzer{
 				Iterator colorRefIterator = xpathSelector.selectNodes(place).iterator();
 				for (int c = 0; colorRefIterator.hasNext(); c++) {
 					Element colorRef = (Element) colorRefIterator.next();
-					Element element = XMLHelper.getSettings(colorRef, configurationName);						
+					Element element = XMLHelper.getSettings(colorRef, net.getConfigurationName());						
 					if (pl instanceof QPlace) {													
 						if(element == null || element.attributeValue("queueSignLevAvgST") == null) {								
 							log.error(formatDetailMessage(
@@ -157,49 +206,6 @@ public class ReplicationDeletion implements Analyzer{
 				}
 			}
 		}
-
-		progressMonitor.startSimulation();
-
-		// Run replication loop
-		for (int i = 0; i < configuration.getNumRuns(); i++) {
-			progressMonitor.startSimulationRun(i + 1);
-			SimQPNConfiguration configurationCopy = new SimQPNConfiguration(configuration);
-			Net netCopy = new Net(net, configurationCopy);
-			netCopy.finishCloning(net, configuration);
-
-			Executor executor = new Executor(netCopy, configurationCopy, monitor);
-			netCopy = executor.run();
-			
-			progressMonitor.finishSimulationRun();
-
-			for (int p = 0; p < numPlaces; p++) {
-				pl = netCopy.getPlace(p);
-				if (pl.statsLevel > 0) {
-					if (pl instanceof QPlace) {
-						QPlace qPl = (QPlace) pl;
-						aggrStats[p * 2].saveStats(qPl.qPlaceQueueStats, configuration);
-						aggrStats[(p * 2) + 1].saveStats(qPl.placeStats, configuration);
-					} else {
-						aggrStats[p * 2].saveStats(pl.placeStats, configuration);
-					}
-				}
-			}
-
-			if (progressMonitor.isCanceled())
-				break;
-		}
-
-		progressMonitor.finishSimulation();
-
-		for (int i = 0; i < 2 * numPlaces; i++)
-			if (aggrStats[i] != null)
-				aggrStats[i].finish(configuration);
-		
-		progressMonitor = null;
-		for (int i = 0; i < aggrStats.length; i++)
-			if (aggrStats[i] != null)
-				aggrStats[i].printReport(configuration);
-
 		return aggrStats;
 	}
 

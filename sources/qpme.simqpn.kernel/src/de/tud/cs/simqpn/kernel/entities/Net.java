@@ -28,7 +28,7 @@ public class Net {
 	 * @throws SimQPNException 
 	 */
 	public Net(Net net, SimQPNConfiguration configuration) throws SimQPNException {
-		this.configurationName = net.configurationName;
+		this.setConfigurationName(net.getConfigurationName());
 		this.numPlaces = net.numPlaces;
 		this.numTransitions = net.numTransitions;
 		this.numQueues = net.numQueues;
@@ -167,11 +167,19 @@ public class Net {
 	}
 
 	public String getConfiguration() {
-		return configurationName;
+		return getConfigurationName();
 	}
 
 	public void setConfiguration(String configuration) {
-		this.configurationName = configuration;
+		this.setConfigurationName(configuration);
+	}
+
+	public String getConfigurationName() {
+		return configurationName;
+	}
+
+	public void setConfigurationName(String configurationName) {
+		this.configurationName = configurationName;
 	}
 
 }

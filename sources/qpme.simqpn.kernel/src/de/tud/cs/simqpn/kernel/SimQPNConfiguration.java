@@ -122,7 +122,7 @@ public class SimQPNConfiguration {
 												//   simulations with slow simulation clock progress.
 	
 	private int numRuns;					// Maximum number of runs.
-	public static boolean useStdStateStats; 	// For (MULT_REPL, statsLevel >= 3): Specifies whether to use ordinary
+	private boolean useStdStateStats; 	// For (MULT_REPL, statsLevel >= 3): Specifies whether to use ordinary
 												//   or steady state sojourn times when estimating averages and c.i.
 	private String statsDir;
 
@@ -228,6 +228,22 @@ public class SimQPNConfiguration {
 	}
 	public void setNumRuns(int numRuns) {
 		this.numRuns = numRuns;
+	}
+
+	public boolean isUseStdStateStats() {
+		return useStdStateStats;
+	}
+
+	/**
+	 * Sets the use of standard state stats
+	 * useStdStateStats configurable only in MULT_REPL mode
+	 * 
+	 * - automatically set to true in CVRG_EST mode.
+	 * - automatically set to false in NORMAL:REPL_DEL mode. 		
+	 * @param useStdStateStats
+	 */
+	public void setUseStdStateStats(boolean useStdStateStats) {
+		this.useStdStateStats = useStdStateStats;
 	}
 
 }
