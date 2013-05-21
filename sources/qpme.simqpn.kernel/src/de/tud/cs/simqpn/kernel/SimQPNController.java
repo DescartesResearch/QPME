@@ -247,7 +247,6 @@ public class SimQPNController {
 			getNet().getTrans(i).init();
 		for (int i = 0; i < getNet().getNumQueues(); i++)
 			getNet().getQueue(i).init(configuration);
-		//System.out.println("initializeWorkingVariables" + eventList.size()); //TODO delete
 	}
 
 	/**

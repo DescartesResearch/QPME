@@ -50,7 +50,6 @@ public class Net {
 	public void finishCloning(Net net, SimQPNConfiguration configuration) throws SimQPNException{
 		double clock = 0;
 		for(int i=0; i<net.numPlaces; i++){
-			System.out.println(" XX "+net.places[i].getClass());
 			if(net.places[i].getClass().toString().endsWith("QPlace")){
 				this.places[i] = new QPlace((QPlace)net.places[i], queues, configuration);
 			}else{

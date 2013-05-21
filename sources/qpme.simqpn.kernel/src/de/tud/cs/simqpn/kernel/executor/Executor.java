@@ -65,7 +65,6 @@ public class Executor {
 	 * @exception
 	 */
 	public Net run() throws SimQPNException {
-		System.out.println("eventList.size() "+eventList.size()); //TODO DELETE
 		
 		boolean[] transStatus; // Transition status: true = enabled, false =
 								// disabled
@@ -226,11 +225,7 @@ public class Executor {
 				} else {
 					fireCnt++;
 				}
-			} // end firing enabled transitions
-			
-			
-			System.out.println("-->after[1] eventList size is "+eventList.size());
-			
+			} // end firing enabled transitions			
 			
 			// Step 2: Make sure all service completion events in PS QPlaces
 			// have been scheduled
@@ -244,7 +239,6 @@ public class Executor {
 			 * if ((qpl.queue.queueDiscip == Queue.PS) &&
 			 * (!qpl.queue.eventsUpToDate)) qpl.queue.updateEvents(); }
 			 */
-			System.out.println("-->after[2] eventList size is "+eventList.size());
 
 			// Step 3: Process next event in event list
 			if (eventList.size() > 0) {
@@ -446,7 +440,6 @@ public class Executor {
 	 * @exception
 	 */
 	public void scheduleEvent(double time, Queue queue, Token token) {
-		System.out.println("SCHEDULE EVENT CALLED");
 		QueueEvent ev = new QueueEvent(time, queue, token);
 		eventList.add(ev);
 		queue.nextEvent = ev;

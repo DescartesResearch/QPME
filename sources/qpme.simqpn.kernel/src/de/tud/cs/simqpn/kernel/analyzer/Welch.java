@@ -78,20 +78,23 @@ public class Welch {//implements Analyzer {
 		for (int i = 0; i < configuration.getNumRuns(); i++) {
 			config(places, placeList, configurationName);
 
+			SimQPNConfiguration configurationCopy = new SimQPNConfiguration(configuration);
+			Net netCopy = new Net(net, configurationCopy);
+			netCopy.finishCloning(net, configuration);
+
 			progressMonitor.startSimulationRun(i + 1);
-			//OLD sim.run();
-			Executor executor = new Executor(net, configuration, monitor);
+			Executor executor = new Executor(netCopy, configurationCopy, monitor);
 			progressMonitor.finishSimulationRun();
 
 			for (int p = 0; p < numPlaces; p++) {
-				pl = places[p];
+				pl = netCopy.getPlace(p);
 				if (pl.statsLevel > 0) {
 					if (pl instanceof QPlace) {
 						QPlace qPl = (QPlace) pl;
-						aggrStats[p * 2].saveStats(qPl.qPlaceQueueStats, executor);
-						aggrStats[(p * 2) + 1].saveStats(qPl.placeStats, executor);
+						aggrStats[p * 2].saveStats(qPl.qPlaceQueueStats, configuration);
+						aggrStats[(p * 2) + 1].saveStats(qPl.placeStats, configuration);
 					} else {
-						aggrStats[p * 2].saveStats(pl.placeStats, executor);
+						aggrStats[p * 2].saveStats(pl.placeStats, configuration);
 					}
 				}
 			}

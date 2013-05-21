@@ -62,8 +62,6 @@ package de.tud.cs.simqpn.kernel.entities;
 
 import java.util.ArrayList;
 
-import javax.security.auth.login.Configuration;
-
 import org.apache.log4j.Logger;
 import org.dom4j.Element;
 

@@ -164,34 +164,29 @@ public class ReplicationDeletion implements Analyzer{
 		for (int i = 0; i < configuration.getNumRuns(); i++) {
 			progressMonitor.startSimulationRun(i + 1);
 			SimQPNConfiguration configurationCopy = new SimQPNConfiguration(configuration);
-			Net netCoppy = new Net(net, configurationCopy);
-			netCoppy.finishCloning(net, configuration);
-			System.out.println("run "+(i+1)+" started");
+			Net netCopy = new Net(net, configurationCopy);
+			netCopy.finishCloning(net, configuration);
 
-			Executor executor = new Executor(netCoppy, configurationCopy, monitor);
-			netCoppy = executor.run();
+			Executor executor = new Executor(netCopy, configurationCopy, monitor);
+			netCopy = executor.run();
 			
 			progressMonitor.finishSimulationRun();
 
 			for (int p = 0; p < numPlaces; p++) {
-				pl = netCoppy.getPlace(p);
+				pl = netCopy.getPlace(p);
 				if (pl.statsLevel > 0) {
 					if (pl instanceof QPlace) {
 						QPlace qPl = (QPlace) pl;
-						aggrStats[p * 2].saveStats(qPl.qPlaceQueueStats, executor);
-						aggrStats[(p * 2) + 1].saveStats(qPl.placeStats, executor);
+						aggrStats[p * 2].saveStats(qPl.qPlaceQueueStats, configuration);
+						aggrStats[(p * 2) + 1].saveStats(qPl.placeStats, configuration);
 					} else {
-						aggrStats[p * 2].saveStats(pl.placeStats, executor);
+						aggrStats[p * 2].saveStats(pl.placeStats, configuration);
 					}
 				}
 			}
 
 			if (progressMonitor.isCanceled())
 				break;
-
-			//TODO create coppy of executor an redo
-//OLD			sim = new SimQPNController(netXML, configuration, null);
-//OLD			places = sim.getNet().getPlaces();
 		}
 
 		progressMonitor.finishSimulation();

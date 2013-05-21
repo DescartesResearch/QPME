@@ -143,15 +143,6 @@ public class Transition extends Node {
 		
 		this.tkCopyBuffer = transition.tkCopyBuffer.clone(); //JUERGEN: seems sufficient in our context
 		this.tkIndexBuffer = transition.tkIndexBuffer.clone(); //JUERGEN: OK
-//		System.out.println("tkCopyBuffer");	//TODO JUERGEN DELETE
-//		System.out.println("\tlength"+transition.tkCopyBuffer.length);//TODO JUERGEN DELETE
-//		System.out.println("\t[0]"+transition.tkCopyBuffer[0]); //TODO JUERGEN DELETE
-//		System.out.println("\tlength"+this.tkCopyBuffer.length+"<-this");//TODO JUERGEN DELETE
-//		System.out.println("\t[0]"+this.tkCopyBuffer[0]+"<-this");//TODO JUERGEN DELETE
-
-//		System.out.println("PROBEDATA");
-//		System.out.println("transition.probeData "+transition.probeData.length);
-//		System.out.println("this.probeData"+ this.probeData.length);
 
 	}
 

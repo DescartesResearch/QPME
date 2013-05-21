@@ -185,15 +185,7 @@ public class Queue {
 		this.name = queue.name;
 		this.queueDiscip = queue.queueDiscip;
 		this.numServers = queue.numServers;
-		this.qPlaces = null;//new QPlace[queue.qPlaces.length];
-		
-//		for (int i = 0; i < places.length; i++) {
-//			System.out.println(places[i].getClass() + places[i].name);
-//		}
-////					System.out.println("-->"+queue.qPlaces[i].name);
-//		System.out.println("-->"+queue.qPlaces[i].id);
-//		System.out.println("-->"+places[queue.qPlaces[i].id].name);
-		//new QPlace((QPlace)places[queue.qPlaces[i].id], configuration);
+		this.qPlaces = null;
 
 		if(queue.qPlaces != null){
 			for (int i = 0; i < queue.qPlaces.length; i++) {
@@ -413,10 +405,6 @@ public class Queue {
 		int totQueTokCnt = 0;
 		for (int p = 0, nC = 0; p < qPlaces.length; p++) {
 			nC = qPlaces[p].numColors;
-			System.out.println("QUEUE qPlaces[p].numColors : "
-					+ qPlaces[p].numColors); // TODO DELETE
-			System.out.println("QUEUE " + qPlaces[p].name + "(" + qPlaces[p].id
-					+ ") : " + qPlaces[p].numColors); // TODO DELETE
 			for (int c = 0; c < nC; c++)
 				totQueTokCnt += qPlaces[p].queueTokenPop[c];
 		}
@@ -543,18 +531,9 @@ public class Queue {
 		 * On old JVMs that do not have the above bug fixed, if two events have
 		 * the exact same time, the wrong one might be removed!
 		 */
-		System.out.println("-->nextEvent "+nextEvent.queue.name +" ("+nextEvent.queue.queueDiscip+")" +" at "+nextEvent.time + " color" + nextEvent.token.color);
-		for(QueueEvent qEvent: executor.eventList){
-			System.out.println(qEvent.queue.name +" ("+qEvent.queue.queueDiscip+")"+ " at "+qEvent.time + " color" + qEvent.token.color);
-		}
-
+		
 		executor.eventList.remove(nextEvent);
 		
-//		if (!executor.eventList.remove(nextEvent)) {
-//			log.error("eventList size "+ executor.eventList.size());
-//			log.error("Failed to remove scheduled event from event list!");
-//			throw new SimQPNException();
-//		}
 		eventScheduled = false;
 
 		/*
