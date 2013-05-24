@@ -62,33 +62,32 @@ public class ConsoleSimulatorProgress implements SimulatorProgress {
 	 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#startSimulation()
 	 */
 	@Override
-	public void startSimulation() {
-		//TODO
-//		this.numRuns = (SimQPNController.configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS) ? 1 :SimQPNController.configuration.getNumRuns();
-//
-//		switch(SimQPNController.configuration.getAnalMethod()) {
-//		case SimQPNConfiguration.BATCH_MEANS:
-//			log.info(formatMultilineMessage(
-//					"---------------------------------------------",
-//					" Starting Batch Means Method",
-//					"---------------------------------------------"
-//					));
-//			break;
-//		case SimQPNConfiguration.REPL_DEL:
-//			log.info(formatMultilineMessage(
-//					"---------------------------------------------",
-//					" Starting Multiple Replications (numRuns = " + numRuns + ")",
-//					"---------------------------------------------"
-//					));
-//			break;
-//		case SimQPNConfiguration.WELCH:
-//			log.info(formatMultilineMessage(
-//					"---------------------------------------------",
-//					" Starting Method of Welch (numRuns = " + numRuns + ")",
-//					"---------------------------------------------"
-//					));
-//			break;
-//		}
+	public void startSimulation(SimQPNConfiguration configuration) {
+		this.numRuns = (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS) ? 1 :configuration.getNumRuns();
+
+		switch(configuration.getAnalMethod()) {
+		case SimQPNConfiguration.BATCH_MEANS:
+			log.info(formatMultilineMessage(
+					"---------------------------------------------",
+					" Starting Batch Means Method",
+					"---------------------------------------------"
+					));
+			break;
+		case SimQPNConfiguration.REPL_DEL:
+			log.info(formatMultilineMessage(
+					"---------------------------------------------",
+					" Starting Multiple Replications (numRuns = " + numRuns + ")",
+					"---------------------------------------------"
+					));
+			break;
+		case SimQPNConfiguration.WELCH:
+			log.info(formatMultilineMessage(
+					"---------------------------------------------",
+					" Starting Method of Welch (numRuns = " + numRuns + ")",
+					"---------------------------------------------"
+					));
+			break;
+		}
 	}
 
 	/* (non-Javadoc)

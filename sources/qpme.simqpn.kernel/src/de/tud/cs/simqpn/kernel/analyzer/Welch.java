@@ -72,7 +72,7 @@ public class Welch {//implements Analyzer {
 		AggregateStats[] aggrStats = initAggregateStats(configuration,
 				numPlaces, places);
 
-		progressMonitor.startSimulation();
+		progressMonitor.startSimulation(configuration);
 
 		// Run replication loop
 		for (int i = 0; i < configuration.getNumRuns(); i++) {

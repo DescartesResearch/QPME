@@ -42,6 +42,8 @@
 
 package de.tud.cs.simqpn.kernel.monitor;
 
+import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
+
 /**
  * Simulation front-ends need to implement this interface, in order to
  * monitor the progress of a simulation.
@@ -74,7 +76,7 @@ public interface SimulatorProgress {
 	/**
 	 * Called when a simulation is started.
 	 */
-	public void startSimulation();
+	public void startSimulation(SimQPNConfiguration configuration);
 
 	/**
 	 * Called at the beginning of each simulation run.

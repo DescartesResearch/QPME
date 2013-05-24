@@ -60,7 +60,7 @@ public class ReplicationDeletion implements Analyzer{
 		AggregateStats[] aggrStats = initStatsArray(net, configuration, netXML);
 		int numPlaces = net.getNumPlaces();
 		progressMonitor = monitor;
-		progressMonitor.startSimulation();
+		progressMonitor.startSimulation(configuration);
 
 		// Run replication loop
 		for (int i = 0; i < configuration.getNumRuns(); i++) {
