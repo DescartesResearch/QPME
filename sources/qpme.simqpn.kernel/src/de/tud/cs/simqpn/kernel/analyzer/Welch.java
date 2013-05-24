@@ -78,12 +78,12 @@ public class Welch {//implements Analyzer {
 		for (int i = 0; i < configuration.getNumRuns(); i++) {
 			config(places, placeList, configurationName);
 
-			SimQPNConfiguration configurationCopy = new SimQPNConfiguration(configuration);
-			Net netCopy = new Net(net, configurationCopy);
+			Net netCopy = new Net(net, configuration);
 			netCopy.finishCloning(net, configuration);
 
 			progressMonitor.startSimulationRun(i + 1);
-			Executor executor = new Executor(netCopy, configurationCopy, monitor);
+			Executor executor = new Executor(netCopy, configuration, monitor);
+			executor.run();
 			progressMonitor.finishSimulationRun();
 
 			for (int p = 0; p < numPlaces; p++) {
@@ -101,9 +101,6 @@ public class Welch {//implements Analyzer {
 
 			if (progressMonitor.isCanceled())
 				break;
-
-			//OLD sim = new SimQPNController(netXML, configuration, null);
-			//OLD places = net.getPlaces();
 		}
 
 		progressMonitor.finishSimulation();
