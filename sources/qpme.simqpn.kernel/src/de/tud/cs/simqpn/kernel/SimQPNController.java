@@ -85,12 +85,18 @@ package de.tud.cs.simqpn.kernel;
 // Please do not remove any comments! 
 // You can add your comments/answers with a "CHRIS" label.
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.dom4j.Document;
 import org.dom4j.Element;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.XMLWriter;
 
 import de.tud.cs.simqpn.kernel.analyzer.BatchMeans;
 import de.tud.cs.simqpn.kernel.analyzer.ReplicationDeletion;
@@ -104,6 +110,7 @@ import de.tud.cs.simqpn.kernel.loader.NetFlattener;
 import de.tud.cs.simqpn.kernel.loader.NetLoader;
 import de.tud.cs.simqpn.kernel.loader.XMLValidator;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
+import de.tud.cs.simqpn.kernel.persistency.StatsDocumentBuilder;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.stats.Stats;
 
@@ -126,23 +133,24 @@ public class SimQPNController {
 	private static Logger log = Logger.getLogger(SimQPNController.class);
 
 	private SimQPNConfiguration configuration;
-	private static SimulatorProgress progressMonitor; // Progress monitoring
+	/** Progress monitoring */
+	private static SimulatorProgress progressMonitor;
+	
 	private Net net;
-	private static boolean simRunning; // True if simulation is currently
-										// running.
+	/** True if simulation is currently running. */
+	private static boolean simRunning; 
 
-	// TODO Check if using double for time is really needed and if overhead is
-	// tolerable. Consider switching to float.
 	/**
 	 * Global simulation clock. Time is usually measured in milliseconds.
+	 * 
+	 * TODO Check if using double for time is really needed and if overhead is
+	 * tolerable. Consider switching to float.
 	 */
 	private double clock;
-	public static PriorityQueue<QueueEvent> eventList = // Global simulation
-														// event list. Contains
-														// events scheduled for
-														// processing at
-														// specified points in
-														// time.
+	/**
+	 * Global simulation event list. Contains events scheduled for processing at specified points in time.
+	 */
+	public static PriorityQueue<QueueEvent> eventList = 
 	new PriorityQueue<QueueEvent>(10, new Comparator<QueueEvent>() {
 		public int compare(QueueEvent a, QueueEvent b) {
 			return (a.time < b.time ? -1 : (a.time == b.time ? 0 : 1));
@@ -170,7 +178,7 @@ public class SimQPNController {
 	 * 
 	 * TODO Keine Lese-Zugriffe auf Objekt bevor initialisiert: besser in
 	 * init()-Methode auslagern: Ansonsten -->Illegal State Exception
-	 *  
+	 * 
 	 * @param netXML
 	 * @param configurationName
 	 * @throws SimQPNException
@@ -218,7 +226,7 @@ public class SimQPNController {
 												// into Constructor
 
 	}
-	
+
 	private void initializeWorkingVariables() throws SimQPNException {
 		getConfiguration().inRampUp = true;
 		getConfiguration().endRampUpClock = 0;
@@ -258,7 +266,7 @@ public class SimQPNController {
 	 * @return
 	 * @exception
 	 */
-	public Stats[] execute(Element XMLNet, String configurationString,
+	public File execute(Element XMLNet, String configurationString, String outputFilename,
 			SimulatorProgress monitor) throws SimQPNException {
 
 		// TODO: Make the Stdout output print to $statsDir/Output.txt
@@ -274,21 +282,17 @@ public class SimQPNController {
 		// should be reset.
 
 		try {
-			//TODO Factory Methode / Factory Klasse
+			// TODO Factory Methode / Factory Klasse
 			if (getConfiguration().runMode == SimQPNConfiguration.NORMAL) {
-				if (getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS) { // Method
-																								// of
-																								// non-overlapping
-																								// batch
-																								// means
+				if (getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS) {
+					/** Method of non-overlapping batch means */
 					result = new BatchMeans().analyze(net, configuration,
 							monitor);
-				} else if (getConfiguration().getAnalMethod() == SimQPNConfiguration.REPL_DEL) { // Replication/Deletion
-																									// Approach
-																									// (Method
-																									// of
-																									// Independent
-																									// Replications)
+				} else if (getConfiguration().getAnalMethod() == SimQPNConfiguration.REPL_DEL) {
+					/**
+					 * Replication/Deletion Approach (Method of Independent
+					 * Replications)
+					 */
 					result = new ReplicationDeletion()
 							.analyze2(net, configuration, monitor, XMLNet,
 									configurationString);
@@ -314,7 +318,41 @@ public class SimQPNController {
 			setSimRunning(false);
 			LogManager.shutdown();
 		}
-		return result;
+
+		File resultFile = null;
+		// Skip stats document generation for WELCH and REPL_DEL since the 
+		// document builder does not support these methods yet.
+		if ((result != null)
+				&& (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS)) {
+			StatsDocumentBuilder builder = new StatsDocumentBuilder(result,
+					XMLNet, configurationString);
+			Document statsDocument = builder.buildDocument(configuration);
+			if (outputFilename != null) {
+				resultFile = new File(outputFilename);
+			} else {
+				resultFile = new File(configuration.getStatsDir(), builder.getResultFileBaseName() + ".simqpn");
+			}
+			saveXmlToFile(statsDocument, resultFile);
+		}
+		return resultFile;
+	}
+
+	private void saveXmlToFile(Document doc, File file) {
+		XMLWriter writer = null;
+		try {
+			writer = new XMLWriter(new FileOutputStream(file),
+					OutputFormat.createPrettyPrint());
+			writer.write(doc);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (writer != null) {
+				try {
+					writer.close();
+				} catch (IOException e) {
+				}
+			}
+		}
 	}
 
 	public Net getNet() {

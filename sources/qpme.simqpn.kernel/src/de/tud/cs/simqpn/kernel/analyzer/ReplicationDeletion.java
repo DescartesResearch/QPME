@@ -57,7 +57,7 @@ public class ReplicationDeletion implements Analyzer{
 
 		configuration.setUseStdStateStats(false);
 		
-		AggregateStats[] aggrStats = createStatsArray(net, configuration, netXML);
+		AggregateStats[] aggrStats = initStatsArray(net, configuration, netXML);
 		int numPlaces = net.getNumPlaces();
 		progressMonitor = monitor;
 		progressMonitor.startSimulation();
@@ -93,24 +93,7 @@ public class ReplicationDeletion implements Analyzer{
 		return aggrStats;
 	}
 
-	private static void putStatisticsIntoArray(
-			SimQPNConfiguration configuration, AggregateStats[] aggrStats,
-			int numPlaces, Net netCopy) throws SimQPNException {
-		for (int p = 0; p < numPlaces; p++) {
-			Place pl = netCopy.getPlace(p);
-			if (pl.statsLevel > 0) {
-				if (pl instanceof QPlace) {
-					QPlace qPl = (QPlace) pl;
-					aggrStats[p * 2].saveStats(qPl.qPlaceQueueStats, configuration);
-					aggrStats[(p * 2) + 1].saveStats(qPl.placeStats, configuration);
-				} else {
-					aggrStats[p * 2].saveStats(pl.placeStats, configuration);
-				}
-			}
-		}
-	}
-	
-	private static AggregateStats[] createStatsArray(Net net, SimQPNConfiguration configuration, Element netXML) throws SimQPNException{
+	private static AggregateStats[] initStatsArray(Net net, SimQPNConfiguration configuration, Element netXML) throws SimQPNException{
 		
 		Place pl;
 		int numPlaces = net.getNumPlaces();
@@ -208,6 +191,24 @@ public class ReplicationDeletion implements Analyzer{
 		}
 		return aggrStats;
 	}
+
+	private static void putStatisticsIntoArray(
+			SimQPNConfiguration configuration, AggregateStats[] aggrStats,
+			int numPlaces, Net netCopy) throws SimQPNException {
+		for (int p = 0; p < numPlaces; p++) {
+			Place pl = netCopy.getPlace(p);
+			if (pl.statsLevel > 0) {
+				if (pl instanceof QPlace) {
+					QPlace qPl = (QPlace) pl;
+					aggrStats[p * 2].saveStats(qPl.qPlaceQueueStats, configuration);
+					aggrStats[(p * 2) + 1].saveStats(qPl.placeStats, configuration);
+				} else {
+					aggrStats[p * 2].saveStats(pl.placeStats, configuration);
+				}
+			}
+		}
+	}
+	
 
 
 }

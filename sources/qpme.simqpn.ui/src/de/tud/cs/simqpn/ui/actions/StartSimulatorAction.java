@@ -42,15 +42,10 @@
 package de.tud.cs.simqpn.ui.actions;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 import org.apache.log4j.Logger;
-import org.dom4j.Document;
 import org.dom4j.Element;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -69,8 +64,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -80,11 +73,9 @@ import de.tud.cs.qpe.editors.net.NetEditorInput;
 import de.tud.cs.qpe.editors.query.QueryEditorInput;
 import de.tud.cs.qpe.editors.query.SimpleQueryEditor;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
-import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.SimQPNController;
+import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
-import de.tud.cs.simqpn.kernel.persistency.StatsDocumentBuilder;
-import de.tud.cs.simqpn.kernel.stats.Stats;
 import de.tud.cs.simqpn.ui.wizard.RunSimulationWizard;
 
 public class StartSimulatorAction extends AbstractHandler {
@@ -255,27 +246,12 @@ public class StartSimulatorAction extends AbstractHandler {
 				monitor.subTask("Configure Simulator");
 
 				sim = new SimQPNController(net, configuration, null);
-				//sim.configure(net, configuration, null);
-				//net = sim.prepareNet(net, configuration);
-				Stats[] result = sim.execute(net, configuration, this);
+				File resultFile = sim.execute(net, configuration, null, this);
 
-				// Skip stats document generation for WELCH and REPL_DEL since
-				// the
-				// document builder does not support these methods yet.
-				System.out.println("result "+result);
-				if ((result != null)
-						&& (sim.getConfiguration().getAnalMethod() == sim.getConfiguration().BATCH_MEANS)) {
-					monitor.subTask("Collect Results");
-					StatsDocumentBuilder builder = new StatsDocumentBuilder(
-							result, net, configuration);
-					Document statsDocument = builder.buildDocument(sim.getConfiguration());
-					File resultsFile = new File(sim.getConfiguration().getStatsDir(),
-							builder.getResultFileBaseName() + ".simqpn");
-					saveXmlToFile(statsDocument, resultsFile);
-
+				monitor.subTask("Collect Results");
+				if (resultFile != null){
 					IEditorInput simulationOutput = new QueryEditorInput(
-							new Path(resultsFile.getAbsolutePath()));
-
+							new Path(resultFile.getAbsolutePath()));
 					shell.getDisplay().asyncExec(
 							new EditorOpener(simulationOutput,
 									SimpleQueryEditor.ID, true));
@@ -304,24 +280,6 @@ public class StartSimulatorAction extends AbstractHandler {
 				monitor.done();
 			}
 
-		}
-
-		private void saveXmlToFile(Document doc, File file) {
-			XMLWriter writer = null;
-			try {
-				writer = new XMLWriter(new FileOutputStream(file),
-						OutputFormat.createPrettyPrint());
-				writer.write(doc);
-			} catch (IOException e) {
-				e.printStackTrace();
-			} finally {
-				if (writer != null) {
-					try {
-						writer.close();
-					} catch (IOException e) {
-					}
-				}
-			}
 		}
 
 		/*
@@ -361,7 +319,7 @@ public class StartSimulatorAction extends AbstractHandler {
 		 */
 		@Override
 		public void startSimulation() {
-			this.numRuns = (sim.getConfiguration().getAnalMethod() == sim.getConfiguration().BATCH_MEANS) ? 1
+			this.numRuns = (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS) ? 1
 					: sim.getConfiguration().getNumRuns();
 			this.totalWork = numRuns * 100;
 			this.worked = 0;
