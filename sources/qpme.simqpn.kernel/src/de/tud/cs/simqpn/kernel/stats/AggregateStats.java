@@ -254,13 +254,13 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 			for (int c = 0; c < numColors; c++) 
 				this.signLevAvgST[c]	= 0.1; 			// e.g. 0.05 ---> 95% c.i.; 0.1 ---> 90%
 			
-			if (configuration.getAnalMethod() == SimQPNConfiguration.WELCH)  {											
+			if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.WELCH)  {											
 				this.sumKthObsrvST = new AbstractDoubleList[numColors];				
 				this.avgKthObsrvST = new AbstractDoubleList[numColors];
 				for (int c = 0; c < numColors; c++) 
 					this.sumKthObsrvST[c] = null;  // used to detect colors that shouldn't be considered in the analysis	
 			}											
-			if (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && configuration.isUseStdStateStats())  {				
+			if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS && configuration.isUseStdStateStats())  {				
 				this.sumBatchSizesST	= new int[numColors];
 				this.avgBatchSizeST		= new int[numColors];
 				this.sumNumBatchesST	= new int[numColors];
@@ -320,7 +320,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 	 */
 	@SuppressWarnings("unchecked")
 	public void saveStats(PlaceStats stats, SimQPNConfiguration configuration) throws SimQPNException {		
-		if (configuration.getAnalMethod() == SimQPNConfiguration.WELCH)  {			
+		if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.WELCH)  {			
 			if (statsLevel < 3) return;			
 			for (int c = 0; c < numColors; c++)  {				
 				if (stats.maxObsrvST[c] <= 0) return;								
@@ -560,7 +560,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 				sumAvgST[c]	  += avgST;								
 				sumSqAvgST[c] += avgST * avgST; 
 				numAvgST[c]++;														
-				if (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && configuration.isUseStdStateStats())  {										
+				if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS && configuration.isUseStdStateStats())  {										
 					sumBatchSizesST[c]	+= stats.batchSizeST[c];
 					sumNumBatchesST[c]	+= stats.numBatchesST[c];
 				}								
@@ -646,7 +646,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 		
 		if (numRepls < 1) return;
 		
-		if (configuration.getAnalMethod() == SimQPNConfiguration.WELCH)  {			
+		if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.WELCH)  {			
 			if (statsLevel < 3) return;			
 			for (int c = 0; c < numColors; c++)  {
 				if (sumKthObsrvST[c] == null) return; // color with maxObsrvST[c] <= 0 				
@@ -697,7 +697,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 				stDevAvgST[c]		= Math.sqrt(varAvgST[c]);
 				ciHalfLenAvgST[c]	= Probability.studentTInverse(signLevAvgST[c], numAvgST[c] - 1) * Math.sqrt(varAvgST[c] / numAvgST[c]); 
 				confLevelAvgST[c]	= (int) (100 * (1 - signLevAvgST[c]));				
-				if (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && configuration.isUseStdStateStats())  {  								
+				if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS && configuration.isUseStdStateStats())  {  								
 					avgBatchSizeST[c]	= sumBatchSizesST[c] / numRepls;					
 					avgNumBatchesST[c]	= sumNumBatchesST[c] / numRepls;					 
 				}																					
@@ -761,7 +761,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 			}
 			if (statsLevel >= 3) {												
 				report.append("-----\n");
-				if (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && configuration.isUseStdStateStats())					
+				if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS && configuration.isUseStdStateStats())					
 					report.append("avgBatchSizeST[c]=").append(avgBatchSizeST[c]).append(" avgNumBatchesST[c]=").append(avgNumBatchesST[c]).append("\n");				
 				report.append("meanAvgST[c]=").append(meanAvgST[c]).append(" stDevAvgST[c]=").append(stDevAvgST[c]).append("\n");					
 				report.append("\n");																																							

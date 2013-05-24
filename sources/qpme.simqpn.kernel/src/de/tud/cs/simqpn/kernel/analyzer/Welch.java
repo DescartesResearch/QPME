@@ -81,7 +81,7 @@ public class Welch {//implements Analyzer {
 			Net netCopy = new Net(net, configuration);
 			netCopy.finishCloning(net, configuration);
 
-			progressMonitor.startSimulationRun(i + 1);
+			progressMonitor.startSimulationRun(i + 1, configuration);
 			Executor executor = new Executor(netCopy, configuration, monitor);
 			executor.run();
 			progressMonitor.finishSimulationRun();

@@ -47,6 +47,7 @@ import static de.tud.cs.simqpn.kernel.util.LogUtil.formatMultilineMessage;
 import org.apache.log4j.Logger;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
+import de.tud.cs.simqpn.kernel.SimQPNConfiguration.AnalysisMethod;
 import de.tud.cs.simqpn.kernel.SimQPNController;
 
 /**
@@ -63,24 +64,24 @@ public class ConsoleSimulatorProgress implements SimulatorProgress {
 	 */
 	@Override
 	public void startSimulation(SimQPNConfiguration configuration) {
-		this.numRuns = (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS) ? 1 :configuration.getNumRuns();
+		this.numRuns = (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS) ? 1 :configuration.getNumRuns();
 
 		switch(configuration.getAnalMethod()) {
-		case SimQPNConfiguration.BATCH_MEANS:
+		case BATCH_MEANS:
 			log.info(formatMultilineMessage(
 					"---------------------------------------------",
 					" Starting Batch Means Method",
 					"---------------------------------------------"
 					));
 			break;
-		case SimQPNConfiguration.REPL_DEL:
+		case REPL_DEL:
 			log.info(formatMultilineMessage(
 					"---------------------------------------------",
 					" Starting Multiple Replications (numRuns = " + numRuns + ")",
 					"---------------------------------------------"
 					));
 			break;
-		case SimQPNConfiguration.WELCH:
+		case WELCH:
 			log.info(formatMultilineMessage(
 					"---------------------------------------------",
 					" Starting Method of Welch (numRuns = " + numRuns + ")",
@@ -94,7 +95,7 @@ public class ConsoleSimulatorProgress implements SimulatorProgress {
 	 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#startSimulationRun(int)
 	 */
 	@Override
-	public void startSimulationRun(int number) {
+	public void startSimulationRun(int number, SimQPNConfiguration configuration) {
 		log.info("Simulation run " + number + "/" + numRuns + " started.");
 	}
 
@@ -102,7 +103,7 @@ public class ConsoleSimulatorProgress implements SimulatorProgress {
 	 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#updateSimulationProgress(double, long)
 	 */
 	@Override
-	public void updateSimulationProgress(double progress, long elapsedTime) {
+	public void updateSimulationProgress(double progress, long elapsedTime, SimQPNConfiguration configuration) {
 		log.info("Progress: " + Math.round(progress) + "%");
 	}
 
@@ -110,7 +111,7 @@ public class ConsoleSimulatorProgress implements SimulatorProgress {
 	 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#finishWarmUp()
 	 */
 	@Override
-	public void finishWarmUp() {
+	public void finishWarmUp(SimQPNConfiguration configuration) {
 		//TODO
 //		if(SimQPNController.configuration.getAnalMethod() != SimQPNConfiguration.WELCH) {
 //			log.info("Warm up finished. Starting steady state analysis...");
@@ -145,7 +146,7 @@ public class ConsoleSimulatorProgress implements SimulatorProgress {
 	 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#getMaxUpdateLogicalTimeInterval()
 	 */
 	@Override
-	public double getMaxUpdateLogicalTimeInterval() {
+	public double getMaxUpdateLogicalTimeInterval(SimQPNConfiguration configuration) {
 		return 0;//TODO SimQPNController.configuration.totRunLen / 20.0;
 	}
 	

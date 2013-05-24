@@ -64,7 +64,7 @@ public class ReplicationDeletion implements Analyzer{
 
 		// Run replication loop
 		for (int i = 0; i < configuration.getNumRuns(); i++) {
-			progressMonitor.startSimulationRun(i + 1);
+			progressMonitor.startSimulationRun(i + 1, configuration);
 
 			Net netCopy = new Net(net, configuration);
 			netCopy.finishCloning(net, configuration);

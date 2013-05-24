@@ -106,9 +106,16 @@ public class SimQPNConfiguration {
 												//   RELPRC stopping rule).
 
 	// Supported Analysis Methods
-	public static final int WELCH = 0;			// Method of Welch for determining the length of the initial transient.
-	public static final int REPL_DEL = 1;		// Replication/Deletion Approach (Method of Independent Replications).
-	public static final int BATCH_MEANS = 2;	// Method of non-overlapping batch means.
+	public enum AnalysisMethod{
+		/** Method of Welch for determining the length of the initial transient.*/WELCH, 
+		/** Replication/Deletion Approach (Method of Independent Replications) */ REPL_DEL ,
+		/** Method of non-overlapping batch means.*/BATCH_MEANS};
+		 
+//	public static final int WELCH = 0;			// Method of Welch for determining the length of the initial transient.
+//	public static final int REPL_DEL = 1;		// Replication/Deletion Approach (Method of Independent Replications).
+//	public static final int BATCH_MEANS = 2;	// Method of non-overlapping batch means.
+	private AnalysisMethod analMethod;				// Output data analysis method.
+
 
 	// Supported Stopping Rules (Note: don't change these, values are used)
 	public static final int FIXEDLEN = 0;		// Fixed run length.
@@ -127,7 +134,6 @@ public class SimQPNConfiguration {
 	private String statsDir;
 
 	public int runMode;
-	private int analMethod;				// Output data analysis method.
 	public int stoppingRule;				// Simulation stopping criterion.
 	private static int debugLevel;				// Debug level - TODO: currently not used consistently!
 	public double rampUpLen;				// Duration of the ramp up period.
@@ -182,10 +188,10 @@ public class SimQPNConfiguration {
 	public SimQPNConfiguration() {
 	}
 	
-	public int getAnalMethod() {
+	public AnalysisMethod getAnalMethod() {
 		return analMethod;
 	}
-	public void setAnalMethod(int analMethod) {
+	public void setAnalMethod(AnalysisMethod analMethod) {
 		this.analMethod = analMethod;
 	}
 	public static int getDebugLevel() {

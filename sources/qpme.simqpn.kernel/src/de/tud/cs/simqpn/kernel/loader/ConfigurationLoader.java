@@ -109,7 +109,7 @@ public class ConfigurationLoader {
 		// Scenario 1:
 		case 1: {
 			configuration.runMode = SimQPNConfiguration.NORMAL;
-			configuration.setAnalMethod(SimQPNConfiguration.BATCH_MEANS);
+			configuration.setAnalMethod(SimQPNConfiguration.AnalysisMethod.BATCH_MEANS);
 			log.debug("-- runMode = NORMAL");
 			log.debug("-- analMethod = BATCH_MEANS");
 			break;
@@ -117,7 +117,7 @@ public class ConfigurationLoader {
 		// Scenario 2:
 		case 2: {
 			configuration.runMode = SimQPNConfiguration.NORMAL;
-			configuration.setAnalMethod(SimQPNConfiguration.REPL_DEL);
+			configuration.setAnalMethod(SimQPNConfiguration.AnalysisMethod.REPL_DEL);
 			log.debug("-- runMode = NORMAL");
 			log.debug("-- analMethod = REPL_DEL");
 			if (simulatorSettings.attributeValue("number-of-runs") == null) {
@@ -132,7 +132,7 @@ public class ConfigurationLoader {
 		// Scenario 3:
 		case 3: {
 			configuration.runMode = SimQPNConfiguration.INIT_TRANS;
-			configuration.setAnalMethod(SimQPNConfiguration.WELCH);
+			configuration.setAnalMethod(SimQPNConfiguration.AnalysisMethod.WELCH);
 			log.debug("-- runMode = INIT_TRANS");
 			log.debug("-- analMethod = WELCH");
 			if (simulatorSettings.attributeValue("number-of-runs") == null) {
@@ -273,7 +273,7 @@ public class ConfigurationLoader {
 		 * "secsBtwHeartBeats = " + secsBtwHeartBeats + ";");
 		 */
 
-		if (configuration.getAnalMethod() != SimQPNConfiguration.BATCH_MEANS
+		if (configuration.getAnalMethod() != SimQPNConfiguration.AnalysisMethod.BATCH_MEANS
 				&& configuration.stoppingRule != SimQPNConfiguration.FIXEDLEN) {
 			log.error(formatDetailMessage(
 					"Stopping rule \""
@@ -320,7 +320,7 @@ public class ConfigurationLoader {
 		 */
 
 		// CONFIG: BATCH_MEANS Method Initialization Parameters
-		if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS) {
+		if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS) {
 			XPath xpathSelector = XMLHelper.createXPath("//place");
 			List<Element> placeList = xpathSelector.selectNodes(netXML);
 			xpathSelector = XMLHelper.createXPath("//probe");

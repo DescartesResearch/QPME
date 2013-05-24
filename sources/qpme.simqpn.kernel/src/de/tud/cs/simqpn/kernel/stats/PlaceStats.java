@@ -207,7 +207,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			this.numST 								= new int[numColors];
 			this.meanST 							= new double[numColors];
 			this.stDevST 							= new double[numColors];
-			if (configuration.getAnalMethod() == SimQPNConfiguration.WELCH) {
+			if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.WELCH) {
 				this.minObsrvST 					= new int[numColors];
 				this.maxObsrvST 					= new int[numColors];
 				this.obsrvST 						= new AbstractDoubleList[numColors];
@@ -218,7 +218,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 					this.obsrvST[c] 				= new DoubleArrayList();  // Note: Max capacity will be set later so that the user has a chance to modify maxObsrvST.
 				}
 			}
-			if (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS) {
+			if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS) {
 				this.signLevST 						= new double[numColors];
 				this.reqAbsPrc 						= new double[numColors];
 				this.reqRelPrc 						= new double[numColors];
@@ -311,7 +311,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 				sumST[c] 				= 0;
 				sumSqST[c] 				= 0;
 				numST[c] 				= 0;
-				if (executor.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS
+				if (executor.getConfiguration().getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS
 						&& minBatches[c] > 0) {
 					sumBatchST[c] 		= 0;
 					sumBMeansST[c] 		= 0;
@@ -429,7 +429,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 * @param sojTime -  sojourn time of token in place
 	 */
 	public void updateSojTimeStats(int color, double sojTime, Executor executor) throws SimQPNException {
-		if (executor.getConfiguration().getAnalMethod() == SimQPNConfiguration.WELCH) {
+		if (executor.getConfiguration().getAnalMethod() == SimQPNConfiguration.AnalysisMethod.WELCH) {
 			if (maxObsrvST[color] <= 0) return;		// Do not consider colors with nonpositive maxObsrvST
 			int numObsrv = obsrvST[color].size();
 			if (numObsrv == maxObsrvST[color]) return;
@@ -458,7 +458,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 		sumSqST[color]	+= sojTime * sojTime;
 		numST[color]++;
 
-		if (executor.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS
+		if (executor.getConfiguration().getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS
 				&& minBatches[color] > 0) {
 			sumBatchST[color] += sojTime;
 			if (numST[color] % batchSizeST[color] == 0) {
@@ -690,7 +690,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	public boolean enoughStats(Executor executor) throws SimQPNException {
 		if (statsLevel < 3) return true;
 
-		if (executor.getConfiguration().getAnalMethod() != SimQPNConfiguration.BATCH_MEANS) {
+		if (executor.getConfiguration().getAnalMethod() != SimQPNConfiguration.AnalysisMethod.BATCH_MEANS) {
 			log.error(formatMultilineMessage(
 					"PlaceStats.enoughStats should only be called when BATCH_MEANS method is used!",
 					"Please check your configuration parameters"
@@ -785,7 +785,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 				meanST[c] = sumST[c] / numST[c];
 				stDevST[c] = Math.sqrt(Descriptive.sampleVariance(numST[c],
 						sumST[c], sumSqST[c]));
-				if (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && minBatches[c] > 0) {
+				if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS && minBatches[c] > 0) {
 					// Steady State Statistics
 					if (numBatchesST[c] >= minBatches[c]) {
 						stdStateMeanST[c] = sumBMeansST[c] / numBatchesST[c];
@@ -852,7 +852,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			// Simulator.logln("numST=" + numST[c] + " minST=" + minST[c] + " maxST=" + maxST[c]);
 			report.append("meanST=").append(meanST[c]);
 			report.append(" stDevST=").append(stDevST[c]).append("\n");				
-			if (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS && minBatches[c] > 0) {
+			if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS && minBatches[c] > 0) {
 				report.append("\n");
 				report.append("Steady State Statistics: ");
 				if (numBatchesST[c] >= minBatches[c]) {
@@ -965,7 +965,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 							.toString(meanST[c]));
 					metaAttribute.addAttribute("stDevST", Double
 							.toString(stDevST[c]));
-					if (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS
+					if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS
 							&& minBatches[c] > 0) {
 						if (numBatchesST[c] >= minBatches[c]) {
 							metaAttribute.addAttribute("numBatchesST", Double

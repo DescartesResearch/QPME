@@ -126,7 +126,7 @@ public class Executor {
 														// measurement. Used for
 														// progress updates.
 		double maxProgressInterval = progressMonitor
-				.getMaxUpdateLogicalTimeInterval();
+				.getMaxUpdateLogicalTimeInterval(configuration);
 		long progressUpdateRate = progressMonitor
 				.getMaxUpdateRealTimeInterval();
 
@@ -137,7 +137,7 @@ public class Executor {
 			if (configuration.inRampUp && clock > rampUpL) {
 				configuration.inRampUp = false;
 				configuration.endRampUpClock = clock;
-				if (configuration.getAnalMethod() == SimQPNConfiguration.WELCH)
+				if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.WELCH)
 					break;
 				for (int p = 0; p < net.getNumPlaces(); p++)
 					net.getPlace(p).start(this);
@@ -146,7 +146,7 @@ public class Executor {
 				for (int pr = 0; pr < net.getNumProbes(); pr++)
 					net.getProbe(pr).start(this);
 
-				progressMonitor.finishWarmUp();
+				progressMonitor.finishWarmUp(configuration);
 			}
 
 			// Step 1: Fire until no transitions are enabled.
@@ -295,7 +295,7 @@ public class Executor {
 					long curTimeMsrm = System.currentTimeMillis();
 					progressMonitor
 							.updateSimulationProgress(clock / (totRunL - 1)
-									* 100, (curTimeMsrm - lastTimeMsrm));
+									* 100, (curTimeMsrm - lastTimeMsrm), configuration);
 					lastTimeMsrm = curTimeMsrm;
 					nextHeartBeat = clock + timeBtwHeartBeats;
 
@@ -383,7 +383,7 @@ public class Executor {
 
 		// END MAIN SIMULATION LOOP
 		// ---------------------------------------------------------------------------------
-		progressMonitor.updateSimulationProgress(100, 0);
+		progressMonitor.updateSimulationProgress(100, 0, configuration);
 
 		if (progressMonitor.isCanceled()) {
 			progressMonitor
@@ -417,7 +417,7 @@ public class Executor {
 
 		// Complete statistics collection (make sure this is done AFTER the
 		// above statements)
-		if (configuration.getAnalMethod() != SimQPNConfiguration.WELCH) {
+		if (configuration.getAnalMethod() != SimQPNConfiguration.AnalysisMethod.WELCH) {
 			for (int p = 0; p < net.getNumPlaces(); p++)
 				net.getPlace(p).finish(configuration, clock);
 			for (int q = 0; q < net.getNumQueues(); q++)

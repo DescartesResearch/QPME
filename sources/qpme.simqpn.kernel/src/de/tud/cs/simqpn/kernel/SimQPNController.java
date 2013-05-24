@@ -284,11 +284,11 @@ public class SimQPNController {
 		try {
 			// TODO Factory Methode / Factory Klasse
 			if (getConfiguration().runMode == SimQPNConfiguration.NORMAL) {
-				if (getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS) {
+				if (getConfiguration().getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS) {
 					/** Method of non-overlapping batch means */
 					result = new BatchMeans().analyze(net, configuration,
 							monitor);
-				} else if (getConfiguration().getAnalMethod() == SimQPNConfiguration.REPL_DEL) {
+				} else if (getConfiguration().getAnalMethod() == SimQPNConfiguration.AnalysisMethod.REPL_DEL) {
 					/**
 					 * Replication/Deletion Approach (Method of Independent
 					 * Replications)
@@ -301,7 +301,7 @@ public class SimQPNController {
 					throw new SimQPNException();
 				}
 			} else if (getConfiguration().runMode == SimQPNConfiguration.INIT_TRANS) {
-				if (getConfiguration().getAnalMethod() == SimQPNConfiguration.WELCH) {
+				if (getConfiguration().getAnalMethod() == SimQPNConfiguration.AnalysisMethod.WELCH) {
 					result = new Welch().analyze2(net, configuration, monitor,
 							XMLNet, configurationString);
 				} else {
@@ -323,7 +323,7 @@ public class SimQPNController {
 		// Skip stats document generation for WELCH and REPL_DEL since the 
 		// document builder does not support these methods yet.
 		if ((result != null)
-				&& (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS)) {
+				&& (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS)) {
 			StatsDocumentBuilder builder = new StatsDocumentBuilder(result,
 					XMLNet, configurationString);
 			Document statsDocument = builder.buildDocument(configuration);

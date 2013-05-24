@@ -61,7 +61,7 @@ public class BatchMeans implements Analyzer {
 		// SimQPNController sim = new SimQPNController(netXML, configuration,
 		// null);
 		// sim.getReady(netXML, configuration);
-		progressMonitor.startSimulationRun(1);
+		progressMonitor.startSimulationRun(1, configuration);
 		net = executor.run();
 		progressMonitor.finishSimulationRun();
 		progressMonitor.finishSimulation();

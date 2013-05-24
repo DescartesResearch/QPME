@@ -64,7 +64,7 @@ public interface SimulatorProgress {
 	 * logical simulation time units  are allowed at maximum between two updates.
 	 * @return a double specifying the interval in simulation time
 	 */
-	public double getMaxUpdateLogicalTimeInterval();
+	public double getMaxUpdateLogicalTimeInterval(SimQPNConfiguration configuration);
 	
 	/**
 	 * The maximum progress update interval (real time) defines how many
@@ -83,12 +83,12 @@ public interface SimulatorProgress {
 	 * @param number - a counter for the simulation run in the current simulation
 	 * 					(0 < number <= numRuns).
 	 */
-	public void startSimulationRun(int number);
+	public void startSimulationRun(int number, SimQPNConfiguration configuration);
 
 	/**
 	 * Called after the warm up period finished.
 	 */
-	public void finishWarmUp();
+	public void finishWarmUp(SimQPNConfiguration configuration);
 
 	/**
 	 * Called in regular intervals to update the progress interval. The update
@@ -98,7 +98,7 @@ public interface SimulatorProgress {
 	 * @param progress - the current simulation run progress as percentage (0.0 <= progress <= 100.0).
 	 * @param elapsedTime - the time elapsed since the last progress update in milliseconds.
 	 */
-	public void updateSimulationProgress(double progress, long elapsedTime);
+	public void updateSimulationProgress(double progress, long elapsedTime, SimQPNConfiguration configuration);
 
 	/**
 	 * Called for each finished simulation run.

@@ -202,7 +202,6 @@ public class StartSimulatorAction extends AbstractHandler {
 								// milliseconds)
 		private long remainingTime; // (in seconds)
 		private String failedPlace = null;
-		private SimQPNController sim;
 
 		public Simulation(Element net, Shell shell, String configuration) {
 			this.net = net;
@@ -245,7 +244,7 @@ public class StartSimulatorAction extends AbstractHandler {
 			try {
 				monitor.subTask("Configure Simulator");
 
-				sim = new SimQPNController(net, configuration, null);
+				SimQPNController sim = new SimQPNController(net, configuration, null);
 				File resultFile = sim.execute(net, configuration, null, this);
 
 				monitor.subTask("Collect Results");
@@ -308,8 +307,8 @@ public class StartSimulatorAction extends AbstractHandler {
 		 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#finishWarmUp()
 		 */
 		@Override
-		public void finishWarmUp() {
-			updateStatusString();
+		public void finishWarmUp(SimQPNConfiguration configuration) {
+			updateStatusString(configuration);
 		}
 
 		/*
@@ -318,22 +317,22 @@ public class StartSimulatorAction extends AbstractHandler {
 		 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#startSimulation()
 		 */
 		@Override
-		public void startSimulation() {
-			this.numRuns = (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.BATCH_MEANS) ? 1
-					: sim.getConfiguration().getNumRuns();
+		public void startSimulation(SimQPNConfiguration configuration) {
+			this.numRuns = (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS) ? 1
+					: configuration.getNumRuns();
 			this.totalWork = numRuns * 100;
 			this.worked = 0;
 			this.totalTime = 0;
 			monitor.beginTask("Simulation", totalWork);
 
-			switch (sim.getConfiguration().getAnalMethod()) {
-			case SimQPNConfiguration.BATCH_MEANS:
+			switch (configuration.getAnalMethod()) {
+			case BATCH_MEANS:
 				monitor.setTaskName("Simulation (Batch Means)");
 				break;
-			case SimQPNConfiguration.REPL_DEL:
+			case REPL_DEL:
 				monitor.setTaskName("Simulation (Replication/Deletion)");
 				break;
-			case SimQPNConfiguration.WELCH:
+			case WELCH:
 				monitor.setTaskName("Simulation (Method of Welch)");
 				break;
 			}
@@ -346,12 +345,12 @@ public class StartSimulatorAction extends AbstractHandler {
 		 * de.tud.cs.simqpn.kernel.SimulatorProgress#startSimulationRun(int)
 		 */
 		@Override
-		public void startSimulationRun(int number) {
+		public void startSimulationRun(int number, SimQPNConfiguration configuration) {
 			log.info("Simulation run " + number + "/" + numRuns + " started.");
 			this.currentRun = number;
 			this.lastProgress = 0;
 
-			updateStatusString();
+			updateStatusString(configuration);
 		}
 
 		/*
@@ -362,7 +361,7 @@ public class StartSimulatorAction extends AbstractHandler {
 		 * (double, long)
 		 */
 		@Override
-		public void updateSimulationProgress(double progress, long elapsedTime) {
+		public void updateSimulationProgress(double progress, long elapsedTime, SimQPNConfiguration configuration) {
 			totalTime += elapsedTime;
 			double totalProgress = (currentRun - 1) * 100 + progress;
 			remainingTime = ((long) ((totalTime / totalProgress) * (totalWork - totalProgress))) / 1000;
@@ -373,7 +372,7 @@ public class StartSimulatorAction extends AbstractHandler {
 				monitor.worked(progressDiff);
 				lastProgress = (int) progress;
 			}
-			updateStatusString();
+			updateStatusString(configuration);
 		}
 
 		/*
@@ -394,11 +393,11 @@ public class StartSimulatorAction extends AbstractHandler {
 		 * ()
 		 */
 		@Override
-		public double getMaxUpdateLogicalTimeInterval() {
+		public double getMaxUpdateLogicalTimeInterval(SimQPNConfiguration configuration) {
 			// if numRuns > 1 distribute the heartbeats approximately evenly
 			// over the simulation runs
 			int numberHeartbeats = (100 / numRuns) + 1;
-			return sim.getConfiguration().totRunLen / numberHeartbeats;
+			return configuration.totRunLen / numberHeartbeats;
 		}
 
 		/*
@@ -438,12 +437,12 @@ public class StartSimulatorAction extends AbstractHandler {
 			});
 		}
 
-		private void updateStatusString() {
+		private void updateStatusString(SimQPNConfiguration configuration) {
 			StringBuilder status = new StringBuilder();
 
 			// Remaining time display
 			if (totalTime > 0) {
-				if (sim.getConfiguration().stoppingRule == SimQPNConfiguration.FIXEDLEN) {
+				if (configuration.stoppingRule == SimQPNConfiguration.FIXEDLEN) {
 					status.append("Remaining Time: ");
 				} else {
 					status.append("Maximum Remaining Time: ");
@@ -465,17 +464,17 @@ public class StartSimulatorAction extends AbstractHandler {
 			}
 
 			// Number of run
-			if (sim.getConfiguration().getAnalMethod() != SimQPNConfiguration.BATCH_MEANS) {
+			if (configuration.getAnalMethod() != SimQPNConfiguration.AnalysisMethod.BATCH_MEANS) {
 				status.append("Run: ").append(currentRun).append("/")
 						.append(numRuns).append("\n");
 			}
 
 			// Phase
 			status.append("Phase: ");
-			if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.WELCH) {
+			if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.WELCH) {
 				status.append("Determine Warm-up Period Length");
 			} else {
-				if (sim.getConfiguration().inRampUp) {
+				if (configuration.inRampUp) {
 					status.append("Warm-Up Period");
 				} else {
 					status.append("Steady State Period");
@@ -484,7 +483,7 @@ public class StartSimulatorAction extends AbstractHandler {
 			status.append("\n");
 
 			// Failed place name
-			if (sim.getConfiguration().stoppingRule != SimQPNConfiguration.FIXEDLEN
+			if (configuration.stoppingRule != SimQPNConfiguration.FIXEDLEN
 					&& (failedPlace != null)) {
 				status.append("There are not enough statistics for place ")
 						.append(failedPlace)
@@ -505,5 +504,6 @@ public class StartSimulatorAction extends AbstractHandler {
 		public long getMaxUpdateRealTimeInterval() {
 			return 30000; // 30 sec
 		}
+
 	}
 }

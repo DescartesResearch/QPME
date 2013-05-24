@@ -196,7 +196,7 @@ public class StatsDocumentBuilder {
 			addMetric(color, "maxST", stats.maxST[colorIndex]);
 			addMetric(color, "meanST", stats.meanST[colorIndex]);
 			addMetric(color, "stDevST", stats.stDevST[colorIndex]);
-			if (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS
+			if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS
 					&& stats.minBatches[colorIndex] > 0
 					&& stats.numBatchesST[colorIndex] >= stats.minBatches[colorIndex]) {
 				addMetric(color, "stdStateMeanST", stats.stdStateMeanST[colorIndex]);
@@ -227,7 +227,7 @@ public class StatsDocumentBuilder {
 			addMetric(color, "maxST", stats.maxST[colorIndex]);
 			addMetric(color, "meanST", stats.meanST[colorIndex]);
 			addMetric(color, "stDevST", stats.stDevST[colorIndex]);
-			if (configuration.getAnalMethod() == SimQPNConfiguration.BATCH_MEANS
+			if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS
 					&& stats.minBatches[colorIndex] > 0
 					&& stats.numBatchesST[colorIndex] >= stats.minBatches[colorIndex]) {
 				addMetric(color, "stdStateMeanST", stats.stdStateMeanST[colorIndex]);
