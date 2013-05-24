@@ -83,7 +83,7 @@ public class Welch {//implements Analyzer {
 
 			progressMonitor.startSimulationRun(i + 1, configuration);
 			Executor executor = new Executor(netCopy, configuration, monitor);
-			executor.run();
+			netCopy = executor.run();
 			progressMonitor.finishSimulationRun();
 
 			for (int p = 0; p < numPlaces; p++) {
