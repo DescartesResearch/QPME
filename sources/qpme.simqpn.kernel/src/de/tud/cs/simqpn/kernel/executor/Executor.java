@@ -23,30 +23,28 @@ public class Executor {
 
 	private static Logger log = Logger.getLogger(Executor.class);
 
+	/** Simulation clock. Time is usually measured in milliseconds. */
 	// Check if using double for time is really needed and if overhead is
 	// tolerable. Consider switching to float.
-	private double clock; // Global simulation clock. Time is usually measured
+	private double clock;
 
-	// in milliseconds.
-	public PriorityQueue<QueueEvent> eventList = // Global simulation
-														// event list. Contains
-														// events scheduled for
-														// processing at
-														// specified points in
-														// time.
-	new PriorityQueue<QueueEvent>(10, new Comparator<QueueEvent>() {
-		public int compare(QueueEvent a, QueueEvent b) {
-			return (a.time < b.time ? -1 : (a.time == b.time ? 0 : 1));
-		}
-	});
+	/**
+	 * Global simulation event list. Contains events scheduled for processing at
+	 * specified points in time.
+	 */
+	public PriorityQueue<QueueEvent> eventList = new PriorityQueue<QueueEvent>(
+			10, new Comparator<QueueEvent>() {
+				public int compare(QueueEvent a, QueueEvent b) {
+					return (a.time < b.time ? -1 : (a.time == b.time ? 0 : 1));
+				}
+			});
 
-	public static boolean simRunning; // True if simulation is currently
-										// running.
+	/** True if simulation is currently running. */
+	public static boolean simRunning;
 
 	private SimQPNConfiguration configuration;
 
 	private SimulatorProgress progressMonitor; // Progress monitoring
-
 
 	private Net net;
 
@@ -65,7 +63,7 @@ public class Executor {
 	 * @exception
 	 */
 	public Net run() throws SimQPNException {
-		
+
 		boolean[] transStatus; // Transition status: true = enabled, false =
 								// disabled
 		int enTransCnt = 0;
@@ -111,20 +109,24 @@ public class Executor {
 
 		configuration.beginRunWallClock = System.currentTimeMillis();
 
-		boolean beforeInitHeartBeat = true; // Flag indicating when we are still
-											// before the first heart beat
-											// (progress update).
-											// If true, the value of
-											// timeBtwHeartBeats is still
-											// measured, and set to 0.
-		double nextHeartBeat = 0.0; // Simulation run time of the next heart
-									// beat.
-		double timeBtwHeartBeats = 0.0; // How often progress updates are made
-										// (in logical simulation time units).
-		long lastTimeMsrm = System.currentTimeMillis(); // The value of the last
-														// wall clock time
-														// measurement. Used for
-														// progress updates.
+		/*
+		 * Flag indicating when we are still before the first heart beat
+		 * (progress update). If true, the value of timeBtwHeartBeats is still
+		 * measured, and set to 0.
+		 */
+		boolean beforeInitHeartBeat = true;
+		/* Simulation run time of the next heart beat. */
+		double nextHeartBeat = 0.0;
+		/*
+		 * Determines How often progress updates are made (in logical simulation
+		 * time units).
+		 */
+		double timeBtwHeartBeats = 0.0;
+		/*
+		 * The value of the last wall clock time measurement. Used for progress
+		 * updates.
+		 */
+		long lastTimeMsrm = System.currentTimeMillis();
 		double maxProgressInterval = progressMonitor
 				.getMaxUpdateLogicalTimeInterval(configuration);
 		long progressUpdateRate = progressMonitor
@@ -225,8 +227,8 @@ public class Executor {
 				} else {
 					fireCnt++;
 				}
-			} // end firing enabled transitions			
-			
+			} // end firing enabled transitions
+
 			// Step 2: Make sure all service completion events in PS QPlaces
 			// have been scheduled
 			for (int q = 0; q < net.getNumQueues(); q++)
@@ -293,9 +295,9 @@ public class Executor {
 			} else {
 				if (clock >= nextHeartBeat) {
 					long curTimeMsrm = System.currentTimeMillis();
-					progressMonitor
-							.updateSimulationProgress(clock / (totRunL - 1)
-									* 100, (curTimeMsrm - lastTimeMsrm), configuration);
+					progressMonitor.updateSimulationProgress(clock
+							/ (totRunL - 1) * 100,
+							(curTimeMsrm - lastTimeMsrm), configuration);
 					lastTimeMsrm = curTimeMsrm;
 					nextHeartBeat = clock + timeBtwHeartBeats;
 
@@ -372,8 +374,7 @@ public class Executor {
 				}
 
 				if (configuration.timeBtwChkStops > 0)
-					nextChkAfter = clock
-							+ configuration.timeBtwChkStops;
+					nextChkAfter = clock + configuration.timeBtwChkStops;
 				else
 					nextChkAfter = clock + clockTimePerSec
 							* configuration.secondsBtwChkStops;
@@ -404,11 +405,9 @@ public class Executor {
 		configuration.msrmPrdLen = configuration.endRunClock
 				- configuration.endRampUpClock;
 		configuration.endRunWallClock = System.currentTimeMillis();
-		configuration.runWallClockTime = (configuration.endRunWallClock - configuration.beginRunWallClock) / 1000; // total
-																													// time
-																													// elapsed
-																													// in
-																													// seconds
+		
+		// total time elapsed in seconds
+		configuration.runWallClockTime = (configuration.endRunWallClock - configuration.beginRunWallClock) / 1000; 
 
 		log.info("msrmPrdLen= " + configuration.msrmPrdLen + " totalRunLen= "
 				+ configuration.endRunClock + " runWallClockTime="
@@ -429,14 +428,17 @@ public class Executor {
 		}
 		return net;
 	} // end of run() method
-	
+
 	/**
-	 * Method scheduleEvent - schedules an event 
+	 * Method scheduleEvent - schedules an event
 	 * 
-	 * @param time		- Time at which the event should be processed
-	 * @param queue		- Queue involved
-	 * @param token		- Token that is to completes service 	
-	 * @return 
+	 * @param time
+	 *            - Time at which the event should be processed
+	 * @param queue
+	 *            - Queue involved
+	 * @param token
+	 *            - Token that is to completes service
+	 * @return
 	 * @exception
 	 */
 	public void scheduleEvent(double time, Queue queue, Token token) {
@@ -460,6 +462,7 @@ public class Executor {
 	public void setConfiguration(SimQPNConfiguration configuration) {
 		this.configuration = configuration;
 	}
+
 	public SimulatorProgress getProgressMonitor() {
 		return progressMonitor;
 	}
@@ -469,4 +472,3 @@ public class Executor {
 	}
 
 }
-
