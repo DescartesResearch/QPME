@@ -1,8 +1,11 @@
-package de.tud.cs.simqpn.kernel.entities;
+package de.tud.cs.simqpn.kernel.entities.parallel;
 
 import java.util.List;
 
 import de.tud.cs.simqpn.kernel.SimQPNException;
+import de.tud.cs.simqpn.kernel.entities.QPlace;
+import de.tud.cs.simqpn.kernel.entities.Queue;
+import de.tud.cs.simqpn.kernel.entities.Token;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 
 /**
@@ -11,14 +14,14 @@ import de.tud.cs.simqpn.kernel.executor.Executor;
  * @author D
  * 
  */
-public class FCFSQueue extends Queue {
+public class ParallelQueueFCFS extends Queue {
 
 	/**
 	 * Saves the previously calculated service times for incoming events
 	 */
 	List<Double>[] arrayOfFutureLists;
 
-	public FCFSQueue(int id, String xmlId, String name, int queueDiscip,
+	public ParallelQueueFCFS(int id, String xmlId, String name, int queueDiscip,
 			int numServers) throws SimQPNException {
 		super(id, xmlId, name, queueDiscip, numServers);
 	}
