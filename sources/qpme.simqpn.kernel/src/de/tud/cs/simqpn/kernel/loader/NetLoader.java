@@ -44,6 +44,7 @@ import de.tud.cs.simqpn.kernel.entities.Probe;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.Queue;
 import de.tud.cs.simqpn.kernel.entities.Transition;
+import de.tud.cs.simqpn.kernel.entities.Place.DepartureDiscipline;
 import de.tud.cs.simqpn.kernel.random.Deterministic;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 
@@ -447,7 +448,7 @@ public class NetLoader {
 			int statsLevel = Integer.parseInt(metaAttribute
 					.attributeValue("statsLevel"));
 
-			int dDis;
+			DepartureDiscipline dDis;
 
 			// This is a user-defined config-parameter for both ordinary- and
 			// queueing-place.
@@ -460,10 +461,10 @@ public class NetLoader {
 				throw new SimQPNException();
 			}
 			if ("NORMAL".equals(place.attributeValue("departure-discipline"))) {
-				dDis = Place.NORMAL;
+				dDis = Place.DepartureDiscipline.NORMAL;
 			} else if ("FIFO".equals(place
 					.attributeValue("departure-discipline"))) {
-				dDis = Place.FIFO;
+				dDis = Place.DepartureDiscipline.FIFO;
 			} else {
 				log.error(formatDetailMessage(
 						"Invalid departure-discipline setting!", "place-num",

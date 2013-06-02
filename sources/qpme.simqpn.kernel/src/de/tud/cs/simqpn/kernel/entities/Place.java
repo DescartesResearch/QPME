@@ -77,26 +77,30 @@ import de.tud.cs.simqpn.kernel.stats.Stats;
 
 public class Place extends Node {
 	
-	// Supported departure disciplines (depDiscip):	
-	public static final int NORMAL	= 0;	// Arriving tokens become available for output transitions immediately upon arrival.  
-	public static final int FIFO	= 1;	// First-In-First-Out: Arriving tokens become available for output transitions in the order of their arrival.
+	/** Supported departure disciplines*/	
+	public enum DepartureDiscipline{
+		NORMAL,// Arriving tokens become available for output transitions immediately upon arrival.  
+		FIFO; // First-In-First-Out: Arriving tokens become available for output transitions in the order of their arrival.
+	}
 	
-	// Supported probe actions
-	public static final int PROBE_ACTION_NONE = 0;
-	public static final int PROBE_ACTION_START_ON_EXIT = 1;
-	public static final int PROBE_ACTION_START_ON_ENTRY = 2;
-	public static final int PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT = 3;
-	public static final int PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY = 4;
-	public static final int PROBE_ACTION_END_ON_EXIT = 5;
-	public static final int PROBE_ACTION_END_ON_ENTRY = 6;
-	public static final int PROBE_ACTION_TRANSFER = 7;
-	
+	/** Supported probe actions*/
+	public enum ProbeAction {
+		PROBE_ACTION_NONE, 
+		PROBE_ACTION_START_ON_EXIT, 
+		PROBE_ACTION_START_ON_ENTRY, 
+		PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT, 
+		PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY,
+		PROBE_ACTION_END_ON_EXIT,
+		PROBE_ACTION_END_ON_ENTRY,
+		PROBE_ACTION_TRANSFER;
+	};
+
 	private static Logger log = Logger.getLogger(Place.class);
 	
 	public int				numColors;
 	public String[]			colors;			// Names of the colors that can reside in this Place.
 	public int				statsLevel;		// Determines the amount of statistics to be gathered during the run.
-	public int				depDiscip;		// Departure discipline.
+	public DepartureDiscipline depDiscip;	// Departure discipline.
 	@SuppressWarnings("rawtypes")
 	public LinkedList		depQueue;		// depDiscip = FIFO: Departure queue - stores the colors of tokens in the order of their arrival.	
 	
@@ -115,7 +119,7 @@ public class Place extends Node {
 	public boolean[]		individualTokens;		// individualTokens[color] specifies whether tokens of the specified color should be stored individually
 	
 	// Configuration of probes
-	public int[][]			probeActions;
+	public ProbeAction[][]			probeActions;
 	public Probe[][]		probeInstrumentations;  // probeInstrumentations[numColors]: List of probes tracking tokens in this place
 	
 	public PlaceStats		placeStats;	 
@@ -138,7 +142,7 @@ public class Place extends Node {
 		this.depDiscip		      	= place.depDiscip;
 		this.tokens			       	= place.tokens.clone();//new LinkedList[numColors];
 		this.individualTokens	   	= place.individualTokens.clone();//new boolean[numColors];
-		this.probeActions          	= new int[numColors][place.probeActions[0].length];//numProbes
+		this.probeActions          	= new ProbeAction[numColors][place.probeActions[0].length];//numProbes
 		this.probeInstrumentations 	= new Probe[numColors][]; //JUERGEN: seems sufficiently initialized
 		this.element		       	= place.element;
 		
@@ -147,7 +151,7 @@ public class Place extends Node {
 			this.availTokens[c]	= place.availTokens[c];
 		}
 		
-		if (depDiscip == FIFO)	{
+		if (depDiscip == DepartureDiscipline.FIFO)	{
 			//TODO Test this. This has not been tested, because the example nets did not have FIFO queues
 			this.depQueue = (LinkedList) place.depQueue.clone();
 			this.depReady = place.depReady;		
@@ -169,7 +173,7 @@ public class Place extends Node {
 		// By default tracking is disabled
 		Arrays.fill(individualTokens, false);
 		for (int c = 0; c < numColors; c++) {
-			Arrays.fill(probeActions[c], PROBE_ACTION_NONE);
+			Arrays.fill(probeActions[c], ProbeAction.PROBE_ACTION_NONE);
 			probeInstrumentations[c] = new Probe[0];
 		}
 	}
@@ -201,7 +205,7 @@ public class Place extends Node {
 	 * @param element     - reference to the XML element representing the place
 	 */
 	@SuppressWarnings("rawtypes")
-	public Place(int id, String name, String[] colors, int numInTrans, int numOutTrans, int numProbes, int statsLevel, int depDiscip, Element element, SimQPNConfiguration configuration) throws SimQPNException {
+	public Place(int id, String name, String[] colors, int numInTrans, int numOutTrans, int numProbes, int statsLevel, DepartureDiscipline depDiscip, Element element, SimQPNConfiguration configuration) throws SimQPNException {
 		super(id, name);		
 		this.colors			       = colors;	
 		this.numColors		       = colors.length;	
@@ -213,7 +217,7 @@ public class Place extends Node {
 		this.depDiscip		       = depDiscip;
 		this.tokens			       = new LinkedList[numColors];
 		this.individualTokens			   = new boolean[numColors];
-		this.probeActions          = new int[numColors][numProbes];
+		this.probeActions          = new ProbeAction[numColors][numProbes];
 		this.probeInstrumentations = new Probe[numColors][];
 		this.element		       = element;
 
@@ -222,7 +226,7 @@ public class Place extends Node {
 			this.tokenPop[c] 	= 0;
 			this.availTokens[c]	= 0;
 		}
-		if (depDiscip == FIFO)	{			
+		if (depDiscip == DepartureDiscipline.FIFO)	{			
 			this.depQueue = new LinkedList();
 			this.depReady = false;		
 		}
@@ -241,7 +245,7 @@ public class Place extends Node {
 		// By default tracking is disabled
 		Arrays.fill(individualTokens, false);
 		for (int c = 0; c < numColors; c++) {
-			Arrays.fill(probeActions[c], PROBE_ACTION_NONE);
+			Arrays.fill(probeActions[c], ProbeAction.PROBE_ACTION_NONE);
 			probeInstrumentations[c] = new Probe[0];
 		}
 	}
@@ -258,10 +262,10 @@ public class Place extends Node {
 	@SuppressWarnings("unchecked")
 	public void init(double clock) throws SimQPNException {
 		
-		if (depDiscip == NORMAL)  {
+		if (depDiscip == DepartureDiscipline.NORMAL)  {
 			availTokens = tokenPop; //Note: from here on, availTokens and tokenPop point to the same array!
 		}
-		else if (depDiscip == FIFO)  {
+		else if (depDiscip == DepartureDiscipline.FIFO)  {
 			int totTkPop = 0;  			 
 			int[] tkPop = new int[numColors];
 			for (int c = 0; c < numColors; c++) { 
@@ -393,11 +397,11 @@ public class Place extends Node {
 			}
 		}
 
-		if (depDiscip == NORMAL)  {
+		if (depDiscip == DepartureDiscipline.NORMAL)  {
 			for (int i = 0; i < outTrans.length; i++)
 				outTrans[i].updateState(id, color, tokenPop[color], count);
 		}				
-		else if (depDiscip == FIFO)  {			
+		else if (depDiscip == DepartureDiscipline.FIFO)  {			
 			if (depReady) {
 				for (int i=0; i < count; i++)  
 					depQueue.addLast(new Integer(color));								
@@ -459,11 +463,11 @@ public class Place extends Node {
 			}
 		}
 
-		if (depDiscip == NORMAL)  {
+		if (depDiscip == DepartureDiscipline.NORMAL)  {
 			for (int i = 0; i < outTrans.length; i++)
 				outTrans[i].updateState(id, color, tokenPop[color], (-1)*count);						
 		}				
-		else if (depDiscip == FIFO)  {
+		else if (depDiscip == DepartureDiscipline.FIFO)  {
 			availTokens[color] -= count;
 			for (int i = 0; i < outTrans.length; i++)
 				outTrans[i].updateState(id, color, availTokens[color], (-1)*count);			
@@ -504,14 +508,14 @@ public class Place extends Node {
 	 * @param action - a PROBE_ACTION constant.
 	 */
 	@SuppressWarnings("rawtypes")
-	public void addProbe(Probe probe, int action) {
+	public void addProbe(Probe probe, ProbeAction action) {
 		int probeId = probe.id;
 		for (String trackedColor : probe.colors) {
 			int c = getColorIndex(trackedColor);
 			if (c >= 0) {
 				probeActions[c][probeId] = action;
-				if ((action != PROBE_ACTION_START_ON_EXIT) && (action != PROBE_ACTION_END_ON_ENTRY) 
-						&& (action != PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY)) {
+				if ((action != ProbeAction.PROBE_ACTION_START_ON_EXIT) && (action != ProbeAction.PROBE_ACTION_END_ON_ENTRY) 
+						&& (action != ProbeAction.PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY)) {
 					individualTokens[c] = true;
 					if (tokens[c] == null) {
 						tokens[c] = new LinkedList();

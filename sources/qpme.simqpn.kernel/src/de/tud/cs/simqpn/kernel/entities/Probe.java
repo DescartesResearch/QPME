@@ -216,14 +216,14 @@ public class Probe {
 						startPlace
 								.addProbe(
 										this,
-										Place.PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT);
+										Place.ProbeAction.PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT);
 						log.debug(startPlace.name + "(start_on_entry), ");
 					} else if ((startTrigger == ON_EXIT)
 							&& (endTrigger == ON_ENTRY)) {
 						startPlace
 								.addProbe(
 										this,
-										Place.PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY);
+										Place.ProbeAction.PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY);
 						log.debug(startPlace.name + "(start_on_exit), ");
 					} else {
 						log.error(formatDetailMessage(
@@ -237,11 +237,11 @@ public class Probe {
 				} else {
 					if (startTrigger == ON_ENTRY) {
 						startPlace.addProbe(this,
-								Place.PROBE_ACTION_START_ON_ENTRY);
+								Place.ProbeAction.PROBE_ACTION_START_ON_ENTRY);
 						log.debug(startPlace.name + "(start_on_entry), ");
 					} else {
 						startPlace.addProbe(this,
-								Place.PROBE_ACTION_START_ON_EXIT);
+								Place.ProbeAction.PROBE_ACTION_START_ON_EXIT);
 						log.debug(startPlace.name + "(start_on_exit), ");
 					}
 				}
@@ -252,7 +252,7 @@ public class Probe {
 					Place pl = marking.getKey();
 					if ((pl != startPlace) && (pl != endPlace)) {
 						if (marking.getValue() == MARK) {
-							pl.addProbe(this, Place.PROBE_ACTION_TRANSFER);
+							pl.addProbe(this, Place.ProbeAction.PROBE_ACTION_TRANSFER);
 							log.debug(pl.name + ", ");
 							markingCount++;
 						}
@@ -262,11 +262,11 @@ public class Probe {
 				// Instrument the end place
 				if (endTrigger == ON_EXIT) {
 					if (startPlace != endPlace)
-						endPlace.addProbe(this, Place.PROBE_ACTION_END_ON_EXIT);
+						endPlace.addProbe(this, Place.ProbeAction.PROBE_ACTION_END_ON_EXIT);
 					log.debug(endPlace.name + "(end_on_exit)");
 				} else {
 					if (startPlace != endPlace)
-						endPlace.addProbe(this, Place.PROBE_ACTION_END_ON_ENTRY);
+						endPlace.addProbe(this, Place.ProbeAction.PROBE_ACTION_END_ON_ENTRY);
 					log.debug(endPlace.name + "(end_on_entry)");
 				}
 				log.debug(" }");

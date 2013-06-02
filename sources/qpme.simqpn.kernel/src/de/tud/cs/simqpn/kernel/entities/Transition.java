@@ -408,7 +408,9 @@ public class Transition extends Node {
 		int maxN = 0;
 		Place pl;
 		Probe probe;
-		int probeIdx, probeAction;
+		int probeIdx;
+		
+		Place.ProbeAction probeAction;
 		nP = inPlaces.length;
 		// Step 1: Remove input tokens
 		for (p = 0; p < nP; p++) {
@@ -436,8 +438,8 @@ public class Transition extends Node {
 							ProbeTimestamp data = probeData[probeIdx];
 
 							switch (probeAction) {
-							case Place.PROBE_ACTION_END_ON_EXIT:
-							case Place.PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT:
+							case PROBE_ACTION_END_ON_EXIT:
+							case PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT:
 								if (pl.individualTokens[c]) {
 									for (int i = 0; i < n; i++) {
 										ProbeTimestamp curStamp = tokens[i].probeData[pr];
@@ -451,8 +453,8 @@ public class Transition extends Node {
 									}
 								}
 								break;
-							case Place.PROBE_ACTION_START_ON_EXIT:
-							case Place.PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY:
+							case PROBE_ACTION_START_ON_EXIT:
+							case PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY:
 								if (data == null) {
 									// There is no timestamp so far for the
 									// current probe, so create it.
@@ -540,15 +542,15 @@ public class Transition extends Node {
 							probeAction = pl.probeActions[c][probeIdx];
 							ProbeTimestamp timestamp = probeData[probeIdx];
 							switch (probeAction) {
-							case Place.PROBE_ACTION_START_ON_ENTRY:
-							case Place.PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT:
+							case PROBE_ACTION_START_ON_ENTRY:
+							case PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT:
 								if (timestamp == null) {
 									outData[pr] = new ProbeTimestamp(probeIdx,
 											executor.getClock());
 								}
 								break;
-							case Place.PROBE_ACTION_END_ON_ENTRY:
-							case Place.PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY:
+							case PROBE_ACTION_END_ON_ENTRY:
+							case PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY:
 								probe.probeStats
 										.updateSojTimeStats(c,
 												executor.getClock()

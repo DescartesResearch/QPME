@@ -70,6 +70,7 @@ import cern.colt.list.DoubleArrayList;
 import cern.jet.random.AbstractContinousDistribution;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
+import de.tud.cs.simqpn.kernel.entities.Place.DepartureDiscipline;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.stats.QPlaceQueueStats;
 
@@ -182,7 +183,7 @@ public class QPlace extends Place {
 	 * 
 	 */
 	public QPlace(int id, String name, String[] colors, int numInTrans,
-			int numOutTrans, int numProbes, int statsLevel, int depDiscip,
+			int numOutTrans, int numProbes, int statsLevel, DepartureDiscipline depDiscip,
 			Queue queue, Element element, SimQPNConfiguration configuration)
 			throws SimQPNException {
 		super(id, name, colors, numInTrans, numOutTrans, numProbes, statsLevel,
