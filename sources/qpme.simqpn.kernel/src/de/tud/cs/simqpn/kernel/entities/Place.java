@@ -77,11 +77,13 @@ import de.tud.cs.simqpn.kernel.stats.Stats;
 
 public class Place extends Node {
 	
-	// Supported departure disciplines (depDiscip):	
-	public static final int NORMAL	= 0;	// Arriving tokens become available for output transitions immediately upon arrival.  
-	public static final int FIFO	= 1;	// First-In-First-Out: Arriving tokens become available for output transitions in the order of their arrival.
+	/** Supported departure disciplines*/	
+	public enum DepartureDiscipline{
+		NORMAL,// Arriving tokens become available for output transitions immediately upon arrival.  
+		FIFO; // First-In-First-Out: Arriving tokens become available for output transitions in the order of their arrival.
+	}
 	
-	// Supported probe actions
+	/** Supported probe actions*/
 	public enum ProbeAction {
 		PROBE_ACTION_NONE, 
 		PROBE_ACTION_START_ON_EXIT, 
@@ -98,7 +100,7 @@ public class Place extends Node {
 	public int				numColors;
 	public String[]			colors;			// Names of the colors that can reside in this Place.
 	public int				statsLevel;		// Determines the amount of statistics to be gathered during the run.
-	public int				depDiscip;		// Departure discipline.
+	public DepartureDiscipline depDiscip;	// Departure discipline.
 	@SuppressWarnings("rawtypes")
 	public LinkedList		depQueue;		// depDiscip = FIFO: Departure queue - stores the colors of tokens in the order of their arrival.	
 	
@@ -149,7 +151,7 @@ public class Place extends Node {
 			this.availTokens[c]	= place.availTokens[c];
 		}
 		
-		if (depDiscip == FIFO)	{
+		if (depDiscip == DepartureDiscipline.FIFO)	{
 			//TODO Test this. This has not been tested, because the example nets did not have FIFO queues
 			this.depQueue = (LinkedList) place.depQueue.clone();
 			this.depReady = place.depReady;		
@@ -203,7 +205,7 @@ public class Place extends Node {
 	 * @param element     - reference to the XML element representing the place
 	 */
 	@SuppressWarnings("rawtypes")
-	public Place(int id, String name, String[] colors, int numInTrans, int numOutTrans, int numProbes, int statsLevel, int depDiscip, Element element, SimQPNConfiguration configuration) throws SimQPNException {
+	public Place(int id, String name, String[] colors, int numInTrans, int numOutTrans, int numProbes, int statsLevel, DepartureDiscipline depDiscip, Element element, SimQPNConfiguration configuration) throws SimQPNException {
 		super(id, name);		
 		this.colors			       = colors;	
 		this.numColors		       = colors.length;	
@@ -224,7 +226,7 @@ public class Place extends Node {
 			this.tokenPop[c] 	= 0;
 			this.availTokens[c]	= 0;
 		}
-		if (depDiscip == FIFO)	{			
+		if (depDiscip == DepartureDiscipline.FIFO)	{			
 			this.depQueue = new LinkedList();
 			this.depReady = false;		
 		}
@@ -260,10 +262,10 @@ public class Place extends Node {
 	@SuppressWarnings("unchecked")
 	public void init(double clock) throws SimQPNException {
 		
-		if (depDiscip == NORMAL)  {
+		if (depDiscip == DepartureDiscipline.NORMAL)  {
 			availTokens = tokenPop; //Note: from here on, availTokens and tokenPop point to the same array!
 		}
-		else if (depDiscip == FIFO)  {
+		else if (depDiscip == DepartureDiscipline.FIFO)  {
 			int totTkPop = 0;  			 
 			int[] tkPop = new int[numColors];
 			for (int c = 0; c < numColors; c++) { 
@@ -395,11 +397,11 @@ public class Place extends Node {
 			}
 		}
 
-		if (depDiscip == NORMAL)  {
+		if (depDiscip == DepartureDiscipline.NORMAL)  {
 			for (int i = 0; i < outTrans.length; i++)
 				outTrans[i].updateState(id, color, tokenPop[color], count);
 		}				
-		else if (depDiscip == FIFO)  {			
+		else if (depDiscip == DepartureDiscipline.FIFO)  {			
 			if (depReady) {
 				for (int i=0; i < count; i++)  
 					depQueue.addLast(new Integer(color));								
@@ -461,11 +463,11 @@ public class Place extends Node {
 			}
 		}
 
-		if (depDiscip == NORMAL)  {
+		if (depDiscip == DepartureDiscipline.NORMAL)  {
 			for (int i = 0; i < outTrans.length; i++)
 				outTrans[i].updateState(id, color, tokenPop[color], (-1)*count);						
 		}				
-		else if (depDiscip == FIFO)  {
+		else if (depDiscip == DepartureDiscipline.FIFO)  {
 			availTokens[color] -= count;
 			for (int i = 0; i < outTrans.length; i++)
 				outTrans[i].updateState(id, color, availTokens[color], (-1)*count);			
