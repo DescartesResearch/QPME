@@ -4,6 +4,7 @@ import java.util.List;
 
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Transition;
+import de.tud.cs.simqpn.kernel.executor.parallel.LP;
 
 public class ParallelTransition extends Transition {
 	/**
@@ -15,6 +16,7 @@ public class ParallelTransition extends Transition {
 
 	/** branchingDecissions */
 	List<Double>[] futureArray;
+	LP lp;
 
 	boolean[] futureListInit; // TODO make this a bitmap, because boolean is
 								// internally mapped to int in java
@@ -67,6 +69,10 @@ public class ParallelTransition extends Transition {
 			}
 		}
 		return true;
+	}
+	
+	public LP getLP(){
+		return lp;
 	}
 
 }
