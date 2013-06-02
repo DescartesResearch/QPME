@@ -82,15 +82,17 @@ public class Place extends Node {
 	public static final int FIFO	= 1;	// First-In-First-Out: Arriving tokens become available for output transitions in the order of their arrival.
 	
 	// Supported probe actions
-	public static final int PROBE_ACTION_NONE = 0;
-	public static final int PROBE_ACTION_START_ON_EXIT = 1;
-	public static final int PROBE_ACTION_START_ON_ENTRY = 2;
-	public static final int PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT = 3;
-	public static final int PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY = 4;
-	public static final int PROBE_ACTION_END_ON_EXIT = 5;
-	public static final int PROBE_ACTION_END_ON_ENTRY = 6;
-	public static final int PROBE_ACTION_TRANSFER = 7;
-	
+	public enum ProbeAction {
+		PROBE_ACTION_NONE, 
+		PROBE_ACTION_START_ON_EXIT, 
+		PROBE_ACTION_START_ON_ENTRY, 
+		PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT, 
+		PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY,
+		PROBE_ACTION_END_ON_EXIT,
+		PROBE_ACTION_END_ON_ENTRY,
+		PROBE_ACTION_TRANSFER;
+	};
+
 	private static Logger log = Logger.getLogger(Place.class);
 	
 	public int				numColors;
@@ -115,7 +117,7 @@ public class Place extends Node {
 	public boolean[]		individualTokens;		// individualTokens[color] specifies whether tokens of the specified color should be stored individually
 	
 	// Configuration of probes
-	public int[][]			probeActions;
+	public ProbeAction[][]			probeActions;
 	public Probe[][]		probeInstrumentations;  // probeInstrumentations[numColors]: List of probes tracking tokens in this place
 	
 	public PlaceStats		placeStats;	 
@@ -138,7 +140,7 @@ public class Place extends Node {
 		this.depDiscip		      	= place.depDiscip;
 		this.tokens			       	= place.tokens.clone();//new LinkedList[numColors];
 		this.individualTokens	   	= place.individualTokens.clone();//new boolean[numColors];
-		this.probeActions          	= new int[numColors][place.probeActions[0].length];//numProbes
+		this.probeActions          	= new ProbeAction[numColors][place.probeActions[0].length];//numProbes
 		this.probeInstrumentations 	= new Probe[numColors][]; //JUERGEN: seems sufficiently initialized
 		this.element		       	= place.element;
 		
@@ -169,7 +171,7 @@ public class Place extends Node {
 		// By default tracking is disabled
 		Arrays.fill(individualTokens, false);
 		for (int c = 0; c < numColors; c++) {
-			Arrays.fill(probeActions[c], PROBE_ACTION_NONE);
+			Arrays.fill(probeActions[c], ProbeAction.PROBE_ACTION_NONE);
 			probeInstrumentations[c] = new Probe[0];
 		}
 	}
@@ -213,7 +215,7 @@ public class Place extends Node {
 		this.depDiscip		       = depDiscip;
 		this.tokens			       = new LinkedList[numColors];
 		this.individualTokens			   = new boolean[numColors];
-		this.probeActions          = new int[numColors][numProbes];
+		this.probeActions          = new ProbeAction[numColors][numProbes];
 		this.probeInstrumentations = new Probe[numColors][];
 		this.element		       = element;
 
@@ -241,7 +243,7 @@ public class Place extends Node {
 		// By default tracking is disabled
 		Arrays.fill(individualTokens, false);
 		for (int c = 0; c < numColors; c++) {
-			Arrays.fill(probeActions[c], PROBE_ACTION_NONE);
+			Arrays.fill(probeActions[c], ProbeAction.PROBE_ACTION_NONE);
 			probeInstrumentations[c] = new Probe[0];
 		}
 	}
@@ -504,14 +506,14 @@ public class Place extends Node {
 	 * @param action - a PROBE_ACTION constant.
 	 */
 	@SuppressWarnings("rawtypes")
-	public void addProbe(Probe probe, int action) {
+	public void addProbe(Probe probe, ProbeAction action) {
 		int probeId = probe.id;
 		for (String trackedColor : probe.colors) {
 			int c = getColorIndex(trackedColor);
 			if (c >= 0) {
 				probeActions[c][probeId] = action;
-				if ((action != PROBE_ACTION_START_ON_EXIT) && (action != PROBE_ACTION_END_ON_ENTRY) 
-						&& (action != PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY)) {
+				if ((action != ProbeAction.PROBE_ACTION_START_ON_EXIT) && (action != ProbeAction.PROBE_ACTION_END_ON_ENTRY) 
+						&& (action != ProbeAction.PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY)) {
 					individualTokens[c] = true;
 					if (tokens[c] == null) {
 						tokens[c] = new LinkedList();
