@@ -719,7 +719,7 @@ public class Queue {
 				// Update Stats
 				if (qPl.statsLevel >= 3)
 					qPl.qPlaceQueueStats.updateDelayTimeStats(color, 0,
-							executor);
+							executor.getConfiguration());
 			}
 			while (n < count) {
 				// Place the rest of the tokens in the waitingLine
@@ -802,7 +802,7 @@ public class Queue {
 				// Update stats
 				if (qPl.statsLevel >= 3)
 					qPl.qPlaceQueueStats.updateDelayTimeStats(tk.color,
-							executor.getClock() - tk.arrivTS, executor);
+							executor.getClock() - tk.arrivTS, executor.getConfiguration());
 			} else
 				numBusyServers--;
 		} else if (queueDiscip == PS) {

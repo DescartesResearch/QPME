@@ -219,9 +219,9 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	 * @param color		- token color
 	 * @param sojTime	- sojourn time of token in queue	 
 	 */
-	public void updateSojTimeStats(int color, double sojTime, Executor sim) throws SimQPNException {
-		if (indrStats || (inRampUp && sim.getConfiguration().getAnalMethod() != SimQPNConfiguration.AnalysisMethod.WELCH)) return;
-		super.updateSojTimeStats(color, sojTime, sim);
+	public void updateSojTimeStats(int color, double sojTime, SimQPNConfiguration configuration) throws SimQPNException {
+		if (indrStats || (inRampUp && configuration.getAnalMethod() != SimQPNConfiguration.AnalysisMethod.WELCH)) return;
+		super.updateSojTimeStats(color, sojTime, configuration);
 	}
 
 	/**
@@ -231,9 +231,9 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	 * @param delayTime	- delay time of token in waiting area of the queue
 	 * 	 
 	 */
-	public void updateDelayTimeStats(int color, double delayTime, Executor sim) throws SimQPNException {				
-		if ((!indrStats) || (inRampUp && sim.getConfiguration().getAnalMethod() != SimQPNConfiguration.AnalysisMethod.WELCH)) return;
-		super.updateSojTimeStats(color, delayTime, sim);		
+	public void updateDelayTimeStats(int color, double delayTime, SimQPNConfiguration configuration) throws SimQPNException {				
+		if ((!indrStats) || (inRampUp && configuration.getAnalMethod() != SimQPNConfiguration.AnalysisMethod.WELCH)) return;
+		super.updateSojTimeStats(color, delayTime, configuration);		
 	}	
 	
 	/**
