@@ -530,7 +530,7 @@ public class Queue {
 		 * the exact same time, the wrong one might be removed!
 		 */
 		
-		executor.eventList.remove(nextEvent);
+		executor.removeEvent(nextEvent);
 		
 		eventScheduled = false;
 
