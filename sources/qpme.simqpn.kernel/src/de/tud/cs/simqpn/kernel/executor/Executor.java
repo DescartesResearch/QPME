@@ -441,8 +441,8 @@ public class Executor {
 	 * @return
 	 * @exception
 	 */
-	public void scheduleEvent(double time, Queue queue, Token token) {
-		QueueEvent ev = new QueueEvent(time, queue, token);
+	public void scheduleEvent(double serviceTime, Queue queue, Token token) {
+		QueueEvent ev = new QueueEvent(clock+serviceTime, queue, token);
 		eventList.add(ev);
 		queue.nextEvent = ev;
 	}
