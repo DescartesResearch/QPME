@@ -423,7 +423,7 @@ public class Transition extends Node {
 						maxN = n;
 
 					Token[] tokens = pl.removeTokens(c, n, tkCopyBuffer,
-							executor);
+							executor.getClock(), executor.getConfiguration());
 					prC = pl.probeInstrumentations[c].length;
 
 					if (prC > 0) {
@@ -449,7 +449,7 @@ public class Transition extends Node {
 										probe.probeStats.updateSojTimeStats(c,
 												executor.getClock()
 														- curStamp.timestamp,
-												executor);
+												executor.getConfiguration());
 									}
 								}
 								break;
@@ -555,7 +555,7 @@ public class Transition extends Node {
 										.updateSojTimeStats(c,
 												executor.getClock()
 														- timestamp.timestamp,
-												executor);
+												executor.getConfiguration());
 								break;
 							default:
 								outData[pr] = timestamp;

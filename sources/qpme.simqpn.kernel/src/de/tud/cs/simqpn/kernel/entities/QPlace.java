@@ -343,7 +343,7 @@ public class QPlace extends Place {
 		// next statement)
 		if (statsLevel > 0)
 			qPlaceQueueStats.updateTkPopStats(color, queueTokenPop[color],
-					count, executor);
+					count, executor.getClock());
 
 		queueTokenPop[color] += count;
 		if (individualTokens[color]) {
@@ -362,7 +362,7 @@ public class QPlace extends Place {
 	 * @return
 	 * @exception
 	 */
-	public void completeService(Token token, Executor sim)
+	public void completeService(Token token, Executor executor)
 			throws SimQPNException {
 		if (queueTokenPop[token.color] < 1) {
 			log.error("Attempted to remove a token from queue " + name
@@ -374,23 +374,23 @@ public class QPlace extends Place {
 		// next statement)
 		if (statsLevel > 0) {
 			qPlaceQueueStats.updateTkPopStats(token.color,
-					queueTokenPop[token.color], -1, sim);
+					queueTokenPop[token.color], -1, executor);
 			if (statsLevel >= 3)
-				qPlaceQueueStats.updateSojTimeStats(token.color, sim.getClock()
-						- token.arrivTS, sim);
+				qPlaceQueueStats.updateSojTimeStats(token.color, executor.getClock()
+						- token.arrivTS, executor.getConfiguration());
 		}
 
 		// Now remove token from queue and update queue state
 		queueTokenPop[token.color]--;
 
-		queue.completeService(token, sim);
+		queue.completeService(token, executor);
 
 		// Finally move token to depository
 		if (individualTokens[token.color]) {
 			tkCopyBuffer[0] = token;
-			super.addTokens(token.color, 1, tkCopyBuffer, sim);
+			super.addTokens(token.color, 1, tkCopyBuffer, executor);
 		} else {
-			super.addTokens(token.color, 1, null, sim);
+			super.addTokens(token.color, 1, null, executor);
 		}
 	}
 

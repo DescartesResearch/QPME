@@ -430,7 +430,7 @@ public class Place extends Node {
 	 * @return removed tokens (if tracking is enabled)
 	 * @exception
 	 */
-	public Token[] removeTokens(int color, int count, Token[] returnBuffer, Executor executor) throws SimQPNException {
+	public Token[] removeTokens(int color, int count, Token[] returnBuffer, double clock, SimQPNConfiguration configuration) throws SimQPNException {
 		/* //DEBUG
 		if (count <= 0) { 
 			Simulator.logln("Error: Attempted to remove nonpositive number of tokens from place " + name);
@@ -442,12 +442,12 @@ public class Place extends Node {
 		}*/						
 		// Update Stats
 		if (statsLevel > 0) {
-			placeStats.updateTkPopStats(color, tokenPop[color], (-1)*count, executor.getClock());				
+			placeStats.updateTkPopStats(color, tokenPop[color], (-1)*count, clock);				
 			if (statsLevel >= 3) {
 				Double arrivTS;
 				for (int i = 0; i < count; i++) {
 					arrivTS = (Double) tokArrivTS[color].removeFirst();
-					placeStats.updateSojTimeStats(color, executor.getClock() - arrivTS.doubleValue(), executor);
+					placeStats.updateSojTimeStats(color, clock - arrivTS.doubleValue(), configuration);
 				}
 			}				
 		}

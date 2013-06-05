@@ -61,6 +61,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.Iterator;
+import java.util.concurrent.locks.Condition;
 
 import org.apache.log4j.Logger;
 import org.dom4j.DocumentHelper;
@@ -428,8 +429,8 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 * @param color   -  token color
 	 * @param sojTime -  sojourn time of token in place
 	 */
-	public void updateSojTimeStats(int color, double sojTime, Executor executor) throws SimQPNException {
-		if (executor.getConfiguration().getAnalMethod() == SimQPNConfiguration.AnalysisMethod.WELCH) {
+	public void updateSojTimeStats(int color, double sojTime, SimQPNConfiguration configuration) throws SimQPNException {
+		if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.WELCH) {
 			if (maxObsrvST[color] <= 0) return;		// Do not consider colors with nonpositive maxObsrvST
 			int numObsrv = obsrvST[color].size();
 			if (numObsrv == maxObsrvST[color]) return;
@@ -458,7 +459,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 		sumSqST[color]	+= sojTime * sojTime;
 		numST[color]++;
 
-		if (executor.getConfiguration().getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS
+		if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS
 				&& minBatches[color] > 0) {
 			sumBatchST[color] += sojTime;
 			if (numST[color] % batchSizeST[color] == 0) {
