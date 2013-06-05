@@ -98,7 +98,7 @@ import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
-import de.tud.cs.simqpn.kernel.analyzer.BatchMeans;
+import de.tud.cs.simqpn.kernel.analyzer.BatchMeansParallel;
 import de.tud.cs.simqpn.kernel.analyzer.ReplicationDeletion;
 import de.tud.cs.simqpn.kernel.analyzer.Welch;
 import de.tud.cs.simqpn.kernel.entities.Net;
@@ -286,7 +286,7 @@ public class SimQPNController {
 			if (getConfiguration().runMode == SimQPNConfiguration.NORMAL) {
 				if (getConfiguration().getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS) {
 					/** Method of non-overlapping batch means */
-					result = new BatchMeans().analyze(net, configuration,
+					result = new BatchMeansParallel().analyze(net, configuration,
 							monitor);
 				} else if (getConfiguration().getAnalMethod() == SimQPNConfiguration.AnalysisMethod.REPL_DEL) {
 					/**

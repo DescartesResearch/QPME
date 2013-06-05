@@ -73,7 +73,7 @@ public class ParallelQueueFCFS extends Queue {
 				// Update Stats
 				if (qPl.statsLevel >= 3)
 					qPl.qPlaceQueueStats.updateDelayTimeStats(color, 0,
-							executor);
+							executor.getConfiguration());
 			}
 			while (n < count) {
 				// Place the rest of the tokens in the waitingLine
