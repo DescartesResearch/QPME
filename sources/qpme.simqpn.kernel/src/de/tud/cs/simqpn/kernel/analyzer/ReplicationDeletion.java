@@ -16,6 +16,7 @@ import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.executor.Executor;
+import de.tud.cs.simqpn.kernel.executor.SequentialExecutor;
 import de.tud.cs.simqpn.kernel.loader.XMLHelper;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.stats.AggregateStats;
@@ -68,7 +69,7 @@ public class ReplicationDeletion implements Analyzer{
 
 			Net netCopy = new Net(net, configuration);
 			netCopy.finishCloning(net, configuration);
-			Executor executor = new Executor(netCopy, configuration, monitor);
+			Executor executor = new SequentialExecutor(netCopy, configuration, monitor);
 			netCopy = executor.run();
 			
 			progressMonitor.finishSimulationRun();

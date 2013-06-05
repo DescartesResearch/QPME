@@ -443,13 +443,11 @@ public class Queue {
 					for (int c = 0; c < nC; c++, i++) {
 						if (i == color) {
 							if (qPlaces[p].queueTokens[c] != null) {
-								executor.scheduleEvent(executor.getClock()
-										+ servTime, this,
+								executor.scheduleEvent(servTime, this,
 										(Token) qPlaces[p].queueTokens[c]
 												.get(0));
 							} else {
-								executor.scheduleEvent(executor.getClock()
-										+ servTime, this, new Token(qPlaces[p],
+								executor.scheduleEvent(servTime, this, new Token(qPlaces[p],
 										c));
 							}
 							done = true;
@@ -492,12 +490,12 @@ public class Queue {
 					servTime /= ((totQueTokCnt <= numServers) ? totQueTokCnt
 							: numServers);
 				if (qPlaces[tkSchedPl].queueTokens[tkSchedCol] != null) {
-					executor.scheduleEvent(executor.getClock() + servTime,
+					executor.scheduleEvent(servTime,
 							this,
 							(Token) qPlaces[tkSchedPl].queueTokens[tkSchedCol]
 									.get(tkSchedPos));
 				} else {
-					executor.scheduleEvent(executor.getClock() + servTime,
+					executor.scheduleEvent(servTime,
 							this, new Token(qPlaces[tkSchedPl], tkSchedCol));
 				}
 				lastEventClock = executor.getClock();
@@ -532,7 +530,7 @@ public class Queue {
 		 * the exact same time, the wrong one might be removed!
 		 */
 		
-		executor.eventList.remove(nextEvent);
+		executor.removeEvent(nextEvent);
 		
 		eventScheduled = false;
 
@@ -701,7 +699,7 @@ public class Queue {
 				Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[i]
 						: new Token(qPl, color);
 				tk.arrivTS = executor.getClock();
-				executor.scheduleEvent(executor.getClock() + servTime, this, tk);
+				executor.scheduleEvent(servTime, this, tk);
 			}
 		} else if (queueDiscip == FCFS) {
 			int n = 0;
@@ -713,7 +711,7 @@ public class Queue {
 				Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[n]
 						: new Token(qPl, color);
 				tk.arrivTS = executor.getClock();
-				executor.scheduleEvent(executor.getClock() + servTime, this, tk);
+				executor.scheduleEvent(servTime, this, tk);
 				numBusyServers++;
 				n++;
 				// Update Stats
@@ -798,7 +796,7 @@ public class Queue {
 				double servTime = qPl.randServTimeGen[tk.color].nextDouble();
 				if (servTime < 0)
 					servTime = 0;
-				executor.scheduleEvent(executor.getClock() + servTime, this, tk);
+				executor.scheduleEvent(servTime, this, tk);
 				// Update stats
 				if (qPl.statsLevel >= 3)
 					qPl.qPlaceQueueStats.updateDelayTimeStats(tk.color,

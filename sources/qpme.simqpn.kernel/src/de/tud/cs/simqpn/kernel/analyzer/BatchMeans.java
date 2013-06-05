@@ -9,6 +9,7 @@ import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.Queue;
 import de.tud.cs.simqpn.kernel.executor.Executor;
+import de.tud.cs.simqpn.kernel.executor.SequentialExecutor;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.stats.Stats;
 
@@ -57,7 +58,7 @@ public class BatchMeans implements Analyzer {
 			throws SimQPNException {
 		progressMonitor = monitor;
 		progressMonitor.startSimulation(configuration);
-		Executor executor = new Executor(net, configuration, monitor);
+		Executor executor = new SequentialExecutor(net, configuration, monitor);
 		progressMonitor.startSimulationRun(1, configuration);
 		net = executor.run();
 		progressMonitor.finishSimulationRun();
