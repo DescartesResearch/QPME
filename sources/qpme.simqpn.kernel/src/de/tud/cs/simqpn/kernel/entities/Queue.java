@@ -197,7 +197,7 @@ public class Queue {
 		this.statsLevel = queue.statsLevel;
 		this.numServers = queue.numServers;
 		this.numBusyServers = queue.numBusyServers;
-		this.waitingLine = new LinkedList<>();
+		this.waitingLine = new LinkedList<Token>();
 		if (queue.waitingLine != null) {
 			for (int i = 0; i < queue.waitingLine.size(); i++) {
 				Token token = queue.waitingLine.get(i);
