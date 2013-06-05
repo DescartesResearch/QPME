@@ -176,7 +176,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 											
 	public double[]		trCvrgLowerLimit;		// Lower limit for the true coverage based on the F distribution.	
 	public double[]		trCvrgUpperLimit;		// Upper limit for the true coverage based on the F distribution.
-	public LinkedList	replStats;				// PlaceStats/QPlaceQueueStats objects collected from run replications.
+	public LinkedList<PlaceStats>replStats;		// PlaceStats/QPlaceQueueStats objects collected from run replications.
 	public int 			numSavedRepls;			// Number of saved replications for coverage analysis.
 										            													
 	// StatsLevel 5 ------------------------------------------------------------------------------------------------------
@@ -277,7 +277,7 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 				this.ciHalfLenTrCvrg	= new double[numColors];
 				this.trCvrgLowerLimit	= new double[numColors];
 				this.trCvrgUpperLimit	= new double[numColors];				
-				this.replStats			= new LinkedList();				
+				this.replStats			= new LinkedList<PlaceStats>();				
 				this.numSavedRepls		= 0;
 				this.enghBadCIs			= false;				
 				for (int c = 0; c < numColors; c++) numCvrgs[c] = 0;				
