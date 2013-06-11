@@ -137,7 +137,7 @@ public class Welch {//implements Analyzer {
 		 */
 
 		// Iterate through all places.
-		Iterator placeIterator = placeList.iterator();
+		Iterator<Element> placeIterator = placeList.iterator();
 
 		/*
 		 * SDK-DEBUG: - Does placeList.iterator() always return places in
@@ -160,7 +160,7 @@ public class Welch {//implements Analyzer {
 			if (pl.statsLevel >= 3) {
 				xpathSelector = XMLHelper
 						.createXPath("color-refs/color-ref");
-				Iterator colorRefIterator = xpathSelector
+				Iterator<Element> colorRefIterator = xpathSelector
 						.selectNodes(place).iterator();
 				for (int c = 0; colorRefIterator.hasNext(); c++) {
 					Element colorRef = (Element) colorRefIterator.next();

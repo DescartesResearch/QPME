@@ -70,7 +70,6 @@ import cern.colt.list.DoubleArrayList;
 import cern.jet.random.AbstractContinousDistribution;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
-import de.tud.cs.simqpn.kernel.entities.Place.DepartureDiscipline;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.stats.QPlaceQueueStats;
 

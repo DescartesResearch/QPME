@@ -101,8 +101,7 @@ public class Place extends Node {
 	public String[]			colors;			// Names of the colors that can reside in this Place.
 	public int				statsLevel;		// Determines the amount of statistics to be gathered during the run.
 	public DepartureDiscipline depDiscip;	// Departure discipline.
-	@SuppressWarnings("rawtypes")
-	public LinkedList		depQueue;		// depDiscip = FIFO: Departure queue - stores the colors of tokens in the order of their arrival.	
+	public LinkedList<Integer>		depQueue;		// depDiscip = FIFO: Departure queue - stores the colors of tokens in the order of their arrival.	
 	
 	public Transition[]		inTrans;
 	public Transition[]		outTrans;
@@ -153,7 +152,7 @@ public class Place extends Node {
 		
 		if (depDiscip == DepartureDiscipline.FIFO)	{
 			//TODO Test this. This has not been tested, because the example nets did not have FIFO queues
-			this.depQueue = (LinkedList) place.depQueue.clone();
+			this.depQueue = (LinkedList<Integer>) place.depQueue.clone();
 			this.depReady = place.depReady;		
 		}
 		
@@ -227,7 +226,7 @@ public class Place extends Node {
 			this.availTokens[c]	= 0;
 		}
 		if (depDiscip == DepartureDiscipline.FIFO)	{			
-			this.depQueue = new LinkedList();
+			this.depQueue = new LinkedList<Integer>();
 			this.depReady = false;		
 		}
 		if (statsLevel > 0) {
