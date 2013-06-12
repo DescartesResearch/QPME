@@ -26,7 +26,7 @@ public class LP implements Runnable {
 	private double clock = 0;
 	ParallelTransition[] outgoingTransitions;
 	ParallelTransition[] incommingTransitions;
-	int id;
+	private int id;
 
 	/**
 	 * LP event list. Contains events scheduled for processing at specified
@@ -50,6 +50,26 @@ public class LP implements Runnable {
 		this.transitions = transitions;
 		this.progressMonitor = progressMonitor;
 		this.configuration = configuration;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public Transition[] getTransitions() {
+		return transitions;
+	}
+
+	public void setTransitions(Transition[] transitions) {
+		this.transitions = transitions;
+	}
+
+	public Place[] getPlaces() {
+		return places;
+	}
+
+	public void setPlaces(Place[] places) {
+		this.places = places;
 	}
 
 	private boolean isSaveToProcess(double nextEventTime) {
