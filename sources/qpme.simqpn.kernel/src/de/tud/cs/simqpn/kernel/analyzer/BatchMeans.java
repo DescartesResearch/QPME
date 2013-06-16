@@ -60,7 +60,7 @@ public class BatchMeans implements Analyzer {
 		progressMonitor.startSimulation(configuration);
 		Executor executor = new SequentialExecutor(net, configuration, monitor);
 		progressMonitor.startSimulationRun(1, configuration);
-		net = executor.run();
+		executor.run();
 		progressMonitor.finishSimulationRun();
 		progressMonitor.finishSimulation();
 		progressMonitor = null;

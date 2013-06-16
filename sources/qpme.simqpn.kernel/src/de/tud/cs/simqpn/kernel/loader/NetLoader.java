@@ -704,7 +704,6 @@ public class NetLoader {
 	private Net createProbes(Element netXML, Net net, SimQPNConfiguration configuration)
 			throws SimQPNException {
 		XPath xpathSelector;
-
 		log.debug("/////////////////////////////////////////////");
 		log.debug("// Create probes");
 		// Allocate an array able to contain the places.

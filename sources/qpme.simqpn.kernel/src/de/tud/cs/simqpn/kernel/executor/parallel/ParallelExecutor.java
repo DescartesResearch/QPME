@@ -1,35 +1,24 @@
 package de.tud.cs.simqpn.kernel.executor.parallel;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.log4j.Logger;
+import java.util.concurrent.Future;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
+import de.tud.cs.simqpn.kernel.entities.QPlace;
+import de.tud.cs.simqpn.kernel.entities.Queue;
 import de.tud.cs.simqpn.kernel.entities.Transition;
-import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
 public class ParallelExecutor {
-	private static Logger log = Logger.getLogger(ParallelExecutor.class);
-
-	public static void main(String[] args) throws InterruptedException {
-		int cnt = 0;
-		double time = System.nanoTime();
-		while (cnt < 1000000000) {
-			cnt++;
-		}
-		time = System.nanoTime() - time;
-		System.out.println(time);
-	}
 
 	private Net net;
 	private SimQPNConfiguration configuration;
@@ -42,35 +31,62 @@ public class ParallelExecutor {
 		this.progressMonitor = progressMonitor;
 	}
 
-	public Net run() throws SimQPNException {
+	/**
+	 * Modifies net / simulates net
+	 * @throws SimQPNException
+	 */
+	public void run() throws SimQPNException {
+
 		LP[] lps = createLPs();
-		ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors
-				.newCachedThreadPool();
+		System.out.println(lpDecompositionToString(lps));
+
+		//int cores = Runtime.getRuntime().availableProcessors();
+		ExecutorService executorService = Executors.newFixedThreadPool(lps.length);
+		Collection<Future<?>> futures = new LinkedList<Future<?>>();
 		for (LP lp : lps) {
-			System.out.println("LP"+lp.getId());;
-			for(Place p : lp.getPlaces()){
-				System.out.println("\t"+p.name+"(place)");
-			}
-			for(Transition t : lp.getTransitions()){
-				System.out.println("\t"+t.name +"(transition)");
+			futures.add(executorService.submit(lp));
+		}
+		for (Future<?> future : futures) {
+			try {
+				future.get();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} catch (ExecutionException e) {
+				e.printStackTrace();
 			}
 		}
-		
-		for (LP lp : lps) {
-			threadPoolExecutor.execute(lp);
-		}
-		threadPoolExecutor.shutdown();
-		return net;
 	}
 
-	
-	
+	/**
+	 * 
+	 * @param lps
+	 */
+	private String lpDecompositionToString(LP[] lps) {
+		StringBuffer sb = new StringBuffer();
+		for (LP lp : lps) {
+			sb.append("LP" + lp.getId()+"\n");
+			for (Place p : lp.getPlaces()) {
+				if(p instanceof QPlace){
+					sb.append("\t" + p.name + "(QPplace), queue "+ ((QPlace) p).queue.name+"\n");					
+				}else{
+					sb.append("\t" + p.name + "(Place)"+"\n");					
+				}
+			}
+			for (Transition t : lp.getTransitions()) {
+				sb.append("\t" + t.name + "(transition)"+"\n");
+			}
+		}
+		return sb.toString();
+	}
+
 	LP[] createLPs() {
+		
 		int numPlaces = net.getNumPlaces();
 		int numTrans = net.getNumTrans();
 		Place[] places = net.getPlaces();
+		//TODO check if no probes in newly created nets
 
-		/*already assigned to LPs*/ 
+		/* already assigned to LPs */
 		boolean[] usedTransitions = new boolean[numTrans];
 		boolean[] usedPlace = new boolean[numPlaces];
 		List<LP> listLPs = new ArrayList<LP>();
@@ -92,9 +108,9 @@ public class ParallelExecutor {
 						if (t.inPlaces.length > 1) {
 							for (Place p : t.inPlaces) {
 								int placeId = p.id;
-								if(!usedPlace[placeId]){
+								if (!usedPlace[placeId]) {
 									idPlacesLP.add(placeId);
-									usedPlace[placeId] = true;									
+									usedPlace[placeId] = true;
 								}
 							}
 						} else {
@@ -103,24 +119,57 @@ public class ParallelExecutor {
 					}
 				}
 				// from list to net elements
-				Transition[] transitionsLP = new Transition[idTransitionsLP.size()];
+				Transition[] transitionsLP = new Transition[idTransitionsLP
+						.size()];
 				for (int j = 0; j < idTransitionsLP.size(); j++) {
 					transitionsLP[j] = net.getTrans(idTransitionsLP.get(j));
 				}
 				Place[] placesLP = new Place[idPlacesLP.size()];
 				for (int j = 0; j < idPlacesLP.size(); j++) {
 					placesLP[j] = net.getPlace(idPlacesLP.get(j));
+//					Probe[][] probeInstrumentations = placesLP[j].probeInstrumentations;
+//					System.out.println("PROBE PROBE PROBE "+placesLP[j].name+ " has "+probeInstrumentations.length);
+//					System.out.println("\tPROBE PROBE PROBE "+probeInstrumentations.length);
+//					for(int k=0; k<probeInstrumentations.length; k++){
+//						System.out.println("\t\tPROBE PROBE PROBE "+probeInstrumentations[k].length);
+//						for(int l=0; l<probeInstrumentations[k].length; l++){
+//							Probe probe = probeInstrumentations[k][l];
+//							System.out.println("\t\t\tPROBE PROBE PROBE "+probe.name+ " + id "+probe.id);
+//						}
+//					}
 				}
-				listLPs.add(new LP(placesLP, transitionsLP, configuration,
+				
+				
+
+				/** get relevant queues*/
+				List<Queue> queueList = new ArrayList<Queue>();
+				for(Place p: placesLP){
+					if(p instanceof QPlace){
+						Queue queue = ((QPlace) p).queue;
+						queueList.add(queue);
+					}
+				}
+				
+				
+				listLPs.add(new LP(placesLP, transitionsLP,queueList.toArray(new Queue[queueList.size()]), configuration,
 						progressMonitor, idLP));
 				idLP++;
 			} else {
 				// Place is already in another LP
 			}
-
 		}
 
 		LP[] lpArray = listLPs.toArray(new LP[listLPs.size()]);
+
+		lpArray[lpArray.length-1].setSuccessor(lpArray[0]);
+		for (int i = 0; i < lpArray.length-1; i++) {
+			lpArray[i].setSuccessor(lpArray[i+1]);
+		}
+		
+		lpArray[0].setPredecessor(lpArray[lpArray.length-1]);
+		for (int i = 1; i < lpArray.length; i++) {
+			lpArray[i].setPredecessor(lpArray[i-1]);
+		}
 		return lpArray;
 	}
 

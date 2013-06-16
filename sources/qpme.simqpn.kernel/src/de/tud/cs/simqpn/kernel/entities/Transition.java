@@ -378,7 +378,7 @@ public class Transition extends Node {
 	 * @return
 	 * @exception
 	 */
-	public void fire(Executor executor) throws SimQPNException {
+	public void fire(Executor executorIn, Executor executorOut) throws SimQPNException {
 
 		int nM = numModes;
 		// Choose mode to fire based on weights
@@ -423,7 +423,7 @@ public class Transition extends Node {
 						maxN = n;
 
 					Token[] tokens = pl.removeTokens(c, n, tkCopyBuffer,
-							executor.getClock(), executor.getConfiguration());
+							executorIn.getClock(), executorIn.getConfiguration());
 					prC = pl.probeInstrumentations[c].length;
 
 					if (prC > 0) {
@@ -447,9 +447,9 @@ public class Transition extends Node {
 											continue;
 
 										probe.probeStats.updateSojTimeStats(c,
-												executor.getClock()
+												executorIn.getClock()
 														- curStamp.timestamp,
-												executor.getConfiguration());
+												executorIn.getConfiguration());
 									}
 								}
 								break;
@@ -459,7 +459,7 @@ public class Transition extends Node {
 									// There is no timestamp so far for the
 									// current probe, so create it.
 									data = new ProbeTimestamp(probeIdx,
-											executor.getClock());
+											executorIn.getClock());
 								}
 								break;
 							default:
@@ -546,16 +546,16 @@ public class Transition extends Node {
 							case PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT:
 								if (timestamp == null) {
 									outData[pr] = new ProbeTimestamp(probeIdx,
-											executor.getClock());
+											executorOut.getClock()); //TODO check which executor
 								}
 								break;
 							case PROBE_ACTION_END_ON_ENTRY:
 							case PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY:
 								probe.probeStats
 										.updateSojTimeStats(c,
-												executor.getClock()
-														- timestamp.timestamp,
-												executor.getConfiguration());
+												executorOut.getClock() //TODO check which executor
+														- timestamp.timestamp, 
+												executorOut.getConfiguration());
 								break;
 							default:
 								outData[pr] = timestamp;
@@ -566,7 +566,7 @@ public class Transition extends Node {
 						for (int i = 0; i < n; i++) {
 							tkCopyBuffer[i] = new Token(pl, c, outData);
 						}
-						pl.addTokens(c, n, tkCopyBuffer, executor); // Note: the
+						pl.addTokens(c, n, tkCopyBuffer, executorOut); // Note: the
 																	// contents
 																	// of
 																	// tkCopyBuffer
@@ -574,7 +574,7 @@ public class Transition extends Node {
 																	// set to
 																	// null.
 					} else {
-						pl.addTokens(c, n, null, executor);
+						pl.addTokens(c, n, null, executorOut);
 					}
 				}
 			}

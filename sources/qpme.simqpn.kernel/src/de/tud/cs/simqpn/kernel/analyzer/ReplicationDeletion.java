@@ -70,7 +70,7 @@ public class ReplicationDeletion implements Analyzer{
 			Net netCopy = new Net(net, configuration);
 			netCopy.finishCloning(net, configuration);
 			Executor executor = new SequentialExecutor(netCopy, configuration, monitor);
-			netCopy = executor.run();
+			executor.run();
 			
 			progressMonitor.finishSimulationRun();
 
