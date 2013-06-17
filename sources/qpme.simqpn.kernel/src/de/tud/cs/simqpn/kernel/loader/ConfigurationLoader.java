@@ -327,13 +327,10 @@ public class ConfigurationLoader {
 
 		// CONFIG: BATCH_MEANS Method Initialization Parameters
 		if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS) {
-			double time = System.currentTimeMillis();
 			XPath xpathSelector = XMLHelper.createXPath("//place");
 			List<Element> placeList = xpathSelector.selectNodes(netXML);
 			xpathSelector = XMLHelper.createXPath("//probe");
 			List<Element> probeList = xpathSelector.selectNodes(netXML);
-			time = System.currentTimeMillis() - time;
-			System.out.println("TIME for XML XPath "+time);
 			Iterator<Element> placeIterator;
 			placeIterator = placeList.iterator();
 			for (int p = 0; placeIterator.hasNext(); p++) {
