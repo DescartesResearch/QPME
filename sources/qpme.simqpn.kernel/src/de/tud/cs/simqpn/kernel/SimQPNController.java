@@ -134,45 +134,10 @@ public class SimQPNController {
 	private static Logger log = Logger.getLogger(SimQPNController.class);
 
 	private SimQPNConfiguration configuration;
-	/** Progress monitoring */
-	private static SimulatorProgress progressMonitor;
 	
 	private Net net;
 	/** True if simulation is currently running. */
 	private static boolean simRunning; 
-
-	/**
-	 * Global simulation clock. Time is usually measured in milliseconds.
-	 * 
-	 * TODO Check if using double for time is really needed and if overhead is
-	 * tolerable. Consider switching to float.
-	 */
-	private double clock;
-	/**
-	 * Global simulation event list. Contains events scheduled for processing at specified points in time.
-	 */
-	public static PriorityQueue<QueueEvent> eventList = 
-	new PriorityQueue<QueueEvent>(10, new Comparator<QueueEvent>() {
-		public int compare(QueueEvent a, QueueEvent b) {
-			return (a.time < b.time ? -1 : (a.time == b.time ? 0 : 1));
-		}
-	});
-
-	// public static LinkedList eventList; // Old LinkedList implementation of
-	// the event list.
-
-	/*
-	 * WARNING: Watch out when defining the Comparator above: Equality should be
-	 * treated explicitly!
-	 * 
-	 * Potential problems when using eventList.remove() because of the following
-	 * bug http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6207984
-	 * http://bugs.sun.com/bugdatabase/view_bug.do;jsessionid=859
-	 * a6e381a7abfffffffff7e644d05a59d93?bug_id=6268068
-	 * 
-	 * On old JVMs that do not have the above bug fixed, if two events have the
-	 * exact same time, the wrong one might be removed!
-	 */
 
 	/**
 	 * Constructor
@@ -206,8 +171,8 @@ public class SimQPNController {
 	 */
 	private void getReady(Element netXML, String configurationName)
 			throws SimQPNException {
-		setConfiguration(ConfigurationLoader.configureSimulatorSettings(netXML,
-				configurationName, getConfiguration()));
+		ConfigurationLoader.configureSimulatorSettings(netXML,
+				configurationName, getConfiguration());
 
 		// CONFIG: Whether to use indirect estimators for FCFS queues
 		for (int p = 0; p < getNet().getNumPlaces(); p++) {
@@ -219,44 +184,15 @@ public class SimQPNController {
 			}
 		}
 
-		setConfiguration(ConfigurationLoader.configureBatchMeansMethod(netXML,
-				this));
+		ConfigurationLoader.configureBatchMeansMethod(netXML,
+				this);
 
-		initializeWorkingVariables();
+		//initializeWorkingVariables();
 		XMLValidator.validateInputNet(netXML); // TODO Think about moving this
 												// into Constructor
 
 	}
 
-	private void initializeWorkingVariables() throws SimQPNException {
-		getConfiguration().inRampUp = true;
-		getConfiguration().endRampUpClock = 0;
-		getConfiguration().endRunClock = 0;
-		getConfiguration().msrmPrdLen = 0; // Set at the end of the run when the
-											// actual length is known.
-		getConfiguration().beginRunWallClock = 0;
-		getConfiguration().endRunWallClock = 0;
-		getConfiguration().runWallClockTime = 0;
-
-		setClock(0); // Note that it has been assumed throughout the code that
-		// the simulation starts at virtual time 0.
-
-		eventList.clear();
-		// eventList = new LinkedList(); // Old LinkedList implementation of the
-		// event list.
-
-		// Make sure clock has been initialized before calling init below
-		// Call places[i].init() first and then thans[i].init() and
-		// queues[i].init()
-		for (int i = 0; i < getNet().getNumProbes(); i++)
-			getNet().getProbe(i).init();
-		for (int i = 0; i < getNet().getNumPlaces(); i++)
-			getNet().getPlace(i).init(getClock());
-		for (int i = 0; i < getNet().getNumTrans(); i++)
-			getNet().getTrans(i).init();
-		for (int i = 0; i < getNet().getNumQueues(); i++)
-			getNet().getQueue(i).init(configuration);
-	}
 
 	/**
 	 * Method execute - executes the simulation run
@@ -272,8 +208,6 @@ public class SimQPNController {
 
 		// TODO: Make the Stdout output print to $statsDir/Output.txt
 		// CHRIS: Not done yet
-
-		setProgressMonitor(monitor);
 
 		Stats[] result = null;
 
@@ -370,22 +304,6 @@ public class SimQPNController {
 
 	public void setConfiguration(SimQPNConfiguration configuration) {
 		this.configuration = configuration;
-	}
-
-	public static SimulatorProgress getProgressMonitor() {
-		return progressMonitor;
-	}
-
-	public static void setProgressMonitor(SimulatorProgress progressMonitor) {
-		SimQPNController.progressMonitor = progressMonitor;
-	}
-
-	public double getClock() {
-		return clock;
-	}
-
-	public void setClock(double clock) {
-		this.clock = clock;
 	}
 
 	public static boolean isSimRunning() {

@@ -160,7 +160,14 @@ public class ConfigurationLoader {
 		return configuration;
 	}
 
-	public static SimQPNConfiguration configureSimulatorSettings(
+	/**
+	 * Modifies configuration
+	 * @param netXML
+	 * @param configurationString
+	 * @param configuration
+	 * @throws SimQPNException
+	 */
+	public static void configureSimulatorSettings(
 			Element netXML, String configurationString,
 			SimQPNConfiguration configuration) throws SimQPNException {
 		log.debug("/////////////////////////////////////////////");
@@ -282,7 +289,6 @@ public class ConfigurationLoader {
 					"configuration", configurationString));
 			throw new SimQPNException();
 		}
-		return configuration;
 	}
 
 	/**
@@ -290,7 +296,7 @@ public class ConfigurationLoader {
 	 * 
 	 * @throws SimQPNException
 	 */
-	public static SimQPNConfiguration configureBatchMeansMethod(Element netXML,
+	public static void configureBatchMeansMethod(Element netXML,
 			SimQPNController sim) throws SimQPNException {
 		/*
 		 * "Advanced Configuration Options" only applicable to the BATCH_MEANS
@@ -321,11 +327,13 @@ public class ConfigurationLoader {
 
 		// CONFIG: BATCH_MEANS Method Initialization Parameters
 		if (sim.getConfiguration().getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS) {
+			double time = System.currentTimeMillis();
 			XPath xpathSelector = XMLHelper.createXPath("//place");
 			List<Element> placeList = xpathSelector.selectNodes(netXML);
 			xpathSelector = XMLHelper.createXPath("//probe");
 			List<Element> probeList = xpathSelector.selectNodes(netXML);
-
+			time = System.currentTimeMillis() - time;
+			System.out.println("TIME for XML XPath "+time);
 			Iterator<Element> placeIterator;
 			placeIterator = placeList.iterator();
 			for (int p = 0; placeIterator.hasNext(); p++) {
@@ -1235,7 +1243,6 @@ public class ConfigurationLoader {
 				}
 			}
 		}
-		return sim.getConfiguration();
 	}
 
 	public static Element getSettings(Element element, String configurationName) {

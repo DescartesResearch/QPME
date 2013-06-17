@@ -38,6 +38,20 @@ public class SequentialExecutor implements Executor {
 					return (a.time < b.time ? -1 : (a.time == b.time ? 0 : 1));
 				}
 			});
+	/*
+	 * WARNING: Watch out when defining the Comparator above: Equality should be
+	 * treated explicitly!
+	 * 
+	 * Potential problems when using eventList.remove() because of the following
+	 * bug http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6207984
+	 * http://bugs.sun.com/bugdatabase/view_bug.do;jsessionid=859
+	 * a6e381a7abfffffffff7e644d05a59d93?bug_id=6268068
+	 * 
+	 * On old JVMs that do not have the above bug fixed, if two events have the
+	 * exact same time, the wrong one might be removed!
+	 */
+
+	
 
 	/** True if simulation is currently running. */
 	public static boolean simRunning;
@@ -63,7 +77,8 @@ public class SequentialExecutor implements Executor {
 	 * @exception
 	 */
 	public void run() throws SimQPNException {
-
+		initializeWorkingVariables();
+		
 		boolean[] transStatus; // Transition status: true = enabled, false =
 								// disabled
 		int enTransCnt = 0;
@@ -474,5 +489,34 @@ public class SequentialExecutor implements Executor {
 	public void removeEvent(QueueEvent event) {
 		eventList.remove(event);		
 	}
+	
+	private void initializeWorkingVariables() throws SimQPNException {
+		getConfiguration().inRampUp = true;
+		getConfiguration().endRampUpClock = 0;
+		getConfiguration().endRunClock = 0;
+		getConfiguration().msrmPrdLen = 0; // Set at the end of the run when the
+											// actual length is known.
+		getConfiguration().beginRunWallClock = 0;
+		getConfiguration().endRunWallClock = 0;
+		getConfiguration().runWallClockTime = 0;
+
+		setClock(0); // Note that it has been assumed throughout the code that
+		// the simulation starts at virtual time 0.
+
+		eventList.clear();
+
+		// Make sure clock has been initialized before calling init below
+		// Call places[i].init() first and then thans[i].init() and
+		// queues[i].init()
+		for (int i = 0; i < net.getNumProbes(); i++)
+			net.getProbe(i).init();
+		for (int i = 0; i < net.getNumPlaces(); i++)
+			net.getPlace(i).init(getClock());
+		for (int i = 0; i < net.getNumTrans(); i++)
+			net.getTrans(i).init();
+		for (int i = 0; i < net.getNumQueues(); i++)
+			net.getQueue(i).init(configuration);
+	}
+
 
 }
