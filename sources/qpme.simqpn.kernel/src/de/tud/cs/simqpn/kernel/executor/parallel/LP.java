@@ -30,6 +30,14 @@ public class LP implements Executor, Runnable {
 	private static Logger log = Logger.getLogger(SequentialExecutor.class);
 	private SimQPNConfiguration configuration;
 	private double clock = 0;
+	public boolean inRampUp;				// True if still in RampUp period (no measurements taken).
+	public double endRampUpClock;		// Clock at the end of RampUp, i.e. beginning of the measurement period.
+	public double endRunClock;			// Clock at the end of the run.
+	public double msrmPrdLen;			// Duration of the measurement period (endRunClock - endRampUpClock).
+	public double beginRunWallClock;		// currentTimeMillis at the begin of the run (wall clock time).
+	public double endRunWallClock;		// currentTimeMillis at the end of the run (wall clock time).
+	public double runWallClockTime;		// Total duration of the run in seconds.
+
 	private int id;
 	/** LP before this */
 	private LP predecessor; // TODO make this a list
@@ -124,7 +132,7 @@ public class LP implements Executor, Runnable {
 			 * timeBtwChkStops > 0 ? timeBtwChkStops : timeInitHeartBeat;
 			 */
 
-			configuration.beginRunWallClock = System.currentTimeMillis();
+			beginRunWallClock = System.currentTimeMillis();
 
 			/*
 			 * Flag indicating when we are still before the first heart beat
@@ -154,9 +162,9 @@ public class LP implements Executor, Runnable {
 			while (clock < totRunL) {
 				// for (int i = 0; i < 10; i++) {
 				// for (int i = 0; i < 100000000; i++) {
-				if (configuration.inRampUp && clock > rampUpL) {
-					configuration.inRampUp = false;
-					configuration.endRampUpClock = clock;
+				if (inRampUp && clock > rampUpL) {
+					inRampUp = false;
+					endRampUpClock = clock;
 					if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.WELCH)
 						break;
 					for (int p = 0; p < places.length; p++)
@@ -374,8 +382,8 @@ public class LP implements Executor, Runnable {
 
 				// Step 5: Check Stopping Criterion
 				if (configuration.stoppingRule != SimQPNConfiguration.FIXEDLEN
-						&& (!configuration.inRampUp) && clock > nextChkAfter) {
-					double elapsedSecs = (System.currentTimeMillis() - configuration.beginRunWallClock) / 1000;
+						&& (!inRampUp) && clock > nextChkAfter) {
+					double elapsedSecs = (System.currentTimeMillis() - beginRunWallClock) / 1000;
 					double clockTimePerSec = clock / elapsedSecs;
 					boolean done = true;
 					Place pl = null;
@@ -455,29 +463,28 @@ public class LP implements Executor, Runnable {
 			}
 		}
 
-		configuration.endRunClock = clock;
-		configuration.msrmPrdLen = configuration.endRunClock
-				- configuration.endRampUpClock;
-		configuration.endRunWallClock = System.currentTimeMillis();
+		endRunClock = clock;
+		msrmPrdLen = endRunClock - endRampUpClock;
+		endRunWallClock = System.currentTimeMillis();
 
 		// total time elapsed in seconds
-		configuration.runWallClockTime = (configuration.endRunWallClock - configuration.beginRunWallClock) / 1000;
+		runWallClockTime = (endRunWallClock - beginRunWallClock) / 1000;
 
-		log.info("msrmPrdLen= " + configuration.msrmPrdLen + " totalRunLen= "
-				+ configuration.endRunClock + " runWallClockTime="
-				+ (int) (configuration.runWallClockTime / 60) + " min (="
-				+ configuration.runWallClockTime + " sec)");
+		log.info("msrmPrdLen= " + msrmPrdLen + " totalRunLen= "
+				+ endRunClock + " runWallClockTime="
+				+ (int) (runWallClockTime / 60) + " min (="
+				+ runWallClockTime + " sec)");
 
 		// Complete statistics collection (make sure this is done AFTER the
 		// above statements)
 		if (configuration.getAnalMethod() != SimQPNConfiguration.AnalysisMethod.WELCH) {
 			try {
 				for (int p = 0; p < places.length; p++)
-					places[p].finish(configuration, clock);
+					places[p].finish(configuration, runWallClockTime, clock);
 				for (int q = 0; q < queues.length; q++)
 					// NOTE: queues[*].finish() should be called after
 					// places[*].finish()!
-					queues[q].finish(configuration, clock);
+					queues[q].finish(configuration, runWallClockTime, clock);
 				// for (int pr = 0; pr < probes.length; pr++)
 				// probes[pr].finish(configuration, clock);
 			} catch (SimQPNException e) {

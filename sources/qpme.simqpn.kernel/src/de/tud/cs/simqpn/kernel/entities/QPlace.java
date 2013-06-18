@@ -307,12 +307,12 @@ public class QPlace extends Place {
 	 * @exception
 	 */
 	@Override
-	public void finish(SimQPNConfiguration configuration, double clock)
+	public void finish(SimQPNConfiguration configuration, double runWallClockTime, double clock)
 			throws SimQPNException {
 		if (statsLevel > 0) {
 			// Complete statistics collection
-			qPlaceQueueStats.finish(queueTokenPop, configuration, clock);
-			super.finish(configuration, clock);
+			qPlaceQueueStats.finish(queueTokenPop, configuration,runWallClockTime, clock);
+			super.finish(configuration, runWallClockTime, clock);
 		}
 	}
 

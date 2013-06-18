@@ -51,7 +51,13 @@ public class SequentialExecutor implements Executor {
 	 * exact same time, the wrong one might be removed!
 	 */
 
-	
+	public boolean inRampUp;				// True if still in RampUp period (no measurements taken).
+	public double endRampUpClock;		// Clock at the end of RampUp, i.e. beginning of the measurement period.
+	public double endRunClock;			// Clock at the end of the run.
+	public double msrmPrdLen;			// Duration of the measurement period (endRunClock - endRampUpClock).
+	public double beginRunWallClock;		// currentTimeMillis at the begin of the run (wall clock time).
+	public double endRunWallClock;		// currentTimeMillis at the end of the run (wall clock time).
+	public double runWallClockTime;		// Total duration of the run in seconds.
 
 	/** True if simulation is currently running. */
 	public static boolean simRunning;
@@ -122,7 +128,7 @@ public class SequentialExecutor implements Executor {
 		 * timeBtwChkStops > 0 ? timeBtwChkStops : timeInitHeartBeat;
 		 */
 
-		configuration.beginRunWallClock = System.currentTimeMillis();
+		beginRunWallClock = System.currentTimeMillis();
 
 		/*
 		 * Flag indicating when we are still before the first heart beat
@@ -151,9 +157,9 @@ public class SequentialExecutor implements Executor {
 		// ---------------------------------------------------------------------------------
 		while (clock < totRunL) {
 
-			if (configuration.inRampUp && clock > rampUpL) {
-				configuration.inRampUp = false;
-				configuration.endRampUpClock = clock;
+			if (inRampUp && clock > rampUpL) {
+				inRampUp = false;
+				endRampUpClock = clock;
 				if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.WELCH)
 					break;
 				for (int p = 0; p < net.getNumPlaces(); p++)
@@ -338,8 +344,8 @@ public class SequentialExecutor implements Executor {
 
 			// Step 5: Check Stopping Criterion
 			if (configuration.stoppingRule != SimQPNConfiguration.FIXEDLEN
-					&& (!configuration.inRampUp) && clock > nextChkAfter) {
-				double elapsedSecs = (System.currentTimeMillis() - configuration.beginRunWallClock) / 1000;
+					&& (!inRampUp) && clock > nextChkAfter) {
+				double elapsedSecs = (System.currentTimeMillis() - beginRunWallClock) / 1000;
 				double clockTimePerSec = clock / elapsedSecs;
 				boolean done = true;
 				Place pl = null;
@@ -416,30 +422,30 @@ public class SequentialExecutor implements Executor {
 			}
 		}
 
-		configuration.endRunClock = clock;
-		configuration.msrmPrdLen = configuration.endRunClock
-				- configuration.endRampUpClock;
-		configuration.endRunWallClock = System.currentTimeMillis();
+		endRunClock = clock;
+		msrmPrdLen = endRunClock
+				- endRampUpClock;
+		endRunWallClock = System.currentTimeMillis();
 		
 		// total time elapsed in seconds
-		configuration.runWallClockTime = (configuration.endRunWallClock - configuration.beginRunWallClock) / 1000; 
+		runWallClockTime = (endRunWallClock - beginRunWallClock) / 1000; 
 
-		log.info("msrmPrdLen= " + configuration.msrmPrdLen + " totalRunLen= "
-				+ configuration.endRunClock + " runWallClockTime="
-				+ (int) (configuration.runWallClockTime / 60) + " min (="
-				+ configuration.runWallClockTime + " sec)");
+		log.info("msrmPrdLen= " + msrmPrdLen + " totalRunLen= "
+				+ endRunClock + " runWallClockTime="
+				+ (int) (runWallClockTime / 60) + " min (="
+				+ runWallClockTime + " sec)");
 
 		// Complete statistics collection (make sure this is done AFTER the
 		// above statements)
 		if (configuration.getAnalMethod() != SimQPNConfiguration.AnalysisMethod.WELCH) {
 			for (int p = 0; p < net.getNumPlaces(); p++)
-				net.getPlace(p).finish(configuration, clock);
+				net.getPlace(p).finish(configuration, runWallClockTime, clock);
 			for (int q = 0; q < net.getNumQueues(); q++)
 				// NOTE: queues[*].finish() should be called after
 				// places[*].finish()!
-				net.getQueue(q).finish(configuration, clock);
+				net.getQueue(q).finish(configuration, runWallClockTime, clock);
 			for (int pr = 0; pr < net.getNumProbes(); pr++)
-				net.getProbe(pr).finish(configuration, clock);
+				net.getProbe(pr).finish(configuration, runWallClockTime, clock);
 		}
 	} // end of run() method
 
@@ -491,14 +497,14 @@ public class SequentialExecutor implements Executor {
 	}
 	
 	private void initializeWorkingVariables() throws SimQPNException {
-		getConfiguration().inRampUp = true;
-		getConfiguration().endRampUpClock = 0;
-		getConfiguration().endRunClock = 0;
-		getConfiguration().msrmPrdLen = 0; // Set at the end of the run when the
+		inRampUp = true;
+		endRampUpClock = 0;
+		endRunClock = 0;
+		msrmPrdLen = 0; // Set at the end of the run when the
 											// actual length is known.
-		getConfiguration().beginRunWallClock = 0;
-		getConfiguration().endRunWallClock = 0;
-		getConfiguration().runWallClockTime = 0;
+		beginRunWallClock = 0;
+		endRunWallClock = 0;
+		runWallClockTime = 0;
 
 		setClock(0); // Note that it has been assumed throughout the code that
 		// the simulation starts at virtual time 0.

@@ -370,10 +370,10 @@ public class Queue {
 	 * @exception
 	 */
 
-	public void finish(SimQPNConfiguration configuration, double clock)
+	public void finish(SimQPNConfiguration configuration, double runWallClockTime, double clock)
 			throws SimQPNException {
 		if (statsLevel > 0)
-			queueStats.finish(configuration, clock);
+			queueStats.finish(configuration, runWallClockTime, clock);
 	}
 
 	/**

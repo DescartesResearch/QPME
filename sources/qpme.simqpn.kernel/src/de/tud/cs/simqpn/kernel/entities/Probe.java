@@ -304,11 +304,11 @@ public class Probe {
 	 * @return
 	 * @exception
 	 */
-	public void finish(SimQPNConfiguration configuration, double clock)
+	public void finish(SimQPNConfiguration configuration, double runWallClockTime, double clock)
 			throws SimQPNException {
 		// Complete statistics collection
 		if (statsLevel > 0)
-			probeStats.finish(configuration, clock);
+			probeStats.finish(configuration, runWallClockTime, clock);
 	}
 
 	/**

@@ -121,10 +121,10 @@ public class ProbeStats extends PlaceStats {
 	 * Note: Completes accumulated areas under the curve.   
 	 * @exception SimQPNException
 	 */
-	public void finish(SimQPNConfiguration configuration, double clock) throws SimQPNException {
+	public void finish(SimQPNConfiguration configuration, double runWallClockTime, double clock) throws SimQPNException {
 		int[] tokenPop = new int[colors.length];
 		Arrays.fill(tokenPop, 0);
-		this.finish(tokenPop, configuration, clock);
+		this.finish(tokenPop, configuration, runWallClockTime, clock);
 	}
 	
 	

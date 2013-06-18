@@ -370,13 +370,13 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 * @return
 	 * @exception
 	 */
-	public void finish(int[] tokenPop, SimQPNConfiguration configuration, double clock) throws SimQPNException  {
+	public void finish(int[] tokenPop, SimQPNConfiguration configuration, double runWallClockTime, double clock) throws SimQPNException  {
 		if (statsLevel >= 2)  //NOTE: This makes sure areaTkPop, areaTkColOcp and areaTkOcp (and areaQueUtilQPl for QPlaceQueueStats) are complete!
 			for (int c = 0; c < numColors; c++)
 				updateTkPopStats(c, tokenPop[c], 0, clock);
 		endRunClock = clock;
 		msrmPrdLen = endRunClock - endRampUpClock;		
-		runWallClockTime = configuration.runWallClockTime;
+		this.runWallClockTime = runWallClockTime;
 
 		if (statsLevel >= 5)
 			for (int c = 0; c < numColors; c++)

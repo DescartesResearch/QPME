@@ -158,14 +158,14 @@ public class SimQPNConfiguration {
 	 *      if enough data is available to provide required precision.
 	 */
 	
-	public boolean inRampUp;				// True if still in RampUp period (no measurements taken).
-	//public static boolean simRunning;			// True if simulation is currently running.
-	public double endRampUpClock;		// Clock at the end of RampUp, i.e. beginning of the measurement period.
-	public double endRunClock;			// Clock at the end of the run.
-	public double msrmPrdLen;			// Duration of the measurement period (endRunClock - endRampUpClock).
-	public double beginRunWallClock;		// currentTimeMillis at the begin of the run (wall clock time).
-	public double endRunWallClock;		// currentTimeMillis at the end of the run (wall clock time).
-	public double runWallClockTime;		// Total duration of the run in seconds.
+//	public boolean inRampUp;				// True if still in RampUp period (no measurements taken).
+//	//public static boolean simRunning;			// True if simulation is currently running.
+//	public double endRampUpClock;		// Clock at the end of RampUp, i.e. beginning of the measurement period.
+//	public double endRunClock;			// Clock at the end of the run.
+//	public double msrmPrdLen;			// Duration of the measurement period (endRunClock - endRampUpClock).
+//	public double beginRunWallClock;		// currentTimeMillis at the begin of the run (wall clock time).
+//	public double endRunWallClock;		// currentTimeMillis at the end of the run (wall clock time).
+//	public double runWallClockTime;		// Total duration of the run in seconds.
 	
 	// Time histogram configuration parameters.
 	public static final int       TIME_HISTOGRAM_MIN_NUM_BUCKETS = 2;
