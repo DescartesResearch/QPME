@@ -308,7 +308,7 @@ public class StartSimulatorAction extends AbstractHandler {
 		 */
 		@Override
 		public void finishWarmUp(SimQPNConfiguration configuration) {
-			updateStatusString(configuration);
+			updateStatusString(configuration, false);
 		}
 
 		/*
@@ -350,7 +350,7 @@ public class StartSimulatorAction extends AbstractHandler {
 			this.currentRun = number;
 			this.lastProgress = 0;
 
-			updateStatusString(configuration);
+			updateStatusString(configuration, true);
 		}
 
 		/*
@@ -361,7 +361,7 @@ public class StartSimulatorAction extends AbstractHandler {
 		 * (double, long)
 		 */
 		@Override
-		public void updateSimulationProgress(double progress, long elapsedTime, SimQPNConfiguration configuration) {
+		public void updateSimulationProgress(double progress, long elapsedTime, SimQPNConfiguration configuration, boolean inRampUp) {
 			totalTime += elapsedTime;
 			double totalProgress = (currentRun - 1) * 100 + progress;
 			remainingTime = ((long) ((totalTime / totalProgress) * (totalWork - totalProgress))) / 1000;
@@ -372,7 +372,7 @@ public class StartSimulatorAction extends AbstractHandler {
 				monitor.worked(progressDiff);
 				lastProgress = (int) progress;
 			}
-			updateStatusString(configuration);
+			updateStatusString(configuration, inRampUp);
 		}
 
 		/*
@@ -437,7 +437,7 @@ public class StartSimulatorAction extends AbstractHandler {
 			});
 		}
 
-		private void updateStatusString(SimQPNConfiguration configuration) {
+		private void updateStatusString(SimQPNConfiguration configuration, boolean inRampUp) {
 			StringBuilder status = new StringBuilder();
 
 			// Remaining time display
@@ -474,7 +474,7 @@ public class StartSimulatorAction extends AbstractHandler {
 			if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.WELCH) {
 				status.append("Determine Warm-up Period Length");
 			} else {
-				if (configuration.inRampUp) {
+				if (inRampUp) {
 					status.append("Warm-Up Period");
 				} else {
 					status.append("Steady State Period");

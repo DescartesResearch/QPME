@@ -318,7 +318,7 @@ public class SequentialExecutor implements Executor {
 					long curTimeMsrm = System.currentTimeMillis();
 					progressMonitor.updateSimulationProgress(clock
 							/ (totRunL - 1) * 100,
-							(curTimeMsrm - lastTimeMsrm), configuration);
+							(curTimeMsrm - lastTimeMsrm), configuration, inRampUp);
 					lastTimeMsrm = curTimeMsrm;
 					nextHeartBeat = clock + timeBtwHeartBeats;
 
@@ -405,7 +405,7 @@ public class SequentialExecutor implements Executor {
 
 		// END MAIN SIMULATION LOOP
 		// ---------------------------------------------------------------------------------
-		progressMonitor.updateSimulationProgress(100, 0, configuration);
+		progressMonitor.updateSimulationProgress(100, 0, configuration, inRampUp);
 
 		if (progressMonitor.isCanceled()) {
 			progressMonitor

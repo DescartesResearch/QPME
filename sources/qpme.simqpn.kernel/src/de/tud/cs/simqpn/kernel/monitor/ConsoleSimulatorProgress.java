@@ -103,7 +103,7 @@ public class ConsoleSimulatorProgress implements SimulatorProgress {
 	 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#updateSimulationProgress(double, long)
 	 */
 	@Override
-	public void updateSimulationProgress(double progress, long elapsedTime, SimQPNConfiguration configuration) {
+	public void updateSimulationProgress(double progress, long elapsedTime, SimQPNConfiguration configuration, boolean inRampUp) {
 		log.info("Progress: " + Math.round(progress) + "%");
 	}
 

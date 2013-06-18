@@ -370,7 +370,7 @@ public class LP implements Executor, Runnable {
 						long curTimeMsrm = System.currentTimeMillis();
 						progressMonitor.updateSimulationProgress(clock
 								/ (totRunL - 1) * 100,
-								(curTimeMsrm - lastTimeMsrm), configuration);
+								(curTimeMsrm - lastTimeMsrm), configuration, inRampUp);
 						lastTimeMsrm = curTimeMsrm;
 						nextHeartBeat = clock + timeBtwHeartBeats;
 
@@ -446,7 +446,7 @@ public class LP implements Executor, Runnable {
 			System.out.println(ex);
 		}
 
-		progressMonitor.updateSimulationProgress(100, 0, configuration);
+		progressMonitor.updateSimulationProgress(100, 0, configuration, inRampUp);
 
 		if (progressMonitor.isCanceled()) {
 			progressMonitor

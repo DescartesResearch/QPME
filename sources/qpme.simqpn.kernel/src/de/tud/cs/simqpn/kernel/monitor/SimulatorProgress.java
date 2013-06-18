@@ -98,7 +98,7 @@ public interface SimulatorProgress {
 	 * @param progress - the current simulation run progress as percentage (0.0 <= progress <= 100.0).
 	 * @param elapsedTime - the time elapsed since the last progress update in milliseconds.
 	 */
-	public void updateSimulationProgress(double progress, long elapsedTime, SimQPNConfiguration configuration);
+	public void updateSimulationProgress(double progress, long elapsedTime, SimQPNConfiguration configuration, boolean inRampUp);
 
 	/**
 	 * Called for each finished simulation run.
