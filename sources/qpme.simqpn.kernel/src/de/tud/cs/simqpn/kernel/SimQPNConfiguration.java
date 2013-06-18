@@ -111,9 +111,6 @@ public class SimQPNConfiguration {
 		/** Replication/Deletion Approach (Method of Independent Replications) */ REPL_DEL ,
 		/** Method of non-overlapping batch means.*/BATCH_MEANS};
 		 
-//	public static final int WELCH = 0;			// Method of Welch for determining the length of the initial transient.
-//	public static final int REPL_DEL = 1;		// Replication/Deletion Approach (Method of Independent Replications).
-//	public static final int BATCH_MEANS = 2;	// Method of non-overlapping batch means.
 	private AnalysisMethod analMethod;				// Output data analysis method.
 
 
