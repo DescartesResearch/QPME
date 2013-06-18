@@ -157,11 +157,11 @@ public class SequentialExecutor implements Executor {
 				if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.WELCH)
 					break;
 				for (int p = 0; p < net.getNumPlaces(); p++)
-					net.getPlace(p).start(this);
+					net.getPlace(p).start(configuration, clock);
 				for (int q = 0; q < net.getNumQueues(); q++)
 					net.getQueue(q).start(clock);
 				for (int pr = 0; pr < net.getNumProbes(); pr++)
-					net.getProbe(pr).start(this);
+					net.getProbe(pr).start(configuration, clock);
 
 				progressMonitor.finishWarmUp(configuration);
 			}
@@ -347,13 +347,13 @@ public class SequentialExecutor implements Executor {
 				for (int p = 0; p < net.getNumPlaces(); p++) {
 					pl = net.getPlace(p);
 					if (pl.statsLevel >= 3) {
-						if (!pl.placeStats.enoughStats(this)) {
+						if (!pl.placeStats.enoughStats(configuration)) {
 							done = false;
 							break;
 						}
 						if ((pl instanceof QPlace)
 								&& !(((QPlace) pl).qPlaceQueueStats
-										.enoughStats(this))) {
+										.enoughStats(configuration))) {
 							done = false;
 							break;
 						}
@@ -369,7 +369,7 @@ public class SequentialExecutor implements Executor {
 					for (int pr = 0; pr < net.getNumProbes(); pr++) {
 						probe = net.getProbe(pr);
 						if (probe.statsLevel >= 3) {
-							if (!probe.probeStats.enoughStats(this)) {
+							if (!probe.probeStats.enoughStats(configuration)) {
 								done = false;
 								break;
 							}

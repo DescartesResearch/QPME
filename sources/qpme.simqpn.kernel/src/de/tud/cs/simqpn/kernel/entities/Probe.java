@@ -56,7 +56,6 @@ import org.dom4j.Element;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
-import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.stats.ProbeStats;
 
 /**
@@ -292,9 +291,9 @@ public class Probe {
 	 * @return
 	 * @exception
 	 */
-	public void start(Executor executor) throws SimQPNException {
+	public void start(SimQPNConfiguration configuration, double clock) throws SimQPNException {
 		if (statsLevel > 0)
-			probeStats.start(executor);
+			probeStats.start(configuration, clock);
 	}
 
 	/**

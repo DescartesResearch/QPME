@@ -74,7 +74,6 @@ import cern.jet.stat.Descriptive;
 import cern.jet.stat.Probability;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
-import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.util.LogUtil.ReportLevel;
 
 /**
@@ -284,7 +283,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 * @return
 	 * @exception
 	 */
-	public void init(int[] tokenPop, Executor executor) throws SimQPNException {
+	public void init(int[] tokenPop, SimQPNConfiguration configuration, double clock /** Executor executor*/) throws SimQPNException {
 		// statsLevel >= 1
 		for (int c = 0; c < numColors; c++)  {
 			arrivCnt[c]					= 0; //TODO: Should we instead set arrivCnt to tokenPop[c] here? Currently, we could have deptCnt > arrivCnt if there are tokens in the place in the initial marking.
@@ -297,11 +296,11 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 				areaTkPop[c] 			= 0;
 				areaTkColOcp[c] 		= 0;
 				lastTotTkPop			+= tokenPop[c];
-				lastColTkPopClock[c]	= executor.getClock();
+				lastColTkPopClock[c]	= clock;
 				minTkPop[c] 			= tokenPop[c];
 				maxTkPop[c] 			= tokenPop[c];
 			}
-			lastTkPopClock				= executor.getClock();			
+			lastTkPopClock				= clock;			
 		}
 		if (statsLevel >= 3)
 			for (int c = 0; c < numColors; c++) {
@@ -310,7 +309,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 				sumST[c] 				= 0;
 				sumSqST[c] 				= 0;
 				numST[c] 				= 0;
-				if (executor.getConfiguration().getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS
+				if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS
 						&& minBatches[c] > 0) {
 					sumBatchST[c] 		= 0;
 					sumBMeansST[c] 		= 0;
@@ -355,10 +354,10 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 * @exception
 	 */
 
-	public void start(int[] tokenPop, Executor executor) throws SimQPNException {		
-		init(tokenPop, executor);
+	public void start(int[] tokenPop, SimQPNConfiguration configuration, double clock) throws SimQPNException {		
+		init(tokenPop, configuration, clock);
 		inRampUp = false;
-		endRampUpClock = executor.getClock();
+		endRampUpClock = clock;
 	}
 
 	/**
@@ -686,10 +685,10 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 *                      with the required precision. Applicable only for statLevel >= 3 in 
 	 *                      modes ABSPRC and RELPRC.  
 	 */
-	public boolean enoughStats(Executor executor) throws SimQPNException {
+	public boolean enoughStats(SimQPNConfiguration configuration) throws SimQPNException {
 		if (statsLevel < 3) return true;
 
-		if (executor.getConfiguration().getAnalMethod() != SimQPNConfiguration.AnalysisMethod.BATCH_MEANS) {
+		if (configuration.getAnalMethod() != SimQPNConfiguration.AnalysisMethod.BATCH_MEANS) {
 			log.error(formatMultilineMessage(
 					"PlaceStats.enoughStats should only be called when BATCH_MEANS method is used!",
 					"Please check your configuration parameters"
@@ -719,7 +718,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			}
 			varStdStateMeanST = Descriptive.sampleVariance(numBatchesST[c], sumBMeansST[c], sumBMeansSqST[c]);
 			ciHalfLenST = Probability.studentTInverse(signLevST[c], numBatchesST[c] - 1) * Math.sqrt(varStdStateMeanST / numBatchesST[c]);
-			if ((executor.getConfiguration().stoppingRule == SimQPNConfiguration.ABSPRC) && (ciHalfLenST > reqAbsPrc[c])) {
+			if ((configuration.stoppingRule == SimQPNConfiguration.ABSPRC) && (ciHalfLenST > reqAbsPrc[c])) {
 				if (log.isTraceEnabled()) {
 					log.trace(formatMultilineMessage(
 							"Checking for enough stats in " + getTypeDescription() + " " + name,
@@ -728,7 +727,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 				}
 				passed = false;
 				break;
-			} else if (executor.getConfiguration().stoppingRule == SimQPNConfiguration.RELPRC) {
+			} else if (configuration.stoppingRule == SimQPNConfiguration.RELPRC) {
 				stdStateMeanST = sumBMeansST[c] / numBatchesST[c];
 				if (this instanceof QPlaceQueueStats) {
 					QPlaceQueueStats qSt = (QPlaceQueueStats) this;

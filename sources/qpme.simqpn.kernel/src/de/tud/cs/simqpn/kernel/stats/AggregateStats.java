@@ -51,8 +51,6 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.LinkedList;
 
-import javax.security.auth.login.Configuration;
-
 import org.apache.log4j.Logger;
 
 import cern.colt.list.AbstractDoubleList;
@@ -60,10 +58,7 @@ import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
 import cern.jet.stat.Probability;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
-import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.SimQPNException;
-import de.tud.cs.simqpn.kernel.SimQPNController;
-import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.util.LogUtil.ReportLevel;
 
 /**

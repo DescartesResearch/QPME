@@ -177,8 +177,8 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	 * @return
 	 * @exception
 	 */
-	public void init(int[] tokenPop, Executor sim) throws SimQPNException {
-		super.init(tokenPop, sim);
+	public void init(int[] tokenPop, SimQPNConfiguration configuration, double clock) throws SimQPNException {
+		super.init(tokenPop, configuration, clock);
 		
 		if (statsLevel >= 2)  			
 			areaQueUtilQPl = 0;						

@@ -45,7 +45,6 @@
 package de.tud.cs.simqpn.kernel.stats;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
-import de.tud.cs.simqpn.kernel.SimQPNController;
 
 /**
  * Class Stats

@@ -323,9 +323,9 @@ public class Place extends Node {
 	 * @return
 	 * @exception
 	 */
-	public void start(Executor executor) throws SimQPNException {	
+	public void start(SimQPNConfiguration configuration, double clock) throws SimQPNException {	
 		if (statsLevel > 0)	
-			placeStats.start(tokenPop, executor);					
+			placeStats.start(tokenPop, configuration, clock);					
 	}
 	
 	/**

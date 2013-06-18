@@ -290,11 +290,11 @@ public class QPlace extends Place {
 	 * @exception
 	 */
 	@Override
-	public void start(Executor executor) throws SimQPNException {
+	public void start(SimQPNConfiguration configuration, double clock) throws SimQPNException {
 		if (statsLevel > 0) {
 			// Start statistics collection
-			qPlaceQueueStats.start(queueTokenPop, executor);
-			super.start(executor);
+			qPlaceQueueStats.start(queueTokenPop, configuration, clock);
+			super.start(configuration, clock);
 		}
 	}
 

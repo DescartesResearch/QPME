@@ -1268,5 +1268,4 @@ public class SimQPNController {
 		}
 	}
 
-
 } // end of Class Simulator

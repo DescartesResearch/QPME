@@ -160,7 +160,7 @@ public class LP implements Executor, Runnable {
 					if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.WELCH)
 						break;
 					for (int p = 0; p < places.length; p++)
-						places[p].start(this);
+						places[p].start(configuration, clock);
 					for (Place p : places) {
 						if (p instanceof QPlace) {
 							((QPlace) p).queue.start(clock);
@@ -383,13 +383,13 @@ public class LP implements Executor, Runnable {
 					for (int p = 0; p < places.length; p++) {
 						pl = places[p];
 						if (pl.statsLevel >= 3) {
-							if (!pl.placeStats.enoughStats(this)) {
+							if (!pl.placeStats.enoughStats(configuration)) {
 								done = false;
 								break;
 							}
 							if ((pl instanceof QPlace)
 									&& !(((QPlace) pl).qPlaceQueueStats
-											.enoughStats(this))) {
+											.enoughStats(configuration))) {
 								done = false;
 								break;
 							}
