@@ -90,6 +90,7 @@ import static de.tud.cs.simqpn.kernel.util.LogUtil.formatDetailMessage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -120,6 +121,8 @@ import de.tud.cs.simqpn.kernel.loader.XMLValidator;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.persistency.StatsDocumentBuilder;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
+import de.tud.cs.simqpn.kernel.stats.PlaceStats;
+import de.tud.cs.simqpn.kernel.stats.QPlaceQueueStats;
 import de.tud.cs.simqpn.kernel.stats.Stats;
 
 /**
@@ -263,6 +266,18 @@ public class SimQPNController {
 		File resultFile = null;
 		// Skip stats document generation for WELCH and REPL_DEL since the 
 		// document builder does not support these methods yet.
+
+	    DecimalFormat df =   new DecimalFormat  ( ",##0.00" );
+		for(Stats stats: result){
+	    	System.out.println(stats.name+ " ("+stats.getClass()+")");
+			if (stats instanceof PlaceStats){
+				System.out.println("\tareaTkOcp / msrmPrdLen "+ df.format(((PlaceStats) stats).areaTkOcp)+ " / "+df.format(((PlaceStats) stats).msrmPrdLen));
+				//System.out.println("\trunWallClockTime "+ df.format(stats.runWallClockTime));
+				System.out.println("\ttkOcp(berechnet) "+ df.format(((PlaceStats) stats).areaTkOcp / stats.msrmPrdLen));
+				System.out.println("\ttkOcp(ausgelesen) "+ df.format(((PlaceStats) stats).tkOcp));
+			}
+		}
+		
 		if ((result != null)
 				&& (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS)) {
 			StatsDocumentBuilder builder = new StatsDocumentBuilder(result,
