@@ -308,7 +308,8 @@ public class StartSimulatorAction extends AbstractHandler {
 		 */
 		@Override
 		public void finishWarmUp(SimQPNConfiguration configuration) {
-			updateStatusString(configuration, false);
+			boolean inRampUp = false;
+			updateStatusString(configuration, inRampUp);
 		}
 
 		/*
