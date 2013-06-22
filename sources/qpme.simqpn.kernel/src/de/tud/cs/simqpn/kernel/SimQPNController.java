@@ -90,11 +90,8 @@ import static de.tud.cs.simqpn.kernel.util.LogUtil.formatDetailMessage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.PriorityQueue;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -112,7 +109,6 @@ import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.Probe;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
-import de.tud.cs.simqpn.kernel.executor.QueueEvent;
 import de.tud.cs.simqpn.kernel.loader.ConfigurationLoader;
 import de.tud.cs.simqpn.kernel.loader.NetFlattener;
 import de.tud.cs.simqpn.kernel.loader.NetLoader;
@@ -121,8 +117,6 @@ import de.tud.cs.simqpn.kernel.loader.XMLValidator;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.persistency.StatsDocumentBuilder;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
-import de.tud.cs.simqpn.kernel.stats.PlaceStats;
-import de.tud.cs.simqpn.kernel.stats.QPlaceQueueStats;
 import de.tud.cs.simqpn.kernel.stats.Stats;
 
 /**
@@ -196,7 +190,6 @@ public class SimQPNController {
 
 		configureBatchMeansMethod(netXML);
 
-		//initializeWorkingVariables();
 		XMLValidator.validateInputNet(netXML); // TODO Think about moving this
 												// into Constructor
 
@@ -266,17 +259,6 @@ public class SimQPNController {
 		File resultFile = null;
 		// Skip stats document generation for WELCH and REPL_DEL since the 
 		// document builder does not support these methods yet.
-
-	    DecimalFormat df =   new DecimalFormat  ( ",##0.00" );
-		for(Stats stats: result){
-	    	System.out.println(stats.name+ " ("+stats.getClass()+")");
-			if (stats instanceof PlaceStats){
-				System.out.println("\tareaTkOcp / msrmPrdLen "+ df.format(((PlaceStats) stats).areaTkOcp)+ " / "+df.format(((PlaceStats) stats).msrmPrdLen));
-				//System.out.println("\trunWallClockTime "+ df.format(stats.runWallClockTime));
-				System.out.println("\ttkOcp(berechnet) "+ df.format(((PlaceStats) stats).areaTkOcp / stats.msrmPrdLen));
-				System.out.println("\ttkOcp(ausgelesen) "+ df.format(((PlaceStats) stats).tkOcp));
-			}
-		}
 		
 		if ((result != null)
 				&& (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS)) {
