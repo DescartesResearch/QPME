@@ -416,7 +416,7 @@ public class SequentialExecutor implements Executor {
 					.warning("The simulation was canceled by the user.\n"
 							+ "The required precision may not have been reached!");
 		} else {
-			if (clock >= configuration.totRunLen) {
+			if (clock >= totRunL) {
 				if (configuration.stoppingRule != SimQPNConfiguration.FIXEDLEN) {
 					progressMonitor
 							.warning("The simulation was stopped because of reaching max totalRunLen.\n"
