@@ -15,7 +15,6 @@ import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.Queue;
 import de.tud.cs.simqpn.kernel.entities.Token;
 import de.tud.cs.simqpn.kernel.entities.Transition;
-import de.tud.cs.simqpn.kernel.entities.parallel.ParallelTransition;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.executor.QueueEvent;
 import de.tud.cs.simqpn.kernel.executor.SequentialExecutor;
@@ -59,9 +58,6 @@ public class LP implements Executor, Runnable {
 	private Queue[] queues;
 	// private Probe[] probes;
 	private SimulatorProgress progressMonitor;
-
-	ParallelTransition[] outgoingTransitions;
-	ParallelTransition[] incommingTransitions;
 
 	LP(Place[] places, Transition[] transitions, Queue[] queues, /**
 	 * Probe[]
@@ -211,7 +207,7 @@ public class LP implements Executor, Runnable {
 
 						System.out.println("LP" + id + ": transition "
 								+ nextTrans.name + " fired  | Thread "+Thread.currentThread());
-						nextTrans.fire(this, this.getSuccessor()); // Fire
+						nextTrans.fire(); // Fire
 																	// transition
 
 						// Update transStatus
