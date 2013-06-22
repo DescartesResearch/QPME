@@ -7,6 +7,7 @@ import de.tud.cs.simqpn.kernel.entities.Token;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
 public interface Executor {
+	public int getId();
 	public double getClock();
 	public void scheduleEvent(double serviceTime, Queue queue, Token token);
 	public void removeEvent(QueueEvent event);

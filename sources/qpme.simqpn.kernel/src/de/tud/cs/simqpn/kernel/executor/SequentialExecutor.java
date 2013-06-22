@@ -84,6 +84,10 @@ public class SequentialExecutor implements Executor {
 	 */
 	public void run() throws SimQPNException {
 		initializeWorkingVariables();
+
+		for(Place p : net.getPlaces()){
+			p.setExecutor(this);
+		}
 		
 		boolean[] transStatus; // Transition status: true = enabled, false =
 								// disabled
@@ -200,7 +204,7 @@ public class SequentialExecutor implements Executor {
 							.getTrans(enTransIDs[randTransGen.nextInt()]);
 				}
 
-				nextTrans.fire(this, this); // Fire transition
+				nextTrans.fire(); // Fire transition
 
 				// Update transStatus
 				int p, t, nP, nT;
@@ -522,6 +526,11 @@ public class SequentialExecutor implements Executor {
 			net.getTrans(i).init();
 		for (int i = 0; i < net.getNumQueues(); i++)
 			net.getQueue(i).init(configuration);
+	}
+
+	@Override
+	public int getId() {
+		return 0;
 	}
 
 

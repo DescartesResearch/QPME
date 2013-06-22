@@ -77,6 +77,8 @@ import de.tud.cs.simqpn.kernel.stats.Stats;
 
 public class Place extends Node {
 	
+	private Executor executor;
+	
 	/** Supported departure disciplines*/	
 	public enum DepartureDiscipline{
 		NORMAL,// Arriving tokens become available for output transitions immediately upon arrival.  
@@ -537,6 +539,14 @@ public class Place extends Node {
 				}				
 			}
 		}
+	}
+
+	public Executor getExecutor() {
+		return executor;
+	}
+
+	public void setExecutor(Executor executor) {
+		this.executor = executor;
 	}
 			
 }

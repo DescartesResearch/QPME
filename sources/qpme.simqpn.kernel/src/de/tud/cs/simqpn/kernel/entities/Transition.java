@@ -378,7 +378,7 @@ public class Transition extends Node {
 	 * @return
 	 * @exception
 	 */
-	public void fire(Executor executorIn, Executor executorOut) throws SimQPNException {
+	public void fire() throws SimQPNException {
 
 		int nM = numModes;
 		// Choose mode to fire based on weights
@@ -415,6 +415,7 @@ public class Transition extends Node {
 		// Step 1: Remove input tokens
 		for (p = 0; p < nP; p++) {
 			pl = inPlaces[p];
+			Executor executorIn = pl.getExecutor();
 			nC = pl.numColors;
 			for (c = 0; c < nC; c++) {
 				n = inFunc[mode][p][c];
@@ -526,6 +527,7 @@ public class Transition extends Node {
 		nP = outPlaces.length;
 		for (p = 0; p < nP; p++) {
 			pl = outPlaces[p];
+			Executor executorOut = pl.getExecutor();
 			nC = pl.numColors;
 			for (c = 0; c < nC; c++) {
 				n = outFunc[mode][p][c];
@@ -577,6 +579,9 @@ public class Transition extends Node {
 						pl.addTokens(c, n, null, executorOut);
 					}
 				}
+			}
+			synchronized (executorOut) {
+				executorOut.notify(); //TODO CHECK				
 			}
 		}
 
