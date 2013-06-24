@@ -2,6 +2,7 @@ package de.tud.cs.simqpn.kernel.analyzer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
@@ -58,10 +59,12 @@ public class BatchMeans implements Analyzer {
 			throws SimQPNException {
 		progressMonitor = monitor;
 		progressMonitor.startSimulation(configuration);
-		Executor executor = new SequentialExecutor(net, configuration, monitor);
-		progressMonitor.startSimulationRun(1, configuration);
-		executor.run();
-		progressMonitor.finishSimulationRun();
+		Callable<Net> executor = new SequentialExecutor(net, configuration, monitor,1);
+		try {
+			executor.call();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		progressMonitor.finishSimulation();
 		progressMonitor = null;
 		return new SimulatorResults(net.getPlaces(), net.getQueues(),

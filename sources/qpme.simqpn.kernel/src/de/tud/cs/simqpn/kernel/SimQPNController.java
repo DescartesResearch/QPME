@@ -101,10 +101,7 @@ import org.dom4j.XPath;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
-import de.tud.cs.simqpn.kernel.analyzer.BatchMeans;
-import de.tud.cs.simqpn.kernel.analyzer.BatchMeansParallel;
-import de.tud.cs.simqpn.kernel.analyzer.ReplicationDeletion;
-import de.tud.cs.simqpn.kernel.analyzer.Welch;
+import de.tud.cs.simqpn.kernel.analyzer.*;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.Probe;
@@ -230,7 +227,7 @@ public class SimQPNController {
 					 * Replication/Deletion Approach (Method of Independent
 					 * Replications)
 					 */
-					result = new ReplicationDeletion()
+					result = new ReplicationDeletionParallel()
 							.analyze2(net, configuration, monitor, XMLNet,
 									configurationString);
 				} else {

@@ -2,6 +2,7 @@ package de.tud.cs.simqpn.kernel.executor;
 
 import java.util.Comparator;
 import java.util.PriorityQueue;
+import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
 
@@ -19,7 +20,7 @@ import de.tud.cs.simqpn.kernel.entities.Transition;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 
-public class SequentialExecutor implements Executor {
+public class SequentialExecutor implements Executor, Callable<Net>{
 
 	private static Logger log = Logger.getLogger(SequentialExecutor.class);
 
@@ -51,13 +52,18 @@ public class SequentialExecutor implements Executor {
 	 * exact same time, the wrong one might be removed!
 	 */
 
-	public boolean inRampUp;				// True if still in RampUp period (no measurements taken).
-	public double endRampUpClock;		// Clock at the end of RampUp, i.e. beginning of the measurement period.
-	public double endRunClock;			// Clock at the end of the run.
-	public double msrmPrdLen;			// Duration of the measurement period (endRunClock - endRampUpClock).
-	public double beginRunWallClock;		// currentTimeMillis at the begin of the run (wall clock time).
-	public double endRunWallClock;		// currentTimeMillis at the end of the run (wall clock time).
-	public double runWallClockTime;		// Total duration of the run in seconds.
+	public boolean inRampUp; // True if still in RampUp period (no measurements
+								// taken).
+	public double endRampUpClock; // Clock at the end of RampUp, i.e. beginning
+									// of the measurement period.
+	public double endRunClock; // Clock at the end of the run.
+	public double msrmPrdLen; // Duration of the measurement period (endRunClock
+								// - endRampUpClock).
+	public double beginRunWallClock; // currentTimeMillis at the begin of the
+										// run (wall clock time).
+	public double endRunWallClock; // currentTimeMillis at the end of the run
+									// (wall clock time).
+	public double runWallClockTime; // Total duration of the run in seconds.
 
 	/** True if simulation is currently running. */
 	public static boolean simRunning;
@@ -67,34 +73,41 @@ public class SequentialExecutor implements Executor {
 	private SimulatorProgress progressMonitor; // Progress monitoring
 
 	private Net net;
+	
+	private int runID;
 
 	public SequentialExecutor(Net net, SimQPNConfiguration configuration,
-			SimulatorProgress progressMonitor) {
+			SimulatorProgress progressMonitor, int runID) {
 		this.net = net;
 		this.configuration = configuration;
 		this.progressMonitor = progressMonitor;
+		this.runID = runID;
 	}
 
 	/**
-	 * Method run - starts the simulation run.
+	 * Starts the simulation run.
 	 * 
 	 * @param
 	 * @return
 	 * @exception
 	 */
-	public void run() throws SimQPNException {
+	@Override
+	public Net call() throws Exception {
+		progressMonitor.startSimulationRun(runID, configuration);
+
 		initializeWorkingVariables();
 
-		for(Place p : net.getPlaces()){
+		for (Place p : net.getPlaces()) {
 			p.setExecutor(this);
 		}
-		
+
 		boolean[] transStatus; // Transition status: true = enabled, false =
 								// disabled
 		int enTransCnt = 0;
 		int[] enTransIDs = new int[net.getNumTrans()];
 
-		EmpiricalWalker randTransGen; // Random number generator for generating
+		EmpiricalWalker randTransGen; // Random number generator for
+										// generating
 										// next transition to fire.
 
 		// Initialize transStatus and enTransCnt
@@ -115,17 +128,21 @@ public class SequentialExecutor implements Executor {
 
 		randTransGen = new EmpiricalWalker(pdf, Empirical.NO_INTERPOLATION,
 				RandomNumberGenerator.nextRandNumGen());
-		// Note: Here we use a default distribution. The actual distribution is
+		// Note: Here we use a default distribution. The actual distribution
+		// is
 		// set each time before using randTransGen.
 
-		// Note: we store totRunLen and rampUpLen in local variables to improve
+		// Note: we store totRunLen and rampUpLen in local variables to
+		// improve
 		// performance of the while loop below.
 		double totRunL = configuration.totRunLen;
 		double rampUpL = configuration.rampUpLen;
 		double nextChkAfter = configuration.timeBtwChkStops > 0 ? configuration.timeBtwChkStops
-				: totRunL; // If secondsBtwChkStops is used, disable checking of
+				: totRunL; // If secondsBtwChkStops is used, disable
+							// checking of
 							// stopping criterion
-		// until beforeInitHeartBeat == false. By setting nextChkAfter = totRunL
+		// until beforeInitHeartBeat == false. By setting nextChkAfter =
+		// totRunL
 		// stopping criterion checking is disabled.
 		/*
 		 * ORIGINAL HEARTBEAT IMPLEMENTATION double nextChkAfter =
@@ -279,7 +296,8 @@ public class SequentialExecutor implements Executor {
 				QPlace qpl = (QPlace) ev.token.place;
 				qpl.completeService(ev.token, this);
 
-				// Check if some transitions were enabled and update transStatus
+				// Check if some transitions were enabled and update
+				// transStatus
 				int t, nT;
 				Transition tr;
 				nT = qpl.outTrans.length;
@@ -322,7 +340,8 @@ public class SequentialExecutor implements Executor {
 					long curTimeMsrm = System.currentTimeMillis();
 					progressMonitor.updateSimulationProgress(clock
 							/ (totRunL - 1) * 100,
-							(curTimeMsrm - lastTimeMsrm), configuration, inRampUp);
+							(curTimeMsrm - lastTimeMsrm), configuration,
+							inRampUp);
 					lastTimeMsrm = curTimeMsrm;
 					nextHeartBeat = clock + timeBtwHeartBeats;
 
@@ -374,7 +393,8 @@ public class SequentialExecutor implements Executor {
 					// The test already failed for a place.
 					progressMonitor.precisionCheck(done, pl.name);
 				} else {
-					// Check also the probes, whether they have enough samples
+					// Check also the probes, whether they have enough
+					// samples
 					Probe probe = null;
 					for (int pr = 0; pr < net.getNumProbes(); pr++) {
 						probe = net.getProbe(pr);
@@ -409,7 +429,8 @@ public class SequentialExecutor implements Executor {
 
 		// END MAIN SIMULATION LOOP
 		// ---------------------------------------------------------------------------------
-		progressMonitor.updateSimulationProgress(100, 0, configuration, inRampUp);
+		progressMonitor.updateSimulationProgress(100, 0, configuration,
+				inRampUp);
 
 		if (progressMonitor.isCanceled()) {
 			progressMonitor
@@ -427,24 +448,22 @@ public class SequentialExecutor implements Executor {
 		}
 
 		endRunClock = clock;
-		msrmPrdLen = endRunClock
-				- endRampUpClock;
+		msrmPrdLen = endRunClock - endRampUpClock;
 		endRunWallClock = System.currentTimeMillis();
-		
-		// total time elapsed in seconds
-		runWallClockTime = (endRunWallClock - beginRunWallClock) / 1000; 
 
-		log.info("msrmPrdLen= " + msrmPrdLen + " totalRunLen= "
-				+ endRunClock + " runWallClockTime="
-				+ (int) (runWallClockTime / 60) + " min (="
-				+ runWallClockTime + " sec)");
+		// total time elapsed in seconds
+		runWallClockTime = (endRunWallClock - beginRunWallClock) / 1000;
+
+		log.info("msrmPrdLen= " + msrmPrdLen + " totalRunLen= " + endRunClock
+				+ " runWallClockTime=" + (int) (runWallClockTime / 60)
+				+ " min (=" + runWallClockTime + " sec)");
 
 		// Complete statistics collection (make sure this is done AFTER the
 		// above statements)
 		if (configuration.getAnalMethod() != SimQPNConfiguration.AnalysisMethod.WELCH) {
 			for (int p = 0; p < net.getNumPlaces(); p++)
 				net.getPlace(p).finish(configuration, runWallClockTime, clock);
-			for (int q = 0; q < net.getNumQueues(); q++){
+			for (int q = 0; q < net.getNumQueues(); q++) {
 				// NOTE: queues[*].finish() should be called after
 				// places[*].finish()!
 				net.getQueue(q).finish(configuration, runWallClockTime, clock);
@@ -452,7 +471,11 @@ public class SequentialExecutor implements Executor {
 			for (int pr = 0; pr < net.getNumProbes(); pr++)
 				net.getProbe(pr).finish(configuration, runWallClockTime, clock);
 		}
-	} // end of run() method
+		
+		progressMonitor.finishSimulationRun();
+
+		return net;
+	}
 
 	/**
 	 * Method scheduleEvent - schedules an event
@@ -467,7 +490,7 @@ public class SequentialExecutor implements Executor {
 	 * @exception
 	 */
 	public void scheduleEvent(double serviceTime, Queue queue, Token token) {
-		QueueEvent ev = new QueueEvent(clock+serviceTime, queue, token);
+		QueueEvent ev = new QueueEvent(clock + serviceTime, queue, token);
 		eventList.add(ev);
 		queue.nextEvent = ev;
 	}
@@ -476,42 +499,30 @@ public class SequentialExecutor implements Executor {
 		return clock;
 	}
 
-	public void setClock(double clock) {
-		this.clock = clock;
-	}
-
 	public SimQPNConfiguration getConfiguration() {
 		return configuration;
-	}
-
-	public void setConfiguration(SimQPNConfiguration configuration) {
-		this.configuration = configuration;
 	}
 
 	public SimulatorProgress getProgressMonitor() {
 		return progressMonitor;
 	}
 
-	public void setProgressMonitor(SimulatorProgress progressMonitor) {
-		this.progressMonitor = progressMonitor;
-	}
-
 	@Override
 	public void removeEvent(QueueEvent event) {
-		eventList.remove(event);		
+		eventList.remove(event);
 	}
-	
+
 	private void initializeWorkingVariables() throws SimQPNException {
 		inRampUp = true;
 		endRampUpClock = 0;
 		endRunClock = 0;
 		msrmPrdLen = 0; // Set at the end of the run when the
-											// actual length is known.
+						// actual length is known.
 		beginRunWallClock = 0;
 		endRunWallClock = 0;
 		runWallClockTime = 0;
 
-		setClock(0); // Note that it has been assumed throughout the code that
+		clock = 0; // Note that it has been assumed throughout the code that
 		// the simulation starts at virtual time 0.
 
 		eventList.clear();
@@ -533,6 +544,5 @@ public class SequentialExecutor implements Executor {
 	public int getId() {
 		return 0;
 	}
-
 
 }

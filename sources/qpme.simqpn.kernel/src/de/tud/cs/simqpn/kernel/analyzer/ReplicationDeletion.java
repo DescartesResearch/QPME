@@ -4,6 +4,7 @@ import static de.tud.cs.simqpn.kernel.util.LogUtil.formatDetailMessage;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
 import org.dom4j.Element;
@@ -69,8 +70,12 @@ public class ReplicationDeletion implements Analyzer{
 
 			Net netCopy = new Net(net, configuration);
 			netCopy.finishCloning(net, configuration);
-			Executor executor = new SequentialExecutor(netCopy, configuration, monitor);
-			executor.run();
+			Callable<Net> executor = new SequentialExecutor(netCopy, configuration, monitor, i+1);
+			try {
+				executor.call();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			
 			progressMonitor.finishSimulationRun();
 

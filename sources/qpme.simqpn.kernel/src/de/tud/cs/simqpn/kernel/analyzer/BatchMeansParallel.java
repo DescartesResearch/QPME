@@ -58,10 +58,8 @@ public class BatchMeansParallel implements Analyzer {
 		progressMonitor = monitor;
 		progressMonitor.startSimulation(configuration);
 
-		ParallelExecutor parallelExecutor = new ParallelExecutor(net, configuration, monitor);
-		progressMonitor.startSimulationRun(1, configuration);
-		parallelExecutor.run();
-		progressMonitor.finishSimulationRun();
+		ParallelExecutor parallelExecutor = new ParallelExecutor(net, configuration, monitor,1);
+		parallelExecutor.call();
 		progressMonitor.finishSimulation();
 		progressMonitor = null;
 		return new SimulatorResults(net.getPlaces(), net.getQueues(),

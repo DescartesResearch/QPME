@@ -3,8 +3,14 @@ package de.tud.cs.simqpn.kernel.analyzer;
 import static de.tud.cs.simqpn.kernel.util.LogUtil.formatDetailMessage;
 import static de.tud.cs.simqpn.kernel.util.LogUtil.formatMultilineMessage;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
 import org.dom4j.Element;
@@ -15,30 +21,29 @@ import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
-import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.executor.SequentialExecutor;
 import de.tud.cs.simqpn.kernel.loader.XMLHelper;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.stats.AggregateStats;
 import de.tud.cs.simqpn.kernel.stats.Stats;
 
-public class Welch {//implements Analyzer {
+public class Welch {// implements Analyzer {
 	private static Logger log = Logger.getLogger(Welch.class);
 	private static SimulatorProgress progressMonitor;
 
-
-	//@Override
+	// @Override
 	public Stats[] analyze(Net net, SimQPNConfiguration configuration,
 			SimulatorProgress monitor) throws SimQPNException {
-		//runWelchMtd(net, configuration, monitor);
-		throw(new SimQPNException());
-	}
-	
-	public Stats[] analyze2(Net net, SimQPNConfiguration configuration,
-			SimulatorProgress monitor, Element netXML, String configurationName) throws SimQPNException {
-		return runWelchMtd(net, configuration, monitor, netXML, configurationName);
+		// runWelchMtd(net, configuration, monitor);
+		throw (new SimQPNException());
 	}
 
+	public Stats[] analyze2(Net net, SimQPNConfiguration configuration,
+			SimulatorProgress monitor, Element netXML, String configurationName)
+			throws SimQPNException {
+		return runWelchMtd(net, configuration, monitor, netXML,
+				configurationName);
+	}
 
 	/**
 	 * Method runWelchMtd - runs the method of Welch
@@ -48,13 +53,11 @@ public class Welch {//implements Analyzer {
 	 * @exception
 	 */
 	private static AggregateStats[] runWelchMtd(Net net,
-			SimQPNConfiguration configuration, SimulatorProgress monitor, Element netXML, String configurationName)
-			throws SimQPNException {
+			SimQPNConfiguration configuration, SimulatorProgress monitor,
+			Element netXML, String configurationName) throws SimQPNException {
 
 		progressMonitor = monitor;
 
-		//SimQPNController sim = new SimQPNController(netXML, configuration);
-		
 		if (configuration.getNumRuns() < 5) {
 			log.warn(formatMultilineMessage(
 					"Number of runs for the method of Welch should be at least 5!",
@@ -64,7 +67,6 @@ public class Welch {//implements Analyzer {
 
 		int numPlaces = net.getNumPlaces();
 		Place[] places = net.getPlaces();
-		// List placeList = net.getPlaceList();
 
 		XPath xpathSelector = XMLHelper.createXPath("//place");
 		List<Element> placeList = xpathSelector.selectNodes(netXML);
@@ -75,34 +77,54 @@ public class Welch {//implements Analyzer {
 
 		progressMonitor.startSimulation(configuration);
 
-		// Run replication loop
-		for (int i = 0; i < configuration.getNumRuns(); i++) {
-			config(places, placeList, configurationName);
+		ExecutorService executorService = Executors.newFixedThreadPool(Runtime
+				.getRuntime().availableProcessors());
 
+		List<Callable<Net>> listOfRuns = new ArrayList<Callable<Net>>();
+		for (int i = 0; i < configuration.getNumRuns(); i++) {
 			Net netCopy = new Net(net, configuration);
 			netCopy.finishCloning(net, configuration);
 
-			progressMonitor.startSimulationRun(i + 1, configuration);
-			Executor executor = new SequentialExecutor(netCopy, configuration, monitor);
-			executor.run();
-			progressMonitor.finishSimulationRun();
-
-			for (int p = 0; p < numPlaces; p++) {
-				pl = netCopy.getPlace(p);
-				if (pl.statsLevel > 0) {
-					if (pl instanceof QPlace) {
-						QPlace qPl = (QPlace) pl;
-						aggrStats[p * 2].saveStats(qPl.qPlaceQueueStats, configuration);
-						aggrStats[(p * 2) + 1].saveStats(qPl.placeStats, configuration);
-					} else {
-						aggrStats[p * 2].saveStats(pl.placeStats, configuration);
-					}
-				}
-			}
+			Callable<Net> run = new SequentialExecutor(netCopy,
+					configuration, monitor, i + 1);
+			listOfRuns.add(run);
 
 			if (progressMonitor.isCanceled())
 				break;
 		}
+		List<Future<Net>> listOfSimulatedNets;
+		try {
+			listOfSimulatedNets = (List<Future<Net>>) executorService
+					.invokeAll((List<? extends Callable<Net>>) listOfRuns);
+			for (Future<Net> future : listOfSimulatedNets) {
+				try {
+					Net futureNet = future.get();
+
+					for (int p = 0; p < numPlaces; p++) {
+						pl = futureNet.getPlace(p);
+						if (pl.statsLevel > 0) {
+							if (pl instanceof QPlace) {
+								QPlace qPl = (QPlace) pl;
+								aggrStats[p * 2].saveStats(
+										qPl.qPlaceQueueStats, configuration);
+								aggrStats[(p * 2) + 1].saveStats(
+										qPl.placeStats, configuration);
+							} else {
+								aggrStats[p * 2].saveStats(pl.placeStats,
+										configuration);
+							}
+						}
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				} catch (ExecutionException e) {
+					e.printStackTrace();
+				}
+			}
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
+		executorService.shutdown();
 
 		progressMonitor.finishSimulation();
 
@@ -115,40 +137,39 @@ public class Welch {//implements Analyzer {
 		return aggrStats;
 	}
 
-	private static void config(Place[] places, List<Element> placeList, String configurationName)
-			throws SimQPNException {
+	private static void config(Place[] places, List<Element> placeList,
+			String configurationName) throws SimQPNException {
 		XPath xpathSelector;
 		Place pl;
 		/*
-		 * BEGIN-CONFIG
-		 * ------------------------------------------------------
+		 * BEGIN-CONFIG ------------------------------------------------------
 		 * ----------------------------------------------------------
 		 * 
 		 * minObsrvST - Minumum number of observations required maxObsrvST -
-		 * Maximum number of observations considered (if <= 0 token color is
-		 * not considered in the analysis).
+		 * Maximum number of observations considered (if <= 0 token color is not
+		 * considered in the analysis).
 		 * 
 		 * ... places[p].placeStats.minObsrvST/maxObsrvST ... ((QPlace)
 		 * places[p]).qPlaceQueueStats[c]/maxObsrvST[c]
 		 * 
-		 * Note: Places/QPlaces with (StatsLevel < 3) are not considered in
-		 * the analysis! Note: If (maxObsrvST[c] <= 0) the respective token
-		 * color is not considered in the analysis!
+		 * Note: Places/QPlaces with (StatsLevel < 3) are not considered in the
+		 * analysis! Note: If (maxObsrvST[c] <= 0) the respective token color is
+		 * not considered in the analysis!
 		 */
 
 		// Iterate through all places.
 		Iterator<Element> placeIterator = placeList.iterator();
 
 		/*
-		 * SDK-DEBUG: - Does placeList.iterator() always return places in
-		 * the same order (matching the order in the places array)? CHRIS:
-		 * It returns the Elements in the document order. If this is not
-		 * changed, then it always returns them in the same order. - Note
-		 * that XML in general does not guarantee any ordering of elements.
-		 * CHRIS: In general there is no guarantee, but the dom
-		 * implementation used does respect the order of elements. The only
-		 * problems I encountered was when merging sets of nodes, but since
-		 * I don't do that, there should be no problems.
+		 * SDK-DEBUG: - Does placeList.iterator() always return places in the
+		 * same order (matching the order in the places array)? CHRIS: It
+		 * returns the Elements in the document order. If this is not changed,
+		 * then it always returns them in the same order. - Note that XML in
+		 * general does not guarantee any ordering of elements. CHRIS: In
+		 * general there is no guarantee, but the dom implementation used does
+		 * respect the order of elements. The only problems I encountered was
+		 * when merging sets of nodes, but since I don't do that, there should
+		 * be no problems.
 		 */
 		for (int p = 0; placeIterator.hasNext(); p++) {
 			Element place = (Element) placeIterator.next();
@@ -158,10 +179,9 @@ public class Welch {//implements Analyzer {
 			// color-ref of the current place (depository and queue).
 			// These values are used in WELCH method.
 			if (pl.statsLevel >= 3) {
-				xpathSelector = XMLHelper
-						.createXPath("color-refs/color-ref");
-				Iterator<Element> colorRefIterator = xpathSelector
-						.selectNodes(place).iterator();
+				xpathSelector = XMLHelper.createXPath("color-refs/color-ref");
+				Iterator<Element> colorRefIterator = xpathSelector.selectNodes(
+						place).iterator();
 				for (int c = 0; colorRefIterator.hasNext(); c++) {
 					Element colorRef = (Element) colorRefIterator.next();
 					Element element = XMLHelper.getSettings(colorRef,
@@ -174,8 +194,7 @@ public class Welch {//implements Analyzer {
 								"place.id", place.attributeValue("id"),
 								"place.name", place.attributeValue("name"),
 								"color-num", Integer.toString(c),
-								"colorRef.id",
-								colorRef.attributeValue("id"),
+								"colorRef.id", colorRef.attributeValue("id"),
 								"colorRef.color-id",
 								colorRef.attributeValue("color-id")));
 						throw new SimQPNException();
@@ -195,8 +214,7 @@ public class Welch {//implements Analyzer {
 							log.error(formatDetailMessage(
 									"queueMinObsrv/queueMaxObsrv settings for the Method of Welch not found!",
 									"place.id", place.attributeValue("id"),
-									"place.name",
-									place.attributeValue("name"),
+									"place.name", place.attributeValue("name"),
 									"color-num", Integer.toString(c),
 									"colorRef.id",
 									colorRef.attributeValue("id"),
@@ -211,11 +229,9 @@ public class Welch {//implements Analyzer {
 								.parseInt(element
 										.attributeValue("queueMaxObsrv"));
 						log.debug("qPl.qPlaceQueueStats.minObsrvST[" + c
-								+ "] = "
-								+ qPl.qPlaceQueueStats.minObsrvST[c]);
+								+ "] = " + qPl.qPlaceQueueStats.minObsrvST[c]);
 						log.debug("qPl.qPlaceQueueStats.maxObsrvST[" + c
-								+ "] = "
-								+ qPl.qPlaceQueueStats.maxObsrvST[c]);
+								+ "] = " + qPl.qPlaceQueueStats.maxObsrvST[c]);
 					}
 				}
 			}
@@ -238,12 +254,15 @@ public class Welch {//implements Analyzer {
 			if (pl.statsLevel > 0) {
 				if (pl instanceof QPlace) {
 					aggrStats[p * 2] = new AggregateStats(pl.id, pl.name,
-							Stats.QUE_PLACE_QUEUE, pl.numColors, pl.statsLevel, configuration);
+							Stats.QUE_PLACE_QUEUE, pl.numColors, pl.statsLevel,
+							configuration);
 					aggrStats[(p * 2) + 1] = new AggregateStats(pl.id, pl.name,
-							Stats.QUE_PLACE_DEP, pl.numColors, pl.statsLevel, configuration);
+							Stats.QUE_PLACE_DEP, pl.numColors, pl.statsLevel,
+							configuration);
 				} else {
 					aggrStats[p * 2] = new AggregateStats(pl.id, pl.name,
-							Stats.ORD_PLACE, pl.numColors, pl.statsLevel, configuration);
+							Stats.ORD_PLACE, pl.numColors, pl.statsLevel,
+							configuration);
 					aggrStats[(p * 2) + 1] = null;
 				}
 			} else {
