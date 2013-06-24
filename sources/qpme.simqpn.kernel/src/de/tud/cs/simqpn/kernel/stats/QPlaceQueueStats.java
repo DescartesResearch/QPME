@@ -196,20 +196,22 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	 * @param oldTkPop	- old token population
 	 * @param delta		- difference between new and old token population
 	 */
-	public void updateTkPopStats(int color, int oldTkPop, int delta, Executor sim)  {
+	public void updateTkPopStats(int color, int oldTkPop, int delta, Executor executor)  {
 		if (inRampUp) return;						
 		if (statsLevel >= 2)  {						
-			double elapsedTime = sim.getClock() - lastTkPopClock;
+			double elapsedTime = executor.getClock() - lastTkPopClock;
 			if (elapsedTime > 0) {
-				if (numServers > 1)	//NOTE: WATCH OUT with IS queues here! Below we assume that for such queues numServers == 0.				
-					areaQueUtilQPl += elapsedTime * (lastTotTkPop > numServers ? 1 : (((double) lastTotTkPop) / numServers));																						
-				else areaQueUtilQPl += elapsedTime * (lastTotTkPop > 0 ? 1 : 0);  
+				if (numServers > 1){	//NOTE: WATCH OUT with IS queues here! Below we assume that for such queues numServers == 0.				
+					areaQueUtilQPl += elapsedTime * (lastTotTkPop > numServers ? 1 : (((double) lastTotTkPop) / numServers));
+				}else{
+					areaQueUtilQPl += elapsedTime * (lastTotTkPop > 0 ? 1 : 0);  
+				}
 				//NOTE: lastTkPopClock is updated in super.updateTkPopStats() below.			
 			}			
 			//NOTE: lastTotTkPop is updated in super.updateTkPopStats() below.			
 		} 
 		//NOTE: updateTkPopStats is called after the above since it updates lastTkPopClock and lastTotTkPop!
-		super.updateTkPopStats(color, oldTkPop, delta, sim.getClock()); 
+		super.updateTkPopStats(color, oldTkPop, delta, executor.getClock()); 
 	}
 
 	/**
@@ -241,8 +243,9 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	 */	
 	public void processStats(SimQPNConfiguration configuration) throws SimQPNException {		
 		super.processStats(configuration);
-		if (statsLevel >= 2)
-			queueUtilQPl = areaQueUtilQPl / msrmPrdLen;		
+		if (statsLevel >= 2){
+			queueUtilQPl = areaQueUtilQPl / msrmPrdLen;
+		}
 		if (statsLevel >= 3 && indrStats)  {
 			for (int c = 0; c < numColors; c++)  {
 				meanDT[c] 	= sumST[c] / numST[c];

@@ -227,11 +227,14 @@ public class Queue {
 															// right
 		this.randColorGen = queue.randColorGen;// TODO JUERGEN Check if this is
 												// right
-		this.queueStats = new QueueStats(
-				queue.queueStats.id, // TODO this could be optimized
-				queue.queueStats.name, queue.queueStats.numColors,
-				queue.queueStats.statsLevel, queue.queueStats.queueDiscip,
-				queue.queueStats.numServers, this, configuration);
+
+		if(queue.queueStats != null){
+			this.queueStats = new QueueStats(
+					queue.queueStats.id, // TODO this could be optimized
+					queue.queueStats.name, queue.queueStats.numColors,
+					queue.queueStats.statsLevel, queue.queueStats.queueDiscip,
+					queue.queueStats.numServers, this, configuration);
+		}
 		this.tkPopulation = queue.tkPopulation;
 		this.maxEpochPopulation = queue.maxEpochPopulation;
 		this.totalMaxPopulation = queue.totalMaxPopulation;

@@ -444,10 +444,11 @@ public class SequentialExecutor implements Executor {
 		if (configuration.getAnalMethod() != SimQPNConfiguration.AnalysisMethod.WELCH) {
 			for (int p = 0; p < net.getNumPlaces(); p++)
 				net.getPlace(p).finish(configuration, runWallClockTime, clock);
-			for (int q = 0; q < net.getNumQueues(); q++)
+			for (int q = 0; q < net.getNumQueues(); q++){
 				// NOTE: queues[*].finish() should be called after
 				// places[*].finish()!
 				net.getQueue(q).finish(configuration, runWallClockTime, clock);
+			}
 			for (int pr = 0; pr < net.getNumProbes(); pr++)
 				net.getProbe(pr).finish(configuration, runWallClockTime, clock);
 		}

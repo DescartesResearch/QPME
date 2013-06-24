@@ -104,7 +104,6 @@ public class ConsoleSimulatorProgress implements SimulatorProgress {
 	 */
 	@Override
 	public void updateSimulationProgress(double progress, long elapsedTime, SimQPNConfiguration configuration, boolean inRampUp) {
-		//TODO wird zu häufig aufgerufen
 		log.info("Progress: " + Math.round(progress) + "%");
 	}
 
@@ -113,7 +112,6 @@ public class ConsoleSimulatorProgress implements SimulatorProgress {
 	 */
 	@Override
 	public void finishWarmUp(SimQPNConfiguration configuration) {
-		//TODO check if this is working properly JUERGEN
 		if(configuration.getAnalMethod() != SimQPNConfiguration.AnalysisMethod.WELCH) {
 			log.info("Warm up finished. Starting steady state analysis...");
 		}

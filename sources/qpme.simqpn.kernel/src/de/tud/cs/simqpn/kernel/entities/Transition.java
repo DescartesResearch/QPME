@@ -141,8 +141,12 @@ public class Transition extends Node {
 		// Note: Here we use a default distribution. The actual distribution is
 		// set each time before using randModeGen.
 		
-		this.tkCopyBuffer = transition.tkCopyBuffer.clone(); //JUERGEN: seems sufficient in our context
-		this.tkIndexBuffer = transition.tkIndexBuffer.clone(); //JUERGEN: OK
+		if(transition.tkCopyBuffer != null){
+			this.tkCopyBuffer = transition.tkCopyBuffer.clone(); //JUERGEN: seems sufficient in our context	
+		}
+		if(transition.tkIndexBuffer != null){
+			this.tkIndexBuffer = transition.tkIndexBuffer.clone(); //JUERGEN: OK			
+		}
 
 	}
 
