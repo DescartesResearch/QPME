@@ -244,7 +244,8 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	public void processStats(SimQPNConfiguration configuration) throws SimQPNException {		
 		super.processStats(configuration);
 		if (statsLevel >= 2){
-			queueUtilQPl = areaQueUtilQPl / msrmPrdLen;
+			queueUtilQPl =areaQueUtilQPl / msrmPrdLen; 
+			queueUtilQPl = tkOcp;//Bad FIX 
 		}
 		if (statsLevel >= 3 && indrStats)  {
 			for (int c = 0; c < numColors; c++)  {
