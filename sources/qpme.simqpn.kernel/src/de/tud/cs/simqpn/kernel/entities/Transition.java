@@ -82,9 +82,9 @@ public class Transition extends Node {
 	public int[][][] outFunc; // [mode, outPlace, color]
 	public double[] modeWeights; // [1..numModes]
 
-	public boolean[] modeStatus; // [1..numModes] Specifying the current status
+	private boolean[] modeStatus; // [1..numModes] Specifying the current status
 									// (enabled/disabled) of a mode
-	public int enModesCnt; // Number of currently enabled modes
+	private int enModesCnt; // Number of currently enabled modes
 
 	private Token[] tkCopyBuffer; // INTERNAL: [1..maxNumTokens] with
 									// maxNumTokens=max(outFunc[mode, outPlace,
@@ -103,7 +103,7 @@ public class Transition extends Node {
 												// timestamps are generated for
 												// this transition.
 
-	public EmpiricalWalker randModeGen; // Random number generator for
+	private EmpiricalWalker randModeGen; // Random number generator for
 										// generating modes to fire
 
 	private Random randGen = new Random();
@@ -211,7 +211,7 @@ public class Transition extends Node {
 	 * @return
 	 * @exception
 	 */
-	public void init() {
+	public synchronized void init() {
 		int m, p, c, nM, nP, nC;
 		boolean enabled;
 		Place pl;
@@ -279,7 +279,7 @@ public class Transition extends Node {
 	 * @return
 	 * @exception
 	 */
-	public void updateState(int inPlaceId, int color, int newAvailTkCnt,
+	public synchronized void updateState(int inPlaceId, int color, int newAvailTkCnt,
 			int delta) {
 
 		if (delta > 0) { // CASE A: TOKENS HAVE BEEN ADDED
@@ -340,7 +340,7 @@ public class Transition extends Node {
 	 * @return boolean - true if at least one mode enabled, false otherwise
 	 * @exception
 	 */
-	public boolean enabled() {
+	public synchronized boolean enabled() {
 		return (enModesCnt > 0);
 	}
 
@@ -382,7 +382,7 @@ public class Transition extends Node {
 	 * @return
 	 * @exception
 	 */
-	public void fire() throws SimQPNException {
+	public synchronized void fire() throws SimQPNException {
 
 		int nM = numModes;
 		// Choose mode to fire based on weights
@@ -395,7 +395,7 @@ public class Transition extends Node {
 					break;
 				}
 			}
-		} else {
+		} else if(enModesCnt > 1){
 			double[] pdf = new double[enModesCnt];
 			int[] enModesIDs = new int[enModesCnt];
 			for (int m = 0, e = 0; m < nM; m++) {
@@ -407,6 +407,9 @@ public class Transition extends Node {
 			}
 			randModeGen.setState2(pdf);
 			mode = enModesIDs[randModeGen.nextInt()];
+		} else {
+			mode = 0;
+			System.out.println("KANN NICHT SEIN enModesCnt "+enModesCnt);
 		}
 		int p, c, nP, nC, prC, n;
 		int maxN = 0;
@@ -583,9 +586,6 @@ public class Transition extends Node {
 						pl.addTokens(c, n, null, executorOut);
 					}
 				}
-			}
-			synchronized (executorOut) {
-				executorOut.notify(); //TODO CHECK				
 			}
 		}
 

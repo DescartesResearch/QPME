@@ -1,6 +1,9 @@
 package de.tud.cs.simqpn.kernel.executor.parallel;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.PriorityQueue;
 
 import org.apache.log4j.Logger;
@@ -29,19 +32,24 @@ public class LP implements Executor, Runnable {
 	private static Logger log = Logger.getLogger(SequentialExecutor.class);
 	private SimQPNConfiguration configuration;
 	private double clock = 0;
-	public boolean inRampUp;				// True if still in RampUp period (no measurements taken).
-	public double endRampUpClock;		// Clock at the end of RampUp, i.e. beginning of the measurement period.
-	public double endRunClock;			// Clock at the end of the run.
-	public double msrmPrdLen;			// Duration of the measurement period (endRunClock - endRampUpClock).
-	public double beginRunWallClock;		// currentTimeMillis at the begin of the run (wall clock time).
-	public double endRunWallClock;		// currentTimeMillis at the end of the run (wall clock time).
-	public double runWallClockTime;		// Total duration of the run in seconds.
+	public boolean inRampUp; // True if still in RampUp period (no measurements
+								// taken).
+	public double endRampUpClock; // Clock at the end of RampUp, i.e. beginning
+									// of the measurement period.
+	public double endRunClock; // Clock at the end of the run.
+	public double msrmPrdLen; // Duration of the measurement period (endRunClock
+								// - endRampUpClock).
+	public double beginRunWallClock; // currentTimeMillis at the begin of the
+										// run (wall clock time).
+	public double endRunWallClock; // currentTimeMillis at the end of the run
+									// (wall clock time).
+	public double runWallClockTime; // Total duration of the run in seconds.
 
 	private int id;
 	/** LP before this */
-	private LP predecessor; // TODO make this a list
+	private List<LP> predecessors = new ArrayList<LP>();
 	/** LP after this */
-	private LP successor;
+	private List<LP> successors = new ArrayList<LP>();
 
 	/**
 	 * LP event list. Contains events scheduled for processing at specified
@@ -56,6 +64,7 @@ public class LP implements Executor, Runnable {
 	private Place[] places;
 	private Transition[] transitions;
 	private Queue[] queues;
+
 	// private Probe[] probes;
 	private SimulatorProgress progressMonitor;
 
@@ -74,13 +83,33 @@ public class LP implements Executor, Runnable {
 	}
 
 	/**
+	 * TODO Vollenden
+	 * 
+	 * @param lp_to_merge
+	 */
+	public void merge(LP lp_to_merge) {
+		this.places = concat(places, lp_to_merge.getPlaces());
+		this.transitions = concat(transitions, lp_to_merge.getTransitions());
+		this.queues = concat(queues, lp_to_merge.getQueues());
+	}
+
+	public static <T> T[] concat(T[] first, T[] second) {
+		T[] result = Arrays.copyOf(first, first.length + second.length);
+		System.arraycopy(second, 0, result, first.length, second.length);
+		return result;
+	}
+
+	boolean[] transStatus; // Transition status: true = enabled, false =
+	int enTransCnt;
+
+	// disabled
+	/**
 	 * Should be similar to {@link SequentialExecutor#run()
 	 */
 	public void run() {
 		try {
-			boolean[] transStatus; // Transition status: true = enabled, false =
-									// disabled
-			int enTransCnt = 0;
+			initializeWorkingVariables();
+			enTransCnt = 0;
 			int[] enTransIDs = new int[transitions.length];
 
 			EmpiricalWalker randTransGen; // Random number generator for
@@ -88,13 +117,15 @@ public class LP implements Executor, Runnable {
 											// next transition to fire.
 
 			// Initialize transStatus and enTransCnt
-			transStatus = new boolean[transitions.length];
-			for (int i = 0; i < transitions.length; i++) {
-				if (transitions[i].enabled()) {
-					transStatus[i] = true;
-					enTransCnt++;
-				} else {
-					transStatus[i] = false;
+			synchronized (this) {
+				transStatus = new boolean[transitions.length];
+				for (int i = 0; i < transitions.length; i++) {
+					if (transitions[i].enabled()) {
+						transStatus[i] = true;
+						enTransCnt++;
+					} else {
+						transStatus[i] = false;
+					}
 				}
 			}
 
@@ -153,11 +184,20 @@ public class LP implements Executor, Runnable {
 			long progressUpdateRate = progressMonitor
 					.getMaxUpdateRealTimeInterval();
 
+//			System.out.println("LP" + id + " has started with " + enTransCnt
+//					+ " enabled transitions");
+
 			int cnt = 0;
 
 			while (clock < totRunL) {
-				// for (int i = 0; i < 10; i++) {
-				// for (int i = 0; i < 100000000; i++) {
+				// System.out.println("LP " + id +": "+ cnt++);
+				synchronized (this) {
+					try {
+						this.wait(100);
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					}
+				}
 				if (inRampUp && clock > rampUpL) {
 					inRampUp = false;
 					endRampUpClock = clock;
@@ -181,34 +221,37 @@ public class LP implements Executor, Runnable {
 					int fireCnt = 0;
 					while (enTransCnt > 0) {
 						Transition nextTrans; // transition to fire next
+						
+						synchronized (this) {
+							if (enTransCnt == 1) {
+								nextTrans = null;
+								for (int t = 0; t < transitions.length; t++) {
+									if (transStatus[t]) {
+										nextTrans = transitions[t];
+										break;
+									}
+								}
+							} else {
+								// Choose transition to fire based on weights
+								pdf = new double[enTransCnt];
+								for (int t = 0, e = 0; t < transitions.length; t++) {
+									if (transStatus[t]) {
+										pdf[e] = transitions[t].transWeight;
+										enTransIDs[e] = t;
+										e++;
+									}
+								}
+								randTransGen.setState2(pdf);
+								nextTrans = transitions[enTransIDs[randTransGen
+										.nextInt()]];
+							}
 
-						if (enTransCnt == 1) {
-							nextTrans = null;
-							for (int t = 0; t < transitions.length; t++) {
-								if (transStatus[t]) {
-									nextTrans = transitions[t];
-									break;
-								}
-							}
-						} else {
-							// Choose transition to fire based on weights
-							pdf = new double[enTransCnt];
-							for (int t = 0, e = 0; t < transitions.length; t++) {
-								if (transStatus[t]) {
-									pdf[e] = transitions[t].transWeight;
-									enTransIDs[e] = t;
-									e++;
-								}
-							}
-							randTransGen.setState2(pdf);
-							nextTrans = transitions[enTransIDs[randTransGen
-									.nextInt()]];
+							nextTrans.fire(); // Fire
+												// transition
+							System.out.println("LP" + id + ": transition "
+									+ nextTrans.name + " fired  | Thread "
+									+ Thread.currentThread());
 						}
-
-						System.out.println("LP" + id + ": transition "
-								+ nextTrans.name + " fired  | Thread "+Thread.currentThread());
-						nextTrans.fire(); // Fire
-																	// transition
 
 						// Update transStatus
 						int p, t, nP, nT;
@@ -223,12 +266,25 @@ public class LP implements Executor, Runnable {
 							nT = pl.outTrans.length;
 							for (t = 0; t < nT; t++) {
 								tr = pl.outTrans[t];
-								if ((!tr.enabled()) && transStatus[tr.id]) {
-									transStatus[tr.id] = false;
-									enTransCnt--;
+								int enable = tr.id - transitions[0].id; // ORRIG:
+																		// tr.id
+								if ((!tr.enabled()) && transStatus[enable]) {
+									if (enable >= 0
+											|| enable < transitions.length) {
+										transStatus[enable] = false;
+										enTransCnt--;
+									} else {
+										// NOT POSSIBLE
+										// System.out
+										// .println("disabled predecessor or sucessor transition");
+										// NOT POSSIBLE
+										// System.out
+										// .println("disabled sucessor transition");
+									}
 								}
 							}
 						}
+
 						// Check if some transitions were enabled (newly-enabled
 						// transitions)
 						nP = nextTrans.outPlaces.length;
@@ -236,10 +292,49 @@ public class LP implements Executor, Runnable {
 							pl = nextTrans.outPlaces[p];
 							nT = pl.outTrans.length;
 							for (t = 0; t < nT; t++) {
+								// System.out.println("LP"
+								// + pl.getExecutor().getId()
+								// + ": should be enabled");
 								tr = pl.outTrans[t];
-								if (tr.enabled() && (!transStatus[tr.id])) {
-									transStatus[tr.id] = true;
-									enTransCnt++;
+								int localTransId = tr.id - transitions[0].id; // tr.id
+								if (tr.enabled()) {
+									// System.out.println("ABC");
+									if (localTransId >= 0
+											&& localTransId < transitions.length) {
+										if ((!transStatus[localTransId])) {
+											transStatus[localTransId] = true;
+											enTransCnt++;
+										}
+									} else {
+										for (LP sucessor : successors) {
+											int localTransId2 = tr.id
+													- sucessor.getTransitions()[0].id;
+											if (localTransId2 >= 0
+													&& localTransId2 < sucessor.transitions.length) {
+//												System.out.println("LP"
+//														+ sucessor.getId()
+//														+ " enabled from LP"
+//														+ this.id);
+												if ((!sucessor.transStatus[localTransId2])) {
+													sucessor.transStatus[localTransId2] = true;
+													sucessor.enTransCnt++;
+												}
+											}
+										}
+									}
+									// if (tr.enabled() &&
+									// (!transStatus[tr.id])) {
+									// System.out.println("ENABLED");
+									// if (localTransId < 0) {
+									// System.out
+									// .println("enabled predecessor transition");
+									// }
+									// if (localTransId >= transitions.length) {
+									// System.out
+									// .println("enabled sucessor transition");
+									// } else {
+									// }
+									// }
 								}
 							}
 						}
@@ -258,8 +353,10 @@ public class LP implements Executor, Runnable {
 							fireCnt++;
 						}
 					} // end firing enabled transitions
-					synchronized (successor) {
-						successor.notifyAll();
+					for (LP successor : successors) {
+						synchronized (successor) {
+							successor.notifyAll();
+						}
 					}
 				}
 
@@ -276,8 +373,8 @@ public class LP implements Executor, Runnable {
 											+ ": place "
 											+ p.name
 											+ " updated jobs at "
-											+ ((QPlace) p).queue.name
-											+ " [NOTE: after fireing, service times may change in PS]");
+											+ ((QPlace) p).queue.name);
+							//+ " [NOTE: after firing, service times may change in PS]");
 							queue.updateEvents(this);
 						}
 					}
@@ -297,23 +394,20 @@ public class LP implements Executor, Runnable {
 				if (places != null) {
 					if (eventList.size() > 0) {
 						QueueEvent ev = eventList.poll();
-						synchronized (this) {
-							try {
-								while (!isSaveToProcess(ev.time)) {
-									System.out.println("LP" + id
-											+ " is waiting");
-									this.wait();
-								}
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}
-						}
+						// synchronized (this) {
+						// try {
+						// while (!isSaveToProcess(ev.time)) {
+						// System.out.println("LP" + id
+						// + " is waiting");
+						// this.wait();
+						// }
+						// } catch (InterruptedException e) {
+						// e.printStackTrace();
+						// }
+						// }
 
 						System.out.println("LP" + id + ": " + ev.queue.name
 								+ " processed job at " + ev.time);
-						// Event ev = (Event) eventList.remove(0); // Old
-						// LinkedList
-						// implementation of the event list.
 
 						// Advance simulation time
 						clock = ev.time;
@@ -328,8 +422,9 @@ public class LP implements Executor, Runnable {
 						nT = qpl.outTrans.length;
 						for (t = 0; t < nT; t++) {
 							tr = qpl.outTrans[t];
-							if (tr.enabled() && (!transStatus[tr.id])) {
-								transStatus[tr.id] = true;
+							if (tr.enabled()
+									&& (!transStatus[tr.id - transitions[0].id])) {
+								transStatus[tr.id - transitions[0].id] = true;
 								enTransCnt++;
 							}
 						}
@@ -366,7 +461,8 @@ public class LP implements Executor, Runnable {
 						long curTimeMsrm = System.currentTimeMillis();
 						progressMonitor.updateSimulationProgress(clock
 								/ (totRunL - 1) * 100,
-								(curTimeMsrm - lastTimeMsrm), configuration, inRampUp);
+								(curTimeMsrm - lastTimeMsrm), configuration,
+								inRampUp);
 						lastTimeMsrm = curTimeMsrm;
 						nextHeartBeat = clock + timeBtwHeartBeats;
 
@@ -422,11 +518,11 @@ public class LP implements Executor, Runnable {
 							break; // exit while loop
 						} else {
 							progressMonitor.precisionCheck(done, probe.name); // TODO:
-																				// distinguish
-																				// between
-																				// places
-																				// and
-																				// probes.
+							// distinguish
+							// between
+							// places
+							// and
+							// probes.
 						}
 					}
 
@@ -442,7 +538,8 @@ public class LP implements Executor, Runnable {
 			System.out.println(ex);
 		}
 
-		progressMonitor.updateSimulationProgress(100, 0, configuration, inRampUp);
+		progressMonitor.updateSimulationProgress(100, 0, configuration,
+				inRampUp);
 
 		if (progressMonitor.isCanceled()) {
 			progressMonitor
@@ -466,10 +563,9 @@ public class LP implements Executor, Runnable {
 		// total time elapsed in seconds
 		runWallClockTime = (endRunWallClock - beginRunWallClock) / 1000;
 
-		log.info("msrmPrdLen= " + msrmPrdLen + " totalRunLen= "
-				+ endRunClock + " runWallClockTime="
-				+ (int) (runWallClockTime / 60) + " min (="
-				+ runWallClockTime + " sec)");
+		log.info("msrmPrdLen= " + msrmPrdLen + " totalRunLen= " + endRunClock
+				+ " runWallClockTime=" + (int) (runWallClockTime / 60)
+				+ " min (=" + runWallClockTime + " sec)");
 
 		// Complete statistics collection (make sure this is done AFTER the
 		// above statements)
@@ -488,6 +584,34 @@ public class LP implements Executor, Runnable {
 			}
 		}
 		System.out.println("LP" + id + " has finished");
+	}
+
+	private void initializeWorkingVariables() throws SimQPNException {
+		inRampUp = true;
+		endRampUpClock = 0;
+		endRunClock = 0;
+		msrmPrdLen = 0; // Set at the end of the run when the
+						// actual length is known.
+		beginRunWallClock = 0;
+		endRunWallClock = 0;
+		runWallClockTime = 0;
+
+		clock = 0; // Note that it has been assumed throughout the code that
+		// the simulation starts at virtual time 0.
+
+		eventList.clear();
+
+		// Make sure clock has been initialized before calling init below
+		// Call places[i].init() first and then thans[i].init() and
+		// queues[i].init()
+		// for (int i = 0; i < net.getNumProbes(); i++)
+		// net.getProbe(i).init();
+		for (int i = 0; i < places.length; i++)
+			places[i].init(getClock());
+		for (int i = 0; i < transitions.length; i++)
+			transitions[i].init();
+		for (int i = 0; i < queues.length; i++)
+			queues[i].init(configuration);
 	}
 
 	@Override
@@ -518,7 +642,10 @@ public class LP implements Executor, Runnable {
 	}
 
 	private boolean isSaveToProcess(double nextEventTime) {
-		return clock <= predecessor.getTimeSaveToProcess();
+		for (Executor predecessor : predecessors) {
+			// clock <= predecessor.getTimeSaveToProcess();
+		}
+		return true;
 		// if (predecessorLP.getTimeSaveToProcess() < nextEventTime) {
 		// return false;
 		// }
@@ -567,20 +694,28 @@ public class LP implements Executor, Runnable {
 		this.places = places;
 	}
 
-	public LP getSuccessor() {
-		return successor;
+	public List<LP> getSuccessors() {
+		return successors;
 	}
 
-	public void setSuccessor(LP successor) {
-		this.successor = successor;
+	public void addSuccessor(LP successor) {
+		this.successors.add(successor);
 	}
 
-	public LP getPredecessor() {
-		return predecessor;
+	public List<LP> getPredecessor() {
+		return predecessors;
 	}
 
-	public void setPredecessor(LP predecessor) {
-		this.predecessor = predecessor;
+	public void addPredecessor(LP executor) {
+		this.predecessors.add(executor);
+	}
+
+	public Queue[] getQueues() {
+		return queues;
+	}
+
+	public void setQueues(Queue[] queues) {
+		this.queues = queues;
 	}
 
 }

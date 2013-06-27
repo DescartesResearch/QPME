@@ -53,6 +53,7 @@ import java.util.LinkedList;
 
 import org.apache.log4j.Logger;
 
+import cern.colt.list.AbstractDoubleList;
 import cern.jet.random.AbstractContinousDistribution;
 import cern.jet.random.Empirical;
 import cern.jet.random.EmpiricalWalker;
@@ -401,7 +402,7 @@ public class Queue {
 	 * @return
 	 * @exception
 	 */
-	public void updateEvents(Executor executor) throws SimQPNException {
+	public synchronized void updateEvents(Executor executor) throws SimQPNException {
 		if (eventsUpToDate)
 			return;
 
@@ -467,13 +468,22 @@ public class Queue {
 				int numTk;
 				for (int p = 0, nC = 0; p < qPlaces.length; p++) {
 					nC = qPlaces[p].numColors;
+					//System.out.println("\t"+qPlaces[p].name);
 					for (int c = 0; c < nC; c++) {
+						//System.out.println("\t\tcolor "+c);
 						numTk = qPlaces[p].queueTokenPop[c]; // =
 																// queueTokResidServTimes[c].size();
+						//System.out.println("\t\t\t"+numTk+" tokens");
 						if (numTk > 0)
 							for (int i = 0; i < numTk; i++) {
-								curRST = qPlaces[p].queueTokResidServTimes[c]
-										.get(i);
+								//System.out.println("qPlaces "+ qPlaces.length + qPlaces[0].name);
+								//System.out.println("\tqplace "+(p+1)+"/"+qPlaces.length);
+								//System.out.println("\t "+qPlaces[p].queueTokResidServTimes[c]);
+								QPlace qPlace = qPlaces[p];
+								AbstractDoubleList arr = qPlace.queueTokResidServTimes[c];
+								curRST = arr.get(i);
+//								curRST = qPlaces[p].queueTokResidServTimes[c]
+//										.get(i);
 								if (minRST == -1 || curRST < minRST) {
 									minRST = curRST;
 									tkSchedPl = p;
@@ -517,7 +527,7 @@ public class Queue {
 	 * @return
 	 * @exception
 	 */
-	public void clearEvents(Executor executor) throws SimQPNException {
+	public synchronized void clearEvents(Executor executor) throws SimQPNException {
 		// Remove scheduled event from the event list.
 		// Note that a maximum of one event can be scheduled per PS QPlace at a
 		// time.
@@ -554,7 +564,7 @@ public class Queue {
 	 * @return
 	 * @exception
 	 */
-	public void updateResidServTimes(double clock) {
+	public synchronized void updateResidServTimes(double clock) {
 		int numTk;
 		double curRST;
 		double timeServed = (clock - lastEventClock) / lastEventTkCnt; // Default
@@ -614,7 +624,7 @@ public class Queue {
 	 * @exception
 	 */
 	@SuppressWarnings("unchecked")
-	public void addTokens(QPlace qPl, int color, int count,
+	public synchronized void addTokens(QPlace qPl, int color, int count,
 			Token[] tokensToBeAdded, Executor executor) throws SimQPNException {
 
 		tkPopulation += count;
@@ -779,7 +789,7 @@ public class Queue {
 	 * @return
 	 * @exception
 	 */
-	public void completeService(Token token, Executor executor)
+	public synchronized void completeService(Token token, Executor executor)
 			throws SimQPNException {
 
 		tkPopulation--;

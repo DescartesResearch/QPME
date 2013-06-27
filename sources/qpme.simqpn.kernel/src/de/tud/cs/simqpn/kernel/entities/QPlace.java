@@ -330,7 +330,7 @@ public class QPlace extends Place {
 	 * @exception
 	 */
 	@Override
-	public void addTokens(int color, int count, Token[] tokensToBeAdded,
+	public synchronized void addTokens(int color, int count, Token[] tokensToBeAdded,
 			Executor executor) throws SimQPNException {
 		if (count <= 0) { // DEBUG
 			log.error("Attempted to add nonpositive number of tokens to queue "
@@ -361,7 +361,7 @@ public class QPlace extends Place {
 	 * @return
 	 * @exception
 	 */
-	public void completeService(Token token, Executor executor)
+	public synchronized void completeService(Token token, Executor executor)
 			throws SimQPNException {
 		if (queueTokenPop[token.color] < 1) {
 			log.error("Attempted to remove a token from queue " + name
