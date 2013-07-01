@@ -373,7 +373,7 @@ public class QPlace extends Place {
 		// next statement)
 		if (statsLevel > 0) {
 			qPlaceQueueStats.updateTkPopStats(token.color,
-					queueTokenPop[token.color], -1, executor);
+					queueTokenPop[token.color], -1, executor.getClock());
 			if (statsLevel >= 3)
 				qPlaceQueueStats.updateSojTimeStats(token.color, executor.getClock()
 						- token.arrivTS, executor.getConfiguration());
