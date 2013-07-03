@@ -410,7 +410,7 @@ public class Queue {
 		for (int p = 0, nC = 0; p < qPlaces.length; p++) {
 			nC = qPlaces[p].numColors;
 			for (int c = 0; c < nC; c++)
-				totQueTokCnt += qPlaces[p].queueTokenPop[c];
+				totQueTokCnt += qPlaces[p].getQueueTokenPop()[c];
 		}
 
 		if (totQueTokCnt > 0) {
@@ -423,7 +423,7 @@ public class Queue {
 				for (int p = 0, nC = 0, i = 0; p < qPlaces.length; p++) {
 					nC = qPlaces[p].numColors;
 					for (int c = 0; c < nC; c++)
-						meanServRates[i++] = (((double) qPlaces[p].queueTokenPop[c]) / totQueTokCnt)
+						meanServRates[i++] = (((double) qPlaces[p].getQueueTokenPop()[c]) / totQueTokCnt)
 								* ((double) 1 / qPlaces[p].meanServTimes[c])
 								* conc;
 				}
@@ -471,8 +471,14 @@ public class Queue {
 					//System.out.println("\t"+qPlaces[p].name);
 					for (int c = 0; c < nC; c++) {
 						//System.out.println("\t\tcolor "+c);
-						numTk = qPlaces[p].queueTokenPop[c]; // =
+						numTk = qPlaces[p].getQueueTokenPop()[c]; // =
 																// queueTokResidServTimes[c].size();
+						if(qPlaces[p].getQueueTokResidServTimesForColor(c).size() != qPlaces[p].getQueueTokenPop()[c] ){
+							int myQueueTokResidServ = qPlaces[p].getQueueTokResidServTimesForColor(c).size();
+							int myQueueTokenPop = qPlaces[p].getQueueTokenPop()[c];							
+							System.out.println(myQueueTokResidServ);
+							System.out.println(myQueueTokenPop);
+						}
 						//System.out.println("\t\t\t"+numTk+" tokens");
 						if (numTk > 0)
 							for (int i = 0; i < numTk; i++) {
@@ -480,7 +486,7 @@ public class Queue {
 								//System.out.println("\tqplace "+(p+1)+"/"+qPlaces.length);
 								//System.out.println("\t "+qPlaces[p].queueTokResidServTimes[c]);
 								QPlace qPlace = qPlaces[p];
-								AbstractDoubleList arr = qPlace.queueTokResidServTimes[c];
+								AbstractDoubleList arr = qPlace.getQueueTokResidServTimesForColor(c);
 								curRST = arr.get(i);
 //								curRST = qPlaces[p].queueTokResidServTimes[c]
 //										.get(i);
@@ -581,7 +587,7 @@ public class Queue {
 		for (int p = 0, nC = 0; p < qPlaces.length; p++) {
 			nC = qPlaces[p].numColors;
 			for (int c = 0; c < nC; c++) {
-				numTk = qPlaces[p].queueTokResidServTimes[c].size(); // NOTE:
+				numTk = qPlaces[p].getQueueTokResidServTimesForColor(c).size(); // NOTE:
 																		// don't
 																		// use
 																		// queueTokenPop[c]
@@ -598,9 +604,9 @@ public class Queue {
 																		// up.
 				if (numTk > 0)
 					for (int i = 0; i < numTk; i++) {
-						curRST = qPlaces[p].queueTokResidServTimes[c].get(i)
+						curRST = qPlaces[p].getQueueTokResidServTimes()[c].get(i)
 								- timeServed;
-						qPlaces[p].queueTokResidServTimes[c].set(i, curRST);
+						qPlaces[p].getQueueTokResidServTimes()[c].set(i, curRST);
 					}
 			}
 		}
@@ -755,7 +761,7 @@ public class Queue {
 					double servTime = qPl.randServTimeGen[color].nextDouble();
 					if (servTime < 0)
 						servTime = 0;
-					qPl.queueTokResidServTimes[color].add(servTime);
+					qPl.getQueueTokResidServTimesForColor(color).add(servTime);
 				}
 			}
 			if ((tokensToBeAdded != null) || (qPl.statsLevel >= 3)) {
@@ -822,7 +828,7 @@ public class Queue {
 				if (qPlaces[tkSchedPl].queueTokens[tkSchedCol] != null)
 					qPlaces[tkSchedPl].queueTokens[tkSchedCol]
 							.remove(tkSchedPos);
-				qPlaces[tkSchedPl].queueTokResidServTimes[tkSchedCol]
+				qPlaces[tkSchedPl].getQueueTokResidServTimesForColor(tkSchedCol)
 						.remove(tkSchedPos);
 				updateResidServTimes(executor.getClock()); // NOTE: WATCH OUT!
 															// Method should be

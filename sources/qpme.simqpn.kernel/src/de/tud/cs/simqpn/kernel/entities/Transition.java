@@ -410,6 +410,7 @@ public class Transition extends Node {
 		} else {
 			mode = 0;
 			System.out.println("KANN NICHT SEIN enModesCnt "+enModesCnt);
+			throw new SimQPNException();
 		}
 		int p, c, nP, nC, prC, n;
 		int maxN = 0;

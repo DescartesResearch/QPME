@@ -124,7 +124,7 @@ public class QueueStats extends Stats implements java.io.Serializable {
 			lastTotTkPop 			= 0;		
 			for (int p=0; p < queue.qPlaces.length; p++)
 				for (int c=0; c < queue.qPlaces[p].numColors; c++)
-					lastTotTkPop += queue.qPlaces[p].queueTokenPop[c];				
+					lastTotTkPop += queue.qPlaces[p].getQueueTokenPop()[c];				
 			lastTkPopClock = clock;
 		}
 	}

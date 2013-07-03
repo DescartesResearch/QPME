@@ -64,8 +64,13 @@ public class BatchMeans implements Analyzer {
 		progressMonitor.startSimulation(configuration);
 
 		ExecutorService executorService = Executors.newSingleThreadExecutor();
-		Callable<Net> run = new ParallelExecutor(net, configuration, monitor, 1);
-		//Callable<Net> run = new SequentialExecutor(net, configuration,monitor,1);
+		boolean eventLevelParallel = false;
+		Callable<Net> run;
+		if(eventLevelParallel){
+			run = new ParallelExecutor(net, configuration, monitor, 1);			
+		}else{
+			run = new SequentialExecutor(net, configuration,monitor,1);			
+		}
 		Future<Net> future = executorService.submit(run);
 		try {
 			net = future.get();
@@ -75,12 +80,7 @@ public class BatchMeans implements Analyzer {
 			System.out.println("CAUSE : "+e.getCause());
 			e.printStackTrace();
 		}
-
-			//} catch (Exception e) {
-			// e.printStackTrace();
-//			System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX EXCEPTION");
-//			return null;
-//		}
+		
 		progressMonitor.finishSimulation();
 		progressMonitor = null;
 		return new SimulatorResults(net.getPlaces(), net.getQueues(),
