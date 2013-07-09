@@ -94,11 +94,14 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 	@Override
 	public Net call() throws Exception {
 		progressMonitor.startSimulationRun(runID, configuration);
-
+		
 		initializeWorkingVariables();
 
 		for (Place p : net.getPlaces()) {
 			p.setExecutor(this);
+		}
+		for(Transition trans: net.getTransitions()){
+			trans.setExecutor(this);			
 		}
 
 		boolean[] transStatus; // Transition status: true = enabled, false =
@@ -543,6 +546,11 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 	@Override
 	public int getId() {
 		return 0;
+	}
+
+	@Override
+	public void addTokenEvent(TokenEvent tokenEvent) {
+		//not needed for sequential executor
 	}
 
 }

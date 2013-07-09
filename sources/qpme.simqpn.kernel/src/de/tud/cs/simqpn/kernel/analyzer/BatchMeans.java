@@ -64,7 +64,7 @@ public class BatchMeans implements Analyzer {
 		progressMonitor.startSimulation(configuration);
 
 		ExecutorService executorService = Executors.newSingleThreadExecutor();
-		boolean eventLevelParallel = false;
+		boolean eventLevelParallel = true;
 		Callable<Net> run;
 		if(eventLevelParallel){
 			run = new ParallelExecutor(net, configuration, monitor, 1);			

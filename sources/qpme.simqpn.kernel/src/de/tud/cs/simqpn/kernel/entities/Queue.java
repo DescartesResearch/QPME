@@ -373,7 +373,6 @@ public class Queue {
 	 * @return
 	 * @exception
 	 */
-
 	public void finish(SimQPNConfiguration configuration, double runWallClockTime, double clock)
 			throws SimQPNException {
 		if (statsLevel > 0)
@@ -402,7 +401,7 @@ public class Queue {
 	 * @return
 	 * @exception
 	 */
-	public synchronized void updateEvents(Executor executor) throws SimQPNException {
+	public void updateEvents(Executor executor) throws SimQPNException {
 		if (eventsUpToDate)
 			return;
 
@@ -533,7 +532,7 @@ public class Queue {
 	 * @return
 	 * @exception
 	 */
-	public synchronized void clearEvents(Executor executor) throws SimQPNException {
+	public void clearEvents(Executor executor) throws SimQPNException {
 		// Remove scheduled event from the event list.
 		// Note that a maximum of one event can be scheduled per PS QPlace at a
 		// time.
@@ -570,7 +569,7 @@ public class Queue {
 	 * @return
 	 * @exception
 	 */
-	public synchronized void updateResidServTimes(double clock) {
+	public void updateResidServTimes(double clock) {
 		int numTk;
 		double curRST;
 		double timeServed = (clock - lastEventClock) / lastEventTkCnt; // Default
@@ -630,7 +629,7 @@ public class Queue {
 	 * @exception
 	 */
 	@SuppressWarnings("unchecked")
-	public synchronized void addTokens(QPlace qPl, int color, int count,
+	public void addTokens(QPlace qPl, int color, int count,
 			Token[] tokensToBeAdded, Executor executor) throws SimQPNException {
 
 		tkPopulation += count;
@@ -795,7 +794,7 @@ public class Queue {
 	 * @return
 	 * @exception
 	 */
-	public synchronized void completeService(Token token, Executor executor)
+	public void completeService(Token token, Executor executor)
 			throws SimQPNException {
 
 		tkPopulation--;

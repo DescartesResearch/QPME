@@ -1,7 +1,10 @@
 package de.tud.cs.simqpn.kernel.executor.parallel;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
@@ -11,7 +14,6 @@ import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.Queue;
 import de.tud.cs.simqpn.kernel.entities.Transition;
-import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
 public class ParallelExecutor implements Callable<Net> {
@@ -29,22 +31,12 @@ public class ParallelExecutor implements Callable<Net> {
 		this.runID = runID;
 	}
 
-	boolean[] transStatus; // Transition status: true = enabled, false =
-	// disabled
-	
-//	public void setTransStatus(int transId, boolean value){
-//		transStatus[transId] = value;
-//	}
-
 	/**
 	 * Modifies net / simulates net
 	 * 
 	 * @throws SimQPNException
 	 */
 	public Net call() throws SimQPNException {
-		// Initialize transStatus and enTransCnt		
-		Net newNet = this.net;
-		System.out.println();
 		LP[] lps = decomposeNetIntoLPs();
 		System.out.println(lpDecompositionToString(lps));
 
@@ -63,15 +55,14 @@ public class ParallelExecutor implements Callable<Net> {
 				e.printStackTrace();
 			}
 		}
-//
-		//TODO merge all net elements into one net object
-		
-		return newNet;
+		return this.net;
 	}
 
 	/**
+	 * Returns a {@link String} representation of an {@link LP} array
 	 * 
 	 * @param lps
+	 *            Array of LPs
 	 */
 	private String lpDecompositionToString(LP[] lps) {
 		StringBuffer sb = new StringBuffer();
@@ -86,15 +77,23 @@ public class ParallelExecutor implements Callable<Net> {
 				}
 			}
 			for (Transition t : lp.getTransitions()) {
-				sb.append("\t" + t.name + "(transition)"+" ID "+t.id + "\n");
+				sb.append("\t" + t.name + "(transition)" + " ID " + t.id + "\n");
 			}
+
+			sb.append("successors: ");
+			for (LP suc : lp.getSuccessors()) {
+				sb.append(suc.getId() + " ");
+			}
+			sb.append("\n");
+
 		}
 		return sb.toString();
 	}
-	
+
 	/**
+	 * Returns a decomposition of the (internal) {@link Net} into a logical process ({@link LP}) array
 	 * 
-	 * @return
+	 * @return Array of logical processes
 	 */
 	private LP[] decomposeNetIntoLPs() {
 		int numPlaces = net.getNumPlaces();
@@ -173,54 +172,97 @@ public class ParallelExecutor implements Callable<Net> {
 				idLP++;
 			} else {
 				// Place is already in another LP
-			}				
-		}
-		// Give LP id to places
-		for(LP lp:listLPs){
-			for(Place place: lp.getPlaces()){
-				place.setExecutor(lp);
 			}
 		}
-		// 
-		for(LP lp:listLPs){
-			for(Place place: lp.getPlaces()){
-				for(Transition inTrans: place.inTrans){
-					for(Place prePlace: inTrans.inPlaces){
+
+		// Set LP id to places and transitions
+		for (LP lp : listLPs) {
+			for (Place place : lp.getPlaces()) {
+				place.setExecutor(lp);
+			}
+			for (Transition transition : lp.getTransitions()) {
+				transition.setExecutor(lp);
+			}
+		}
+
+		setPredAndSuccessors(listLPs);
+
+		// Modify transition ids
+		int transCnt = 0;
+		for (LP lp : listLPs) {
+			for (Transition trans : lp.getTransitions()) {
+				trans.id = transCnt++;
+			}
+		}
+
+		// mergePlaceLPsIntoPredecessors(listLPs);
+		return listLPs.toArray(new LP[listLPs.size()]);
+	}
+
+	/**
+	 * Sets predecessor and successor for the LPs
+	 * 
+	 * @param listLPs
+	 */
+	private void setPredAndSuccessors(List<LP> listLPs) {
+		for (LP lp : listLPs) {
+			for (Place place : lp.getPlaces()) {
+				for (Transition inTrans : place.inTrans) {
+					for (Place prePlace : inTrans.inPlaces) {
 						LP predLP = (LP) prePlace.getExecutor();
 						lp.addPredecessor(predLP);
-						predLP.addSuccessor(lp);							
+						predLP.addSuccessor(lp);
 					}
 				}
 			}
 		}
-		//Modify transition ids
-		int transCnt = 0;
-		for(LP lp: listLPs){
-			for(Transition trans : lp.getTransitions()){
-				trans.id = transCnt++;
-			}
+
+		for (LP lp : listLPs) {
+			removeDuplicateWithOrder((ArrayList<LP>) lp.getPredecessors());
+			removeDuplicateWithOrder((ArrayList<LP>) lp.getSuccessors());
 		}
-		
-		//mergePlaceLPsIntoPredecessors(listLPs);
-		return listLPs.toArray(new LP[listLPs.size()]);
 	}
 
+	/**
+	 * Removes duplicates while preserving the order of an LP list
+	 * 
+	 * TODO HELPER FUNCTION, Move this in a helper class
+	 * 
+	 * @param arrayList
+	 */
+	private static void removeDuplicateWithOrder(ArrayList<LP> arrayList) {
+		Set<LP> set = new HashSet<LP>();
+		List<LP> newList = new ArrayList<LP>();
+		for (Iterator<LP> iter = arrayList.iterator(); iter.hasNext();) {
+			Object element = iter.next();
+			if (set.add((LP) element))
+				newList.add((LP) element);
+		}
+		arrayList.clear();
+		arrayList.addAll(newList);
+	}
+
+	/**
+	 * TODO Work in Progress
+	 * @param listLPs
+	 */
 	private void mergePlaceLPsIntoPredecessors(List<LP> listLPs) {
 		// MERGING LPs
-		int length = listLPs.size()-1;
-		for(int i=0; i< length; i++){
+		int length = listLPs.size() - 1;
+		for (int i = 0; i < length; i++) {
 			LP lp = listLPs.get(i);
 			boolean mergeFlag = true;
-			for(Place place: lp.getPlaces()){
-				if(place instanceof QPlace){
+			for (Place place : lp.getPlaces()) {
+				if (place instanceof QPlace) {
 					mergeFlag = false;
 				}
 			}
-			if(mergeFlag){
+			if (mergeFlag) {
 				(lp.getSuccessors().get(0)).merge(lp);
 				listLPs.remove(lp);
 				--length;
-				System.out.println("LP "+lp.getId() + " was merged into "+ lp.getSuccessors().get(0));
+				System.out.println("LP " + lp.getId() + " was merged into "
+						+ lp.getSuccessors().get(0));
 			}
 		}
 	}

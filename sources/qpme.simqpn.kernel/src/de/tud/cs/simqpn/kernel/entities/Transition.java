@@ -59,6 +59,7 @@ import cern.jet.random.EmpiricalWalker;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.executor.Executor;
+import de.tud.cs.simqpn.kernel.executor.TokenEvent;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 
 /**
@@ -70,6 +71,7 @@ import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 
 public class Transition extends Node {
 
+	private Executor executor;
 	private static Logger log = Logger.getLogger(Transition.class);
 
 	public int numModes;
@@ -104,7 +106,7 @@ public class Transition extends Node {
 												// this transition.
 
 	private EmpiricalWalker randModeGen; // Random number generator for
-										// generating modes to fire
+											// generating modes to fire
 
 	private Random randGen = new Random();
 
@@ -140,12 +142,17 @@ public class Transition extends Node {
 				RandomNumberGenerator.nextRandNumGen());
 		// Note: Here we use a default distribution. The actual distribution is
 		// set each time before using randModeGen.
-		
-		if(transition.tkCopyBuffer != null){
-			this.tkCopyBuffer = transition.tkCopyBuffer.clone(); //JUERGEN: seems sufficient in our context	
+
+		if (transition.tkCopyBuffer != null) {
+			this.tkCopyBuffer = transition.tkCopyBuffer.clone(); // JUERGEN:
+																	// seems
+																	// sufficient
+																	// in our
+																	// context
 		}
-		if(transition.tkIndexBuffer != null){
-			this.tkIndexBuffer = transition.tkIndexBuffer.clone(); //JUERGEN: OK			
+		if (transition.tkIndexBuffer != null) {
+			this.tkIndexBuffer = transition.tkIndexBuffer.clone(); // JUERGEN:
+																	// OK
 		}
 
 	}
@@ -211,7 +218,7 @@ public class Transition extends Node {
 	 * @return
 	 * @exception
 	 */
-	public synchronized void init() {
+	public void init() {
 		int m, p, c, nM, nP, nC;
 		boolean enabled;
 		Place pl;
@@ -279,8 +286,8 @@ public class Transition extends Node {
 	 * @return
 	 * @exception
 	 */
-	public synchronized void updateState(int inPlaceId, int color, int newAvailTkCnt,
-			int delta) {
+	public void updateState(int inPlaceId, int color,
+			int newAvailTkCnt, int delta) {
 
 		if (delta > 0) { // CASE A: TOKENS HAVE BEEN ADDED
 			if (enModesCnt == numModes)
@@ -340,7 +347,7 @@ public class Transition extends Node {
 	 * @return boolean - true if at least one mode enabled, false otherwise
 	 * @exception
 	 */
-	public synchronized boolean enabled() {
+	public boolean enabled() {
 		return (enModesCnt > 0);
 	}
 
@@ -382,7 +389,7 @@ public class Transition extends Node {
 	 * @return
 	 * @exception
 	 */
-	public synchronized void fire() throws SimQPNException {
+	public void fire() throws SimQPNException {
 
 		int nM = numModes;
 		// Choose mode to fire based on weights
@@ -395,7 +402,7 @@ public class Transition extends Node {
 					break;
 				}
 			}
-		} else if(enModesCnt > 1){
+		} else if (enModesCnt > 1) {
 			double[] pdf = new double[enModesCnt];
 			int[] enModesIDs = new int[enModesCnt];
 			for (int m = 0, e = 0; m < nM; m++) {
@@ -409,7 +416,7 @@ public class Transition extends Node {
 			mode = enModesIDs[randModeGen.nextInt()];
 		} else {
 			mode = 0;
-			System.out.println("KANN NICHT SEIN enModesCnt "+enModesCnt);
+			System.out.println("KANN NICHT SEIN enModesCnt " + enModesCnt);
 			throw new SimQPNException();
 		}
 		int p, c, nP, nC, prC, n;
@@ -417,13 +424,12 @@ public class Transition extends Node {
 		Place pl;
 		Probe probe;
 		int probeIdx;
-		
+
 		Place.ProbeAction probeAction;
 		nP = inPlaces.length;
 		// Step 1: Remove input tokens
 		for (p = 0; p < nP; p++) {
 			pl = inPlaces[p];
-			Executor executorIn = pl.getExecutor();
 			nC = pl.numColors;
 			for (c = 0; c < nC; c++) {
 				n = inFunc[mode][p][c];
@@ -432,7 +438,8 @@ public class Transition extends Node {
 						maxN = n;
 
 					Token[] tokens = pl.removeTokens(c, n, tkCopyBuffer,
-							executorIn.getClock(), executorIn.getConfiguration());
+							executor.getClock(),
+							executor.getConfiguration());
 					prC = pl.probeInstrumentations[c].length;
 
 					if (prC > 0) {
@@ -456,9 +463,9 @@ public class Transition extends Node {
 											continue;
 
 										probe.probeStats.updateSojTimeStats(c,
-												executorIn.getClock()
+												executor.getClock()
 														- curStamp.timestamp,
-												executorIn.getConfiguration());
+												executor.getConfiguration());
 									}
 								}
 								break;
@@ -468,7 +475,7 @@ public class Transition extends Node {
 									// There is no timestamp so far for the
 									// current probe, so create it.
 									data = new ProbeTimestamp(probeIdx,
-											executorIn.getClock());
+											executor.getClock());
 								}
 								break;
 							default:
@@ -556,16 +563,20 @@ public class Transition extends Node {
 							case PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT:
 								if (timestamp == null) {
 									outData[pr] = new ProbeTimestamp(probeIdx,
-											executorOut.getClock()); //TODO check which executor
+											executorOut.getClock()); // TODO
+																		// check
+																		// which
+																		// executor
 								}
 								break;
 							case PROBE_ACTION_END_ON_ENTRY:
 							case PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY:
-								probe.probeStats
-										.updateSojTimeStats(c,
-												executorOut.getClock() //TODO check which executor
-														- timestamp.timestamp, 
-												executorOut.getConfiguration());
+								probe.probeStats.updateSojTimeStats(c,
+										executorOut.getClock() // TODO check
+																// which
+																// executor
+												- timestamp.timestamp,
+										executorOut.getConfiguration());
 								break;
 							default:
 								outData[pr] = timestamp;
@@ -576,15 +587,24 @@ public class Transition extends Node {
 						for (int i = 0; i < n; i++) {
 							tkCopyBuffer[i] = new Token(pl, c, outData);
 						}
-						pl.addTokens(c, n, tkCopyBuffer, executorOut); // Note: the
-																	// contents
-																	// of
-																	// tkCopyBuffer
-																	// are all
-																	// set to
-																	// null.
+
+						if (executor.getId() == executorOut.getId()) {
+							// Add tokens instantly if in the same LP
+							pl.addTokens(c, n, tkCopyBuffer, executorOut);
+							// Note: the contents of tkCopyBuffer are all set to
+							// null.
+						} else {
+							// Add tokens tokens to list of successor
+							executorOut.addTokenEvent(new TokenEvent(executor.getClock(), this, pl, c, n,
+									tkCopyBuffer));
+						}
 					} else {
-						pl.addTokens(c, n, null, executorOut);
+						if (executor.getId() == executorOut.getId()) {
+							pl.addTokens(c, n, null, executorOut);
+						} else {
+							executorOut.addTokenEvent(new TokenEvent(executor.getClock(), this, pl, c, n,
+									null));
+						}
 					}
 				}
 			}
@@ -628,6 +648,14 @@ public class Transition extends Node {
 			}
 		}
 		return -1;
+	}
+
+	public Executor getExecutor() {
+		return executor;
+	}
+
+	public void setExecutor(Executor executor) {
+		this.executor = executor;
 	}
 
 }
