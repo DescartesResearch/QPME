@@ -96,7 +96,7 @@ public class QueueStats extends Stats implements java.io.Serializable {
 	 * @param statsLevel	- determines the amount of statistics to be gathered during the run
 	 * @param queueDiscip	- queueing discipline
 	 * @param numServers	- FCFS queues: number of servers in queueing station
-	 * @param Queue			- reference to respective Queue object
+	 * @param MyQueue			- reference to respective Queue object
 	 * 
 	 */	
 	public QueueStats(int id, String name, int numColors, int statsLevel, int queueDiscip, int numServers, Queue queue, SimQPNConfiguration configuration) throws SimQPNException  {

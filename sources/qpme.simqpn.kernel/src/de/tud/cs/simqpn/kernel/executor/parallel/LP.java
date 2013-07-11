@@ -455,6 +455,8 @@ public class LP implements Executor, Runnable {
 					}
 				}
 			}
+			blocked = true;
+
 			event = eventList.peek();
 			lbts = this.getLBTS();
 			if (event == null) {
@@ -466,11 +468,15 @@ public class LP implements Executor, Runnable {
 					}
 				}
 				try {
-					blocked = true;
+					//blocked = true;
+					for(LP suc: successors){
+						synchronized (suc) {
+							suc.notifyAll();							
+						}
+					}
 					synchronized (this) {
 						this.wait();
 					}
-					blocked = false;
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -487,12 +493,17 @@ public class LP implements Executor, Runnable {
 										+ "\t\t\t\t\t " + (int) lbts + "|"
 										+ (int) event.time);
 						// TODO maybe pred
-//						for (LP suc : successors) {
-//							synchronized (suc) {
-//								suc.notifyAll();
-//							}
-//						}
+						// for (LP suc : successors) {
+						// synchronized (suc) {
+						// suc.notifyAll();
+						// }
+						// }
 						blocked = true;
+						for(LP suc: successors){
+							synchronized (suc) {								
+								suc.notifyAll();
+							}
+						}
 						synchronized (this) {
 							this.wait();
 						}
@@ -886,26 +897,27 @@ public class LP implements Executor, Runnable {
 		List<Double> list = new ArrayList<Double>();
 		for (LP pre : this.predecessors) {
 			if (!listOfVisitedLPs.contains(pre.id)) {
-				if(pre.id == 1){
-					//PS Scheduling
+				if (pre.id == 1) {
+					// PS Scheduling
 					list.add(pre.clock);
-				}else{
+				} else {
 					listOfVisitedLPs.add(pre.id);
 					QueueEvent event = pre.eventList.peek();
 					if (event != null) {
 						list.add(event.time);
-						System.out.println("\t\t\t"+pre.getClock()+" | "+ event.time);
+						System.out.println("\t\t\t" + pre.getClock() + " | "
+								+ event.time);
 					} else {
-						if(pre.blocked){
-							list.add(pre.getLBTS(listOfVisitedLPs));						
-						}else{
+						if (pre.blocked) {
+							list.add(pre.getLBTS(listOfVisitedLPs));
+						} else {
 							list.add(0.0);
 						}
-					}					
+					}
 				}
 			}
 		}
-		//System.out.println(list);
+		// System.out.println(list);
 		if (list.isEmpty()) {
 			return Double.MAX_VALUE;
 		} else {
@@ -957,52 +969,34 @@ public class LP implements Executor, Runnable {
 	//
 	// }
 
-	/**
-	 * @deprecated
-	 */
-	public boolean isTimeSaveToProcess(double time) {
-		// int test = 0;
-		// if (test == 0) {
-		// return false;
-		// }
-		double timeSaveToProcess;
-		boolean result = true;
-		QueueEvent nextEvent = null;
-		for (LP predecessor : getPredecessors()) {
-			nextEvent = predecessor.eventList.peek();
-			if (nextEvent != null) {
-				/** predecessor has queued events */
-				timeSaveToProcess = nextEvent.time + predecessor.getLookahead();
-				if (time > timeSaveToProcess) {
-					result = false;
-				} else {
+	boolean isTimeSaveToProcess(double time) {
+		List<Integer> listOfVisited = new ArrayList<Integer>();
+		return isTimeSaveToProcess(time, listOfVisited);
+	}
+
+	public boolean isTimeSaveToProcess(double time, List<Integer> listOfVisited) {
+		for (LP pre : predecessors) {
+			if (!listOfVisited.contains(this.id)) {
+				listOfVisited.add(this.id);
+				if (pre.getClock() >= time) {
 					continue;
 				}
-			} else {
-				timeSaveToProcess = predecessor.getClock()
-						+ predecessor.getLookahead();
-				if (time > timeSaveToProcess) {
-					for (LP prepredecessor : predecessor.getPredecessors()) {
-						synchronized (prepredecessor) {
-							nextEvent = prepredecessor.eventList.peek();
-							if (nextEvent != null) {
-								/** predecessor has queued events */
-								timeSaveToProcess = nextEvent.time
-										+ prepredecessor.getLookahead();
-								if (time > timeSaveToProcess) {
-									result = false;
-								}
-							} else {
-								result = false;
-							}
-						}
+				TokenEvent token = pre.incomingTokenList.peek();
+				if (token != null) {
+					if (token.getIncommingTime() >= clock) {
+						continue;
 					}
-				} else {
-					continue;
 				}
+				QueueEvent event = pre.eventList.peek();
+				if (event != null) {
+
+				} else {
+					return false;
+				}
+
 			}
 		}
-		return result;
+		return true;
 	}
 
 	public double getLookahead() {
