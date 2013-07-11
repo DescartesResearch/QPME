@@ -33,8 +33,8 @@ public class RandomNumberGenerator {
 	public static void initialize() {
 		randGenClass = RandomGeneratorCategory.MersenneTwister;
 		useRandSeedTable = true;
-
-		randNumGen = new Uniform(new DRand(new java.util.Date()));
+		randNumGen = new Uniform(new DRand(new java.util.Date(0))); //January 1, 1970, 00:00:00 GMT
+		//randNumGen = new Uniform(new DRand(new java.util.Date()));
 		if (useRandSeedTable)
 			randSeedGen = new RandomSeedGenerator(randNumGen.nextIntFromTo(0, Integer.MAX_VALUE), randNumGen.nextIntFromTo(0, RandomSeedTable.COLUMNS - 1));
 	}

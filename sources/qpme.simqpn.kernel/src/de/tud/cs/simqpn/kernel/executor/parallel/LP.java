@@ -2,6 +2,8 @@ package de.tud.cs.simqpn.kernel.executor.parallel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -70,7 +72,7 @@ public class LP implements Executor, Runnable {
 				}
 			});
 
-	public PriorityBlockingQueue<TokenEvent> incomingTokenList = new PriorityBlockingQueue<TokenEvent>(
+	private PriorityBlockingQueue<TokenEvent> incomingTokenList = new PriorityBlockingQueue<TokenEvent>(
 			10, new Comparator<TokenEvent>() {
 				public int compare(TokenEvent a, TokenEvent b) {
 					return (a.getIncommingTime() < b.getIncommingTime() ? -1
@@ -91,11 +93,26 @@ public class LP implements Executor, Runnable {
 	private int[] enTransIDs;
 	private boolean initialized = false;
 
-	private double timeSaveToProcess;
+	/**
+	 * Flag indicating when we are still before the first heart beat (progress
+	 * update). If true, the value of timeBtwHeartBeats is still measured, and
+	 * set to 0.
+	 */
+	boolean beforeInitHeartBeat;
+
+	/** Simulation run time of the next heart beat. */
+	double nextHeartBeat;
+
+	/**
+	 * Determines How often progress updates are made (in logical simulation
+	 * time units).
+	 */
+	double timeBtwHeartBeats;
 
 	/** Random number generator for generating next transition to fire. */
 	private EmpiricalWalker randTransGen;
 	private Net net;
+	public boolean blocked = false;
 
 	LP(Place[] places, Transition[] transitions, Queue[] queues, /**
 	 * Probe[]
@@ -123,22 +140,6 @@ public class LP implements Executor, Runnable {
 		this.transitions = concat(transitions, lp_to_merge.getTransitions());
 		this.queues = concat(queues, lp_to_merge.getQueues());
 	}
-
-	/**
-	 * Flag indicating when we are still before the first heart beat (progress
-	 * update). If true, the value of timeBtwHeartBeats is still measured, and
-	 * set to 0.
-	 */
-	boolean beforeInitHeartBeat;
-
-	/** Simulation run time of the next heart beat. */
-	double nextHeartBeat;
-
-	/**
-	 * Determines How often progress updates are made (in logical simulation
-	 * time units).
-	 */
-	double timeBtwHeartBeats;
 
 	/**
 	 * Should be similar to {@link SequentialExecutor#run()}
@@ -200,16 +201,30 @@ public class LP implements Executor, Runnable {
 				}
 
 				// Process incoming tokens
+				TokenEvent tkEvent;
 				while (!incomingTokenList.isEmpty()) {
-					if (incomingTokenList.peek().getIncommingTime() > clock) {
+					// if (incomingTokenList.peek().getIncommingTime() >
+					// clock){//getLBTS(this)) {
+					if (incomingTokenList.peek().getIncommingTime() > this
+							.getLBTS()) {
 						break;
 					} else {
-						TokenEvent tkEvent = incomingTokenList.poll();
+						tkEvent = incomingTokenList.poll();
 						Place place = tkEvent.getPlace();
 
 						place.addTokens(tkEvent.getColor(),
 								tkEvent.getNumber(), tkEvent.getTkCopyBuffer(),
 								this);
+
+						if (clock < tkEvent.getIncommingTime()) {
+							// clock = tkEvent.getIncommingTime();
+							// for (LP suc : successors) {
+							// synchronized (suc) {
+							// suc.notifyAll();
+							// }
+							// }
+						}
+
 						/**
 						 * check if new token enabled transition
 						 */
@@ -225,7 +240,7 @@ public class LP implements Executor, Runnable {
 										System.out
 												.println("LP"
 														+ id
-														+ " enabled "
+														+ ": \t\t enabled "
 														+ transitions[localTransId].name);
 										transStatus[localTransId] = true;
 										enTransCnt++;
@@ -235,10 +250,7 @@ public class LP implements Executor, Runnable {
 									throw new SimQPNException();
 								}
 							}
-
 						}
-
-						System.out.println("LP" + id + " got new tokens");
 					}
 
 				}
@@ -246,49 +258,10 @@ public class LP implements Executor, Runnable {
 				// Step 1
 				fireTransitions(enTransIDs, randTransGen, totRunL);
 
-				// Step 2: Make sure all service completion events in PS
-				// QPlaces have been scheduled
-				// DOES NOT NEED SYNCHRONIZATION
-				for (Place p : places) {
-					if (p instanceof QPlace) {
-						Queue queue = ((QPlace) p).queue;
-						if (queue.queueDiscip == Queue.PS
-								&& (!queue.eventsUpToDate)) {
-							System.out.println("LP" + id + ": place " + p.name
-									+ " updated jobs at "
-									+ ((QPlace) p).queue.name);
-							// +
-							// " [NOTE: after firing, service times may change in PS]");
-							queue.updateEvents(this);
-						}
-					}
-				}
-
 				// Step 3
-				QueueEvent ev = eventList.peek();
-				if (ev != null) {
-					if ((!incomingTokenList.isEmpty())
-							&& ev.time >= incomingTokenList.peek()
-									.getIncommingTime()) {
-						// process incoming tokens before queue events
-						continue;
-					} else {
-						boolean shouldProcess = waitForProcessing(ev);
-						if (shouldProcess) {
-							processEvent(ev);
-						}
-					}
-				} else {
-					// TODO think about waiting for an incoming event
-					while (incomingTokenList.isEmpty() && eventList.isEmpty()) {
-						try {
-							synchronized (this) {
-								this.wait();
-							}
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-					}
+				boolean shouldProcess = waitForProcessing();
+				if (shouldProcess) {
+					processEvent(eventList.peek());
 				}
 
 				// Step 4: Heart Beat
@@ -446,35 +419,6 @@ public class LP implements Executor, Runnable {
 		System.out.println("LP" + id + " finished");
 	}
 
-	private void waitForPredAndSucToBeInitialized() {
-		System.out.println("LP" + id + " has been initialized");
-		for (LP predecessor : predecessors) {
-			while (!predecessor.initialized) {
-				try {
-					synchronized (this) {
-						System.out
-								.println("LP" + id + " waits for predecessor");
-						this.wait(10);
-					}
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		for (LP successor : successors) {
-			while (!successor.initialized) {
-				try {
-					synchronized (this) {
-						System.out.println("LP" + id + " waits for sucessor");
-						this.wait(10);
-					}
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-
 	/**
 	 * Returns true if the waiting for next event was successful.
 	 * 
@@ -484,54 +428,103 @@ public class LP implements Executor, Runnable {
 	 * @param ev
 	 * @return
 	 */
-	private boolean waitForProcessing(QueueEvent ev) {
-
-		while (!isTimeSaveToProcess(ev.time)) {
-			if ((!incomingTokenList.isEmpty())
-					&& incomingTokenList.peek().getIncommingTime() <= ev.time) {
-				// System.out
-				// .println("LP"
-				// + id
-				// + " FIX ME: recieved token while waiting");
-				// System.out.println("LP"
-				// + id
-				// + ": incomming token time"
-				// + incomingTokenList.peek()
-				// .getIncommingTime());
-				return false;
-			}
-			// Send null Events
-			for (LP successor : successors) {
-				// successor.scheduleEvent(ev.time, null, null);
-				successor.scheduleEvent(clock + getLookahead(), null, null);
-				synchronized (successor) {
-					successor.notifyAll();
+	private boolean waitForProcessing() {
+		QueueEvent event;
+		/** Lower Bound on Timestamp */
+		double lbts;
+		while (true) {
+			// Make sure all service completion events in PS
+			// QPlaces have been scheduled
+			// DOES NOT NEED SYNCHRONIZATION
+			// actualize if something has changed
+			for (Place p : places) {
+				if (p instanceof QPlace) {
+					Queue queue = ((QPlace) p).queue;
+					if (queue.queueDiscip == Queue.PS
+							&& (!queue.eventsUpToDate)) {
+						// System.out.println("LP" + id + ":\t\t place "
+						// + p.name + " updated jobs at "
+						// + ((QPlace) p).queue.name);
+						// +
+						// " [NOTE: after firing, service times may change in PS]");
+						try {
+							queue.updateEvents(this);
+						} catch (SimQPNException e) {
+							e.printStackTrace();
+						}
+					}
 				}
-				System.out.println("LP" + successor.id + " got new null event "
-						+ ev.time + " and was notified by LP" + this.id);
 			}
-			try {
-				synchronized (this) {
-					this.wait();
+			event = eventList.peek();
+			lbts = this.getLBTS();
+			if (event == null) {
+				// no elements in queue(s)
+				if (!incomingTokenList.isEmpty()) {
+					if (incomingTokenList.peek().getIncommingTime() <= lbts) {
+						// unprocessed and relevant incoming tokens available
+						return false;
+					}
 				}
-				System.out.println("LP" + id + " waits");
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+				try {
+					blocked = true;
+					synchronized (this) {
+						this.wait();
+					}
+					blocked = false;
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			} else {
+				// element(s) in queue(s)
+				if (lbts < event.time) {
+					try {
+						System.out
+								.println("LP"
+										+ id
+										+ "("
+										+ (int) clock
+										+ ") waits for LBTS to increase up to event time "
+										+ "\t\t\t\t\t " + (int) lbts + "|"
+										+ (int) event.time);
+						// TODO maybe pred
+//						for (LP suc : successors) {
+//							synchronized (suc) {
+//								suc.notifyAll();
+//							}
+//						}
+						blocked = true;
+						synchronized (this) {
+							this.wait();
+						}
+						blocked = false;
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				} else {
+					return true;
+				}
 			}
 		}
-		return true;
 	}
 
 	private void processEvent(QueueEvent ev) throws SimQPNException {
 		if (ev.queue == null) {
 			// null message
 			clock = ev.time;
+			log.error("Null message");
+			throw new SimQPNException();
 		} else {
 			System.out.println("LP" + id + ": " + ev.queue.name
 					+ " processed job at " + (int) ev.time + " of duration "
 					+ (int) (ev.time - clock));
 			// Advance simulation time
 			clock = ev.time;
+			// for (LP suc : successors) {
+			// synchronized (suc) {
+			// suc.notifyAll();
+			// }
+			// }
+
 			QPlace qpl = (QPlace) ev.token.place;
 			qpl.completeService(ev.token, this);
 			// Check if some transitions were enabled and
@@ -547,9 +540,10 @@ public class LP implements Executor, Runnable {
 					if (localTransId >= 0 && localTransId < transitions.length) {
 						synchronized (this) {
 							if ((!transStatus[localTransId])) {
-								System.out.println("LP" + id + " enabled "
-										+ transitions[localTransId].name
-										+ "[due to queueEvent]");
+								// System.out.println("LP" + id
+								// + ": \t\t enabled "
+								// + transitions[localTransId].name
+								// + "[due to queueEvent]");
 								transStatus[localTransId] = true;
 								enTransCnt++;
 							}
@@ -656,9 +650,9 @@ public class LP implements Executor, Runnable {
 				if (nextTrans != null) {
 					nextTrans.fire(); // Fire
 										// transition
-					System.out.println("LP" + id + ": transition "
-							+ nextTrans.name + " fired  | Thread "
-							+ Thread.currentThread());
+										// System.out.println("LP" + id +
+										// ": transition "
+					// + nextTrans.name + " fired");
 
 					// Update transStatus
 					int p, t, nP, nT;
@@ -700,9 +694,6 @@ public class LP implements Executor, Runnable {
 						pl = nextTrans.outPlaces[p];
 						nT = pl.outTrans.length;
 						for (t = 0; t < nT; t++) {
-							// System.out.println("LP"
-							// + pl.getExecutor().getId()
-							// + ": should be enabled");
 							tr = pl.outTrans[t];
 							int localTransId = tr.id - transitions[0].id; // tr.id
 							if (tr.enabled()) {
@@ -713,7 +704,7 @@ public class LP implements Executor, Runnable {
 											System.out
 													.println("LP"
 															+ id
-															+ " enabled "
+															+ ":\t\t enabled "
 															+ transitions[localTransId].name
 															+ " [due to firing]");
 											transStatus[localTransId] = true;
@@ -841,14 +832,14 @@ public class LP implements Executor, Runnable {
 		return progressMonitor;
 	}
 
-	double getTimeSaveToProcess() {
-		double min_pred_clock = Double.MAX_VALUE;
-		for (LP pred : predecessors) {
-			min_pred_clock = Math.min(min_pred_clock,
-					Math.max(pred.getClock(), pred.timeSaveToProcess));
-		}
-		return min_pred_clock;
-	}
+	// double getTimeSaveToProcess() {
+	// double min_pred_clock = Double.MAX_VALUE;
+	// for (LP pred : predecessors) {
+	// min_pred_clock = Math.min(min_pred_clock,
+	// Math.max(pred.getClock(), pred.timeSaveToProcess));
+	// }
+	// return min_pred_clock;
+	// }
 
 	// BREITENSUCHE
 	// BFS(start_node, goal_node) {
@@ -869,28 +860,111 @@ public class LP implements Executor, Runnable {
 	// }
 	// return false; // Knoten kann nicht erreicht werden
 	// }
-	void setTimeSaveToProcess(double newTimeSaveToProcess) {
-		if (this.timeSaveToProcess < newTimeSaveToProcess) {
-			this.timeSaveToProcess = newTimeSaveToProcess;
-			for (LP successor : successors) {
-				synchronized (successor) {
-					if (successor.timeSaveToProcess < newTimeSaveToProcess) {
-						System.out.println("LP" + id
-								+ " informed its successor LP" + successor.id
-								+ " to perform until " + newTimeSaveToProcess);
-					}
-					successor.setTimeSaveToProcess(newTimeSaveToProcess);
-				}
-			}
+	// void setTimeSaveToProcess(double newTimeSaveToProcess) {
+	// if (this.timeSaveToProcess < newTimeSaveToProcess) {
+	// this.timeSaveToProcess = newTimeSaveToProcess;
+	// for (LP successor : successors) {
+	// synchronized (successor) {
+	// if (successor.timeSaveToProcess < newTimeSaveToProcess) {
+	// System.out.println("LP" + id
+	// + " informed its successor LP" + successor.id
+	// + " to perform until " + newTimeSaveToProcess);
+	// }
+	// successor.setTimeSaveToProcess(newTimeSaveToProcess);
+	// }
+	// }
+	//
+	// }
+	// }
 
-		}
+	double getLBTS() {
+		List<Integer> listOfVisited = new ArrayList<Integer>();
+		return getLBTS(listOfVisited);
 	}
 
-	public boolean isTimeSaveToProcess(double time) {
-		int test = 0;
-		if (test == 0) {
-			return false;
+	double getLBTS(List<Integer> listOfVisitedLPs) {
+		List<Double> list = new ArrayList<Double>();
+		for (LP pre : this.predecessors) {
+			if (!listOfVisitedLPs.contains(pre.id)) {
+				if(pre.id == 1){
+					//PS Scheduling
+					list.add(pre.clock);
+				}else{
+					listOfVisitedLPs.add(pre.id);
+					QueueEvent event = pre.eventList.peek();
+					if (event != null) {
+						list.add(event.time);
+						System.out.println("\t\t\t"+pre.getClock()+" | "+ event.time);
+					} else {
+						if(pre.blocked){
+							list.add(pre.getLBTS(listOfVisitedLPs));						
+						}else{
+							list.add(0.0);
+						}
+					}					
+				}
+			}
 		}
+		//System.out.println(list);
+		if (list.isEmpty()) {
+			return Double.MAX_VALUE;
+		} else {
+			return Collections.min(list);
+		}
+
+	}
+
+	// double getLBTS(List<Integer> listOfVisitedLPs) {
+	// List<Double> list = new ArrayList<Double>();
+	// for (LP pre : this.predecessors) {
+	// if (!listOfVisitedLPs.contains(pre.id)) {
+	// listOfVisitedLPs.add(pre.id);
+	// QueueEvent nextEvent = pre.eventList.peek();
+	// TokenEvent token = pre.incomingTokenList.peek();
+	//
+	// // while (pre.enTransCnt > 0) {
+	// // this.wait();
+	// // }
+	// if (pre.blocked) {
+	//
+	// if (nextEvent != null) {
+	// // LBTS is next event time
+	// if (token != null) {
+	// list.add(Math.min(nextEvent.time,
+	// token.getIncommingTime()));
+	// } else {
+	// list.add(nextEvent.time);
+	// }
+	// } else {
+	// if (token != null) {
+	// // LBTS is minimum incoming token time
+	// list.add(token.getIncommingTime());
+	// } else {
+	// double min = pre.getLBTS(listOfVisitedLPs);
+	// list.add(min);
+	// }
+	// }
+	// }else{
+	// list.add(pre.clock);
+	// }
+	// }
+	// }
+	// if (list.isEmpty()) {
+	// return Double.MAX_VALUE;
+	// } else {
+	// return Collections.min(list);
+	// }
+	//
+	// }
+
+	/**
+	 * @deprecated
+	 */
+	public boolean isTimeSaveToProcess(double time) {
+		// int test = 0;
+		// if (test == 0) {
+		// return false;
+		// }
 		double timeSaveToProcess;
 		boolean result = true;
 		QueueEvent nextEvent = null;
@@ -986,6 +1060,35 @@ public class LP implements Executor, Runnable {
 		incomingTokenList.add(tokenEvent);
 		synchronized (this) {
 			this.notify();
+		}
+	}
+
+	private void waitForPredAndSucToBeInitialized() {
+		System.out.println("LP" + id + " has been initialized");
+		for (LP predecessor : predecessors) {
+			while (!predecessor.initialized) {
+				try {
+					synchronized (this) {
+						System.out
+								.println("LP" + id + " waits for predecessor");
+						this.wait(10);
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		for (LP successor : successors) {
+			while (!successor.initialized) {
+				try {
+					synchronized (this) {
+						System.out.println("LP" + id + " waits for sucessor");
+						this.wait(10);
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 

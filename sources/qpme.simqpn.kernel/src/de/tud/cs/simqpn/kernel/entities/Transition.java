@@ -286,8 +286,8 @@ public class Transition extends Node {
 	 * @return
 	 * @exception
 	 */
-	public void updateState(int inPlaceId, int color,
-			int newAvailTkCnt, int delta) {
+	public void updateState(int inPlaceId, int color, int newAvailTkCnt,
+			int delta) {
 
 		if (delta > 0) { // CASE A: TOKENS HAVE BEEN ADDED
 			if (enModesCnt == numModes)
@@ -438,8 +438,7 @@ public class Transition extends Node {
 						maxN = n;
 
 					Token[] tokens = pl.removeTokens(c, n, tkCopyBuffer,
-							executor.getClock(),
-							executor.getConfiguration());
+							executor.getClock(), executor.getConfiguration());
 					prC = pl.probeInstrumentations[c].length;
 
 					if (prC > 0) {
@@ -590,20 +589,34 @@ public class Transition extends Node {
 
 						if (executor.getId() == executorOut.getId()) {
 							// Add tokens instantly if in the same LP
-							pl.addTokens(c, n, tkCopyBuffer, executorOut);
+							pl.addTokens(c, n, tkCopyBuffer, executor);
 							// Note: the contents of tkCopyBuffer are all set to
 							// null.
 						} else {
-							// Add tokens tokens to list of successor
-							executorOut.addTokenEvent(new TokenEvent(executor.getClock(), this, pl, c, n,
-									tkCopyBuffer));
+							// Add tokens to successor
+							executorOut.addTokenEvent(new TokenEvent(executor
+									.getClock(), this, pl, c, n, tkCopyBuffer));
+							System.out.println("LP" + executor.getId()
+									+ ": added token to LP"
+									+ executorOut.getId() + " with timestamp "
+									+ executor.getClock());
+							synchronized (executorOut) {
+								executorOut.notifyAll();
+							}
 						}
 					} else {
 						if (executor.getId() == executorOut.getId()) {
-							pl.addTokens(c, n, null, executorOut);
+							pl.addTokens(c, n, null, executor);
 						} else {
-							executorOut.addTokenEvent(new TokenEvent(executor.getClock(), this, pl, c, n,
-									null));
+							executorOut.addTokenEvent(new TokenEvent(executor
+									.getClock(), this, pl, c, n, null));
+							System.out.println("LP" + executor.getId()
+									+ ": added token to LP"
+									+ executorOut.getId() + " with timestamp "
+									+ (int) executor.getClock());
+							synchronized (executorOut) {
+								executorOut.notifyAll();
+							}
 						}
 					}
 				}
