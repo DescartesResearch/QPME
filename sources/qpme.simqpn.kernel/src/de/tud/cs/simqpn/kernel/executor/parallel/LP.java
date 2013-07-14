@@ -2,11 +2,12 @@ package de.tud.cs.simqpn.kernel.executor.parallel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.PriorityBlockingQueue;
 
 import org.apache.log4j.Logger;
@@ -91,7 +92,6 @@ public class LP implements Executor, Runnable {
 	private boolean[] transStatus; // Transition status: true = enabled, false =
 	private int enTransCnt;
 	private int[] enTransIDs;
-	private boolean initialized = false;
 
 	/**
 	 * Flag indicating when we are still before the first heart beat (progress
@@ -112,7 +112,16 @@ public class LP implements Executor, Runnable {
 	/** Random number generator for generating next transition to fire. */
 	private EmpiricalWalker randTransGen;
 	private Net net;
-	public boolean blocked = false;
+
+	private CyclicBarrier barrier;
+
+	/** global stop criterion*/
+	private StopCriterion stopCriterion;
+	
+	/** local stop criterion*/
+	boolean finished = false;
+
+
 
 	LP(Place[] places, Transition[] transitions, Queue[] queues, /**
 	 * Probe[]
@@ -140,6 +149,9 @@ public class LP implements Executor, Runnable {
 		this.transitions = concat(transitions, lp_to_merge.getTransitions());
 		this.queues = concat(queues, lp_to_merge.getQueues());
 	}
+
+	private double nextEventTime;
+	private double lbts;
 
 	/**
 	 * Should be similar to {@link SequentialExecutor#run()}
@@ -173,13 +185,19 @@ public class LP implements Executor, Runnable {
 			long progressUpdateRate = progressMonitor
 					.getMaxUpdateRealTimeInterval();
 
-			initialized = true;
-			waitForPredAndSucToBeInitialized();
+			System.out.println("LP" + id + " has been initialized");
+			try {
+				barrier.await();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} catch (BrokenBarrierException e) {
+				//e.printStackTrace();
+			}
 
 			/**
 			 * ######################### MAIN LOOP ###################
 			 */
-			while (checkStopCriteria()) {
+			while (!checkStopCriterion()) {
 				if (inRampUp && clock > rampUpL) {
 					inRampUp = false;
 					endRampUpClock = clock;
@@ -197,33 +215,24 @@ public class LP implements Executor, Runnable {
 					// for (int pr = 0; pr < net.getNumProbes(); pr++) TODO
 					// net.getProbe(pr).start(this);
 
-					progressMonitor.finishWarmUp(configuration);
+					progressMonitor.finishWarmUp(id, configuration);
 				}
 
 				// Process incoming tokens
 				TokenEvent tkEvent;
 				while (!incomingTokenList.isEmpty()) {
-					// if (incomingTokenList.peek().getIncommingTime() >
-					// clock){//getLBTS(this)) {
-					if (incomingTokenList.peek().getIncommingTime() > this
-							.getLBTS()) {
+					if (incomingTokenList.peek().getIncommingTime() > lbts) {
 						break;
 					} else {
 						tkEvent = incomingTokenList.poll();
 						Place place = tkEvent.getPlace();
 
+						if (clock < tkEvent.getIncommingTime()) {
+							clock = tkEvent.getIncommingTime();
+						}
 						place.addTokens(tkEvent.getColor(),
 								tkEvent.getNumber(), tkEvent.getTkCopyBuffer(),
 								this);
-
-						if (clock < tkEvent.getIncommingTime()) {
-							// clock = tkEvent.getIncommingTime();
-							// for (LP suc : successors) {
-							// synchronized (suc) {
-							// suc.notifyAll();
-							// }
-							// }
-						}
 
 						/**
 						 * check if new token enabled transition
@@ -258,51 +267,109 @@ public class LP implements Executor, Runnable {
 				// Step 1
 				fireTransitions(enTransIDs, randTransGen, totRunL);
 
-				// Step 3
-				boolean shouldProcess = waitForProcessing();
-				if (shouldProcess) {
+				// Step 2
+				// Make sure all service completion events in PS
+				// QPlaces have been scheduled
+				// DOES NOT NEED SYNCHRONIZATION
+				// actualize if something has changed
+				for (Place p : places) {
+					if (p instanceof QPlace) {
+						Queue queue = ((QPlace) p).queue;
+						if (queue.queueDiscip == Queue.PS
+								&& (!queue.eventsUpToDate)) {
+							// System.out.println("LP" + id + ":\t\t place "
+							// + p.name + " updated jobs at "
+							// + ((QPlace) p).queue.name);
+							// +
+							// " [NOTE: after firing, service times may change in PS]");
+							try {
+								queue.updateEvents(this);
+							} catch (SimQPNException e) {
+								e.printStackTrace();
+							}
+						}
+					}
+				}
+
+				/*
+				 * SYNCHRONIZATION
+				 */
+				QueueEvent event = eventList.peek();
+				if (event != null) {
+					nextEventTime = event.time;
+				} else {
+					nextEventTime = Double.MAX_VALUE;
+				}
+				if (lbts >= nextEventTime) {
+					// System.out.println("LP" + id + " can process event"
+					// + (int) nextEventTime + " smaller than LBTS"
+					// + (int) lbts);
+					// Step 3
 					processEvent(eventList.peek());
+					continue;
+				}
+
+				try {
+					if (!checkStopCriterion()) {
+						barrier.await();
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				} catch (BrokenBarrierException e) {
+					//e.printStackTrace();
+				}
+				lbts = getLBTS();
+				// System.out.println("LP" + id + " lbts" + lbts +
+				// " | eventList size "+eventList.size());
+				try {
+					if (!checkStopCriterion()) {
+						barrier.await();
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				} catch (BrokenBarrierException e) {
+					e.printStackTrace();
 				}
 
 				// Step 4: Heart Beat
-				// if (beforeInitHeartBeat) {
-				// long curTimeMsrm = System.currentTimeMillis();
-				// if (((curTimeMsrm - lastTimeMsrm) >=
-				// SimQPNConfiguration.MAX_INITIAL_HEARTBEAT)
-				// || (clock >= maxProgressInterval)) {
-				//
-				// if (clock >= maxProgressInterval) {
-				// timeBtwHeartBeats = maxProgressInterval;
-				// } else {
-				// timeBtwHeartBeats = (clock / (curTimeMsrm - lastTimeMsrm))
-				// * progressUpdateRate;
-				// }
-				// beforeInitHeartBeat = false;
-				// if (configuration.timeBtwChkStops == 0) {
-				// // enable checking of stopping criterion
-				// nextChkAfter = clock;
-				// }
-				// }
-				//
-				// if (progressMonitor.isCanceled()) {
-				// clock = totRunL;
-				// }
-				// } else {
-				// if (clock >= nextHeartBeat) {
-				// long curTimeMsrm = System.currentTimeMillis();
-				// progressMonitor.updateSimulationProgress(clock
-				// / (totRunL - 1) * 100,
-				// (curTimeMsrm - lastTimeMsrm), configuration,
-				// inRampUp);
-				// lastTimeMsrm = curTimeMsrm;
-				// nextHeartBeat = clock + timeBtwHeartBeats;
-				//
-				// if (progressMonitor.isCanceled()) {
-				// clock = totRunL;
-				// }
-				// }
-				// }
+				if (beforeInitHeartBeat) {
+					long curTimeMsrm = System.currentTimeMillis();
+					if (((curTimeMsrm - lastTimeMsrm) >= SimQPNConfiguration.MAX_INITIAL_HEARTBEAT)
+							|| (clock >= maxProgressInterval)) {
 
+						if (clock >= maxProgressInterval) {
+							timeBtwHeartBeats = maxProgressInterval;
+						} else {
+							timeBtwHeartBeats = (clock / (curTimeMsrm - lastTimeMsrm))
+									* progressUpdateRate;
+						}
+						beforeInitHeartBeat = false;
+						if (configuration.timeBtwChkStops == 0) {
+							// enable checking of stopping criterion
+							nextChkAfter = clock;
+						}
+					}
+
+					if (progressMonitor.isCanceled()) {
+						clock = totRunL;
+					}
+				} else {
+					if (clock >= nextHeartBeat) {
+						long curTimeMsrm = System.currentTimeMillis();
+						progressMonitor.updateSimulationProgress(getId(), clock
+								/ (totRunL - 1) * 100,
+								(curTimeMsrm - lastTimeMsrm), configuration,
+								inRampUp);
+						lastTimeMsrm = curTimeMsrm;
+						nextHeartBeat = clock + timeBtwHeartBeats;
+
+						if (progressMonitor.isCanceled()) {
+							clock = totRunL;
+						}
+					}
+				}
+
+				
 				// Step 5: Check Stopping Criterion
 				if (configuration.stoppingRule != SimQPNConfiguration.FIXEDLEN
 						&& (!inRampUp) && clock > nextChkAfter) {
@@ -329,7 +396,7 @@ public class LP implements Executor, Runnable {
 
 					if (!done) {
 						// The test already failed for a place.
-						progressMonitor.precisionCheck(done, pl.name);
+						progressMonitor.precisionCheck(id, done, pl.name);
 					} else {
 						// Check also the probes, whether they have enough
 						// samples
@@ -345,10 +412,12 @@ public class LP implements Executor, Runnable {
 						// }
 						if (done) {
 							// System.out.println("LP"+id+" is DONE DONE DONE DONE");
-							progressMonitor.precisionCheck(done, null);
-							break; // exit while loop
+							progressMonitor.precisionCheck(id, done, null);
+							//break; // exit while loop
+							finished = true;
+							stopCriterion.notifyFinishedLP();
 						} else {
-							progressMonitor.precisionCheck(done, probe.name); // TODO:
+							progressMonitor.precisionCheck(id, done, probe.name); // TODO:
 																				// distinguish
 																				// between
 																				// places
@@ -368,20 +437,18 @@ public class LP implements Executor, Runnable {
 		} catch (SimQPNException ex) {
 			System.out.println(ex);
 		}
-		System.out.println("LP" + id + " has finished simulation");
-
-		progressMonitor.updateSimulationProgress(100, 0, configuration,
+		progressMonitor.updateSimulationProgress(id, 100, 0, configuration,
 				inRampUp);
 
 		if (progressMonitor.isCanceled()) {
 			progressMonitor
-					.warning("The simulation was canceled by the user.\n"
+					.warning(id, ": The simulation was canceled by the user." // \n
 							+ "The required precision may not have been reached!");
 		} else {
 			if (clock >= configuration.totRunLen) {
 				if (configuration.stoppingRule != SimQPNConfiguration.FIXEDLEN) {
 					progressMonitor
-							.warning("The simulation was stopped because of reaching max totalRunLen.\n"
+							.warning(id, "The simulation was stopped because of reaching max totalRunLen." // \n
 									+ "The required precision may not have been reached!");
 				} else
 					log.info("STOPPING because max totalRunLen is reached!");
@@ -395,7 +462,7 @@ public class LP implements Executor, Runnable {
 		// total time elapsed in seconds
 		runWallClockTime = (endRunWallClock - beginRunWallClock) / 1000;
 
-		log.info("msrmPrdLen= " + msrmPrdLen + " totalRunLen= " + endRunClock
+		log.info("LP"+id+": " +"msrmPrdLen= " + msrmPrdLen + " totalRunLen= " + endRunClock
 				+ " runWallClockTime=" + (int) (runWallClockTime / 60)
 				+ " min (=" + runWallClockTime + " sec)");
 
@@ -415,107 +482,48 @@ public class LP implements Executor, Runnable {
 				e.printStackTrace();
 			}
 		}
-
-		System.out.println("LP" + id + " finished");
 	}
 
-	/**
-	 * Returns true if the waiting for next event was successful.
-	 * 
-	 * Waiting fails if a new {@link TokenEvent} arrived with smaller timestamp
-	 * than the {@link QueueEvent}
-	 * 
-	 * @param ev
-	 * @return
-	 */
-	private boolean waitForProcessing() {
-		QueueEvent event;
-		/** Lower Bound on Timestamp */
-		double lbts;
-		while (true) {
-			// Make sure all service completion events in PS
-			// QPlaces have been scheduled
-			// DOES NOT NEED SYNCHRONIZATION
-			// actualize if something has changed
-			for (Place p : places) {
-				if (p instanceof QPlace) {
-					Queue queue = ((QPlace) p).queue;
-					if (queue.queueDiscip == Queue.PS
-							&& (!queue.eventsUpToDate)) {
-						// System.out.println("LP" + id + ":\t\t place "
-						// + p.name + " updated jobs at "
-						// + ((QPlace) p).queue.name);
-						// +
-						// " [NOTE: after firing, service times may change in PS]");
-						try {
-							queue.updateEvents(this);
-						} catch (SimQPNException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-			}
-			blocked = true;
-
+	double getLBTS() {
+		List<Integer> listOfVisited = new ArrayList<Integer>();
+		Double lbts = getLBTS(listOfVisited);
+		if (lbts == null) {
+			QueueEvent event;
 			event = eventList.peek();
-			lbts = this.getLBTS();
-			if (event == null) {
-				// no elements in queue(s)
-				if (!incomingTokenList.isEmpty()) {
-					if (incomingTokenList.peek().getIncommingTime() <= lbts) {
-						// unprocessed and relevant incoming tokens available
-						return false;
-					}
-				}
-				try {
-					//blocked = true;
-					for(LP suc: successors){
-						synchronized (suc) {
-							suc.notifyAll();							
-						}
-					}
-					synchronized (this) {
-						this.wait();
-					}
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+			if (event != null) {
+				return event.time;
 			} else {
-				// element(s) in queue(s)
-				if (lbts < event.time) {
-					try {
-						System.out
-								.println("LP"
-										+ id
-										+ "("
-										+ (int) clock
-										+ ") waits for LBTS to increase up to event time "
-										+ "\t\t\t\t\t " + (int) lbts + "|"
-										+ (int) event.time);
-						// TODO maybe pred
-						// for (LP suc : successors) {
-						// synchronized (suc) {
-						// suc.notifyAll();
-						// }
-						// }
-						blocked = true;
-						for(LP suc: successors){
-							synchronized (suc) {								
-								suc.notifyAll();
-							}
-						}
-						synchronized (this) {
-							this.wait();
-						}
-						blocked = false;
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
+				return this.clock;
+			}
+		} else {
+			return lbts;
+		}
+	}
+
+	Double getLBTS(List<Integer> listOfVisitedLPs) {
+		List<Double> list = new ArrayList<Double>();
+		QueueEvent event;
+		event = eventList.peek();
+		for (LP pre : this.predecessors) {
+			if (!listOfVisitedLPs.contains(pre.id)) {
+				listOfVisitedLPs.add(pre.id);
+				event = pre.eventList.peek();
+				if (event != null) {
+					list.add(event.time);
 				} else {
-					return true;
+					Double lbts = pre.getLBTS(listOfVisitedLPs);
+					if (lbts != null) {
+						list.add(lbts);
+					}
 				}
 			}
 		}
+		if (list.isEmpty()) {
+			return null;
+		} else {
+			return Collections.min(list);
+		}
+
 	}
 
 	private void processEvent(QueueEvent ev) throws SimQPNException {
@@ -525,16 +533,12 @@ public class LP implements Executor, Runnable {
 			log.error("Null message");
 			throw new SimQPNException();
 		} else {
-			System.out.println("LP" + id + ": " + ev.queue.name
-					+ " processed job at " + (int) ev.time + " of duration "
-					+ (int) (ev.time - clock));
+//			System.out.println("LP" + id + ": " + ev.queue.name
+//					+ " processed job at " + (int) ev.time + " of duration "
+//					+ (int) (ev.time - clock) + " with lbts " + (int) lbts);
+
 			// Advance simulation time
 			clock = ev.time;
-			// for (LP suc : successors) {
-			// synchronized (suc) {
-			// suc.notifyAll();
-			// }
-			// }
 
 			QPlace qpl = (QPlace) ev.token.place;
 			qpl.completeService(ev.token, this);
@@ -559,28 +563,6 @@ public class LP implements Executor, Runnable {
 								enTransCnt++;
 							}
 						}
-					} else {
-						// TODO THINK ABOUT THIS AGAIN
-						// for (LP sucessor : successors) {
-						// int localTransId2 = tr.id
-						// - sucessor.getTransitions()[0].id;
-						// if (localTransId2 >= 0
-						// && localTransId2 < sucessor.transitions.length) {
-						// // System.out.println("LP"
-						// // + sucessor.getId()
-						// // + " enabled from LP"
-						// // + this.id);
-						// synchronized (sucessor) {
-						// if ((!sucessor.transStatus[localTransId2])) {
-						// // TODO Possible
-						// // deadlock
-						// sucessor.transStatus[localTransId2] = true;
-						// sucessor.enTransCnt++;
-						// }
-						// sucessor.notifyAll();
-						// }
-						// }
-						// }
 					}
 				}
 
@@ -589,35 +571,25 @@ public class LP implements Executor, Runnable {
 		}
 	}
 
+
 	/**
 	 * Returns true if the LP can finish
 	 * 
 	 * @return
 	 */
-	private boolean checkStopCriteria() {
+	private boolean checkStopCriterion() {
 		if (clock < configuration.totRunLen) {
-			return true;
+			return false;
 		} else {
-			// try {
-			// synchronized (this) {
-			// System.out.println("LP" + id + " waits to finish");
-			// this.wait(200);
-			// }
-			// } catch (InterruptedException e) {
-			// e.printStackTrace();
-			// }
-			// // for(LP predecessor: predecessors){
-			// // if((predecessor.getClock() < configuration.totRunLen)){
-			// // return true;
-			// // }
-			// // }
-			// for (LP successor : successors) {
-			// if ((successor.getClock() < configuration.totRunLen)) {
-			// return true;
-			// }
-			// }
+			if (stopCriterion.hasSimulationFinished()) {
+				return true;
+			}
+			if (!finished) {
+				finished = true;
+				stopCriterion.notifyFinishedLP();
+			}
+			return false;
 		}
-		return false;
 	}
 
 	/**
@@ -808,16 +780,20 @@ public class LP implements Executor, Runnable {
 		System.arraycopy(second, 0, result, first.length, second.length);
 		return result;
 	}
-
-	public boolean isInitialized() {
-		return initialized;
+	
+	public void setStopCriterion(StopCriterion stopCriterion) {
+		this.stopCriterion = stopCriterion;
 	}
 
+	public void setBarrier(CyclicBarrier barrier) {
+		this.barrier = barrier;
+	}
+	
 	@Override
 	public double getClock() {
 		return clock;
 	}
-
+	
 	@Override
 	public synchronized void scheduleEvent(double serviceTime, Queue queue,
 			Token token) {
@@ -841,162 +817,6 @@ public class LP implements Executor, Runnable {
 	@Override
 	public SimulatorProgress getProgressMonitor() {
 		return progressMonitor;
-	}
-
-	// double getTimeSaveToProcess() {
-	// double min_pred_clock = Double.MAX_VALUE;
-	// for (LP pred : predecessors) {
-	// min_pred_clock = Math.min(min_pred_clock,
-	// Math.max(pred.getClock(), pred.timeSaveToProcess));
-	// }
-	// return min_pred_clock;
-	// }
-
-	// BREITENSUCHE
-	// BFS(start_node, goal_node) {
-	// for(all nodes i) visited[i] = false; // anfangs sind keine Knoten besucht
-	// queue.push(start_node); // mit Start-Knoten beginnen
-	// visited[start_node] = true;
-	// while(! queue.empty() ) { // solange queue nicht leer ist
-	// node = queue.pop(); // erstes Element von der queue nehmen
-	// if(node == goal_node) {
-	// return true; // testen, ob Ziel-Knoten gefunden
-	// }
-	// foreach(child in expand(node)) { // alle Nachfolge-Knoten, ...
-	// if(visited[child] == false) { // ... die noch nicht besucht wurden ...
-	// queue.push(child); // ... zur queue hinzufügen...
-	// visited[child] = true; // ... und als bereits gesehen markieren
-	// }
-	// }
-	// }
-	// return false; // Knoten kann nicht erreicht werden
-	// }
-	// void setTimeSaveToProcess(double newTimeSaveToProcess) {
-	// if (this.timeSaveToProcess < newTimeSaveToProcess) {
-	// this.timeSaveToProcess = newTimeSaveToProcess;
-	// for (LP successor : successors) {
-	// synchronized (successor) {
-	// if (successor.timeSaveToProcess < newTimeSaveToProcess) {
-	// System.out.println("LP" + id
-	// + " informed its successor LP" + successor.id
-	// + " to perform until " + newTimeSaveToProcess);
-	// }
-	// successor.setTimeSaveToProcess(newTimeSaveToProcess);
-	// }
-	// }
-	//
-	// }
-	// }
-
-	double getLBTS() {
-		List<Integer> listOfVisited = new ArrayList<Integer>();
-		return getLBTS(listOfVisited);
-	}
-
-	double getLBTS(List<Integer> listOfVisitedLPs) {
-		List<Double> list = new ArrayList<Double>();
-		for (LP pre : this.predecessors) {
-			if (!listOfVisitedLPs.contains(pre.id)) {
-				if (pre.id == 1) {
-					// PS Scheduling
-					list.add(pre.clock);
-				} else {
-					listOfVisitedLPs.add(pre.id);
-					QueueEvent event = pre.eventList.peek();
-					if (event != null) {
-						list.add(event.time);
-						System.out.println("\t\t\t" + pre.getClock() + " | "
-								+ event.time);
-					} else {
-						if (pre.blocked) {
-							list.add(pre.getLBTS(listOfVisitedLPs));
-						} else {
-							list.add(0.0);
-						}
-					}
-				}
-			}
-		}
-		// System.out.println(list);
-		if (list.isEmpty()) {
-			return Double.MAX_VALUE;
-		} else {
-			return Collections.min(list);
-		}
-
-	}
-
-	// double getLBTS(List<Integer> listOfVisitedLPs) {
-	// List<Double> list = new ArrayList<Double>();
-	// for (LP pre : this.predecessors) {
-	// if (!listOfVisitedLPs.contains(pre.id)) {
-	// listOfVisitedLPs.add(pre.id);
-	// QueueEvent nextEvent = pre.eventList.peek();
-	// TokenEvent token = pre.incomingTokenList.peek();
-	//
-	// // while (pre.enTransCnt > 0) {
-	// // this.wait();
-	// // }
-	// if (pre.blocked) {
-	//
-	// if (nextEvent != null) {
-	// // LBTS is next event time
-	// if (token != null) {
-	// list.add(Math.min(nextEvent.time,
-	// token.getIncommingTime()));
-	// } else {
-	// list.add(nextEvent.time);
-	// }
-	// } else {
-	// if (token != null) {
-	// // LBTS is minimum incoming token time
-	// list.add(token.getIncommingTime());
-	// } else {
-	// double min = pre.getLBTS(listOfVisitedLPs);
-	// list.add(min);
-	// }
-	// }
-	// }else{
-	// list.add(pre.clock);
-	// }
-	// }
-	// }
-	// if (list.isEmpty()) {
-	// return Double.MAX_VALUE;
-	// } else {
-	// return Collections.min(list);
-	// }
-	//
-	// }
-
-	boolean isTimeSaveToProcess(double time) {
-		List<Integer> listOfVisited = new ArrayList<Integer>();
-		return isTimeSaveToProcess(time, listOfVisited);
-	}
-
-	public boolean isTimeSaveToProcess(double time, List<Integer> listOfVisited) {
-		for (LP pre : predecessors) {
-			if (!listOfVisited.contains(this.id)) {
-				listOfVisited.add(this.id);
-				if (pre.getClock() >= time) {
-					continue;
-				}
-				TokenEvent token = pre.incomingTokenList.peek();
-				if (token != null) {
-					if (token.getIncommingTime() >= clock) {
-						continue;
-					}
-				}
-				QueueEvent event = pre.eventList.peek();
-				if (event != null) {
-
-				} else {
-					return false;
-				}
-
-			}
-		}
-		return true;
 	}
 
 	public double getLookahead() {
@@ -1054,35 +874,6 @@ public class LP implements Executor, Runnable {
 		incomingTokenList.add(tokenEvent);
 		synchronized (this) {
 			this.notify();
-		}
-	}
-
-	private void waitForPredAndSucToBeInitialized() {
-		System.out.println("LP" + id + " has been initialized");
-		for (LP predecessor : predecessors) {
-			while (!predecessor.initialized) {
-				try {
-					synchronized (this) {
-						System.out
-								.println("LP" + id + " waits for predecessor");
-						this.wait(10);
-					}
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		for (LP successor : successors) {
-			while (!successor.initialized) {
-				try {
-					synchronized (this) {
-						System.out.println("LP" + id + " waits for sucessor");
-						this.wait(10);
-					}
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
 		}
 	}
 

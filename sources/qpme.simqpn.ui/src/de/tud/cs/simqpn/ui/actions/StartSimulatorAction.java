@@ -307,7 +307,7 @@ public class StartSimulatorAction extends AbstractHandler {
 		 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#finishWarmUp()
 		 */
 		@Override
-		public void finishWarmUp(SimQPNConfiguration configuration) {
+		public void finishWarmUp(int id, SimQPNConfiguration configuration) {
 			boolean inRampUp = false; // Proven to be false
 			updateStatusString(configuration, inRampUp);
 		}
@@ -362,7 +362,7 @@ public class StartSimulatorAction extends AbstractHandler {
 		 * (double, long)
 		 */
 		@Override
-		public void updateSimulationProgress(double progress, long elapsedTime, SimQPNConfiguration configuration, boolean inRampUp) {
+		public void updateSimulationProgress(int lpID, double progress, long elapsedTime, SimQPNConfiguration configuration, boolean inRampUp) {
 			totalTime += elapsedTime;
 			double totalProgress = (currentRun - 1) * 100 + progress;
 			remainingTime = ((long) ((totalTime / totalProgress) * (totalWork - totalProgress))) / 1000;
@@ -409,14 +409,14 @@ public class StartSimulatorAction extends AbstractHandler {
 		 * java.lang.String)
 		 */
 		@Override
-		public void precisionCheck(boolean done, String failedPlaceName) {
+		public void precisionCheck(int lpID, boolean done, String failedPlaceName) {
 			if (!done) {
 				this.failedPlace = failedPlaceName;
 			}
 		}
 
 		@Override
-		public void warning(final String message) {
+		public void warning(int lpID, final String message) {
 			log.warn(message);
 			shell.getDisplay().syncExec(new Runnable() {
 				@Override

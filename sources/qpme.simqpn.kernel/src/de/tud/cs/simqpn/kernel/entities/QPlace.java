@@ -368,7 +368,6 @@ public class QPlace extends Place {
 					count, executor.getClock());
 
 		queueTokenPop[color] += count;
-		System.out.println("LP"+executor.getId()+": has new token in QPlace "+this.name);
 		if (individualTokens[color]) {
 			queue.addTokens(this, color, count, tokensToBeAdded, executor);
 		} else {

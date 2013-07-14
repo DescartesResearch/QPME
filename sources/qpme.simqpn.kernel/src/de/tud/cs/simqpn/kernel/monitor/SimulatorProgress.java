@@ -88,7 +88,7 @@ public interface SimulatorProgress {
 	/**
 	 * Called after the warm up period finished.
 	 */
-	public void finishWarmUp(SimQPNConfiguration configuration);
+	public void finishWarmUp(int lpID, SimQPNConfiguration configuration);
 
 	/**
 	 * Called in regular intervals to update the progress interval. The update
@@ -98,7 +98,7 @@ public interface SimulatorProgress {
 	 * @param progress - the current simulation run progress as percentage (0.0 <= progress <= 100.0).
 	 * @param elapsedTime - the time elapsed since the last progress update in milliseconds.
 	 */
-	public void updateSimulationProgress(double progress, long elapsedTime, SimQPNConfiguration configuration, boolean inRampUp);
+	public void updateSimulationProgress(int lpID, double progress, long elapsedTime, SimQPNConfiguration configuration, boolean inRampUp);
 
 	/**
 	 * Called for each finished simulation run.
@@ -116,13 +116,13 @@ public interface SimulatorProgress {
 	 * @param failedPlaceName - if not done, the name of the place that has not enough stats yet.
 	 * 							Otherwise null.
 	 */
-	public void precisionCheck(boolean done, String failedPlaceName);
+	public void precisionCheck(int lpID, boolean done, String failedPlaceName);
 	
 	/**
 	 * Called if the simulation reaches a possibly critical state. An implementation should
 	 * show a warning to the user with the specified message.
 	 * @param message - description of the warning.
 	 */
-	public void warning(String message);
+	public void warning(int lpID, String message);
 
 }

@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CyclicBarrier;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
@@ -39,6 +40,13 @@ public class ParallelExecutor implements Callable<Net> {
 	public Net call() throws SimQPNException {
 		LP[] lps = decomposeNetIntoLPs();
 		System.out.println(lpDecompositionToString(lps));
+		
+		CyclicBarrier barrier = new CyclicBarrier(lps.length);
+		StopCriterion stopCriterion = new StopCriterion(lps.length,  barrier);
+		for(LP lp: lps){
+			lp.setBarrier(barrier);
+			lp.setStopCriterion(stopCriterion);
+		}
 
 		Thread[] threads = new Thread[lps.length];
 		for (int i = 0; i < lps.length; i++) {
@@ -85,6 +93,12 @@ public class ParallelExecutor implements Callable<Net> {
 				sb.append(suc.getId() + " ");
 			}
 			sb.append("\n");
+			sb.append("predecessors: ");
+			for (LP pred : lp.getPredecessors()) {
+				sb.append(pred.getId() + " ");
+			}
+			sb.append("\n");
+
 
 		}
 		return sb.toString();

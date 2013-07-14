@@ -193,7 +193,7 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 				for (int pr = 0; pr < net.getNumProbes(); pr++)
 					net.getProbe(pr).start(configuration, clock);
 
-				progressMonitor.finishWarmUp(configuration);
+				progressMonitor.finishWarmUp(getId(), configuration);
 			}
 
 			// Step 1: Fire until no transitions are enabled.
@@ -341,7 +341,7 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 			} else {
 				if (clock >= nextHeartBeat) {
 					long curTimeMsrm = System.currentTimeMillis();
-					progressMonitor.updateSimulationProgress(clock
+					progressMonitor.updateSimulationProgress(getId(), clock
 							/ (totRunL - 1) * 100,
 							(curTimeMsrm - lastTimeMsrm), configuration,
 							inRampUp);
@@ -394,7 +394,7 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 
 				if (!done) {
 					// The test already failed for a place.
-					progressMonitor.precisionCheck(done, pl.name);
+					progressMonitor.precisionCheck(getId(), done, pl.name);
 				} else {
 					// Check also the probes, whether they have enough
 					// samples
@@ -409,10 +409,10 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 						}
 					}
 					if (done) {
-						progressMonitor.precisionCheck(done, null);
+						progressMonitor.precisionCheck(getId(), done, null);
 						break; // exit while loop
 					} else {
-						progressMonitor.precisionCheck(done, probe.name); // TODO:
+						progressMonitor.precisionCheck(getId(), done, probe.name); // TODO:
 																			// distinguish
 																			// between
 																			// places
@@ -432,18 +432,18 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 
 		// END MAIN SIMULATION LOOP
 		// ---------------------------------------------------------------------------------
-		progressMonitor.updateSimulationProgress(100, 0, configuration,
+		progressMonitor.updateSimulationProgress(getId(), 100, 0, configuration,
 				inRampUp);
 
 		if (progressMonitor.isCanceled()) {
 			progressMonitor
-					.warning("The simulation was canceled by the user.\n"
+					.warning(getId(), "The simulation was canceled by the user.\n"
 							+ "The required precision may not have been reached!");
 		} else {
 			if (clock >= totRunL) {
 				if (configuration.stoppingRule != SimQPNConfiguration.FIXEDLEN) {
 					progressMonitor
-							.warning("The simulation was stopped because of reaching max totalRunLen.\n"
+							.warning(getId(), "The simulation was stopped because of reaching max totalRunLen.\n"
 									+ "The required precision may not have been reached!");
 				} else
 					log.info("STOPPING because max totalRunLen is reached!");

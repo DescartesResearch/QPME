@@ -596,13 +596,6 @@ public class Transition extends Node {
 							// Add tokens to successor
 							executorOut.addTokenEvent(new TokenEvent(executor
 									.getClock(), this, pl, c, n, tkCopyBuffer));
-							System.out.println("LP" + executor.getId()
-									+ ": added token to LP"
-									+ executorOut.getId() + " with timestamp "
-									+ executor.getClock());
-							synchronized (executorOut) {
-								executorOut.notifyAll();
-							}
 						}
 					} else {
 						if (executor.getId() == executorOut.getId()) {
@@ -610,13 +603,6 @@ public class Transition extends Node {
 						} else {
 							executorOut.addTokenEvent(new TokenEvent(executor
 									.getClock(), this, pl, c, n, null));
-							System.out.println("LP" + executor.getId()
-									+ ": added token to LP"
-									+ executorOut.getId() + " with timestamp "
-									+ (int) executor.getClock());
-							synchronized (executorOut) {
-								executorOut.notifyAll();
-							}
 						}
 					}
 				}

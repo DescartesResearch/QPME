@@ -690,7 +690,7 @@ public class Queue {
 						|| ((cntConsRisingEpoch > SimQPNConfiguration.OVERFLOW_DET_MAX_CONS_RISING_EPOCHS) && (totalMaxPopulation > 2 * maxPopulationAtRisingStart))) {
 					if (!deactivateWarning) {
 						executor.getProgressMonitor()
-								.warning(
+								.warning(executor.getId(),
 										"Queue \""
 												+ name
 												+ "\" is exceedingly growing. An overflow might occur.");

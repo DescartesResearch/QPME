@@ -47,8 +47,6 @@ import static de.tud.cs.simqpn.kernel.util.LogUtil.formatMultilineMessage;
 import org.apache.log4j.Logger;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
-import de.tud.cs.simqpn.kernel.SimQPNConfiguration.AnalysisMethod;
-import de.tud.cs.simqpn.kernel.SimQPNController;
 
 /**
  * Prints the simulation progress on the console. Used in standalone simulation mode.
@@ -103,17 +101,17 @@ public class ConsoleSimulatorProgress implements SimulatorProgress {
 	 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#updateSimulationProgress(double, long)
 	 */
 	@Override
-	public void updateSimulationProgress(double progress, long elapsedTime, SimQPNConfiguration configuration, boolean inRampUp) {
-		log.info("Progress: " + Math.round(progress) + "%");
+	public void updateSimulationProgress(int lpID, double progress, long elapsedTime, SimQPNConfiguration configuration, boolean inRampUp) {
+		log.info("LP"+lpID+" progress: " + Math.round(progress) + "%");
 	}
 
 	/* (non-Javadoc)
 	 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#finishWarmUp()
 	 */
 	@Override
-	public void finishWarmUp(SimQPNConfiguration configuration) {
+	public void finishWarmUp(int lpID, SimQPNConfiguration configuration) {
 		if(configuration.getAnalMethod() != SimQPNConfiguration.AnalysisMethod.WELCH) {
-			log.info("Warm up finished. Starting steady state analysis...");
+			log.info("LP"+lpID+": Warm up finished. Starting steady state analysis...");
 		}
 	}
 
@@ -161,14 +159,14 @@ public class ConsoleSimulatorProgress implements SimulatorProgress {
 	 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#precisionCheck(boolean, java.lang.String)
 	 */
 	@Override
-	public void precisionCheck(boolean done, String failedPlaceName) {
+	public void precisionCheck(int lpID, boolean done, String failedPlaceName) {
 	}
 
 	/* (non-Javadoc)
 	 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#warning(java.lang.String)
 	 */
 	@Override
-	public void warning(String message) {
-		log.warn(message);
+	public void warning(int lpID, String message) {
+		log.warn("LP"+lpID+ " "+message);
 	}
 }
