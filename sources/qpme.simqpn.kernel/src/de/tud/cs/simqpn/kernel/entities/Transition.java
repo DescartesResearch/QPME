@@ -416,7 +416,7 @@ public class Transition extends Node {
 			mode = enModesIDs[randModeGen.nextInt()];
 		} else {
 			mode = 0;
-			System.out.println("KANN NICHT SEIN enModesCnt " + enModesCnt);
+			log.error("Tried to fire transition with enabled modes count<0");
 			throw new SimQPNException();
 		}
 		int p, c, nP, nC, prC, n;
@@ -599,9 +599,13 @@ public class Transition extends Node {
 						}
 					} else {
 						if (executor.getId() == executorOut.getId()) {
-							pl.addTokens(c, n, null, executor);
+							try{
+								pl.addTokens(c, n, null, executorOut);								
+							}catch(Exception e){
+								log.error("Exception during token addition to place",e);
+							}
 						} else {
-							executorOut.addTokenEvent(new TokenEvent(executor
+							executorOut.addTokenEvent(new TokenEvent(executorOut
 									.getClock(), this, pl, c, n, null));
 						}
 					}

@@ -1,9 +1,15 @@
 package de.tud.cs.simqpn.kernel.entities;
 
+import org.apache.log4j.Logger;
+
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
+import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 
 public class Net {
+
+	private static Logger log = Logger.getLogger(Net.class);
+
 	// XML Configuration
 	private String configurationName;
 
@@ -24,10 +30,33 @@ public class Net {
 	}
 
 	/**
-	 * Clones the given net
-	 * @throws SimQPNException 
+	 * Clones the Net instance
+	 * 
+	 * @param configuration
+	 * @return
 	 */
-	public Net(Net net, SimQPNConfiguration configuration) throws SimQPNException {
+	public Net clone(SimQPNConfiguration configuration) {
+		Net clone = null;
+		try {
+			clone = new Net(this, configuration);
+			clone.finishCloning(this, configuration);
+		} catch (SimQPNException e) {
+			log.error("Error during net cloning", e);
+		}
+		return clone;
+	}
+
+	/**
+	 * Constructor which copies some values from the parameters. It is part of
+	 * the clone function
+	 * 
+	 * @param net
+	 * @param configuration
+	 * @see #clone()
+	 * @throws SimQPNException
+	 */
+	private Net(Net net, SimQPNConfiguration configuration)
+			throws SimQPNException {
 		this.setConfigurationName(net.getConfigurationName());
 		this.numPlaces = net.numPlaces;
 		this.numTransitions = net.numTransitions;
@@ -38,49 +67,55 @@ public class Net {
 		this.queues = new Queue[net.numQueues];
 		this.probes = new Probe[net.numProbes];
 	}
-	
+
 	/**
 	 * Finishes cloning of a net
 	 * 
-	 * Should be called after the coppy-constructor
 	 * @param net
 	 * @param configuration
+	 * @see #clone()
 	 * @throws SimQPNException
 	 */
-	public void finishCloning(Net net, SimQPNConfiguration configuration) throws SimQPNException{
+	private void finishCloning(Net net, SimQPNConfiguration configuration)
+			throws SimQPNException {
 		double clock = 0;
-		for(int i=0; i<net.numPlaces; i++){
-			if(net.places[i].getClass().toString().endsWith("QPlace")){
-				this.places[i] = new QPlace((QPlace)net.places[i], queues, configuration);
-			}else{
+		for (int i = 0; i < net.numPlaces; i++) {
+			if (net.places[i].getClass().toString().endsWith("QPlace")) {
+				this.places[i] = new QPlace((QPlace) net.places[i], queues,
+						configuration);
+			} else {
 				this.places[i] = new Place(net.places[i], configuration);
 			}
 		}
-		for(int i=0; i<net.numTransitions; i++){
-			this.transitions[i] = new Transition(net.transitions[i], places, configuration);
+		for (int i = 0; i < net.numTransitions; i++) {
+			this.transitions[i] = new Transition(net.transitions[i], places,
+					configuration);
 		}
-		for(int i=0; i<net.numQueues; i++){
-			this.queues[i] = new Queue(net.queues[i], configuration, places);
+		for (int i = 0; i < net.numQueues; i++) {
+			this.queues[i] = net.queues[i].clone(configuration, places);
+			// = new Queue(net.queues[i], configuration, places);
 		}
-		
-		for(int i=0; i<net.numPlaces; i++){
-			if(net.places[i].getClass().toString().endsWith("QPlace")){
-				((QPlace) this.places[i]).finishCloning((QPlace)net.places[i], this.queues, configuration );			}
+
+		for (int i = 0; i < net.numPlaces; i++) {
+			if (net.places[i].getClass().toString().endsWith("QPlace")) {
+				((QPlace) this.places[i]).finishCloning((QPlace) net.places[i],
+						this.queues, configuration);
+			}
 		}
-		
-		for(int i=0; i<net.numProbes; i++){
-			this.probes[i] = new Probe(net.probes[i], configuration, this.places);
+
+		for (int i = 0; i < net.numProbes; i++) {
+			this.probes[i] = new Probe(net.probes[i], configuration,
+					this.places);
 		}
-		
-		/**finish cloning */
-		for(int i=0; i<net.numPlaces; i++){
+
+		/** finish cloning */
+		for (int i = 0; i < net.numPlaces; i++) {
 			this.places[i].finishCloning(net.places[i], this.transitions);
 		}
-		for(int i=0; i<net.numTransitions; i++){
+		for (int i = 0; i < net.numTransitions; i++) {
 			this.transitions[i].finishCloning(net.transitions[i], this.places);
 		}
 
-		
 		for (int i = 0; i < numProbes; i++)
 			probes[i].init();
 		for (int i = 0; i < numPlaces; i++)
@@ -89,7 +124,25 @@ public class Net {
 			transitions[i].init();
 		for (int i = 0; i < numQueues; i++)
 			queues[i].init(configuration);
-		
+
+	}
+
+	@Override
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append("\n");
+		for (Place place : places) {
+			sb.append(place.name + " ");
+		}
+		sb.append("\n");
+		for (Queue queue : queues) {
+			sb.append(queue.name + "("+queue.queueStats+") ");
+		}
+		sb.append("\n");
+		for (Transition trans : transitions) {
+			sb.append(trans.name + " ");
+		}
+		return sb.toString();
 	}
 
 	public Queue getQueue(int id) {

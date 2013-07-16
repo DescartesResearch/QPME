@@ -66,7 +66,8 @@ import cern.jet.stat.Descriptive;
 import cern.jet.stat.Probability;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
-import de.tud.cs.simqpn.kernel.entities.Queue;
+import de.tud.cs.simqpn.kernel.entities.queue.Queue;
+import de.tud.cs.simqpn.kernel.entities.queue.QueuingDiscipline;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.util.LogUtil.ReportLevel;
 
@@ -84,7 +85,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	private static Logger log = Logger.getLogger(QPlaceQueueStats.class);
 
 	// NOTE: The following data is duplicated here to make Stats objects self-contained. 
-	public int			queueDiscip;	// Queueing discipline
+	public QueuingDiscipline queueDiscip;	// Queueing discipline
 	public int			numServers;		// FCFS queues: Number of servers in queueing station.			
 	public double[]		meanServTimes;	// All times usually in milliseconds
 	
@@ -130,7 +131,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	 * @param numServers    - FCFS queues: number of servers in queueing station 
 	 * @param meanServTimes - mean service times of tokens
 	 */	
-	public QPlaceQueueStats(int id, String name, String[] colors, int statsLevel, int queueDiscip, int numServers, double[] meanServTimes, SimQPNConfiguration configuration) throws SimQPNException {
+	public QPlaceQueueStats(int id, String name, String[] colors, int statsLevel, QueuingDiscipline queueDiscip, int numServers, double[] meanServTimes, SimQPNConfiguration configuration) throws SimQPNException {
 		super(id, name, QUE_PLACE_QUEUE, colors, statsLevel, configuration);
 		this.queueDiscip	= queueDiscip;
 		this.numServers		= numServers;			
@@ -140,7 +141,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 				
 		if (statsLevel >= 3) {
 			// Make sure indrStats is false if queueDiscip != Queue.FCFS
-			this.indrStats	= (queueDiscip == Queue.FCFS);		// indrStats is by default true for FCFS queues
+			this.indrStats	= (queueDiscip == QueuingDiscipline.FCFS);		// indrStats is by default true for FCFS queues
 			this.meanDT					=	new double[numColors];
 			this.stDevDT				=	new double[numColors];			
 			if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS)  {
@@ -185,7 +186,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 		
 		if (statsLevel >= 3)  {
 			// Make sure indrStats is false if queueDiscip != Queue.FCFS
-			indrStats = indrStats && (queueDiscip == Queue.FCFS);
+			indrStats = indrStats && (queueDiscip == QueuingDiscipline.FCFS);
 		}
 	}
 

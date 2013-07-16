@@ -44,7 +44,7 @@ package de.tud.cs.simqpn.kernel.analyzer;
 
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.Probe;
-import de.tud.cs.simqpn.kernel.entities.Queue;
+import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 
 public class SimulatorResults {
 

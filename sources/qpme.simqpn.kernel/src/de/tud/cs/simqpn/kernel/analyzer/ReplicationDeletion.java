@@ -11,12 +11,10 @@ import org.dom4j.Element;
 import org.dom4j.XPath;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
-import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
-import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.executor.SequentialExecutor;
 import de.tud.cs.simqpn.kernel.loader.XMLHelper;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
@@ -26,7 +24,7 @@ import de.tud.cs.simqpn.kernel.stats.Stats;
 public class ReplicationDeletion implements Analyzer{
 
 	private static SimulatorProgress progressMonitor;
-	private static Logger log = Logger.getLogger(SimQPNController.class);
+	private static Logger log = Logger.getLogger(ReplicationDeletion.class);
 
 	@Override
 	public Stats[] analyze(Net net, SimQPNConfiguration configuration,
@@ -68,13 +66,12 @@ public class ReplicationDeletion implements Analyzer{
 		for (int i = 0; i < configuration.getNumRuns(); i++) {
 			progressMonitor.startSimulationRun(i + 1, configuration);
 
-			Net netCopy = new Net(net, configuration);
-			netCopy.finishCloning(net, configuration);
+			Net netCopy = net.clone(configuration);
 			Callable<Net> executor = new SequentialExecutor(netCopy, configuration, monitor, i+1);
 			try {
 				executor.call();
 			} catch (Exception e) {
-				e.printStackTrace();
+				log.error("",e);
 			}
 			
 			progressMonitor.finishSimulationRun();

@@ -51,7 +51,7 @@ public class NetFlattener {
 					writer = new XMLWriter(new FileOutputStream(f), OutputFormat.createPrettyPrint());
 					writer.write(result.getDocument());
 				} catch (IOException e) {
-					e.printStackTrace();
+					log.error("",e);
 				} finally {
 					if (writer != null) {
 						try {

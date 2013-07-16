@@ -8,17 +8,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.apache.log4j.Logger;
+
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Net;
-import de.tud.cs.simqpn.kernel.entities.QPlace;
-import de.tud.cs.simqpn.kernel.entities.Queue;
 import de.tud.cs.simqpn.kernel.executor.SequentialExecutor;
-import de.tud.cs.simqpn.kernel.executor.parallel.*;
+import de.tud.cs.simqpn.kernel.executor.parallel.ParallelExecutor;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.stats.Stats;
 
 public class BatchMeans implements Analyzer {
+	private static Logger log = Logger.getLogger(BatchMeans.class);
 
 	private static SimulatorProgress progressMonitor;
 
@@ -75,10 +76,9 @@ public class BatchMeans implements Analyzer {
 		try {
 			net = future.get();
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			log.error("",e);
 		} catch (ExecutionException e) {
-			System.out.println("CAUSE : "+e.getCause());
-			e.printStackTrace();
+			log.error("",e);
 		}
 		
 		progressMonitor.finishSimulation();

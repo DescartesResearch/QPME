@@ -16,7 +16,6 @@ import org.dom4j.Element;
 import org.dom4j.XPath;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
-import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
@@ -30,7 +29,7 @@ import de.tud.cs.simqpn.kernel.stats.Stats;
 public class ReplicationDeletionParallel implements Analyzer {
 
 	private static SimulatorProgress progressMonitor;
-	private static Logger log = Logger.getLogger(SimQPNController.class);
+	private static Logger log = Logger.getLogger(ReplicationDeletionParallel.class);
 
 	@Override
 	public Stats[] analyze(Net net, SimQPNConfiguration configuration,
@@ -76,53 +75,53 @@ public class ReplicationDeletionParallel implements Analyzer {
 		// Run replication loop
 		ExecutorService executorService = Executors.newFixedThreadPool(Runtime
 				.getRuntime().availableProcessors());
-		
-		List <Callable<Net>> listOfRuns = new ArrayList<Callable<Net>>();
-		for (int i = 0; i < configuration.getNumRuns(); i++) {
-			Net netCopy = new Net(net, configuration);
-			netCopy.finishCloning(net, configuration);
 
-			Callable<Net> run = new SequentialExecutor(netCopy,
-					configuration, monitor, i + 1);
+		List<Callable<Net>> listOfRuns = new ArrayList<Callable<Net>>();
+		for (int i = 0; i < configuration.getNumRuns(); i++) {
+			Net netCopy = net.clone(configuration);
+
+			Callable<Net> run = new SequentialExecutor(netCopy, configuration,
+					monitor, i + 1);
 			listOfRuns.add(run);
 
-			if (progressMonitor.isCanceled())
+			if (progressMonitor.isCanceled()) {
 				break;
+			}
 		}
 		List<Future<Net>> listOfSimulatedNets;
 		try {
-			listOfSimulatedNets = (List<Future<Net>>) executorService.invokeAll((List<? extends Callable<Net>>) listOfRuns);
+			listOfSimulatedNets = (List<Future<Net>>) executorService
+					.invokeAll((List<? extends Callable<Net>>) listOfRuns);
 			for (Future<Net> future : listOfSimulatedNets) {
 				try {
 					Net futureNet = future.get();
 					putStatisticsIntoArray(configuration, aggrStats, numPlaces,
 							futureNet);
 				} catch (InterruptedException e) {
-					e.printStackTrace();
-				} catch (ExecutionException e) {
-					e.printStackTrace();
+					log.error("",e);
+				} catch (ExecutionException e2) {
+					log.error("",e2);
 				}
 			}
 
 		} catch (InterruptedException e1) {
-			e1.printStackTrace();
+			log.error("",e1);
 		}
 		executorService.shutdown();
 
-
 		progressMonitor.finishSimulation();
-
 		for (int i = 0; i < 2 * numPlaces; i++) {
-
-			if (aggrStats[i] != null)
+			if (aggrStats[i] != null) {
 				aggrStats[i].finish(configuration);
+			}
 		}
 
 		progressMonitor = null;
-		for (int i = 0; i < aggrStats.length; i++)
-			if (aggrStats[i] != null)
+		for (int i = 0; i < aggrStats.length; i++) {
+			if (aggrStats[i] != null) {
 				aggrStats[i].printReport(configuration);
-
+			}
+		}
 		return aggrStats;
 	}
 

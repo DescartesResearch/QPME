@@ -42,9 +42,9 @@ import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.Probe;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
-import de.tud.cs.simqpn.kernel.entities.Queue;
 import de.tud.cs.simqpn.kernel.entities.Transition;
 import de.tud.cs.simqpn.kernel.entities.Place.DepartureDiscipline;
+import de.tud.cs.simqpn.kernel.entities.queue.*;
 import de.tud.cs.simqpn.kernel.random.Deterministic;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 
@@ -343,7 +343,7 @@ public class NetLoader {
 			Element queue = (Element) this.queueList.get(i);
 
 			int numberOfServers;
-			int queueingStrategy = Queue.FCFS;
+			QueuingDiscipline queueingStrategy = QueuingDiscipline.FCFS;
 
 			String name = queue.attributeValue("name");
 			if (queueNames.contains(name)) {
@@ -357,14 +357,36 @@ public class NetLoader {
 			}
 
 			if ("IS".equals(queue.attributeValue("strategy"))) {
-				queueingStrategy = Queue.IS;
+				queueingStrategy = QueuingDiscipline.IS;
 				numberOfServers = 0; // NOTE: This is assumed in
 										// QPlaceQueueStats.updateTkPopStats()!
+				queues[i] = new ISQueue(i, // index
+						queue.attributeValue("id"), // xml-id
+						queue.attributeValue("name"), // name
+						queueingStrategy, // queueing d
+						numberOfServers // # servers
+				);
 			} else {
+				numberOfServers = Integer.parseInt(queue
+						.attributeValue("number-of-servers"));
 				if ("FCFS".equals(queue.attributeValue("strategy"))) {
-					queueingStrategy = Queue.FCFS;
+					queueingStrategy = QueuingDiscipline.FCFS;
+					queues[i] = new FCFSQueue(i, // index
+							queue.attributeValue("id"), // xml-id
+							queue.attributeValue("name"), // name
+							queueingStrategy, // queueing d
+							numberOfServers // # servers
+					);
+
 				} else if ("PS".equals(queue.attributeValue("strategy"))) {
-					queueingStrategy = Queue.PS;
+					queueingStrategy = QueuingDiscipline.PS;
+					queues[i] = new PSQueue(i, // index
+							queue.attributeValue("id"), // xml-id
+							queue.attributeValue("name"), // name
+							queueingStrategy, // queueing d
+							numberOfServers // # servers
+					);
+
 				} else {
 					log.error(formatDetailMessage(
 							"Invalid or missing \"strategy\" (queueing discipline) setting!",
@@ -380,16 +402,8 @@ public class NetLoader {
 							queue.attributeValue("id"), "queue.name", name));
 					throw new SimQPNException();
 				}
-				numberOfServers = Integer.parseInt(queue
-						.attributeValue("number-of-servers"));
 			}
 
-			queues[i] = new Queue(i, // index
-					queue.attributeValue("id"), // xml-id
-					queue.attributeValue("name"), // name
-					queueingStrategy, // queueing d
-					numberOfServers // # servers
-			);
 			queueToIndexMap.put(queue, i);
 			if (log.isDebugEnabled()) {
 				log.debug("queues[" + i + "] = new Queue(" + i + ", '"
@@ -1202,12 +1216,14 @@ public class NetLoader {
 				QPlace qPl = (QPlace) net.getPlace(i);
 
 				// BEGIN-CONFIG
-				if (qPl.queue.queueDiscip == Queue.PS)
-					qPl.queue.expPS = false;
+				if (qPl.queue.queueDiscip == QueuingDiscipline.PS){
+					((PSQueue)qPl.queue).expPS = false;
+				}
 				// END-CONFIG
 
-				if (!(qPl.queue.queueDiscip == Queue.PS && qPl.queue.expPS))
-					qPl.randServTimeGen = new AbstractContinousDistribution[qPl.numColors];
+				if (!(qPl.queue.queueDiscip == QueuingDiscipline.PS && ((PSQueue)qPl.queue).expPS)){
+					qPl.randServTimeGen = new AbstractContinousDistribution[qPl.numColors];					
+				}
 
 				XPath xpathSelector = XMLHelper
 						.createXPath("color-refs/color-ref");
@@ -1231,7 +1247,7 @@ public class NetLoader {
 					String distributionFunction = colorRef
 							.attributeValue("distribution-function");
 
-					if (qPl.queue.queueDiscip == Queue.PS && qPl.queue.expPS) {
+					if (qPl.queue.queueDiscip == QueuingDiscipline.PS && ((PSQueue)qPl.queue).expPS) {
 						log.info("expPS parameter of a queueing place with PS scheduling strategy set to true!");
 						if (!"Exponential".equals(distributionFunction)) {
 							log.error(formatDetailMessage(
@@ -1585,7 +1601,7 @@ public class NetLoader {
 							throw new SimQPNException();
 						}
 						// Initialize random number generator and meanServTimes
-						if (!(qPl.queue.queueDiscip == Queue.PS && qPl.queue.expPS)) {
+						if (!(qPl.queue.queueDiscip == QueuingDiscipline.PS && ((PSQueue)qPl.queue).expPS)) {
 							qPl.randServTimeGen[j] = new Exponential(lambda,
 									RandomNumberGenerator.nextRandNumGen());
 							log.debug("((QPlace) places["

@@ -43,8 +43,8 @@
  
 package de.tud.cs.simqpn.kernel.executor;
 
-import de.tud.cs.simqpn.kernel.entities.Queue;
 import de.tud.cs.simqpn.kernel.entities.Token;
+import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 
 /**
  * Class Event

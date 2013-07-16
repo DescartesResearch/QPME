@@ -279,7 +279,7 @@ public class SimQPNController {
 					OutputFormat.createPrettyPrint());
 			writer.write(doc);
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("",e);
 		} finally {
 			if (writer != null) {
 				try {

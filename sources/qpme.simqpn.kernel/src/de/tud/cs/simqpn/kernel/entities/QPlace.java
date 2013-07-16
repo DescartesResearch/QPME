@@ -70,6 +70,9 @@ import cern.colt.list.DoubleArrayList;
 import cern.jet.random.AbstractContinousDistribution;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
+import de.tud.cs.simqpn.kernel.entities.queue.PSQueue;
+import de.tud.cs.simqpn.kernel.entities.queue.Queue;
+import de.tud.cs.simqpn.kernel.entities.queue.QueuingDiscipline;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.stats.QPlaceQueueStats;
 
@@ -235,7 +238,14 @@ public class QPlace extends Place {
 
 		// SDK-TODO: This check might cause problems for some distributions
 		// where meanServTimes is not initialized!
-		if ((statsLevel > 0) && (queue.expPS || qPlaceQueueStats.indrStats)) {
+		
+		//TODO do this with an overwritten method of QUEUE
+		boolean isExponentialPSQueue = false;
+		if (queue instanceof PSQueue) {
+			isExponentialPSQueue = ((PSQueue) queue).expPS;
+		}
+		
+		if ((statsLevel > 0) && (isExponentialPSQueue || qPlaceQueueStats.indrStats)) {
 			for (int c = 0; c < numColors; c++)
 				// Make sure that all meanServTimes have been initialized
 				if (meanServTimes[c] < 0) {
@@ -251,7 +261,7 @@ public class QPlace extends Place {
 														// structures.
 		for (int c = 0; c < numColors; c++) {
 			if (individualTokens[c]
-					|| (queue.queueDiscip == Queue.PS && statsLevel >= 3))
+					|| (queue.queueDiscip == QueuingDiscipline.PS && statsLevel >= 3))
 				this.queueTokens[c] = new ArrayList(100); // SDK-TODO: See if
 															// 100 is optimal
 															// initial capacity.
@@ -260,7 +270,7 @@ public class QPlace extends Place {
 		}
 
 		// PS Queues
-		if (queue.queueDiscip == Queue.PS && (!queue.expPS)) {
+		if (queue.queueDiscip == QueuingDiscipline.PS && (!isExponentialPSQueue)) {
 			queueTokResidServTimes = new DoubleArrayList[numColors]; // NOTE:
 																		// Note
 																		// that

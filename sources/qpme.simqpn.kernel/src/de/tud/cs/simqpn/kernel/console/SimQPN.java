@@ -49,6 +49,7 @@ import java.util.Map;
 
 import javax.xml.XMLConstants;
 
+import org.apache.log4j.Logger;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
@@ -61,10 +62,13 @@ import org.eclipse.equinox.app.IApplicationContext;
 
 import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.SimQPNException;
+import de.tud.cs.simqpn.kernel.executor.SequentialExecutor;
 import de.tud.cs.simqpn.kernel.monitor.ConsoleSimulatorProgress;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
 public class SimQPN implements IApplication {
+	private static Logger log = Logger.getLogger(SequentialExecutor.class);
+
 
 	private static void runSimulatorOnDocument(Document netDocument,
 			String configurationName, String outputFilename, String logConfigFilename, SimulatorProgress progress) throws SimQPNException {
@@ -145,14 +149,14 @@ public class SimQPN implements IApplication {
 							runSimulatorOnDocument(netDocument, configuration,
 									outputFilename, logConfigFilename, new ConsoleSimulatorProgress());
 						} catch (SimQPNException e) {
-							e.printStackTrace();
+							log.error("",e);
 							return new Integer(1); // signal error
 						}
 					}					
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("",e);
 			return new Integer(1); // signal error
 		}
 		

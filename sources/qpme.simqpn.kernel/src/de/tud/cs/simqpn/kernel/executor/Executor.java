@@ -1,8 +1,8 @@
 package de.tud.cs.simqpn.kernel.executor;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
-import de.tud.cs.simqpn.kernel.entities.Queue;
 import de.tud.cs.simqpn.kernel.entities.Token;
+import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
 public interface Executor  {

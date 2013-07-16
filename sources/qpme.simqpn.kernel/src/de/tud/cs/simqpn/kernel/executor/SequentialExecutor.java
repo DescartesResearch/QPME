@@ -14,9 +14,10 @@ import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.Probe;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
-import de.tud.cs.simqpn.kernel.entities.Queue;
 import de.tud.cs.simqpn.kernel.entities.Token;
 import de.tud.cs.simqpn.kernel.entities.Transition;
+import de.tud.cs.simqpn.kernel.entities.queue.Queue;
+import de.tud.cs.simqpn.kernel.entities.queue.QueuingDiscipline;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 
@@ -92,7 +93,7 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 	 * @exception
 	 */
 	@Override
-	public Net call() throws Exception {
+	public Net call() throws Exception{
 		progressMonitor.startSimulationRun(runID, configuration);
 		
 		initializeWorkingVariables();
@@ -195,10 +196,11 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 
 				progressMonitor.finishWarmUp(getId(), configuration);
 			}
-
+			
 			// Step 1: Fire until no transitions are enabled.
 			int fireCnt = 0;
 			while (enTransCnt > 0) {
+
 				Transition nextTrans; // transition to fire next
 
 				if (enTransCnt == 1) {
@@ -277,8 +279,8 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 			// Step 2: Make sure all service completion events in PS QPlaces
 			// have been scheduled
 			for (int q = 0; q < net.getNumQueues(); q++)
-				if (net.getQueue(q).queueDiscip == Queue.PS
-						&& (!net.getQueue(q).eventsUpToDate))
+				if (net.getQueue(q).queueDiscip == QueuingDiscipline.PS
+						&& (!net.getQueue(q).areEventsUpToDate()))
 					net.getQueue(q).updateEvents(this);
 			/*
 			 * Alternative Code for (int p = 0; p < numPlaces; p++) if
@@ -495,7 +497,7 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 	public void scheduleEvent(double serviceTime, Queue queue, Token token) {
 		QueueEvent ev = new QueueEvent(clock + serviceTime, queue, token);
 		eventList.add(ev);
-		queue.nextEvent = ev;
+		queue.onQueueEventScheduled(ev);
 	}
 
 	public double getClock() {

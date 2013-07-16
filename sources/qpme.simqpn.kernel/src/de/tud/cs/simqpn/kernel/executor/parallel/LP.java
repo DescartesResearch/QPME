@@ -20,9 +20,9 @@ import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.Probe;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
-import de.tud.cs.simqpn.kernel.entities.Queue;
 import de.tud.cs.simqpn.kernel.entities.Token;
 import de.tud.cs.simqpn.kernel.entities.Transition;
+import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.executor.QueueEvent;
 import de.tud.cs.simqpn.kernel.executor.SequentialExecutor;
@@ -35,7 +35,7 @@ import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
  */
 public class LP implements Executor, Runnable {
 
-	private static Logger log = Logger.getLogger(SequentialExecutor.class);
+	private static Logger log = Logger.getLogger(LP.class);
 	private SimQPNConfiguration configuration;
 	private double clock = 0;
 	/** True if still in RampUp period (no measurements taken). */
@@ -189,9 +189,9 @@ public class LP implements Executor, Runnable {
 			try {
 				barrier.await();
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				log.error("",e);
 			} catch (BrokenBarrierException e) {
-				//e.printStackTrace();
+				//log.error("",e);
 			}
 
 			/**
@@ -275,8 +275,9 @@ public class LP implements Executor, Runnable {
 				for (Place p : places) {
 					if (p instanceof QPlace) {
 						Queue queue = ((QPlace) p).queue;
-						if (queue.queueDiscip == Queue.PS
-								&& (!queue.eventsUpToDate)) {
+						if(!queue.areEventsUpToDate()){
+						//if (queue.queueDiscip == QueuingDiscipline.PS
+//								&& (!queue.areEventsUpToDate())) {
 							// System.out.println("LP" + id + ":\t\t place "
 							// + p.name + " updated jobs at "
 							// + ((QPlace) p).queue.name);
@@ -285,7 +286,7 @@ public class LP implements Executor, Runnable {
 							try {
 								queue.updateEvents(this);
 							} catch (SimQPNException e) {
-								e.printStackTrace();
+								log.error("",e);
 							}
 						}
 					}
@@ -314,9 +315,9 @@ public class LP implements Executor, Runnable {
 						barrier.await();
 					}
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					log.error("",e);
 				} catch (BrokenBarrierException e) {
-					//e.printStackTrace();
+					//log.error("",e);
 				}
 				lbts = getLBTS();
 				// System.out.println("LP" + id + " lbts" + lbts +
@@ -326,9 +327,9 @@ public class LP implements Executor, Runnable {
 						barrier.await();
 					}
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					log.error("",e);
 				} catch (BrokenBarrierException e) {
-					e.printStackTrace();
+					//log.error("",e);
 				}
 
 				// Step 4: Heart Beat
@@ -479,7 +480,7 @@ public class LP implements Executor, Runnable {
 				// for (int pr = 0; pr < probes.length; pr++)
 				// probes[pr].finish(configuration, clock);
 			} catch (SimQPNException e) {
-				e.printStackTrace();
+				log.error("",e);
 			}
 		}
 	}
@@ -800,7 +801,7 @@ public class LP implements Executor, Runnable {
 		QueueEvent ev = new QueueEvent(clock + serviceTime, queue, token);
 		eventList.add(ev);
 		if (queue != null) {
-			queue.nextEvent = ev;
+			queue.onQueueEventScheduled(ev);
 		}
 	}
 

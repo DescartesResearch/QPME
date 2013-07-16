@@ -8,16 +8,20 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
 
+import org.apache.log4j.Logger;
+
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
+import de.tud.cs.simqpn.kernel.analyzer.ReplicationDeletionParallel;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
-import de.tud.cs.simqpn.kernel.entities.Queue;
 import de.tud.cs.simqpn.kernel.entities.Transition;
+import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
 public class ParallelExecutor implements Callable<Net> {
+	private static Logger log = Logger.getLogger(ReplicationDeletionParallel.class);
 
 	private Net net;
 	private SimQPNConfiguration configuration;
@@ -60,7 +64,7 @@ public class ParallelExecutor implements Callable<Net> {
 			try {
 				threads[i].join();
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				log.error("",e);
 			}
 		}
 		return this.net;

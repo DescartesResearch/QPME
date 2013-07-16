@@ -82,9 +82,7 @@ public class Welch {// implements Analyzer {
 
 		List<Callable<Net>> listOfRuns = new ArrayList<Callable<Net>>();
 		for (int i = 0; i < configuration.getNumRuns(); i++) {
-			Net netCopy = new Net(net, configuration);
-			netCopy.finishCloning(net, configuration);
-
+			Net netCopy = net.clone(configuration);
 			Callable<Net> run = new SequentialExecutor(netCopy,
 					configuration, monitor, i + 1);
 			listOfRuns.add(run);
@@ -116,13 +114,13 @@ public class Welch {// implements Analyzer {
 						}
 					}
 				} catch (InterruptedException e) {
-					e.printStackTrace();
-				} catch (ExecutionException e) {
-					e.printStackTrace();
+					log.error("",e);
+				} catch (ExecutionException e2) {
+					log.error("",e2);
 				}
 			}
 		} catch (InterruptedException e1) {
-			e1.printStackTrace();
+			log.error("",e1);
 		}
 		executorService.shutdown();
 
