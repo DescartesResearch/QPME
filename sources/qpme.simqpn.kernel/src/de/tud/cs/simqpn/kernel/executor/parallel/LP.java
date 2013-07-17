@@ -115,13 +115,11 @@ public class LP implements Executor, Runnable {
 
 	private CyclicBarrier barrier;
 
-	/** global stop criterion*/
+	/** global stop criterion */
 	private StopCriterion stopCriterion;
-	
-	/** local stop criterion*/
+
+	/** local stop criterion */
 	boolean finished = false;
-
-
 
 	LP(Place[] places, Transition[] transitions, Queue[] queues, /**
 	 * Probe[]
@@ -189,9 +187,9 @@ public class LP implements Executor, Runnable {
 			try {
 				barrier.await();
 			} catch (InterruptedException e) {
-				log.error("",e);
+				log.error("", e);
 			} catch (BrokenBarrierException e) {
-				//log.error("",e);
+				// log.error("",e);
 			}
 
 			/**
@@ -275,9 +273,9 @@ public class LP implements Executor, Runnable {
 				for (Place p : places) {
 					if (p instanceof QPlace) {
 						Queue queue = ((QPlace) p).queue;
-						if(!queue.areEventsUpToDate()){
-						//if (queue.queueDiscip == QueuingDiscipline.PS
-//								&& (!queue.areEventsUpToDate())) {
+						if (!queue.areEventsUpToDate()) {
+							// if (queue.queueDiscip == QueuingDiscipline.PS
+							// && (!queue.areEventsUpToDate())) {
 							// System.out.println("LP" + id + ":\t\t place "
 							// + p.name + " updated jobs at "
 							// + ((QPlace) p).queue.name);
@@ -286,7 +284,7 @@ public class LP implements Executor, Runnable {
 							try {
 								queue.updateEvents(this);
 							} catch (SimQPNException e) {
-								log.error("",e);
+								log.error("", e);
 							}
 						}
 					}
@@ -315,9 +313,9 @@ public class LP implements Executor, Runnable {
 						barrier.await();
 					}
 				} catch (InterruptedException e) {
-					log.error("",e);
+					log.error("", e);
 				} catch (BrokenBarrierException e) {
-					//log.error("",e);
+					// log.error("",e);
 				}
 				lbts = getLBTS();
 				// System.out.println("LP" + id + " lbts" + lbts +
@@ -327,9 +325,9 @@ public class LP implements Executor, Runnable {
 						barrier.await();
 					}
 				} catch (InterruptedException e) {
-					log.error("",e);
+					log.error("", e);
 				} catch (BrokenBarrierException e) {
-					//log.error("",e);
+					// log.error("",e);
 				}
 
 				// Step 4: Heart Beat
@@ -370,7 +368,6 @@ public class LP implements Executor, Runnable {
 					}
 				}
 
-				
 				// Step 5: Check Stopping Criterion
 				if (configuration.stoppingRule != SimQPNConfiguration.FIXEDLEN
 						&& (!inRampUp) && clock > nextChkAfter) {
@@ -414,16 +411,17 @@ public class LP implements Executor, Runnable {
 						if (done) {
 							// System.out.println("LP"+id+" is DONE DONE DONE DONE");
 							progressMonitor.precisionCheck(id, done, null);
-							//break; // exit while loop
+							// break; // exit while loop
 							finished = true;
 							stopCriterion.notifyFinishedLP();
 						} else {
-							progressMonitor.precisionCheck(id, done, probe.name); // TODO:
-																				// distinguish
-																				// between
-																				// places
-																				// and
-																				// probes.
+							progressMonitor
+									.precisionCheck(id, done, probe.name); // TODO:
+																			// distinguish
+																			// between
+																			// places
+																			// and
+																			// probes.
 						}
 					}
 
@@ -443,14 +441,18 @@ public class LP implements Executor, Runnable {
 
 		if (progressMonitor.isCanceled()) {
 			progressMonitor
-					.warning(id, ": The simulation was canceled by the user." // \n
-							+ "The required precision may not have been reached!");
+					.warning(
+							id,
+							": The simulation was canceled by the user." // \n
+									+ "The required precision may not have been reached!");
 		} else {
 			if (clock >= configuration.totRunLen) {
 				if (configuration.stoppingRule != SimQPNConfiguration.FIXEDLEN) {
 					progressMonitor
-							.warning(id, "The simulation was stopped because of reaching max totalRunLen." // \n
-									+ "The required precision may not have been reached!");
+							.warning(
+									id,
+									"The simulation was stopped because of reaching max totalRunLen." // \n
+											+ "The required precision may not have been reached!");
 				} else
 					log.info("STOPPING because max totalRunLen is reached!");
 			}
@@ -463,9 +465,10 @@ public class LP implements Executor, Runnable {
 		// total time elapsed in seconds
 		runWallClockTime = (endRunWallClock - beginRunWallClock) / 1000;
 
-		log.info("LP"+id+": " +"msrmPrdLen= " + msrmPrdLen + " totalRunLen= " + endRunClock
-				+ " runWallClockTime=" + (int) (runWallClockTime / 60)
-				+ " min (=" + runWallClockTime + " sec)");
+		log.info("LP" + id + ": " + "msrmPrdLen= " + msrmPrdLen
+				+ " totalRunLen= " + endRunClock + " runWallClockTime="
+				+ (int) (runWallClockTime / 60) + " min (=" + runWallClockTime
+				+ " sec)");
 
 		// Complete statistics collection (make sure this is done AFTER the
 		// above statements)
@@ -480,7 +483,7 @@ public class LP implements Executor, Runnable {
 				// for (int pr = 0; pr < probes.length; pr++)
 				// probes[pr].finish(configuration, clock);
 			} catch (SimQPNException e) {
-				log.error("",e);
+				log.error("", e);
 			}
 		}
 	}
@@ -534,9 +537,9 @@ public class LP implements Executor, Runnable {
 			log.error("Null message");
 			throw new SimQPNException();
 		} else {
-//			System.out.println("LP" + id + ": " + ev.queue.name
-//					+ " processed job at " + (int) ev.time + " of duration "
-//					+ (int) (ev.time - clock) + " with lbts " + (int) lbts);
+			// System.out.println("LP" + id + ": " + ev.queue.name
+			// + " processed job at " + (int) ev.time + " of duration "
+			// + (int) (ev.time - clock) + " with lbts " + (int) lbts);
 
 			// Advance simulation time
 			clock = ev.time;
@@ -554,15 +557,13 @@ public class LP implements Executor, Runnable {
 				int localTransId = tr.id - transitions[0].id; // tr.id
 				if (tr.enabled()) {
 					if (localTransId >= 0 && localTransId < transitions.length) {
-						synchronized (this) {
-							if ((!transStatus[localTransId])) {
-								// System.out.println("LP" + id
-								// + ": \t\t enabled "
-								// + transitions[localTransId].name
-								// + "[due to queueEvent]");
-								transStatus[localTransId] = true;
-								enTransCnt++;
-							}
+						if ((!transStatus[localTransId])) {
+							// System.out.println("LP" + id
+							// + ": \t\t enabled "
+							// + transitions[localTransId].name
+							// + "[due to queueEvent]");
+							transStatus[localTransId] = true;
+							enTransCnt++;
 						}
 					}
 				}
@@ -571,7 +572,6 @@ public class LP implements Executor, Runnable {
 			eventList.remove(ev);
 		}
 	}
-
 
 	/**
 	 * Returns true if the LP can finish
@@ -683,17 +683,15 @@ public class LP implements Executor, Runnable {
 							if (tr.enabled()) {
 								if (localTransId >= 0
 										&& localTransId < transitions.length) {
-									synchronized (this) {
-										if ((!transStatus[localTransId])) {
-											System.out
-													.println("LP"
-															+ id
-															+ ":\t\t enabled "
-															+ transitions[localTransId].name
-															+ " [due to firing]");
-											transStatus[localTransId] = true;
-											enTransCnt++;
-										}
+									if ((!transStatus[localTransId])) {
+										System.out
+												.println("LP"
+														+ id
+														+ ":\t\t enabled "
+														+ transitions[localTransId].name
+														+ " [due to firing]");
+										transStatus[localTransId] = true;
+										enTransCnt++;
 									}
 								} else {
 									// TODO will be done at incomingTokenList
@@ -759,15 +757,13 @@ public class LP implements Executor, Runnable {
 				RandomNumberGenerator.nextRandNumGen());
 
 		// Initialize transStatus and enTransCnt
-		synchronized (this) {
-			transStatus = new boolean[transitions.length];
-			for (int i = 0; i < transitions.length; i++) {
-				if (transitions[i].enabled()) {
-					transStatus[i] = true;
-					enTransCnt++;
-				} else {
-					transStatus[i] = false;
-				}
+		transStatus = new boolean[transitions.length];
+		for (int i = 0; i < transitions.length; i++) {
+			if (transitions[i].enabled()) {
+				transStatus[i] = true;
+				enTransCnt++;
+			} else {
+				transStatus[i] = false;
 			}
 		}
 
@@ -781,7 +777,7 @@ public class LP implements Executor, Runnable {
 		System.arraycopy(second, 0, result, first.length, second.length);
 		return result;
 	}
-	
+
 	public void setStopCriterion(StopCriterion stopCriterion) {
 		this.stopCriterion = stopCriterion;
 	}
@@ -789,12 +785,12 @@ public class LP implements Executor, Runnable {
 	public void setBarrier(CyclicBarrier barrier) {
 		this.barrier = barrier;
 	}
-	
+
 	@Override
 	public double getClock() {
 		return clock;
 	}
-	
+
 	@Override
 	public synchronized void scheduleEvent(double serviceTime, Queue queue,
 			Token token) {
@@ -873,9 +869,6 @@ public class LP implements Executor, Runnable {
 	@Override
 	public void addTokenEvent(TokenEvent tokenEvent) {
 		incomingTokenList.add(tokenEvent);
-		synchronized (this) {
-			this.notify();
-		}
 	}
 
 }
