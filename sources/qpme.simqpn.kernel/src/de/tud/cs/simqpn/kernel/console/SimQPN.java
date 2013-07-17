@@ -62,12 +62,11 @@ import org.eclipse.equinox.app.IApplicationContext;
 
 import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.SimQPNException;
-import de.tud.cs.simqpn.kernel.executor.SequentialExecutor;
 import de.tud.cs.simqpn.kernel.monitor.ConsoleSimulatorProgress;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
 public class SimQPN implements IApplication {
-	private static Logger log = Logger.getLogger(SequentialExecutor.class);
+	private static Logger log = Logger.getLogger(SimQPN.class);
 
 
 	private static void runSimulatorOnDocument(Document netDocument,
