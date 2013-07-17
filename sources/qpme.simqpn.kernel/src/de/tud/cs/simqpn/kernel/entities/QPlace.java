@@ -60,6 +60,8 @@
  */
 package de.tud.cs.simqpn.kernel.entities;
 
+import static de.tud.cs.simqpn.kernel.util.LogUtil.formatDetailMessage;
+
 import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
@@ -68,12 +70,14 @@ import org.dom4j.Element;
 import cern.colt.list.AbstractDoubleList;
 import cern.colt.list.DoubleArrayList;
 import cern.jet.random.AbstractContinousDistribution;
+import cern.jet.random.Exponential;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.queue.PSQueue;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 import de.tud.cs.simqpn.kernel.entities.queue.QueuingDiscipline;
 import de.tud.cs.simqpn.kernel.executor.Executor;
+import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.stats.QPlaceQueueStats;
 
 /**
@@ -97,33 +101,36 @@ public class QPlace extends Place {
 									// station (all times usually in
 									// milliseconds)
 	private int[] queueTokenPop; // Number of tokens in the queueing station
-								// (queue), i.e. token population.
-								// Note that for queueing places Place.tokenPop
-								// contains tokens in the depository.
+									// (queue), i.e. token population.
+									// Note that for queueing places
+									// Place.tokenPop
+									// contains tokens in the depository.
 
 	public int[] getQueueTokenPop() {
 		return queueTokenPop;
 	}
-
 
 	public synchronized void setQueueTokenPop(int[] queueTokenPop) {
 		this.queueTokenPop = queueTokenPop;
 	}
 
 	private AbstractDoubleList[] queueTokResidServTimes; // PS queues:
-														// expPS==false:
-														// Residual service
-														// times of the tokens
-														// in the queueing
-														// station (queue).
-	public synchronized AbstractDoubleList[] getQueueTokResidServTimes(){
+															// expPS==false:
+															// Residual service
+															// times of the
+															// tokens
+															// in the queueing
+															// station (queue).
+
+	public synchronized AbstractDoubleList[] getQueueTokResidServTimes() {
 		return queueTokResidServTimes;
 	}
-	
-	public synchronized AbstractDoubleList getQueueTokResidServTimesForColor(int c){
+
+	public synchronized AbstractDoubleList getQueueTokResidServTimesForColor(
+			int c) {
 		return queueTokResidServTimes[c];
 	}
-	
+
 	@SuppressWarnings("rawtypes")
 	public ArrayList[] queueTokens; // PS queues: tokens in queueing station.
 
@@ -145,27 +152,58 @@ public class QPlace extends Place {
 	 * @param configuration
 	 * @throws SimQPNException
 	 */
-	public QPlace(QPlace qPlace, Queue[] queues, SimQPNConfiguration configuration)
-			throws SimQPNException {
+	public QPlace(QPlace qPlace, Queue[] queues,
+			SimQPNConfiguration configuration) throws SimQPNException {
 		super(qPlace, configuration);
 		this.queue = qPlace.queue;
 		this.meanServTimes = qPlace.meanServTimes.clone();
-		this.tkCopyBuffer = new Token[qPlace.tkCopyBuffer.length];//new Token[1]; // TODO
+		this.tkCopyBuffer = new Token[qPlace.tkCopyBuffer.length];// new
+																	// Token[1];
+																	// // TODO
 		for (int c = 0; c < numColors; c++)
 			this.meanServTimes[c] = qPlace.meanServTimes[c];// -1; // -1 means
 															// 'uninitialized'
 		this.queueTokenPop = qPlace.queueTokenPop.clone();
-		this.randServTimeGen = qPlace.randServTimeGen.clone(); //TODO check if this is correct
+		// this.queueTokenPop = new int[numColors];
+		// for (int c = 0; c < numColors; c++)
+		// this.queueTokenPop[c] = qPlace.queueTokenPop[c];
+
+		if (!(this.queue.queueDiscip == QueuingDiscipline.PS && ((PSQueue) this.queue).expPS)) {
+			this.randServTimeGen = new AbstractContinousDistribution[this.numColors];
+			for (int c = 0; c < numColors; c++) {
+				// qPlace.randServTimeGen[c].getClass()
+				AbstractContinousDistribution distribution = qPlace.randServTimeGen[c];
+				if (qPlace.randServTimeGen[c].getClass().equals(
+						Exponential.class)) {
+					String lambdaString = distribution.toString().split("\\(")[1]
+							.split("\\)")[0];
+					double lambda = Double.parseDouble(lambdaString);
+					this.randServTimeGen[c] = new Exponential(lambda,
+							RandomNumberGenerator.nextRandNumGen());
+				} else {
+					//TODO implement copy of other distributions
+					log.error("Copy of distribution" + distribution.getClass()
+							+ " not implemented");
+				}
+			}
+
+		}
+		if (qPlace.queueTokResidServTimes != null) {
+			this.queueTokResidServTimes = new AbstractDoubleList[qPlace.numColors];
+			for (int c = 0; c < numColors; c++) {
+				queueTokResidServTimes[c] = new DoubleArrayList(100);
+			}
+		}
+
+		if (statsLevel > 0)
+			qPlaceQueueStats = new QPlaceQueueStats(id, name, colors,
+					statsLevel, queue.queueDiscip, queue.numServers,
+					meanServTimes, configuration);
+
 	}
-	// this.queueTokenPop = new int[numColors];
-	// for (int c = 0; c < numColors; c++)
-	// this.queueTokenPop[c] = qPlace.queueTokenPop[c];
-//	if(qPlace.queueTokResidServTimes != null){
-//	this.queueTokResidServTimes = new AbstractDoubleList[qPlace.queueTokResidServTimes.length];
-//}
-	
-	
-	public void finishCloning(QPlace qPlace, Queue[] queues, SimQPNConfiguration configuration) throws SimQPNException{
+
+	public void finishCloning(QPlace qPlace, Queue[] queues,
+			SimQPNConfiguration configuration) throws SimQPNException {
 		this.queue = queues[qPlace.queue.id];
 		if (statsLevel > 0)
 			qPlaceQueueStats = new QPlaceQueueStats(id, name, colors,
@@ -202,9 +240,9 @@ public class QPlace extends Place {
 	 * 
 	 */
 	public QPlace(int id, String name, String[] colors, int numInTrans,
-			int numOutTrans, int numProbes, int statsLevel, DepartureDiscipline depDiscip,
-			Queue queue, Element element, SimQPNConfiguration configuration)
-			throws SimQPNException {
+			int numOutTrans, int numProbes, int statsLevel,
+			DepartureDiscipline depDiscip, Queue queue, Element element,
+			SimQPNConfiguration configuration) throws SimQPNException {
 		super(id, name, colors, numInTrans, numOutTrans, numProbes, statsLevel,
 				depDiscip, element, configuration);
 
@@ -238,14 +276,15 @@ public class QPlace extends Place {
 
 		// SDK-TODO: This check might cause problems for some distributions
 		// where meanServTimes is not initialized!
-		
-		//TODO do this with an overwritten method of QUEUE
+
+		// TODO do this with an overwritten method of QUEUE
 		boolean isExponentialPSQueue = false;
 		if (queue instanceof PSQueue) {
 			isExponentialPSQueue = ((PSQueue) queue).expPS;
 		}
-		
-		if ((statsLevel > 0) && (isExponentialPSQueue || qPlaceQueueStats.indrStats)) {
+
+		if ((statsLevel > 0)
+				&& (isExponentialPSQueue || qPlaceQueueStats.indrStats)) {
 			for (int c = 0; c < numColors; c++)
 				// Make sure that all meanServTimes have been initialized
 				if (meanServTimes[c] < 0) {
@@ -270,7 +309,8 @@ public class QPlace extends Place {
 		}
 
 		// PS Queues
-		if (queue.queueDiscip == QueuingDiscipline.PS && (!isExponentialPSQueue)) {
+		if (queue.queueDiscip == QueuingDiscipline.PS
+				&& (!isExponentialPSQueue)) {
 			queueTokResidServTimes = new DoubleArrayList[numColors]; // NOTE:
 																		// Note
 																		// that
@@ -317,7 +357,8 @@ public class QPlace extends Place {
 	 * @exception
 	 */
 	@Override
-	public void start(SimQPNConfiguration configuration, double clock) throws SimQPNException {
+	public void start(SimQPNConfiguration configuration, double clock)
+			throws SimQPNException {
 		synchronized (queue) {
 			if (statsLevel > 0) {
 				// Start statistics collection
@@ -336,12 +377,13 @@ public class QPlace extends Place {
 	 * @exception
 	 */
 	@Override
-	public void finish(SimQPNConfiguration configuration, double runWallClockTime, double clock)
-			throws SimQPNException {
-		synchronized(queue){	
+	public void finish(SimQPNConfiguration configuration,
+			double runWallClockTime, double clock) throws SimQPNException {
+		synchronized (queue) {
 			if (statsLevel > 0) {
 				// Complete statistics collection
-				qPlaceQueueStats.finish(queueTokenPop, configuration,runWallClockTime, clock);
+				qPlaceQueueStats.finish(queueTokenPop, configuration,
+						runWallClockTime, clock);
 				super.finish(configuration, runWallClockTime, clock);
 			}
 		}
@@ -364,25 +406,26 @@ public class QPlace extends Place {
 	public void addTokens(int color, int count, Token[] tokensToBeAdded,
 			Executor executor) throws SimQPNException {
 		synchronized (queue) {
-			
-		if (count <= 0) { // DEBUG
-			log.error("Attempted to add nonpositive number of tokens to queue "
-					+ name);
-			throw new SimQPNException();
-		}
 
-		// Update Stats (below more...) (Note: watch out the order of this and
-		// next statement)
-		if (statsLevel > 0)
-			qPlaceQueueStats.updateTkPopStats(color, queueTokenPop[color],
-					count, executor.getClock());
+			if (count <= 0) { // DEBUG
+				log.error("Attempted to add nonpositive number of tokens to queue "
+						+ name);
+				throw new SimQPNException();
+			}
 
-		queueTokenPop[color] += count;
-		if (individualTokens[color]) {
-			queue.addTokens(this, color, count, tokensToBeAdded, executor);
-		} else {
-			queue.addTokens(this, color, count, null, executor);
-		}
+			// Update Stats (below more...) (Note: watch out the order of this
+			// and
+			// next statement)
+			if (statsLevel > 0) {
+				qPlaceQueueStats.updateTkPopStats(color, queueTokenPop[color],
+						count, executor.getClock());
+			}
+			queueTokenPop[color] += count;
+			if (individualTokens[color]) {
+				queue.addTokens(this, color, count, tokensToBeAdded, executor);
+			} else {
+				queue.addTokens(this, color, count, null, executor);
+			}
 		}
 	}
 
@@ -397,7 +440,7 @@ public class QPlace extends Place {
 	 */
 	public void completeService(Token token, Executor executor)
 			throws SimQPNException {
-		synchronized(queue){
+		synchronized (queue) {
 			if (queueTokenPop[token.color] < 1) {
 				log.error("Attempted to remove a token from queue " + name
 						+ " which is empty!");
@@ -411,8 +454,9 @@ public class QPlace extends Place {
 			qPlaceQueueStats.updateTkPopStats(token.color,
 					queueTokenPop[token.color], -1, executor.getClock());
 			if (statsLevel >= 3)
-				qPlaceQueueStats.updateSojTimeStats(token.color, executor.getClock()
-						- token.arrivTS, executor.getConfiguration());
+				qPlaceQueueStats.updateSojTimeStats(token.color,
+						executor.getClock() - token.arrivTS,
+						executor.getConfiguration());
 		}
 
 		// Now remove token from queue and update queue state
