@@ -76,8 +76,8 @@ public class LP implements Executor, Runnable {
 	private PriorityBlockingQueue<TokenEvent> incomingTokenList = new PriorityBlockingQueue<TokenEvent>(
 			10, new Comparator<TokenEvent>() {
 				public int compare(TokenEvent a, TokenEvent b) {
-					return (a.getIncommingTime() < b.getIncommingTime() ? -1
-							: (a.getIncommingTime() == b.getIncommingTime() ? 0
+					return (a.getTime() < b.getTime() ? -1
+							: (a.getTime() == b.getTime() ? 0
 									: 1));
 				}
 			});
@@ -219,14 +219,14 @@ public class LP implements Executor, Runnable {
 				// Process incoming tokens
 				TokenEvent tkEvent;
 				while (!incomingTokenList.isEmpty()) {
-					if (incomingTokenList.peek().getIncommingTime() > lbts) {
+					if (incomingTokenList.peek().getTime() > lbts) {
 						break;
 					} else {
 						tkEvent = incomingTokenList.poll();
 						Place place = tkEvent.getPlace();
 
-						if (clock < tkEvent.getIncommingTime()) {
-							clock = tkEvent.getIncommingTime();
+						if (clock < tkEvent.getTime()) {
+							clock = tkEvent.getTime();
 						}
 						place.addTokens(tkEvent.getColor(),
 								tkEvent.getNumber(), tkEvent.getTkCopyBuffer(),

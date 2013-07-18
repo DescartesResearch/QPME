@@ -4,16 +4,31 @@ import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.Token;
 import de.tud.cs.simqpn.kernel.entities.Transition;
 
+/**
+ * Container to pass a token from one {@link LP} to another
+ * 
+ * @author Jürgen Walter
+ */
 public class TokenEvent {
-	private double incommingTime;
+	/** time the token arrives in a LP */
+	private double time;
 	private Place place;
 	private int color;
 	private int number;
 	private Token[] tkCopyBuffer;
 	private Transition firingTrans;
 
-	public TokenEvent(double incommingTime, Transition firingTrans, Place place, int color, int number, Token[] tkCopyBuffer) {
-		this.incommingTime = incommingTime;
+	/**
+	 * Constructor
+	 * @param time the timestamp at which this event can be processed
+	 * @param firingTrans the transition which fired
+	 * @param place the recieving place
+	 * @param color the color of the token(s)
+	 * @param number the number of tokens
+	 * @param tkCopyBuffer
+	 */
+	public TokenEvent(double time, Transition firingTrans, Place place, int color, int number, Token[] tkCopyBuffer) {
+		this.time = time;
 		this.firingTrans = firingTrans;
 		this.place = place;
 		this.color = color;
@@ -23,10 +38,10 @@ public class TokenEvent {
 
 
 	/**
-	 * @return the incommingTime
+	 * @return the incomingTime
 	 */
-	public double getIncommingTime() {
-		return incommingTime;
+	public double getTime() {
+		return time;
 	}
 
 	/**
