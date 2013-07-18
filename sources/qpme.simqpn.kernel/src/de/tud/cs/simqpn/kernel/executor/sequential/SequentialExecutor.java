@@ -1,4 +1,4 @@
-package de.tud.cs.simqpn.kernel.executor;
+package de.tud.cs.simqpn.kernel.executor.sequential;
 
 import java.util.Comparator;
 import java.util.PriorityQueue;
@@ -18,6 +18,9 @@ import de.tud.cs.simqpn.kernel.entities.Token;
 import de.tud.cs.simqpn.kernel.entities.Transition;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 import de.tud.cs.simqpn.kernel.entities.queue.QueuingDiscipline;
+import de.tud.cs.simqpn.kernel.executor.Executor;
+import de.tud.cs.simqpn.kernel.executor.QueueEvent;
+import de.tud.cs.simqpn.kernel.executor.TokenEvent;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 

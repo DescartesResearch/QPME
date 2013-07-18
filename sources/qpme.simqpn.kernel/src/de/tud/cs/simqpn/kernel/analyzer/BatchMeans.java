@@ -13,8 +13,8 @@ import org.apache.log4j.Logger;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Net;
-import de.tud.cs.simqpn.kernel.executor.SequentialExecutor;
 import de.tud.cs.simqpn.kernel.executor.parallel.ParallelExecutor;
+import de.tud.cs.simqpn.kernel.executor.sequential.SequentialExecutor;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.stats.Stats;
 
