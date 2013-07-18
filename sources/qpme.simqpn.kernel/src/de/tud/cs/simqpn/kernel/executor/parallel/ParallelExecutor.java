@@ -20,6 +20,11 @@ import de.tud.cs.simqpn.kernel.entities.Transition;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
+/**
+ * This class decomposes a {@link Net} and runs its parts parallel by the use of {@link LP}s
+ * @author D
+ *
+ */
 public class ParallelExecutor implements Callable<Net> {
 	private static Logger log = Logger.getLogger(ReplicationDeletionParallel.class);
 
@@ -28,6 +33,13 @@ public class ParallelExecutor implements Callable<Net> {
 	private SimulatorProgress progressMonitor;
 	private int runID;
 
+	/**
+	 * Constructor
+	 * @param net
+	 * @param configuration
+	 * @param progressMonitor
+	 * @param runID
+	 */
 	public ParallelExecutor(Net net, SimQPNConfiguration configuration,
 			SimulatorProgress progressMonitor, int runID) {
 		this.net = net;
@@ -37,10 +49,11 @@ public class ParallelExecutor implements Callable<Net> {
 	}
 
 	/**
-	 * Modifies net / simulates net
-	 * 
+	 * Simulates the passed net.
+	 *
 	 * @throws SimQPNException
 	 */
+	//Modifies net
 	public Net call() throws SimQPNException {
 		LP[] lps = decomposeNetIntoLPs();
 		System.out.println(lpDecompositionToString(lps));

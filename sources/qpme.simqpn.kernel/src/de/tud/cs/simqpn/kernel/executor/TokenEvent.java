@@ -5,7 +5,7 @@ import de.tud.cs.simqpn.kernel.entities.Token;
 import de.tud.cs.simqpn.kernel.entities.Transition;
 
 /**
- * Container to pass a token from one {@link LP} to another
+ * Container to pass a token from one {@link parallel.LP} to another
  * 
  * @author Jürgen Walter
  */

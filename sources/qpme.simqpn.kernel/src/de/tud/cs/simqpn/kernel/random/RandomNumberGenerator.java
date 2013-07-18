@@ -11,9 +11,10 @@ import de.tud.cs.simqpn.kernel.SimQPNException;
 import edu.cornell.lassp.houle.RngPack.RandomElement;
 
 /**
- * TODO Describe this class and add default header
- * TODO Make nextRandNumGen() non static, to have possibly more randomNumberGenerators
+ * Creates random numbers. 
  */
+// TODO Describe this class and add default header
+// TODO Make nextRandNumGen() non static, to have possibly more randomNumberGenerators
 public class RandomNumberGenerator {
 	private enum RandomGeneratorCategory {
 		DRand, 			// cern.jet.random.engine.DRand 

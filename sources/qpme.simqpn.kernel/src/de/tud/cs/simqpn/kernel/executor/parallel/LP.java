@@ -31,13 +31,16 @@ import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 
 /**
- * Logical Process
+ * This class represents a logical process which simulates a part of a net.
+ * 
+ * The LP processes tokens until a global stopCriterion is reached
+ * 
+ * The LP blocks if the next event is not safe to process. An event it save to
+ * process if there can not arrive previous events from LPs predecessors.
+ * @see ParallelExecutor
  */
 public class LP implements Executor, Runnable {
 
-	private static Logger log = Logger.getLogger(LP.class);
-	private SimQPNConfiguration configuration;
-	private double clock = 0;
 	/** True if still in RampUp period (no measurements taken). */
 	public boolean inRampUp;
 	/** Clock at the end of RampUp, i.e. beginning of the measurement period. */
@@ -51,11 +54,14 @@ public class LP implements Executor, Runnable {
 	/** currentTimeMillis at the end of the run (wall clock time). */
 	public double endRunWallClock;
 	/** Total duration of the run in seconds. */
-
 	public double runWallClockTime;
 
+	private static Logger log = Logger.getLogger(LP.class);
+	private SimQPNConfiguration configuration;
+	/** simulation clock, virtual time */
+	private double clock = 0;
+	/** Identification for the LP. Note: There is no control for id to be unique */
 	private int id;
-
 	/** List of LPs that can create events for this LP */
 	private List<LP> predecessors = new ArrayList<LP>();
 	/** List of LPs this LP can create events for */
@@ -65,7 +71,10 @@ public class LP implements Executor, Runnable {
 	 * List of queue events scheduled for processing at specified points in
 	 * time.
 	 */
-	// QueueEventList needs not to be synchronized
+	/*
+	 * Note: This can be non-blocking as new {@link QueueEvents} are only
+	 * inserted by this LP
+	 */
 	private PriorityQueue<QueueEvent> eventList = new PriorityQueue<QueueEvent>(
 			10, new Comparator<QueueEvent>() {
 				public int compare(QueueEvent a, QueueEvent b) {
@@ -77,8 +86,7 @@ public class LP implements Executor, Runnable {
 			10, new Comparator<TokenEvent>() {
 				public int compare(TokenEvent a, TokenEvent b) {
 					return (a.getTime() < b.getTime() ? -1
-							: (a.getTime() == b.getTime() ? 0
-									: 1));
+							: (a.getTime() == b.getTime() ? 0 : 1));
 				}
 			});
 
@@ -98,16 +106,16 @@ public class LP implements Executor, Runnable {
 	 * update). If true, the value of timeBtwHeartBeats is still measured, and
 	 * set to 0.
 	 */
-	boolean beforeInitHeartBeat;
+	private boolean beforeInitHeartBeat;
 
 	/** Simulation run time of the next heart beat. */
-	double nextHeartBeat;
+	private double nextHeartBeat;
 
 	/**
 	 * Determines How often progress updates are made (in logical simulation
 	 * time units).
 	 */
-	double timeBtwHeartBeats;
+	private double timeBtwHeartBeats;
 
 	/** Random number generator for generating next transition to fire. */
 	private EmpiricalWalker randTransGen;
@@ -119,11 +127,35 @@ public class LP implements Executor, Runnable {
 	private StopCriterion stopCriterion;
 
 	/** local stop criterion */
-	boolean finished = false;
+	private boolean finished = false;
 
-	LP(Place[] places, Transition[] transitions, Queue[] queues, /**
-	 * Probe[]
-	 * probes,
+	/** time stamp of the next event */
+	private double nextEventTime;
+
+	/** lower bound on incoming time stamps */
+	private double lbts;
+
+	/**
+	 * Constructor
+	 * 
+	 * @param places
+	 * @param transitions
+	 * @param queues
+	 * @param configuration
+	 * @param progressMonitor
+	 * @param id
+	 * @param net
+	 */
+	public LP(Place[] places, Transition[] transitions, Queue[] queues, /**
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * Probe[] probes,
 	 */
 	SimQPNConfiguration configuration, SimulatorProgress progressMonitor,
 			int id, Net net) {
@@ -138,6 +170,8 @@ public class LP implements Executor, Runnable {
 	}
 
 	/**
+	 * Merges passed LP into this LP
+	 * 
 	 * TODO Work in Progress
 	 * 
 	 * @param lp_to_merge
@@ -148,8 +182,11 @@ public class LP implements Executor, Runnable {
 		this.queues = concat(queues, lp_to_merge.getQueues());
 	}
 
-	private double nextEventTime;
-	private double lbts;
+	private static <T> T[] concat(T[] first, T[] second) {
+		T[] result = Arrays.copyOf(first, first.length + second.length);
+		System.arraycopy(second, 0, result, first.length, second.length);
+		return result;
+	}
 
 	/**
 	 * Should be similar to {@link SequentialExecutor#run()}
@@ -304,7 +341,7 @@ public class LP implements Executor, Runnable {
 					// + (int) nextEventTime + " smaller than LBTS"
 					// + (int) lbts);
 					// Step 3
-					processEvent(eventList.peek());
+					processQueueEvent(eventList.peek());
 					continue;
 				}
 
@@ -413,7 +450,7 @@ public class LP implements Executor, Runnable {
 							progressMonitor.precisionCheck(id, done, null);
 							// break; // exit while loop
 							finished = true;
-							stopCriterion.notifyFinishedLP();
+							stopCriterion.notifyLPReachedLocalStopCrit();
 						} else {
 							progressMonitor
 									.precisionCheck(id, done, probe.name); // TODO:
@@ -488,7 +525,12 @@ public class LP implements Executor, Runnable {
 		}
 	}
 
-	double getLBTS() {
+	/**
+	 * Returns a lower bound on time stamps of incoming events
+	 * 
+	 * @return
+	 */
+	private double getLBTS() {
 		List<Integer> listOfVisited = new ArrayList<Integer>();
 		Double lbts = getLBTS(listOfVisited);
 		if (lbts == null) {
@@ -504,7 +546,14 @@ public class LP implements Executor, Runnable {
 		}
 	}
 
-	Double getLBTS(List<Integer> listOfVisitedLPs) {
+	/**
+	 * Returns a lower bound on time stamps of incoming events
+	 * 
+	 * @param listOfVisitedLPs
+	 *            List of IDs
+	 * @return
+	 */
+	private Double getLBTS(List<Integer> listOfVisitedLPs) {
 		List<Double> list = new ArrayList<Double>();
 		QueueEvent event;
 		event = eventList.peek();
@@ -530,47 +579,40 @@ public class LP implements Executor, Runnable {
 
 	}
 
-	private void processEvent(QueueEvent ev) throws SimQPNException {
-		if (ev.queue == null) {
-			// null message
-			clock = ev.time;
-			log.error("Null message");
-			throw new SimQPNException();
-		} else {
-			// System.out.println("LP" + id + ": " + ev.queue.name
-			// + " processed job at " + (int) ev.time + " of duration "
-			// + (int) (ev.time - clock) + " with lbts " + (int) lbts);
+	private void processQueueEvent(QueueEvent ev) throws SimQPNException {
+		// System.out.println("LP" + id + ": " + ev.queue.name
+		// + " processed job at " + (int) ev.time + " of duration "
+		// + (int) (ev.time - clock) + " with lbts " + (int) lbts);
 
-			// Advance simulation time
-			clock = ev.time;
+		// Advance simulation time
+		clock = ev.time;
 
-			QPlace qpl = (QPlace) ev.token.place;
-			qpl.completeService(ev.token, this);
-			// Check if some transitions were enabled and
-			// update
-			// transStatus
-			int t, nT;
-			Transition tr;
-			nT = qpl.outTrans.length;
-			for (t = 0; t < nT; t++) {
-				tr = qpl.outTrans[t];
-				int localTransId = tr.id - transitions[0].id; // tr.id
-				if (tr.enabled()) {
-					if (localTransId >= 0 && localTransId < transitions.length) {
-						if ((!transStatus[localTransId])) {
-							// System.out.println("LP" + id
-							// + ": \t\t enabled "
-							// + transitions[localTransId].name
-							// + "[due to queueEvent]");
-							transStatus[localTransId] = true;
-							enTransCnt++;
-						}
+		QPlace qpl = (QPlace) ev.token.place;
+		qpl.completeService(ev.token, this);
+		// Check if some transitions were enabled and
+		// update
+		// transStatus
+		int t, nT;
+		Transition tr;
+		nT = qpl.outTrans.length;
+		for (t = 0; t < nT; t++) {
+			tr = qpl.outTrans[t];
+			int localTransId = tr.id - transitions[0].id; // tr.id
+			if (tr.enabled()) {
+				if (localTransId >= 0 && localTransId < transitions.length) {
+					if ((!transStatus[localTransId])) {
+						// System.out.println("LP" + id
+						// + ": \t\t enabled "
+						// + transitions[localTransId].name
+						// + "[due to queueEvent]");
+						transStatus[localTransId] = true;
+						enTransCnt++;
 					}
 				}
-
 			}
-			eventList.remove(ev);
+
 		}
+		eventList.remove(ev);
 	}
 
 	/**
@@ -587,14 +629,14 @@ public class LP implements Executor, Runnable {
 			}
 			if (!finished) {
 				finished = true;
-				stopCriterion.notifyFinishedLP();
+				stopCriterion.notifyLPReachedLocalStopCrit();
 			}
 			return false;
 		}
 	}
 
 	/**
-	 * Step 1: Fire until no transitions are enabled.
+	 * Fires until no transitions are enabled.
 	 * 
 	 * @param enTransIDs
 	 * @param randTransGen
@@ -772,10 +814,9 @@ public class LP implements Executor, Runnable {
 		timeBtwHeartBeats = 0.0;
 	}
 
-	public static <T> T[] concat(T[] first, T[] second) {
-		T[] result = Arrays.copyOf(first, first.length + second.length);
-		System.arraycopy(second, 0, result, first.length, second.length);
-		return result;
+	@Override
+	public void addTokenEvent(TokenEvent tokenEvent) {
+		incomingTokenList.add(tokenEvent);
 	}
 
 	public void setStopCriterion(StopCriterion stopCriterion) {
@@ -864,11 +905,6 @@ public class LP implements Executor, Runnable {
 
 	public void setQueues(Queue[] queues) {
 		this.queues = queues;
-	}
-
-	@Override
-	public void addTokenEvent(TokenEvent tokenEvent) {
-		incomingTokenList.add(tokenEvent);
 	}
 
 }
