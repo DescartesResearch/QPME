@@ -110,7 +110,7 @@ public class QPlace extends Place {
 		return queueTokenPop;
 	}
 
-	public synchronized void setQueueTokenPop(int[] queueTokenPop) {
+	public void setQueueTokenPop(int[] queueTokenPop) {
 		this.queueTokenPop = queueTokenPop;
 	}
 
@@ -122,12 +122,11 @@ public class QPlace extends Place {
 															// in the queueing
 															// station (queue).
 
-	public synchronized AbstractDoubleList[] getQueueTokResidServTimes() {
+	public AbstractDoubleList[] getQueueTokResidServTimes() {
 		return queueTokResidServTimes;
 	}
 
-	public synchronized AbstractDoubleList getQueueTokResidServTimesForColor(
-			int c) {
+	public AbstractDoubleList getQueueTokResidServTimesForColor(int c) {
 		return queueTokResidServTimes[c];
 	}
 
@@ -181,7 +180,7 @@ public class QPlace extends Place {
 					this.randServTimeGen[c] = new Exponential(lambda,
 							RandomNumberGenerator.nextRandNumGen());
 				} else {
-					//TODO implement copy of other distributions
+					// TODO implement copy of other distributions
 					log.error("Copy of distribution" + distribution.getClass()
 							+ " not implemented");
 				}
@@ -359,18 +358,15 @@ public class QPlace extends Place {
 	@Override
 	public void start(SimQPNConfiguration configuration, double clock)
 			throws SimQPNException {
-		synchronized (queue) {
-			if (statsLevel > 0) {
-				// Start statistics collection
-				qPlaceQueueStats.start(queueTokenPop, configuration, clock);
-				super.start(configuration, clock);
-			}
+		if (statsLevel > 0) {
+			// Start statistics collection
+			qPlaceQueueStats.start(queueTokenPop, configuration, clock);
+			super.start(configuration, clock);
 		}
 	}
 
 	/**
 	 * Method finish
-	 * 
 	 * 
 	 * @param
 	 * @return
@@ -379,13 +375,11 @@ public class QPlace extends Place {
 	@Override
 	public void finish(SimQPNConfiguration configuration,
 			double runWallClockTime, double clock) throws SimQPNException {
-		synchronized (queue) {
-			if (statsLevel > 0) {
-				// Complete statistics collection
-				qPlaceQueueStats.finish(queueTokenPop, configuration,
-						runWallClockTime, clock);
-				super.finish(configuration, runWallClockTime, clock);
-			}
+		if (statsLevel > 0) {
+			// Complete statistics collection
+			qPlaceQueueStats.finish(queueTokenPop, configuration,
+					runWallClockTime, clock);
+			super.finish(configuration, runWallClockTime, clock);
 		}
 	}
 
@@ -405,27 +399,24 @@ public class QPlace extends Place {
 	@Override
 	public void addTokens(int color, int count, Token[] tokensToBeAdded,
 			Executor executor) throws SimQPNException {
-		synchronized (queue) {
+		if (count <= 0) { // DEBUG
+			log.error("Attempted to add nonpositive number of tokens to queue "
+					+ name);
+			throw new SimQPNException();
+		}
 
-			if (count <= 0) { // DEBUG
-				log.error("Attempted to add nonpositive number of tokens to queue "
-						+ name);
-				throw new SimQPNException();
-			}
-
-			// Update Stats (below more...) (Note: watch out the order of this
-			// and
-			// next statement)
-			if (statsLevel > 0) {
-				qPlaceQueueStats.updateTkPopStats(color, queueTokenPop[color],
-						count, executor.getClock());
-			}
-			queueTokenPop[color] += count;
-			if (individualTokens[color]) {
-				queue.addTokens(this, color, count, tokensToBeAdded, executor);
-			} else {
-				queue.addTokens(this, color, count, null, executor);
-			}
+		// Update Stats (below more...) (Note: watch out the order of this
+		// and
+		// next statement)
+		if (statsLevel > 0) {
+			qPlaceQueueStats.updateTkPopStats(color, queueTokenPop[color],
+					count, executor.getClock());
+		}
+		queueTokenPop[color] += count;
+		if (individualTokens[color]) {
+			queue.addTokens(this, color, count, tokensToBeAdded, executor);
+		} else {
+			queue.addTokens(this, color, count, null, executor);
 		}
 	}
 
@@ -440,12 +431,10 @@ public class QPlace extends Place {
 	 */
 	public void completeService(Token token, Executor executor)
 			throws SimQPNException {
-		synchronized (queue) {
-			if (queueTokenPop[token.color] < 1) {
-				log.error("Attempted to remove a token from queue " + name
-						+ " which is empty!");
-				throw new SimQPNException();
-			}
+		if (queueTokenPop[token.color] < 1) {
+			log.error("Attempted to remove a token from queue " + name
+					+ " which is empty!");
+			throw new SimQPNException();
 		}
 
 		// Update stats (below more...) (Note: watch out the order of this and
