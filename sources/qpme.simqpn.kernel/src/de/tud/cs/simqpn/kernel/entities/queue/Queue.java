@@ -403,9 +403,11 @@ public abstract class Queue {
 					epochLength *= 2;
 				}
 			}
-			if(this.name.equals("Q2")){
-				System.out.println("\t\t"+totalMaxPopulation+" > "+maxEpochPopulation+" | "+maxPopulationAtRisingStart +" < "+ totalMaxPopulation+ " " +cntConsRisingEpoch);				
-			}
+			
+			//DEBUG
+			//if(this.name.equals("Q2")){
+			//	System.out.println("\t\t"+totalMaxPopulation+" > "+maxEpochPopulation+" | "+maxPopulationAtRisingStart +" < "+ totalMaxPopulation+ " " +cntConsRisingEpoch);				
+			//}
 
 			maxEpochPopulation = 0;
 			epochMsrmCnt = 0;
