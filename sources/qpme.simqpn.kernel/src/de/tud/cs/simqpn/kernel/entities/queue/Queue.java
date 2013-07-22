@@ -82,7 +82,8 @@ public abstract class Queue {
 	public QPlace[] qPlaces; // Queueing places this queue is part of.
 	public int totNumColors; // Total number of token colors over all queueing
 								// places the queue is part of.
-	private int statsLevel; // The minimum statsLevel of all queueing places the queue
+	private int statsLevel; // The minimum statsLevel of all queueing places the
+							// queue
 	// is part of.
 	// NOTE: we set statsLevel to the minimum here because
 	// currently some of statistics we compute are based on
@@ -92,45 +93,66 @@ public abstract class Queue {
 	/** Number of servers in queueing station. */
 	public int numServers;
 	/** Object containing statistics for this queue. */
-	public QueueStats queueStats; 
+	public QueueStats queueStats;
 	/** The current number of tokens residing in the queue. */
-	private long tkPopulation; 	
-	/** The maximum token population in the current epoch. Used for Overflow Detection*/
-	private long maxEpochPopulation; 
-	/** The total maximum token population in the queue. Used for Overflow Detection */ 
-	private long totalMaxPopulation; 
-	/** Overflow Detection: the number of measurements that were taken in the current epoch*/
+	private long tkPopulation;
+	/**
+	 * The maximum token population in the current epoch. Used for Overflow
+	 * Detection
+	 */
+	private long maxEpochPopulation;
+	/**
+	 * The total maximum token population in the queue. Used for Overflow
+	 * Detection
+	 */
+	private long totalMaxPopulation;
+	/**
+	 * Overflow Detection: the number of measurements that were taken in the
+	 * current epoch
+	 */
 	private int epochMsrmCnt;
-	/**The length (number of measurements) of one epoch. Used for OverflowDetection */
-	private long epochLength = SimQPNConfiguration.OVERFLOW_DET_START_EPOCH_LENGTH; 
+	/**
+	 * The length (number of measurements) of one epoch. Used for
+	 * OverflowDetection
+	 */
+	private long epochLength = SimQPNConfiguration.OVERFLOW_DET_START_EPOCH_LENGTH;
 
 	private long maxPopulationAtRisingStart;
-	/** The number of consecutive epochs in which the maximum population has grown. Used for Overflow Detection.*/
-	private int cntConsRisingEpoch; 
+	/**
+	 * The number of consecutive epochs in which the maximum population has
+	 * grown. Used for Overflow Detection.
+	 */
+	private int cntConsRisingEpoch;
 	private boolean deactivateWarning = false;
 
 	/**
 	 * Returns a clone of this queue
+	 * 
 	 * @param configuration
 	 * @param places
 	 * @return
 	 */
-	public abstract Queue clone(SimQPNConfiguration configuration, Place[] places);
+	public abstract Queue clone(SimQPNConfiguration configuration,
+			Place[] places);
 
 	/**
 	 * Sets instance parameters to the ones of the passed queue
-	 * @param queue - The queue we take the settings from
-	 * @param configuration - The configuration used
-	 * @param places - The places the queue should refer to
+	 * 
+	 * @param queue
+	 *            - The queue we take the settings from
+	 * @param configuration
+	 *            - The configuration used
+	 * @param places
+	 *            - The places the queue should refer to
 	 */
-	protected void setParameters(Queue queue, SimQPNConfiguration configuration,
-			Place[] places) {
+	protected void setParameters(Queue queue,
+			SimQPNConfiguration configuration, Place[] places) {
 		this.totNumColors = queue.totNumColors;
 		this.statsLevel = queue.statsLevel;
 		this.numServers = queue.numServers;
 		this.tkPopulation = queue.tkPopulation;
 		this.maxEpochPopulation = queue.maxEpochPopulation;
-		this.totalMaxPopulation = queue.totalMaxPopulation;
+		//this.totalMaxPopulation = queue.totalMaxPopulation;
 		this.epochMsrmCnt = queue.epochMsrmCnt;
 		this.epochLength = queue.epochLength;
 		this.maxEpochPopulation = queue.maxEpochPopulation;
@@ -147,8 +169,7 @@ public abstract class Queue {
 		}
 		if (queue.queueStats != null) {
 			try {
-				this.queueStats = new QueueStats(
-						queue.queueStats.id,
+				this.queueStats = new QueueStats(queue.queueStats.id,
 						queue.queueStats.name, queue.queueStats.numColors,
 						queue.queueStats.statsLevel,
 						queue.queueStats.queueDiscip,
@@ -157,7 +178,6 @@ public abstract class Queue {
 				log.error("", e);
 			}
 		}
-
 
 	}
 
@@ -168,19 +188,19 @@ public abstract class Queue {
 	 *            - global id of the queue
 	 * @param name
 	 *            - name of the queue
-	 * @param queueDiscip2
+	 * @param queueDiscipline
 	 *            - queueing discipline
 	 * @param numServers
 	 *            - number of servers in queue
 	 */
 	public Queue(int id, String xmlId, String name,
-			QueuingDiscipline queueDiscip, int numServers)
+			QueuingDiscipline queueDiscipline, int numServers)
 			throws SimQPNException {
 
 		this.id = id;
 		this.xmlId = xmlId;
 		this.name = name;
-		this.queueDiscip = queueDiscip;
+		this.queueDiscip = queueDiscipline;
 		this.numServers = numServers;
 		this.qPlaces = null;
 		this.totNumColors = 0;
@@ -189,14 +209,12 @@ public abstract class Queue {
 	}
 
 	/**
-	 * Method addQPlace - adds a queueing place to the list of queueing places
-	 * this queue is part of.
+	 * Adds a queuing place (this queue is part of) to the list of queuing
+	 * places
 	 * 
-	 * NOTE:
-	 * 
-	 * @param
-	 * @return
-	 * @exception
+	 * @param qPl
+	 *            - The queuing place to bee added
+	 * @throws SimQPNException
 	 */
 	public void addQPlace(QPlace qPl) throws SimQPNException {
 		if (qPlaces == null) {
@@ -211,14 +229,13 @@ public abstract class Queue {
 	}
 
 	/**
-	 * Method init
+	 * Initializes object for statistic collection
 	 * 
 	 * NOTE: Should be called after the qPlaces array has been initialized
 	 * before the run has started.
 	 * 
-	 * @param
-	 * @return
-	 * @exception
+	 * @param configuration
+	 * @throws SimQPNException
 	 */
 	public void init(SimQPNConfiguration configuration) throws SimQPNException {
 		statsLevel = 10;
@@ -242,18 +259,20 @@ public abstract class Queue {
 			if (qPlaces[p].statsLevel < statsLevel)
 				statsLevel = qPlaces[p].statsLevel;
 		}
-		
-		if (statsLevel > 0)  //NOTE: This is intentionally done here after qPlaces has been initialized!
-			queueStats = new QueueStats(id, name, totNumColors, statsLevel, queueDiscip, numServers, this, configuration);
+
+		if (statsLevel > 0) // NOTE: This is intentionally done here after
+							// qPlaces has been initialized!
+			queueStats = new QueueStats(id, name, totNumColors, statsLevel,
+					queueDiscip, numServers, this, configuration);
 
 	}
 
 	/**
-	 * Method start - Begin statistics collection
+	 * Starts the collection of statistics for this queue.
 	 * 
-	 * @param
-	 * @return
-	 * @exception
+	 * @param clock
+	 *            - The initial clock when to start statistic collection
+	 * @throws SimQPNException
 	 */
 	public void start(double clock) throws SimQPNException {
 		if (statsLevel > 0)
@@ -261,11 +280,13 @@ public abstract class Queue {
 	}
 
 	/**
-	 * Method finish - Complete statistics collection
+	 * Complete statistics collection.
 	 * 
-	 * @param
-	 * @return
-	 * @exception
+	 * @param configuration
+	 * @param runWallClockTime
+	 * @param clock
+	 *            -
+	 * @throws SimQPNException
 	 */
 	public void finish(SimQPNConfiguration configuration,
 			double runWallClockTime, double clock) throws SimQPNException {
@@ -339,19 +360,22 @@ public abstract class Queue {
 
 		tkPopulation += count;
 
-		// Overflow detection mechanism:
-		// The following algorithm tries to determine an upper bound for the
-		// token
-		// population in the queue. A number of measurements is grouped to
-		// epochs with dynamic
-		// length. The length of an epoch is adjusted to the growth rate of the
-		// population.
-		// If the maximum total population increases in several consecutive
-		// epochs a
-		// warning is printed out.
-		if (tkPopulation > maxEpochPopulation)
+		/*
+		 * Overflow detection mechanism: The following algorithm tries to
+		 * determine an upper bound for the token population in the queue. A
+		 * number of measurements is grouped to epochs with dynamic length. The
+		 * length of an epoch is adjusted to the growth rate of the population.
+		 * If the maximum total population increases in several consecutive
+		 * epochs a warning is printed out.
+		 */
+		if (tkPopulation > maxEpochPopulation){
 			maxEpochPopulation = tkPopulation;
+		}
 		epochMsrmCnt++;
+		
+		
+		
+
 
 		if (executor.getClock() <= 1.0) {
 			// Skip overflow detection at the beginning of the simulation.
@@ -359,6 +383,7 @@ public abstract class Queue {
 			cntConsRisingEpoch = 0;
 			maxPopulationAtRisingStart = maxEpochPopulation;
 		} else if (epochMsrmCnt >= epochLength) {
+			//DEBUG System.out.println("\t"+epochMsrmCnt +" >= "+ epochLength);
 			// New maximum population?
 			if (maxEpochPopulation > totalMaxPopulation) {
 				totalMaxPopulation = maxEpochPopulation;
@@ -378,8 +403,15 @@ public abstract class Queue {
 					epochLength *= 2;
 				}
 			}
+			if(this.name.equals("Q2")){
+				System.out.println("\t\t"+totalMaxPopulation+" > "+maxEpochPopulation+" | "+maxPopulationAtRisingStart +" < "+ totalMaxPopulation+ " " +cntConsRisingEpoch);				
+			}
+
 			maxEpochPopulation = 0;
 			epochMsrmCnt = 0;
+
+//			SimQPNConfiguration.OVERFLOW_DET_MIN_CONS_RISING_EPOCHS
+//			+(cntConsRisingEpoch > SimQPNConfiguration.OVERFLOW_DET_MAX_CONS_RISING_EPOCHS) && (totalMaxPopulation > 2 * maxPopulationAtRisingStart))) {
 
 			if (totalMaxPopulation < SimQPNConfiguration.OVERFLOW_DET_DETECTION_THRESHOLD) {
 				// If total population is below the detection threshold, do not
@@ -388,6 +420,7 @@ public abstract class Queue {
 				// disabled if the queue population is low.
 				maxPopulationAtRisingStart = totalMaxPopulation;
 			} else {
+
 				// Check whether an overflow warning is issued. The first
 				// part of the condition is for fast growing queues, the second
 				// part for slowly growing ones.
@@ -408,7 +441,7 @@ public abstract class Queue {
 			}
 		}
 
-		if (statsLevel >= 2){ // NOTE: For statsLevel=1, we don't need to do
+		if (statsLevel >= 2) { // NOTE: For statsLevel=1, we don't need to do
 								// anything since throughput data is calculated
 								// as sum of the throughputs of all QPlaces the
 								// Queue is part of.

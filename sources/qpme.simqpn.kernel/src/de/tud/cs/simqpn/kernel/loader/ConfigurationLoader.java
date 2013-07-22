@@ -24,7 +24,7 @@ import de.tud.cs.simqpn.kernel.util.LogUtil.ReportLevel;
 public class ConfigurationLoader {
 	private static Logger log = Logger.getLogger(ConfigurationLoader.class);
 
-	public static SimQPNConfiguration configure(Element netElement,
+	public static SimQPNConfiguration loadConfiguration(Element netElement,
 			String configurationString, String logConfigFilename)
 			throws SimQPNException {
 		// BEGIN-CONFIG
@@ -258,27 +258,6 @@ public class ConfigurationLoader {
 			log.debug("secondsBtwChkStops = "
 					+ configuration.secondsBtwChkStops + ";");
 		}
-
-		/*
-		 * ORIGINAL HEARTBEAT IMPLEMENTATION
-		 * if(simulatorSettings.attributeValue("time-before-initial-heart-beat")
-		 * == null) { logln(
-		 * "Error: Configuration parameter \"time-before-initial-heart-beat\" is not configured!"
-		 * ); logln("  configuration = " + configuration); throw new
-		 * SimQPNException(); } timeInitHeartBeat =
-		 * Double.parseDouble(simulatorSettings
-		 * .attributeValue("time-before-initial-heart-beat")); logln(2,
-		 * "timeInitHeartBeat = " + timeInitHeartBeat + ";");
-		 * 
-		 * if(simulatorSettings.attributeValue("seconds-between-heart-beats") ==
-		 * null) { logln(
-		 * "Error: Configuration parameter \"seconds-between-heart-beats\" is not configured!"
-		 * ); logln("  configuration = " + configuration); throw new
-		 * SimQPNException(); } secsBtwHeartBeats =
-		 * Double.parseDouble(simulatorSettings
-		 * .attributeValue("seconds-between-heart-beats")); logln(2,
-		 * "secsBtwHeartBeats = " + secsBtwHeartBeats + ";");
-		 */
 
 		if (configuration.getAnalMethod() != SimQPNConfiguration.AnalysisMethod.BATCH_MEANS
 				&& configuration.stoppingRule != SimQPNConfiguration.FIXEDLEN) {

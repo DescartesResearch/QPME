@@ -6,12 +6,16 @@ import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 
+/**
+ * The Net class holds all entities of a QPN 
+ * @author Jürgen Walter
+ *
+ */
 public class Net {
 
 	private static Logger log = Logger.getLogger(Net.class);
 
-	// XML Configuration
-	private String configurationName;
+	private String xmlConfigurationName;
 
 	private Place[] places;
 	private Transition[] transitions;
@@ -26,7 +30,28 @@ public class Net {
 	/**
 	 * Constructor
 	 */
-	public Net() {
+	public Net() {};
+	
+	/**
+	 * Constructor which copies some values from the parameters. This constructor is part of
+	 * the clone function
+	 * 
+	 * @param net
+	 * @param configuration
+	 * @see #clone()
+	 * @throws SimQPNException
+	 */
+	private Net(Net net, SimQPNConfiguration configuration)
+			throws SimQPNException {
+		this.setConfigurationName(net.xmlConfigurationName);
+		this.numPlaces = net.numPlaces;
+		this.numTransitions = net.numTransitions;
+		this.numQueues = net.numQueues;
+		this.numProbes = net.numProbes;
+		this.places = new Place[net.numPlaces];
+		this.transitions = new Transition[net.numTransitions];
+		this.queues = new Queue[net.numQueues];
+		this.probes = new Probe[net.numProbes];
 	}
 
 	/**
@@ -44,28 +69,6 @@ public class Net {
 			log.error("Error during net cloning", e);
 		}
 		return clone;
-	}
-
-	/**
-	 * Constructor which copies some values from the parameters. It is part of
-	 * the clone function
-	 * 
-	 * @param net
-	 * @param configuration
-	 * @see #clone()
-	 * @throws SimQPNException
-	 */
-	private Net(Net net, SimQPNConfiguration configuration)
-			throws SimQPNException {
-		this.setConfigurationName(net.getConfigurationName());
-		this.numPlaces = net.numPlaces;
-		this.numTransitions = net.numTransitions;
-		this.numQueues = net.numQueues;
-		this.numProbes = net.numProbes;
-		this.places = new Place[net.numPlaces];
-		this.transitions = new Transition[net.numTransitions];
-		this.queues = new Queue[net.numQueues];
-		this.probes = new Probe[net.numProbes];
 	}
 
 	/**
@@ -219,20 +222,16 @@ public class Net {
 		return probes;
 	}
 
-	public String getConfiguration() {
-		return getConfigurationName();
-	}
-
 	public void setConfiguration(String configuration) {
 		this.setConfigurationName(configuration);
 	}
 
 	public String getConfigurationName() {
-		return configurationName;
+		return xmlConfigurationName;
 	}
 
 	public void setConfigurationName(String configurationName) {
-		this.configurationName = configurationName;
+		this.xmlConfigurationName = configurationName;
 	}
 
 }

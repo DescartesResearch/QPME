@@ -72,7 +72,7 @@ public class NetLoader {
 	private static Logger log = Logger.getLogger(NetLoader.class);
 
 	/**
-	 * TODO Calls parse, flatten, validate methods
+	 * Loads a Net from XML.
 	 * 
 	 * @param netXML
 	 * @return
@@ -232,7 +232,7 @@ public class NetLoader {
 	}
 
 	/**
-	 * Checks if there exist same color definitions
+	 * Checks if there exist identical color definitions
 	 * 
 	 * @param netXML
 	 * @throws SimQPNException
@@ -450,7 +450,7 @@ public class NetLoader {
 					.attributeValue("id"));
 
 			Element metaAttribute = XMLHelper.getSettings(place,
-					net.getConfiguration());
+					net.getConfigurationName());
 			// Stats-level should be configurable as above.
 			if (metaAttribute.attributeValue("statsLevel") == null) {
 				log.error(formatDetailMessage("statsLevel parameter not set!",
@@ -823,7 +823,7 @@ public class NetLoader {
 			}
 
 			Element metaAttribute = XMLHelper.getSettings(probe,
-					net.getConfiguration());
+					net.getConfigurationName());
 			int statsLevel = 0;
 			if (metaAttribute != null) {
 				if (metaAttribute.attributeValue("statsLevel") == null) {
@@ -2108,7 +2108,7 @@ public class NetLoader {
 		throw new NoSuchElementException();
 	}
 	
-	protected int getNumConnectionsWithSourceId(String id) {
+	private int getNumConnectionsWithSourceId(String id) {
 		Integer num = sourceIdToNumConnectionsMap.get(id);
 		if (num != null) {
 			return num.intValue();
@@ -2116,7 +2116,7 @@ public class NetLoader {
 		return 0;
 	}
 	
-	protected int getNumConnectionsWithTargetId(String id) {
+	private int getNumConnectionsWithTargetId(String id) {
 		Integer num = targetIdToNumConnectionsMap.get(id);
 		if (num != null) {
 			return num.intValue();
