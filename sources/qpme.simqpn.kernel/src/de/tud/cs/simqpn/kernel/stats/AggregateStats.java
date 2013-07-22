@@ -743,10 +743,10 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 			
 		for (int c = 0; c < numColors; c++) {
 			report.append("\n");				
-			report.append("------------------ Color=" + c + " --------------------");				
-			report.append("meanArrivThrPut[c]=").append(meanArrivThrPut[c]);
+			report.append("------------------ Color=" + c + " --------------------\n"); // +\n				
+			report.append("meanArrivThrPut[c]=").append(meanArrivThrPut[c]).append("\n"); //+\n
 			report.append(" meanDeptThrPut[c]=").append(meanDeptThrPut[c]).append("\n");
-			report.append("stDevArrivThrPut[c]=").append(stDevArrivThrPut[c]);
+			report.append("stDevArrivThrPut[c]=").append(stDevArrivThrPut[c]).append("\n"); //+\n
 			report.append(" stDevDeptThrPut[c]=").append(stDevDeptThrPut[c]).append("\n");				
 											
 			if (statsLevel >= 2) {				
