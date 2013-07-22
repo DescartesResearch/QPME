@@ -66,9 +66,7 @@ import cern.jet.stat.Descriptive;
 import cern.jet.stat.Probability;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
-import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 import de.tud.cs.simqpn.kernel.entities.queue.QueuingDiscipline;
-import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.util.LogUtil.ReportLevel;
 
 /**
@@ -178,6 +176,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	 * @return
 	 * @exception
 	 */
+	@Override
 	public void init(int[] tokenPop, SimQPNConfiguration configuration, double clock) throws SimQPNException {
 		super.init(tokenPop, configuration, clock);
 		
@@ -222,6 +221,7 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	 * @param color		- token color
 	 * @param sojTime	- sojourn time of token in queue	 
 	 */
+	@Override
 	public void updateSojTimeStats(int color, double sojTime, SimQPNConfiguration configuration) throws SimQPNException {
 		if (indrStats || (inRampUp && configuration.getAnalMethod() != SimQPNConfiguration.AnalysisMethod.WELCH)) return;
 		super.updateSojTimeStats(color, sojTime, configuration);
@@ -242,7 +242,8 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	/**
 	 * Method processStats - processes gathered statistics (summarizes data)
 	 *                        	 
-	 */	
+	 */
+	@Override
 	public void processStats(SimQPNConfiguration configuration) throws SimQPNException {		
 		super.processStats(configuration);
 		if (statsLevel >= 2){
@@ -273,9 +274,9 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	
 	/**
 	 * Method printReport - prints a summary of the collected statistics 
-	 *                      
-	 *  	 
-	 */	
+	 *                       
+	 */
+	@Override
 	public void printReport(SimQPNConfiguration configuration) throws SimQPNException {
 		
 		if (!completed) {

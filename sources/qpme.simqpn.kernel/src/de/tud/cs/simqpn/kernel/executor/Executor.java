@@ -13,5 +13,4 @@ public interface Executor  {
 	public SimQPNConfiguration getConfiguration();
 	public SimulatorProgress getProgressMonitor();
 	public void addTokenEvent(TokenEvent tokenEvent);
-	//public wakeUp( Executor)
 }

@@ -47,7 +47,6 @@ package de.tud.cs.simqpn.kernel.stats;
 import java.io.Serializable;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
-import de.tud.cs.simqpn.kernel.SimQPNController;
 
 public class TimeHistogram implements Serializable  {
 	private static final long serialVersionUID = 689255573778061L;

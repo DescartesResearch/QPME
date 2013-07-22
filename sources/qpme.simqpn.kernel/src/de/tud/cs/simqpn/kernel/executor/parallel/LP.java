@@ -191,6 +191,7 @@ public class LP implements Executor, Runnable {
 	/**
 	 * Should be similar to {@link SequentialExecutor#run()}
 	 */
+	@Override
 	public void run() {
 		try {
 			initializeWorkingVariables();
