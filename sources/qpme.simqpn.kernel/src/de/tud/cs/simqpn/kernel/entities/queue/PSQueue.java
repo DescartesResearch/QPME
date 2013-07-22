@@ -110,7 +110,7 @@ public class PSQueue extends Queue {
 		try {
 			clone = new PSQueue(id, xmlId, name, queueDiscip,
 					numServers);
-			super.finishCloning(clone, configuration, places);
+			clone.setParameters(this, configuration, places);
 			clone.eventsUpToDate = this.eventsUpToDate;
 			clone.eventScheduled = this.eventScheduled;
 

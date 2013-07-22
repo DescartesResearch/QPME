@@ -49,14 +49,11 @@
 
 package de.tud.cs.simqpn.kernel.entities.queue;
 
-import java.util.LinkedList;
-
 import org.apache.log4j.Logger;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Place;
-import de.tud.cs.simqpn.kernel.entities.ProbeTimestamp;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.Token;
 import de.tud.cs.simqpn.kernel.executor.Executor;
@@ -85,109 +82,83 @@ public abstract class Queue {
 	public QPlace[] qPlaces; // Queueing places this queue is part of.
 	public int totNumColors; // Total number of token colors over all queueing
 								// places the queue is part of.
-	int statsLevel; // The minimum statsLevel of all queueing places the queue
-					// is part of.
-					// NOTE: we set statsLevel to the minimum here because
-					// currently some of statistics we compute are based on
-					// corresponding statistics from the QPlaces the queue is
-					// part of.
+	private int statsLevel; // The minimum statsLevel of all queueing places the queue
+	// is part of.
+	// NOTE: we set statsLevel to the minimum here because
+	// currently some of statistics we compute are based on
+	// corresponding statistics from the QPlaces the queue is
+	// part of.
 
-	public int numServers; /** seems global to me*/ // FCFS queues: Number of servers in queueing
-							// station.
-	public int numBusyServers; /** seems global to me*/// FCFS queues: Number of currently busy servers.
-	public LinkedList<Token> waitingLine; /** seems global to me*/// FCFS queues: List of tokens waiting
-											// for service (waiting area of the
-											// queue).
+	/** Number of servers in queueing station. */
+	public int numServers;
+	/** Object containing statistics for this queue. */
+	public QueueStats queueStats; 
+	/** The current number of tokens residing in the queue. */
+	private long tkPopulation; 	
+	/** The maximum token population in the current epoch. Used for Overflow Detection*/
+	private long maxEpochPopulation; 
+	/** The total maximum token population in the queue. Used for Overflow Detection */ 
+	private long totalMaxPopulation; 
+	/** Overflow Detection: the number of measurements that were taken in the current epoch*/
+	private int epochMsrmCnt;
+	/**The length (number of measurements) of one epoch. Used for OverflowDetection */
+	private long epochLength = SimQPNConfiguration.OVERFLOW_DET_START_EPOCH_LENGTH; 
 
-	public QueueStats queueStats; // Object containing statistics for this
-									// queue.
-
-	private long tkPopulation; // The current number of tokens residing in the
-								// queue
-	private long maxEpochPopulation; // Overflow Detection: the maximum token
-										// population in the current epoch
-	private long totalMaxPopulation; // Overflow Detection: the total maximum
-										// token population in the queue
-	private int epochMsrmCnt; // Overflow Detection: the number of measurements
-								// that were taken in the current epoch
-	private long epochLength = SimQPNConfiguration.OVERFLOW_DET_START_EPOCH_LENGTH; // Overflow
-																					// Detection:
-																					// the
-																					// length
-																					// (number
-																					// of
-																					// measurements)
-																					// of
-																					// one
-																					// epoch
 	private long maxPopulationAtRisingStart;
-	private int cntConsRisingEpoch; // Overflow Detection: the number of
-									// consecutive epochs in which the maximum
-									// population has grown
-	private boolean deactivateWarning = false;;
+	/** The number of consecutive epochs in which the maximum population has grown. Used for Overflow Detection.*/
+	private int cntConsRisingEpoch; 
+	private boolean deactivateWarning = false;
 
 	/**
-	 * 
+	 * Returns a clone of this queue
 	 * @param configuration
 	 * @param places
 	 * @return
 	 */
 	public abstract Queue clone(SimQPNConfiguration configuration, Place[] places);
 
-	protected Queue finishCloning(Queue clone, SimQPNConfiguration configuration,
+	/**
+	 * Sets instance parameters to the ones of the passed queue
+	 * @param queue - The queue we take the settings from
+	 * @param configuration - The configuration used
+	 * @param places - The places the queue should refer to
+	 */
+	protected void setParameters(Queue queue, SimQPNConfiguration configuration,
 			Place[] places) {
-		clone.qPlaces = null;
-		if (this.qPlaces != null) {
-			for (int i = 0; i < this.qPlaces.length; i++) {
+		this.totNumColors = queue.totNumColors;
+		this.statsLevel = queue.statsLevel;
+		this.numServers = queue.numServers;
+		this.tkPopulation = queue.tkPopulation;
+		this.maxEpochPopulation = queue.maxEpochPopulation;
+		this.totalMaxPopulation = queue.totalMaxPopulation;
+		this.epochMsrmCnt = queue.epochMsrmCnt;
+		this.epochLength = queue.epochLength;
+		this.maxEpochPopulation = queue.maxEpochPopulation;
+		this.cntConsRisingEpoch = queue.cntConsRisingEpoch;
+		this.deactivateWarning = queue.deactivateWarning;
+		if (queue.qPlaces != null) {
+			for (int i = 0; i < queue.qPlaces.length; i++) {
 				try {
-					clone.addQPlace((QPlace) places[this.qPlaces[i].id]);
+					this.addQPlace((QPlace) places[queue.qPlaces[i].id]);
 				} catch (SimQPNException e) {
 					log.error("", e);
 				}
 			}
 		}
-
-		clone.totNumColors = this.totNumColors;
-		clone.statsLevel = this.statsLevel;
-		clone.numServers = this.numServers;
-		clone.numBusyServers = this.numBusyServers;
-		clone.waitingLine = new LinkedList<Token>();
-		if (this.waitingLine != null) {
-			for (int i = 0; i < this.waitingLine.size(); i++) {
-				Token token = this.waitingLine.get(i);
-				ProbeTimestamp[] probeTimestamps = new ProbeTimestamp[token.probeData.length];
-				for (int j = 0; j < this.waitingLine.get(i).probeData.length; j++) {
-					probeTimestamps[j] = new ProbeTimestamp(
-							token.probeData[j].probeId,
-							token.probeData[j].timestamp);
-				}
-				Token tokenCopy = new Token(places[token.place.id],
-						token.color, probeTimestamps);
-				clone.waitingLine.add(tokenCopy);
-			}
-		}
-		if (this.queueStats != null) {
+		if (queue.queueStats != null) {
 			try {
-				clone.queueStats = new QueueStats(
-						this.queueStats.id, // TODO this could be optimized
-						this.queueStats.name, this.queueStats.numColors,
-						this.queueStats.statsLevel,
-						this.queueStats.queueDiscip,
-						this.queueStats.numServers, clone, configuration);
+				this.queueStats = new QueueStats(
+						queue.queueStats.id,
+						queue.queueStats.name, queue.queueStats.numColors,
+						queue.queueStats.statsLevel,
+						queue.queueStats.queueDiscip,
+						queue.queueStats.numServers, this, configuration);
 			} catch (SimQPNException e) {
 				log.error("", e);
 			}
 		}
-		clone.tkPopulation = this.tkPopulation;
-		clone.maxEpochPopulation = this.maxEpochPopulation;
-		clone.totalMaxPopulation = this.totalMaxPopulation;
-		clone.epochMsrmCnt = this.epochMsrmCnt;
-		clone.epochLength = this.epochLength;
-		clone.maxEpochPopulation = this.maxEpochPopulation;
-		clone.cntConsRisingEpoch = this.cntConsRisingEpoch;
-		clone.deactivateWarning = this.deactivateWarning;
 
-		return clone;
+
 	}
 
 	/**

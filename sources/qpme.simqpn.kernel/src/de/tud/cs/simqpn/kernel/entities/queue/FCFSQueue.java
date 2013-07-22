@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Place;
+import de.tud.cs.simqpn.kernel.entities.ProbeTimestamp;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.Token;
 import de.tud.cs.simqpn.kernel.executor.Executor;
@@ -14,15 +15,11 @@ import de.tud.cs.simqpn.kernel.executor.Executor;
 public class FCFSQueue extends Queue {
 
 	private static Logger log = Logger.getLogger(FCFSQueue.class);
-
-	/** FCFS queues: Number of servers in queueing station. */
-	//public int numServers;
-
-	/** FCFS queues: Number of currently busy servers. */
-	//public int numBusyServers;
-
+	/** Number of currently busy servers. */
+	public int numBusyServers;
 	/** List of tokens waiting for service (waiting area of the queue). */
-	//public LinkedList<Token> waitingLine;
+	public LinkedList<Token> waitingLine;
+
 
 	/**
 	 * Constructor
@@ -49,7 +46,25 @@ public class FCFSQueue extends Queue {
 		FCFSQueue clone = null;
 		try {
 			clone = new FCFSQueue(id, xmlId, name, queueDiscip, numServers);
-			super.finishCloning(clone, configuration, places);
+			clone.setParameters(this, configuration, places);
+			
+			clone.numBusyServers = this.numBusyServers;
+			clone.waitingLine = new LinkedList<Token>();
+			if (this.waitingLine != null) {
+				for (int i = 0; i < this.waitingLine.size(); i++) {
+					Token token = this.waitingLine.get(i);
+					ProbeTimestamp[] probeTimestamps = new ProbeTimestamp[token.probeData.length];
+					for (int j = 0; j < this.waitingLine.get(i).probeData.length; j++) {
+						probeTimestamps[j] = new ProbeTimestamp(
+								token.probeData[j].probeId,
+								token.probeData[j].timestamp);
+					}
+					Token tokenCopy = new Token(places[token.place.id],
+							token.color, probeTimestamps);
+					clone.waitingLine.add(tokenCopy);
+				}
+			}
+
 			//FCFS specific settings
 		} catch (SimQPNException e) {
 			log.error("", e);

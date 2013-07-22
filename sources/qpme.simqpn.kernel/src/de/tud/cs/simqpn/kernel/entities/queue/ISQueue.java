@@ -23,7 +23,7 @@ public class ISQueue extends Queue {
 		ISQueue clone = null;
 		try {
 			clone = new ISQueue(id, xmlId, name, queueDiscip, numServers);
-			super.finishCloning(clone, configuration, places);
+			clone.setParameters(this, configuration, places);
 			//IS specific settings
 		} catch (SimQPNException e) {
 			log.error("", e);
