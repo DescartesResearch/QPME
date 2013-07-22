@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
+import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.Token;
 import de.tud.cs.simqpn.kernel.executor.Executor;
@@ -81,5 +83,11 @@ public class FCFSQueueParallel extends Queue {
 							executor.getClock() - tk.arrivTS, executor.getConfiguration());
 			} else
 				numBusyServers--;
+		}
+
+		@Override
+		public Queue clone(SimQPNConfiguration configuration, Place[] places) {
+			// TODO Auto-generated method stub
+			return null;
 		}
 	}

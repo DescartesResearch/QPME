@@ -73,7 +73,7 @@ import de.tud.cs.simqpn.kernel.stats.QueueStats;
  * @author Samuel Kounev
  * @version %I%, %G%
  */
-public class Queue {
+public abstract class Queue {
 
 	private static Logger log = Logger.getLogger(Queue.class);
 
@@ -127,22 +127,12 @@ public class Queue {
 	private boolean deactivateWarning = false;;
 
 	/**
-	 * Should be overwritten
 	 * 
 	 * @param configuration
 	 * @param places
 	 * @return
 	 */
-	public Queue clone(SimQPNConfiguration configuration, Place[] places) {
-		Queue clone = null;
-		try {
-			clone = new Queue(id, xmlId, name, queueDiscip, numServers);
-			this.finishCloning(clone, configuration, places);
-		} catch (SimQPNException e) {
-			log.error("Anyway, the clone method should have been overwritten", e);
-		}
-		return clone;
-	}
+	public abstract Queue clone(SimQPNConfiguration configuration, Place[] places);
 
 	protected Queue finishCloning(Queue clone, SimQPNConfiguration configuration,
 			Place[] places) {
