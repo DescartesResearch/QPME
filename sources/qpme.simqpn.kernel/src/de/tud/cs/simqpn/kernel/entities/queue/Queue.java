@@ -77,24 +77,37 @@ public abstract class Queue {
 
 	private static Logger log = Logger.getLogger(Queue.class);
 
-	public int id; // Global id of the queue.
-	public String xmlId; // XML ID
-	public String name; // Name of the queue.
-	public QueuingDiscipline queueDiscip; // Queueing discipline.
+	/**
+	 * Global id of the queue. Note: This class does not ensure this ID to be
+	 * unique
+	 */
+	public final int id;
+	/** XML ID */
+	public final String xmlId;
+	/** Name of the queue. */
+	public final String name;
+	/** Queueing discipline of the queue. */
+	public final QueuingDiscipline queueDiscip;
+	/** Number of servers in queuing station. */
+	public final int numServers;
+	/** Queueing places this queue is part of. */
+	public QPlace[] qPlaces;
+	/**
+	 * Total number of token colors over all queuing places the queue is part
+	 * of.
+	 */
+	public int totNumColors;
 
-	public QPlace[] qPlaces; // Queueing places this queue is part of.
-	public int totNumColors; // Total number of token colors over all queueing
-								// places the queue is part of.
-	private int statsLevel; // The minimum statsLevel of all queueing places the
-							// queue
-	// is part of.
-	// NOTE: we set statsLevel to the minimum here because
-	// currently some of statistics we compute are based on
-	// corresponding statistics from the QPlaces the queue is
-	// part of.
+	/**
+	 * The minimum statsLevel of all queuing places the queue is part of.
+	 */
+	/*
+	 * NOTE: we set statsLevel to the minimum here because currently some of
+	 * statistics we compute are based on corresponding statistics from the
+	 * QPlaces the queue is part of.
+	 */
+	private int statsLevel;
 
-	/** Number of servers in queueing station. */
-	public int numServers;
 	/** Object containing statistics for this queue. */
 	public QueueStats queueStats;
 	/** The current number of tokens residing in the queue. */
@@ -152,7 +165,6 @@ public abstract class Queue {
 			SimQPNConfiguration configuration, Place[] places) {
 		this.totNumColors = queue.totNumColors;
 		this.statsLevel = queue.statsLevel;
-		this.numServers = queue.numServers;
 		this.tkPopulation = queue.tkPopulation;
 		this.maxEpochPopulation = queue.maxEpochPopulation;
 		this.totalMaxPopulation = queue.totalMaxPopulation; //
@@ -448,10 +460,11 @@ public abstract class Queue {
 		// }
 	}
 
-	public abstract boolean areEventsUpToDate(); //		return true;
+	public abstract boolean areEventsUpToDate(); // return true;
 
 	/**
 	 * Returns the time the queue can ensure not to finish an event
+	 * 
 	 * @return
 	 */
 	public abstract double getLookahead();
