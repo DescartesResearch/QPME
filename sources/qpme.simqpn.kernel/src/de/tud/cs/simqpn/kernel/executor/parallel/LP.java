@@ -221,7 +221,7 @@ public class LP implements Executor, Runnable {
 			long progressUpdateRate = progressMonitor
 					.getMaxUpdateRealTimeInterval();
 
-			System.out.println("LP" + id + " has been initialized");
+			//System.out.println("LP" + id + " has been initialized");
 			try {
 				barrier.await();
 			} catch (InterruptedException e) {
@@ -282,16 +282,16 @@ public class LP implements Executor, Runnable {
 								if (localTransId >= 0
 										&& localTransId < transitions.length) {
 									if (!transStatus[localTransId]) {
-										System.out
-												.println("LP"
-														+ id
-														+ ": \t\t enabled "
-														+ transitions[localTransId].name);
+//										System.out
+//												.println("LP"
+//														+ id
+//														+ ": \t\t enabled "
+//														+ transitions[localTransId].name);
 										transStatus[localTransId] = true;
 										enTransCnt++;
 									}
 								} else {
-									System.out.println("NOT POSSIBLE");
+									log.error("Error processing incomming tokens");
 									throw new SimQPNException();
 								}
 							}

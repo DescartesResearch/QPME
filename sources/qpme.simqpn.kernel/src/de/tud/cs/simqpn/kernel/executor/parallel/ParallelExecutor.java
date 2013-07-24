@@ -105,14 +105,14 @@ public class ParallelExecutor implements Callable<Net> {
 				sb.append("\t" + t.name + "(transition)" + " ID " + t.id + "\n");
 			}
 
-			sb.append("successors: ");
+			sb.append("\tsuccessors: ");
 			for (LP suc : lp.getSuccessors()) {
-				sb.append(suc.getId() + " ");
+				sb.append("LP"+suc.getId() + " ");
 			}
 			sb.append("\n");
-			sb.append("predecessors: ");
+			sb.append("\tpredecessors: ");
 			for (LP pred : lp.getPredecessors()) {
-				sb.append(pred.getId() + " ");
+				sb.append("LP"+pred.getId() + " ");
 			}
 			sb.append("\n");
 
