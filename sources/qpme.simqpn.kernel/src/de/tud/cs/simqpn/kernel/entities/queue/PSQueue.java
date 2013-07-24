@@ -1,3 +1,44 @@
+/* ==============================================
+ * QPME : Queueing Petri net Modeling Environment
+ * ==============================================
+ *
+ * (c) Copyright 2003-2011, by Samuel Kounev and Contributors.
+ * 
+ * Project Info:   http://descartes.ipd.kit.edu/projects/qpme/
+ *                 http://www.descartes-research.net/
+ *    
+ * All rights reserved. This software is made available under the terms of the 
+ * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * This software is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the Eclipse Public License (EPL)
+ * for more details.
+ *
+ * You should have received a copy of the Eclipse Public License (EPL)
+ * along with this software; if not visit http://www.eclipse.org or write to
+ * Eclipse Foundation, Inc., 308 SW First Avenue, Suite 110, Portland, 97204 USA
+ * Email: license (at) eclipse.org 
+ *  
+ * [Java is a trademark or registered trademark of Sun Microsystems, Inc.
+ * in the United States and other countries.]
+ *                                
+ * =============================================
+ *
+ * Original Author(s):  Jürgen Walter
+ * Contributor(s):
+ * 
+ * NOTE: The above list of contributors lists only the people that have
+ * contributed to this source file - for a list of ALL contributors to 
+ * the project, please see the README.txt file.
+ * 
+ *  History:
+ *  Date        ID                Description
+ *  ----------  ----------------  ------------------------------------------------------------------  
+ *  2013/07/16  Jürgen Walter     Extracted from Queue.
+ * 
+ */
 package de.tud.cs.simqpn.kernel.entities.queue;
 
 import org.apache.log4j.Logger;
@@ -15,6 +56,13 @@ import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.executor.QueueEvent;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 
+/**
+ * This class implements the Processor Sharing(PS) scheduling strategy.
+ * 
+ * Processor sharing is a version of Round Robin scheduling with infinitesimal
+ * small time slices. All requests are served simultaneously. PS is used to
+ * model CPUs.
+ */
 public class PSQueue extends Queue {
 
 	private static Logger log = Logger.getLogger(PSQueue.class);
@@ -23,16 +71,16 @@ public class PSQueue extends Queue {
 	 * True if currently scheduled events for this queue (if any) reflect the
 	 * latest token popolation of the queue.
 	 */
-	public boolean eventsUpToDate;
+	private boolean eventsUpToDate;
 
 	/**
 	 * PS queues: True if there is currently a service completion event
 	 * scheduled for this queue.
 	 */
-	public boolean eventScheduled;
+	private boolean eventScheduled;
 
 	/** Next service completion event scheduled for this queue. */
-	public QueueEvent nextEvent;
+	private QueueEvent nextEvent;
 
 	/**
 	 * true = Processor-Sharing with exponential service times.
@@ -45,44 +93,44 @@ public class PSQueue extends Queue {
 	 * Requires expPS==false: Queueing place containing the next token scheduled
 	 * to complete service.
 	 */
-	public int tkSchedPl;
+	private int tkSchedPl;
 
 	/**
 	 * Requires expPS==false: Color of the next token scheduled to complete
 	 * service.
 	 */
-	public int tkSchedCol;
+	private int tkSchedCol;
 
 	/**
 	 * Requires expPS==false: Index in QPlace.queueTokArrivTS[tkSchedCol] and
 	 * QPlace.queueTokResidServTimes[tkSchedCol] of the next token scheduled to
 	 * complete service.
 	 */
-	public int tkSchedPos;
+	private int tkSchedPos;
 
 	/**
 	 * Requires expPS==false: Time of the last event scheduling, i.e. time of
 	 * the last event with effect on this queue.
 	 */
-	public double lastEventClock;
+	private double lastEventClock;
 
 	/**
 	 * Requires expPS==false: Token population at the time of the last event
 	 * scheduling.
 	 */
-	public int lastEventTkCnt;
+	private int lastEventTkCnt;
 
 	/**
 	 * Requires expPS==true: Random number generators for generating service
 	 * times.
 	 */
-	public AbstractContinousDistribution[] expRandServTimeGen;
+	private AbstractContinousDistribution[] expRandServTimeGen;
 
 	/**
 	 * Requires expPS==true: Random number generator for generating token
 	 * colors.
 	 */
-	public EmpiricalWalker randColorGen;
+	private EmpiricalWalker randColorGen;
 
 	/**
 	 * @param id
@@ -104,12 +152,14 @@ public class PSQueue extends Queue {
 		expPS = false; // By default non-exponential queue is assumed.
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Queue clone(SimQPNConfiguration configuration, Place[] places) {
 		PSQueue clone = null;
 		try {
-			clone = new PSQueue(id, xmlId, name, queueDiscip,
-					numServers);
+			clone = new PSQueue(id, xmlId, name, queueDiscip, numServers);
 			clone.setParameters(this, configuration, places);
 			clone.eventsUpToDate = this.eventsUpToDate;
 			clone.eventScheduled = this.eventScheduled;
@@ -135,11 +185,14 @@ public class PSQueue extends Queue {
 				clone.randColorGen = this.randColorGen;
 			}
 		} catch (SimQPNException e) {
-			log.error("Error during PSQueue cloning",e);
+			log.error("Error during PSQueue cloning", e);
 		}
 		return clone;
 	};
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void init(SimQPNConfiguration configuration) throws SimQPNException {
 		super.init(configuration);
@@ -158,6 +211,8 @@ public class PSQueue extends Queue {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 * 
 	 * Method updateEvents (Used only for PS queues). Schedules next service
 	 * completion event (if any) according to current token population.
 	 * 

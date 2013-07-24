@@ -44,6 +44,8 @@
  *  2009/08/03  Frederik Zipp     Added xmlId property. 
  *  2009/05/05  Frederik Zipp     Support for central queues.
  *  2010/07/24  Simon Spinner	  Support for tracking tokens.
+ *  2013/07/16  Jürgen Walter	  Extracted queuing strategies (FCFS, PS, IS)
+ *  2013/07/22	Jürgen Walter	  Made queue abstract
  * 
  */
 
@@ -61,11 +63,12 @@ import de.tud.cs.simqpn.kernel.executor.QueueEvent;
 import de.tud.cs.simqpn.kernel.stats.QueueStats;
 
 /**
- * Class Queue
+ * Queue is the abstract base class for all queuing strategies.
  * 
  * Note: We use the term queue to refer to a queueing station including both the
- * waiting area and the servers. Note: We assume that in the beginning of the
- * run, the queue is empty!
+ * waiting area and the servers.
+ * 
+ * Note: We assume that in the beginning of the run, the queue is empty!
  * 
  * @author Samuel Kounev
  * @version %I%, %G%
@@ -337,6 +340,7 @@ public abstract class Queue {
 	@SuppressWarnings("unchecked")
 	public void addTokens(QPlace qPl, int color, int count,
 			Token[] tokensToBeAdded, Executor executor) throws SimQPNException {
+		System.out.println(count);
 
 		tkPopulation += count;
 
@@ -348,11 +352,11 @@ public abstract class Queue {
 		 * If the maximum total population increases in several consecutive
 		 * epochs a warning is printed out.
 		 */
-		if (tkPopulation > maxEpochPopulation){
+		if (tkPopulation > maxEpochPopulation) {
 			maxEpochPopulation = tkPopulation;
 		}
 		epochMsrmCnt++;
-				
+
 		if (executor.getClock() <= 1.0) {
 			// Skip overflow detection at the beginning of the simulation.
 			// No representative results can be determined during startup.
@@ -378,7 +382,7 @@ public abstract class Queue {
 					epochLength *= 2;
 				}
 			}
-			
+
 			maxEpochPopulation = 0;
 			epochMsrmCnt = 0;
 
