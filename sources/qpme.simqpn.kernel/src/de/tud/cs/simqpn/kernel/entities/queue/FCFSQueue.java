@@ -195,16 +195,9 @@ public class FCFSQueue extends Queue {
 				qPl.qPlaceQueueStats.updateDelayTimeStats(tk.color,
 						executor.getClock() - tk.arrivTS,
 						executor.getConfiguration());
-		} else
+		} else {
 			numBusyServers--;
-	}
-
-	/**
-	 * Service times do not change with an incoming token. Hence, this method
-	 * has an empty body.
-	 */
-	@Override
-	public void updateResidServTimes(double clock) {
+		}
 	}
 
 	/**
@@ -235,12 +228,5 @@ public class FCFSQueue extends Queue {
 	 */
 	@Override
 	public void updateEvents(Executor executor) throws SimQPNException {}
-
-	/**
-	 * Empty method body.
-	 */
-	@Override
-	public void clearEvents(Executor executor) throws SimQPNException {		
-	};
 
 }

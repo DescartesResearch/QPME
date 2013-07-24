@@ -110,12 +110,6 @@ public class ISQueue extends Queue {
 	}
 
 	/**
-	 * Service times do not change with an incoming token. Hence, this method has an empty body.
-	 */
-	@Override
-	public void updateResidServTimes(double clock) {}
-
-	/**
 	 * Always true
 	 */
 	@Override
@@ -143,12 +137,5 @@ public class ISQueue extends Queue {
 	 */
 	@Override
 	public void updateEvents(Executor executor) throws SimQPNException {};
-
-	/**
-	 * Empty method body.
-	 */
-	@Override
-	public void clearEvents(Executor executor) throws SimQPNException {		
-	};
 
 }

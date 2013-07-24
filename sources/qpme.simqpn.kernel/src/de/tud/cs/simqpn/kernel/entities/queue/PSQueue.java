@@ -331,6 +331,8 @@ public class PSQueue extends Queue {
 	}
 
 	/**
+	 * Clears all scheduled service completion events for this queue.
+	 * 
 	 * Method clearEvents (Used only for PS queues) - clears all scheduled
 	 * service completion events for this queue.
 	 * 
@@ -338,7 +340,6 @@ public class PSQueue extends Queue {
 	 * @return
 	 * @exception
 	 */
-	@Override
 	public void clearEvents(Executor executor) throws SimQPNException {
 		// Remove scheduled event from the event list.
 		// Note that a maximum of one event can be scheduled per PS QPlace at a
@@ -373,7 +374,6 @@ public class PSQueue extends Queue {
 	 * @return
 	 * @exception
 	 */
-	@Override
 	public void updateResidServTimes(double clock) {
 		int numTk;
 		double curRST;

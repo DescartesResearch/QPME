@@ -78,9 +78,9 @@ public abstract class Queue {
 	private static Logger log = Logger.getLogger(Queue.class);
 
 	/**
-	 * Global id of the queue. Note: This class does not ensure this ID to be
-	 * unique
+	 * Global id of the queue.
 	 */
+	/* Note: This class does not ensure this ID to be unique */
 	public final int id;
 	/** XML ID */
 	public final String xmlId;
@@ -107,7 +107,6 @@ public abstract class Queue {
 	 * QPlaces the queue is part of.
 	 */
 	private int statsLevel;
-
 	/** Object containing statistics for this queue. */
 	public QueueStats queueStats;
 	/** The current number of tokens residing in the queue. */
@@ -138,8 +137,36 @@ public abstract class Queue {
 	 * The number of consecutive epochs in which the maximum population has
 	 * grown. Used for Overflow Detection.
 	 */
-	public int cntConsRisingEpoch;
+	private int cntConsRisingEpoch;
+	/**
+	 * The setting for overflow warning.
+	 */
 	private boolean deactivateWarning = false;
+
+	/**
+	 * Constructor
+	 * 
+	 * @param id
+	 *            - global id of the queue
+	 * @param name
+	 *            - name of the queue
+	 * @param queueDiscipline
+	 *            - queuing discipline
+	 * @param numServers
+	 *            - number of servers in queue
+	 */
+	public Queue(int id, String xmlId, String name,
+			QueuingDiscipline queueDiscipline, int numServers)
+			throws SimQPNException {
+		this.id = id;
+		this.xmlId = xmlId;
+		this.name = name;
+		this.queueDiscip = queueDiscipline;
+		this.numServers = numServers;
+		this.qPlaces = null;
+		this.totNumColors = 0;
+		this.statsLevel = 0;
+	}
 
 	/**
 	 * Returns a clone of this queue
@@ -173,33 +200,6 @@ public abstract class Queue {
 		this.maxEpochPopulation = queue.maxEpochPopulation;
 		this.cntConsRisingEpoch = queue.cntConsRisingEpoch;
 		this.deactivateWarning = queue.deactivateWarning; //
-
-	}
-
-	/**
-	 * Constructor
-	 * 
-	 * @param id
-	 *            - global id of the queue
-	 * @param name
-	 *            - name of the queue
-	 * @param queueDiscipline
-	 *            - queueing discipline
-	 * @param numServers
-	 *            - number of servers in queue
-	 */
-	public Queue(int id, String xmlId, String name,
-			QueuingDiscipline queueDiscipline, int numServers)
-			throws SimQPNException {
-
-		this.id = id;
-		this.xmlId = xmlId;
-		this.name = name;
-		this.queueDiscip = queueDiscipline;
-		this.numServers = numServers;
-		this.qPlaces = null;
-		this.totNumColors = 0;
-		this.statsLevel = 0;
 
 	}
 
@@ -240,16 +240,13 @@ public abstract class Queue {
 			throw new SimQPNException();
 		}
 
-		for (int p = 0; p < qPlaces.length; p++) { // NOTE: The two variables
-													// below are intentionally
-													// set here and not in
-													// addQPlace(), since the
-													// user might choose
-													// (although that's not
-													// recommended) to
-													// initialize qPlaces
-													// externally bypassing
-													// addQPlace().
+		for (int p = 0; p < qPlaces.length; p++) {
+			/*
+			 * NOTE: The two variables below are intentionally set here and not
+			 * in addQPlace(), since the user might choose (although that's not
+			 * recommended) to initialize qPlaces externally bypassing
+			 * addQPlace().
+			 */
 			totNumColors += qPlaces[p].numColors;
 			if (qPlaces[p].statsLevel < statsLevel)
 				statsLevel = qPlaces[p].statsLevel;
@@ -310,25 +307,6 @@ public abstract class Queue {
 	 * @exception
 	 */
 	public abstract void updateEvents(Executor executor) throws SimQPNException;
-
-	/**
-	 * Clears all scheduled service completion events for this queue.
-	 * 
-	 * @param
-	 * @return
-	 * @exception
-	 */
-	public abstract void clearEvents(Executor executor) throws SimQPNException;
-
-	/**
-	 * Method updateResidServTimes - updates token residual times. Used only for
-	 * PS queues with non-exp service times.
-	 * 
-	 * @param
-	 * @return
-	 * @exception
-	 */
-	public abstract void updateResidServTimes(double clock);
 
 	// TODO: Consider Simulator.scheduleEvent() below for the case statsLevel <
 	// 3
@@ -422,21 +400,19 @@ public abstract class Queue {
 			}
 		}
 
-		if (statsLevel >= 2) { // NOTE: For statsLevel=1, we don't need to do
-								// anything since throughput data is calculated
-								// as sum of the throughputs of all QPlaces the
-								// Queue is part of.
+		if (statsLevel >= 2) {
+			/*
+			 * NOTE: For statsLevel=1, we don't need to do anything since
+			 * throughput data is calculated as sum of the throughput of all
+			 * QPlaces the Queue is part of.
+			 */
 			queueStats.updateTotTkPopStats(count, executor.getClock());
 		}
-		// if (queueDiscip == unknown) {
-		// log.error("Invalid queueing discipline for QPlace " + name);
-		// throw new SimQPNException();
-		// }
 	}
 
 	/**
-	 * Method completeService - completes service of a token and schedules next
-	 * waiting token for service.
+	 * Completes service of a token and schedules next waiting token for
+	 * service.
 	 * 
 	 * @param token
 	 *            - token completing service
@@ -445,22 +421,18 @@ public abstract class Queue {
 	 */
 	public void completeService(Token token, Executor executor)
 			throws SimQPNException {
-
 		tkPopulation--;
-
-		if (statsLevel >= 2) // NOTE: For statsLevel=1, we don't need to do
-								// anything since throughput data is calculated
-								// as sum of the throughputs of all QPlaces the
-								// Queue is part of.
+		if (statsLevel >= 2) {
+			/*
+			 * NOTE: For statsLevel=1, we don't need to do anything since
+			 * throughput data is calculated as sum of the throughput of all
+			 * QPlaces the Queue is part of.
+			 */
 			queueStats.updateTotTkPopStats(-1, executor.getClock());
-
-		// if (queueDiscip unknown) {
-		// log.error("Invalid queueing discipline for QPlace " + name);
-		// throw new SimQPNException();
-		// }
+		}
 	}
 
-	public abstract boolean areEventsUpToDate(); // return true;
+	public abstract boolean areEventsUpToDate();
 
 	/**
 	 * Returns the time the queue can ensure not to finish an event
