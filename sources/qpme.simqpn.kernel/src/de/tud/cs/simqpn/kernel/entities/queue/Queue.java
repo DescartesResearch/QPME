@@ -63,9 +63,9 @@ import de.tud.cs.simqpn.kernel.executor.QueueEvent;
 import de.tud.cs.simqpn.kernel.stats.QueueStats;
 
 /**
- * Queue is the abstract base class for all queuing strategies.
+ * This class is the abstract base class for all queuing strategies.
  * 
- * Note: We use the term queue to refer to a queueing station including both the
+ * Note: We use the term queue to refer to a queuing station including both the
  * waiting area and the servers.
  * 
  * Note: We assume that in the beginning of the run, the queue is empty!
@@ -297,19 +297,16 @@ public abstract class Queue {
 	 * @return
 	 * @exception
 	 */
-	public void updateEvents(Executor executor) throws SimQPNException {
-	}
+	public abstract void updateEvents(Executor executor) throws SimQPNException;
 
 	/**
-	 * Method clearEvents (Used only for PS queues) - clears all scheduled
-	 * service completion events for this queue.
+	 * Clears all scheduled service completion events for this queue.
 	 * 
 	 * @param
 	 * @return
 	 * @exception
 	 */
-	public void clearEvents(Executor executor) throws SimQPNException {
-	}
+	public abstract void clearEvents(Executor executor) throws SimQPNException;
 
 	/**
 	 * Method updateResidServTimes - updates token residual times. Used only for
@@ -319,8 +316,7 @@ public abstract class Queue {
 	 * @return
 	 * @exception
 	 */
-	public void updateResidServTimes(double clock) {
-	}
+	public abstract void updateResidServTimes(double clock);
 
 	// TODO: Consider Simulator.scheduleEvent() below for the case statsLevel <
 	// 3
@@ -452,21 +448,18 @@ public abstract class Queue {
 		// }
 	}
 
-	public boolean areEventsUpToDate() {
-		return true;
-	}
+	public abstract boolean areEventsUpToDate(); //		return true;
 
 	/**
-	 * Should be overwritten to improve lookahead
-	 * 
+	 * Returns the time the queue can ensure not to finish an event
 	 * @return
 	 */
-	public double getLookahead() {
-		return 0;
-	}
+	public abstract double getLookahead();
 
-	public void onQueueEventScheduled(QueueEvent queueEvent) {
-
-	}
+	/**
+	 * 
+	 * @param queueEvent
+	 */
+	public abstract void onQueueEventScheduled(QueueEvent queueEvent);
 
 }

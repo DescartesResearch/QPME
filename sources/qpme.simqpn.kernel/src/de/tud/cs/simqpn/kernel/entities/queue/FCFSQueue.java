@@ -52,6 +52,7 @@ import de.tud.cs.simqpn.kernel.entities.ProbeTimestamp;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.Token;
 import de.tud.cs.simqpn.kernel.executor.Executor;
+import de.tud.cs.simqpn.kernel.executor.QueueEvent;
 
 /**
  * This class implements the First-Come-First-Serve scheduling strategy.
@@ -93,7 +94,7 @@ public class FCFSQueue extends Queue {
 		try {
 			clone = new FCFSQueue(id, xmlId, name, queueDiscip, numServers);
 			clone.setParameters(this, configuration, places);
-			
+
 			clone.numBusyServers = this.numBusyServers;
 			if (!this.waitingLine.isEmpty()) {
 				for (int i = 0; i < this.waitingLine.size(); i++) {
@@ -110,7 +111,7 @@ public class FCFSQueue extends Queue {
 				}
 			}
 
-			//FCFS specific settings
+			// FCFS specific settings
 		} catch (SimQPNException e) {
 			log.error("", e);
 		}
@@ -137,7 +138,7 @@ public class FCFSQueue extends Queue {
 			numBusyServers++;
 			n++;
 			// Update Stats
-			if (qPl.statsLevel >= 3){
+			if (qPl.statsLevel >= 3) {
 				qPl.qPlaceQueueStats.updateDelayTimeStats(color, 0,
 						executor.getConfiguration());
 			}
@@ -150,28 +151,30 @@ public class FCFSQueue extends Queue {
 			waitingLine.addLast(tk);
 			n++;
 		}
-		
-//		ORIGINAL
-//		int n = 0;
-//		while (n < count && numBusyServers < numServers) {
-//			// Schedule service completion event
-//			double servTime = qPl.randServTimeGen[color].nextDouble();
-//			if (servTime < 0) servTime = 0;
-//			Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[n] : new Token(qPl, color);
-//			tk.arrivTS = Simulator.clock;
-//			Simulator.scheduleEvent(Simulator.clock + servTime, this, tk);
-//			numBusyServers++; n++;
-//			// Update Stats
-//			if (qPl.statsLevel >= 3)   
-//				qPl.qPlaceQueueStats.updateDelayTimeStats(color, 0);																 
-//		}						
-//		while (n < count) {
-//			//  Place the rest of the tokens in the waitingLine
-//			Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[n] : new Token(qPl, color);
-//			tk.arrivTS = Simulator.clock;
-//			waitingLine.addLast(tk);				
-//			n++;					
-//		}		
+
+		// ORIGINAL
+		// int n = 0;
+		// while (n < count && numBusyServers < numServers) {
+		// // Schedule service completion event
+		// double servTime = qPl.randServTimeGen[color].nextDouble();
+		// if (servTime < 0) servTime = 0;
+		// Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[n] : new
+		// Token(qPl, color);
+		// tk.arrivTS = Simulator.clock;
+		// Simulator.scheduleEvent(Simulator.clock + servTime, this, tk);
+		// numBusyServers++; n++;
+		// // Update Stats
+		// if (qPl.statsLevel >= 3)
+		// qPl.qPlaceQueueStats.updateDelayTimeStats(color, 0);
+		// }
+		// while (n < count) {
+		// // Place the rest of the tokens in the waitingLine
+		// Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[n] : new
+		// Token(qPl, color);
+		// tk.arrivTS = Simulator.clock;
+		// waitingLine.addLast(tk);
+		// n++;
+		// }
 	}
 
 	/**
@@ -195,5 +198,49 @@ public class FCFSQueue extends Queue {
 		} else
 			numBusyServers--;
 	}
+
+	/**
+	 * Service times do not change with an incoming token. Hence, this method
+	 * has an empty body.
+	 */
+	@Override
+	public void updateResidServTimes(double clock) {
+	}
+
+	/**
+	 * Always true for FCFS
+	 */
+	@Override
+	public boolean areEventsUpToDate() {
+		return true;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public double getLookahead() {
+		return 0;
+	}
+
+	/**
+	 * Nothing to do for FCFS
+	 */
+	@Override
+	public void onQueueEventScheduled(QueueEvent queueEvent) {
+	}
+
+	/**
+	 * Empty method body.
+	 */
+	@Override
+	public void updateEvents(Executor executor) throws SimQPNException {}
+
+	/**
+	 * Empty method body.
+	 */
+	@Override
+	public void clearEvents(Executor executor) throws SimQPNException {		
+	};
 
 }

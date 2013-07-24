@@ -49,6 +49,7 @@ import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.Token;
 import de.tud.cs.simqpn.kernel.executor.Executor;
+import de.tud.cs.simqpn.kernel.executor.QueueEvent;
 
 /**
  * This class implements the Infinite Server (IS) scheduling strategy.
@@ -98,10 +99,56 @@ public class ISQueue extends Queue {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void completeService(Token token, Executor executor)
 			throws SimQPNException {
 		super.completeService(token, executor);
 		// Nothing to do
 	}
+
+	/**
+	 * Service times do not change with an incoming token. Hence, this method has an empty body.
+	 */
+	@Override
+	public void updateResidServTimes(double clock) {}
+
+	/**
+	 * Always true
+	 */
+	@Override
+	public boolean areEventsUpToDate() {
+		return true;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public double getLookahead() {
+		return 0;
+	}
+
+	/**
+	 * Nothing to do
+	 */
+	@Override
+	public void onQueueEventScheduled(QueueEvent queueEvent) {
+	};
+	
+	/**
+	 * Empty method body.
+	 */
+	@Override
+	public void updateEvents(Executor executor) throws SimQPNException {};
+
+	/**
+	 * Empty method body.
+	 */
+	@Override
+	public void clearEvents(Executor executor) throws SimQPNException {		
+	};
+
 }

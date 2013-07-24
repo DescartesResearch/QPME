@@ -360,8 +360,14 @@ public class PSQueue extends Queue {
 	}
 
 	/**
-	 * Method updateResidServTimes - updates token residual times. Used only for
-	 * PS queues with non-exp service times.
+	 * Updates the token residual times of tokens actually being in process.
+	 * 
+	 * Service times change if the number of parallel processed tokens either
+	 * increase or decrease.
+	 * 
+	 * An increase of tokens slows down the processing by the queue.
+	 * 
+	 * Used only with non-exponential service times.
 	 * 
 	 * @param
 	 * @return
@@ -402,6 +408,9 @@ public class PSQueue extends Queue {
 	// this.nextEvent = queueEvent;
 	// }
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void addTokens(QPlace qPl, int color, int count,
 			Token[] tokensToBeAdded, Executor executor) throws SimQPNException {
@@ -439,6 +448,9 @@ public class PSQueue extends Queue {
 		eventsUpToDate = false;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void completeService(Token token, Executor executor)
 			throws SimQPNException {
@@ -462,14 +474,28 @@ public class PSQueue extends Queue {
 		eventsUpToDate = false;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean areEventsUpToDate() {
 		return eventsUpToDate;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void onQueueEventScheduled(QueueEvent queueEvent) {
 		nextEvent = queueEvent;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */	
+	@Override
+	public double getLookahead() {
+		return 0;
 	}
 
 }
