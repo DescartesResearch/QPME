@@ -85,34 +85,30 @@ package de.tud.cs.simqpn.kernel;
 // Please do not remove any comments! 
 // You can add your comments/answers with a "CHRIS" label.
 
-import static de.tud.cs.simqpn.kernel.util.LogUtil.formatDetailMessage;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.Element;
-import org.dom4j.XPath;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration.AnalysisMethod;
-import de.tud.cs.simqpn.kernel.analyzer.*;
+import de.tud.cs.simqpn.kernel.analyzer.Analyzer;
+import de.tud.cs.simqpn.kernel.analyzer.BatchMeans;
+import de.tud.cs.simqpn.kernel.analyzer.ReplicationDeletion;
+import de.tud.cs.simqpn.kernel.analyzer.Welch;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
-import de.tud.cs.simqpn.kernel.entities.Probe;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.loader.ConfigurationLoader;
+import de.tud.cs.simqpn.kernel.loader.NetLoader;
 import de.tud.cs.simqpn.kernel.loader.XMLAggregateStats;
 import de.tud.cs.simqpn.kernel.loader.XMLBatchMeans;
 import de.tud.cs.simqpn.kernel.loader.XMLNetFlattener;
-import de.tud.cs.simqpn.kernel.loader.NetLoader;
-import de.tud.cs.simqpn.kernel.loader.XMLHelper;
 import de.tud.cs.simqpn.kernel.loader.XMLValidator;
 import de.tud.cs.simqpn.kernel.loader.XMLWelch;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
