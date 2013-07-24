@@ -8,7 +8,8 @@ import de.tud.cs.simqpn.kernel.stats.Stats;
 
 public interface Analyzer {
 
-	Stats[] analyze(Net net, SimQPNConfiguration configuration,
-	SimulatorProgress monitor) throws SimQPNException;
+	public Stats[] analyze(Net net, SimQPNConfiguration configuration,
+			SimulatorProgress monitor)
+			throws SimQPNException;
 
 }

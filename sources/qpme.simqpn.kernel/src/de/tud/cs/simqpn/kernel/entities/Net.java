@@ -5,11 +5,13 @@ import org.apache.log4j.Logger;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
+import de.tud.cs.simqpn.kernel.stats.QueueStats;
 
 /**
- * The Net class holds all entities of a QPN 
+ * The Net class holds all entities of a QPN
+ * 
  * @author Jürgen Walter
- *
+ * 
  */
 public class Net {
 
@@ -30,20 +32,22 @@ public class Net {
 	/**
 	 * Constructor
 	 */
-	public Net() {};
-	
+	public Net() {
+	};
+
 	/**
-	 * Constructor which copies some values from the parameters. This constructor is part of
-	 * the clone function
+	 * Constructor which copies some values from the parameters. This
+	 * constructor is part of the clone function
 	 * 
 	 * @param net
 	 * @param configuration
 	 * @see #clone()
 	 * @throws SimQPNException
 	 */
-	private Net(Net net, SimQPNConfiguration configuration)
-			throws SimQPNException {
-		this.setConfigurationName(net.xmlConfigurationName);
+	private Net(Net net, SimQPNConfiguration configuration) {
+		if (xmlConfigurationName != null) {
+			this.xmlConfigurationName = net.xmlConfigurationName;
+		}
 		this.numPlaces = net.numPlaces;
 		this.numTransitions = net.numTransitions;
 		this.numQueues = net.numQueues;
@@ -51,7 +55,9 @@ public class Net {
 		this.places = new Place[net.numPlaces];
 		this.transitions = new Transition[net.numTransitions];
 		this.queues = new Queue[net.numQueues];
-		this.probes = new Probe[net.numProbes];
+		if (net.numProbes > 0) {
+			this.probes = new Probe[net.numProbes];
+		}
 	}
 
 	/**
@@ -61,6 +67,8 @@ public class Net {
 	 * @return
 	 */
 	public Net clone(SimQPNConfiguration configuration) {
+		//DEBUG	
+		//System.out.println("original " + this +"\n");
 		Net clone = null;
 		try {
 			clone = new Net(this, configuration);
@@ -68,6 +76,8 @@ public class Net {
 		} catch (SimQPNException e) {
 			log.error("Error during net cloning", e);
 		}
+		//DEBUG 
+		//System.out.println("clone " + clone);
 		return clone;
 	}
 
@@ -81,53 +91,67 @@ public class Net {
 	 */
 	private void finishCloning(Net net, SimQPNConfiguration configuration)
 			throws SimQPNException {
-		double clock = 0;
-		for (int i = 0; i < net.numPlaces; i++) {
-			if (net.places[i].getClass().toString().endsWith("QPlace")) {
-				this.places[i] = new QPlace((QPlace) net.places[i], queues,
-						configuration);
-			} else {
-				this.places[i] = new Place(net.places[i], configuration);
-			}
-		}
-		for (int i = 0; i < net.numTransitions; i++) {
-			this.transitions[i] = new Transition(net.transitions[i], places,
-					configuration);
-		}
 		for (int i = 0; i < net.numQueues; i++) {
 			this.queues[i] = net.queues[i].clone(configuration, places);
-			// = new Queue(net.queues[i], configuration, places);
-		}
-
+		}		
 		for (int i = 0; i < net.numPlaces; i++) {
-			if (net.places[i].getClass().toString().endsWith("QPlace")) {
-				((QPlace) this.places[i]).finishCloning((QPlace) net.places[i],
-						this.queues, configuration);
-			}
+			this.places[i] = net.places[i].clone(this.queues, this.transitions,
+					configuration);
 		}
+		
+		setQueueToPlacePointers(net, configuration);
+
+		for (int i = 0; i < net.numTransitions; i++) {
+			this.transitions[i] = net.getTrans(i).clone(this.places);
+		}
+		
+		setPlaceToTransitionPointers(net);
 
 		for (int i = 0; i < net.numProbes; i++) {
 			this.probes[i] = new Probe(net.probes[i], configuration,
 					this.places);
 		}
-
-		/** finish cloning */
-		for (int i = 0; i < net.numPlaces; i++) {
-			this.places[i].finishCloning(net.places[i], this.transitions);
+	}
+	
+	private void setPlaceToTransitionPointers(Net net){
+		for(Place place: places){
+			for(int i=0; i<net.getPlace(place.id).inTrans.length; i++){
+				Transition original = net.getPlace(place.id).inTrans[i];
+				place.inTrans[i] = transitions[original.id];
+			}
+			for(int i=0; i<net.getPlace(place.id).outTrans.length; i++){
+				Transition original = net.getPlace(place.id).outTrans[i];
+				place.outTrans[i] = transitions[original.id];
+			}
 		}
-		for (int i = 0; i < net.numTransitions; i++) {
-			this.transitions[i].finishCloning(net.transitions[i], this.places);
+	}
+
+	private void setQueueToPlacePointers(Net net,
+			SimQPNConfiguration configuration) {
+		for(Queue queue: this.queues){
+			Queue original = net.getQueue(queue.id);	
+			if (original.qPlaces != null) {
+				for (int i = 0; i < original.qPlaces.length; i++) {
+					try {
+						queue.addQPlace((QPlace) places[original.qPlaces[i].id]);
+					} catch (SimQPNException e) {
+						log.error("", e);
+					}
+				}
+			}
+			if (original.queueStats != null) {
+				try {
+					queue.queueStats = new QueueStats(original.queueStats.id,
+							original.queueStats.name, original.queueStats.numColors,
+							original.queueStats.statsLevel,
+							original.queueStats.queueDiscip,
+							original.queueStats.numServers, queue, configuration);
+				} catch (SimQPNException e) {
+					log.error("", e);
+				}
+			}
+			
 		}
-
-		for (int i = 0; i < numProbes; i++)
-			probes[i].init();
-		for (int i = 0; i < numPlaces; i++)
-			places[i].init(clock);
-		for (int i = 0; i < numTransitions; i++)
-			transitions[i].init();
-		for (int i = 0; i < numQueues; i++)
-			queues[i].init(configuration);
-
 	}
 
 	@Override
@@ -135,15 +159,31 @@ public class Net {
 		StringBuffer sb = new StringBuffer();
 		sb.append("\n");
 		for (Place place : places) {
-			sb.append(place.name + " ");
+			sb.append(place.name + "\t");
+			for(int i=0; i<place.colors.length; i++){
+				sb.append("["+place.colors[i]+"] "+ place.tokenPop[i]);
+			}
+			sb.append("\n");
 		}
-		sb.append("\n");
+		//sb.append("\n");
 		for (Queue queue : queues) {
-			sb.append(queue.name + "("+queue.queueStats+") ");
+			sb.append(queue.name+" ");
+			//sb.append(queue.getClass().getName().split(".")[queue.getClass().getName().split(".").length-1]+" ");
+			sb.append("("+queue.getClass().toString().split("queue.")[1]+")");
+			//sb.append(queue.totalMaxPopulation+" "+queue.maxEpochPopulation+" | "+queue.maxPopulationAtRisingStart +" < "+ queue.totalMaxPopulation+ " " +queue.cntConsRisingEpoch);				
+
+			if(queue.queueStats != null){
+				sb.append("(stats) ");
+			}
+			sb.append("\n");
 		}
 		sb.append("\n");
 		for (Transition trans : transitions) {
-			sb.append(trans.name + " ");
+			sb.append(trans.name);
+			for(Place inPlace: trans.inPlaces){
+				sb.append("\t"+inPlace.name + " ");
+			}
+			sb.append("\n");
 		}
 		return sb.toString();
 	}

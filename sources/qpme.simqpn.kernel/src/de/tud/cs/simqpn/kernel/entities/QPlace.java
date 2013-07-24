@@ -60,8 +60,6 @@
  */
 package de.tud.cs.simqpn.kernel.entities;
 
-import static de.tud.cs.simqpn.kernel.util.LogUtil.formatDetailMessage;
-
 import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
@@ -145,34 +143,52 @@ public class QPlace extends Place {
 	private Token[] tkCopyBuffer; // INTERNAL: Used to transfer tokens.
 
 	/**
+	 * Clones
+	 */
+	public Place clone(Queue[] queues, Transition[] transitions,
+			SimQPNConfiguration configuration) throws SimQPNException {
+		QPlace clone = new QPlace(id, name, colors, this.inTrans.length,
+				this.outTrans.length, probeActions[0].length, statsLevel,
+				depDiscip, queues[this.id], element, configuration);
+		clone.finishCloning(this, queues, transitions, configuration);
+		return clone;
+	}
+
+	/**
 	 * Cloning constructor
 	 * 
 	 * @param qPlace
 	 * @param configuration
 	 * @throws SimQPNException
 	 */
-	public QPlace(QPlace qPlace, Queue[] queues,
-			SimQPNConfiguration configuration) throws SimQPNException {
-		super(qPlace, configuration);
-		this.queue = qPlace.queue;
-		this.meanServTimes = qPlace.meanServTimes.clone();
-		this.tkCopyBuffer = new Token[qPlace.tkCopyBuffer.length];// new
-																	// Token[1];
-																	// // TODO
+	@Override
+	protected void finishCloning(Place original, Queue[] queues,
+			Transition[] transitions, SimQPNConfiguration configuration)
+			throws SimQPNException {
+		super.finishCloning(original, queues, transitions, configuration);
+		// this.queue = queues[((QPlace)original).queue.id];
+
+		this.meanServTimes = ((QPlace) original).meanServTimes.clone();
+		this.tkCopyBuffer = new Token[((QPlace) original).tkCopyBuffer.length];// new
+		// Token[1];
+		// // TODO
 		for (int c = 0; c < numColors; c++)
-			this.meanServTimes[c] = qPlace.meanServTimes[c];// -1; // -1 means
-															// 'uninitialized'
-		this.queueTokenPop = qPlace.queueTokenPop.clone();
+			this.meanServTimes[c] = ((QPlace) original).meanServTimes[c];// -1;
+																			// //
+																			// -1
+																			// means
+		// 'uninitialized'
+		this.queueTokenPop = ((QPlace) original).queueTokenPop.clone();
 		// this.queueTokenPop = new int[numColors];
 		// for (int c = 0; c < numColors; c++)
 		// this.queueTokenPop[c] = qPlace.queueTokenPop[c];
 
-		if (!(this.queue.queueDiscip == QueuingDiscipline.PS && ((PSQueue) this.queue).expPS)) {
+		if (!(queues[((QPlace) original).queue.id].queueDiscip == QueuingDiscipline.PS && ((PSQueue) queues[((QPlace) original).queue.id]).expPS)) {
 			this.randServTimeGen = new AbstractContinousDistribution[this.numColors];
 			for (int c = 0; c < numColors; c++) {
 				// qPlace.randServTimeGen[c].getClass()
-				AbstractContinousDistribution distribution = qPlace.randServTimeGen[c];
-				if (qPlace.randServTimeGen[c].getClass().equals(
+				AbstractContinousDistribution distribution = ((QPlace) original).randServTimeGen[c];
+				if (((QPlace) original).randServTimeGen[c].getClass().equals(
 						Exponential.class)) {
 					String lambdaString = distribution.toString().split("\\(")[1]
 							.split("\\)")[0];
@@ -187,23 +203,13 @@ public class QPlace extends Place {
 			}
 
 		}
-		if (qPlace.queueTokResidServTimes != null) {
-			this.queueTokResidServTimes = new AbstractDoubleList[qPlace.numColors];
+		if (((QPlace) original).queueTokResidServTimes != null) {
+			this.queueTokResidServTimes = new AbstractDoubleList[original.numColors];
 			for (int c = 0; c < numColors; c++) {
 				queueTokResidServTimes[c] = new DoubleArrayList(100);
 			}
 		}
 
-		if (statsLevel > 0)
-			qPlaceQueueStats = new QPlaceQueueStats(id, name, colors,
-					statsLevel, queue.queueDiscip, queue.numServers,
-					meanServTimes, configuration);
-
-	}
-
-	public void finishCloning(QPlace qPlace, Queue[] queues,
-			SimQPNConfiguration configuration) throws SimQPNException {
-		this.queue = queues[qPlace.queue.id];
 		if (statsLevel > 0)
 			qPlaceQueueStats = new QPlaceQueueStats(id, name, colors,
 					statsLevel, queue.queueDiscip, queue.numServers,
@@ -244,7 +250,6 @@ public class QPlace extends Place {
 			SimQPNConfiguration configuration) throws SimQPNException {
 		super(id, name, colors, numInTrans, numOutTrans, numProbes, statsLevel,
 				depDiscip, element, configuration);
-
 		this.queue = queue;
 		this.meanServTimes = new double[numColors];
 		this.tkCopyBuffer = new Token[1];
@@ -255,10 +260,12 @@ public class QPlace extends Place {
 		for (int c = 0; c < numColors; c++)
 			this.queueTokenPop[c] = 0;
 
-		if (statsLevel > 0)
-			qPlaceQueueStats = new QPlaceQueueStats(id, name, colors,
-					statsLevel, queue.queueDiscip, queue.numServers,
-					meanServTimes, configuration);
+		if (queue != null) {
+			if (statsLevel > 0)
+				qPlaceQueueStats = new QPlaceQueueStats(id, name, colors,
+						statsLevel, queue.queueDiscip, queue.numServers,
+						meanServTimes, configuration);
+		}
 	}
 
 	/**

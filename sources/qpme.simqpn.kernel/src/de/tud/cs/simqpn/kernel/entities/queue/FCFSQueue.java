@@ -49,8 +49,7 @@ public class FCFSQueue extends Queue {
 			clone.setParameters(this, configuration, places);
 			
 			clone.numBusyServers = this.numBusyServers;
-			clone.waitingLine = new LinkedList<Token>();
-			if (this.waitingLine != null) {
+			if (!this.waitingLine.isEmpty()) {
 				for (int i = 0; i < this.waitingLine.size(); i++) {
 					Token token = this.waitingLine.get(i);
 					ProbeTimestamp[] probeTimestamps = new ProbeTimestamp[token.probeData.length];
@@ -89,9 +88,10 @@ public class FCFSQueue extends Queue {
 			numBusyServers++;
 			n++;
 			// Update Stats
-			if (qPl.statsLevel >= 3)
+			if (qPl.statsLevel >= 3){
 				qPl.qPlaceQueueStats.updateDelayTimeStats(color, 0,
 						executor.getConfiguration());
+			}
 		}
 		while (n < count) {
 			// Place the rest of the tokens in the waitingLine
@@ -101,6 +101,28 @@ public class FCFSQueue extends Queue {
 			waitingLine.addLast(tk);
 			n++;
 		}
+		
+//		ORIGINAL
+//		int n = 0;
+//		while (n < count && numBusyServers < numServers) {
+//			// Schedule service completion event
+//			double servTime = qPl.randServTimeGen[color].nextDouble();
+//			if (servTime < 0) servTime = 0;
+//			Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[n] : new Token(qPl, color);
+//			tk.arrivTS = Simulator.clock;
+//			Simulator.scheduleEvent(Simulator.clock + servTime, this, tk);
+//			numBusyServers++; n++;
+//			// Update Stats
+//			if (qPl.statsLevel >= 3)   
+//				qPl.qPlaceQueueStats.updateDelayTimeStats(color, 0);																 
+//		}						
+//		while (n < count) {
+//			//  Place the rest of the tokens in the waitingLine
+//			Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[n] : new Token(qPl, color);
+//			tk.arrivTS = Simulator.clock;
+//			waitingLine.addLast(tk);				
+//			n++;					
+//		}		
 	}
 
 	@Override

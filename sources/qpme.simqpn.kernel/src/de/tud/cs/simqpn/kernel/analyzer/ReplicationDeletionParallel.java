@@ -65,8 +65,6 @@ public class ReplicationDeletionParallel implements Analyzer {
 			throw new SimQPNException();
 		}
 
-		configuration.setUseStdStateStats(false);
-
 		AggregateStats[] aggrStats = initStatsArray(net, configuration, netXML);
 		int numPlaces = net.getNumPlaces();
 		progressMonitor = monitor;

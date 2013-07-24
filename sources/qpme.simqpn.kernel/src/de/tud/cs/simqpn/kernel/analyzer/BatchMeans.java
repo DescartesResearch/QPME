@@ -22,6 +22,9 @@ public class BatchMeans implements Analyzer {
 	private static Logger log = Logger.getLogger(BatchMeans.class);
 
 	private static SimulatorProgress progressMonitor;
+	
+	/** Method of non-overlapping batch means */
+	public BatchMeans() {};
 
 	@Override
 	public Stats[] analyze(Net net, SimQPNConfiguration configuration,

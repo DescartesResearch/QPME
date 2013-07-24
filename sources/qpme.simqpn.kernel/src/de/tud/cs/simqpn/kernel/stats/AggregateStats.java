@@ -684,8 +684,9 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 				stDevQueueUtilQPl	= Math.sqrt(Descriptive.sampleVariance(numRepls, sumQueueUtilQPl, sumSqQueueUtilQPl));
 			}							
 		}	
+
 		// StatsLevel 3:
-		if (statsLevel >= 3)
+		if (statsLevel >= 3){
 			for (int c = 0; c < numColors; c++)  {
 				meanAvgST[c]		= sumAvgST[c] / numAvgST[c];
 				varAvgST[c]			= Descriptive.sampleVariance(numAvgST[c], sumAvgST[c], sumSqAvgST[c]);
@@ -702,7 +703,8 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 //					trCvrgUpperLimit[c] = getTrCvrgUpperLimit(c);
 //					ciHalfLenTrCvrg[c] = Math.abs(Probability.normalInverse(signLevCvrg / 2)) * Math.sqrt((estCvrg[c] * (1 - estCvrg[c])) / numRepls);					
 //				}											
-			}																														
+			}
+		}
 		completed = true;		
 	}
 	

@@ -30,7 +30,9 @@ public class XMLNetFlattener {
 	private static Logger log = Logger.getLogger(XMLNetFlattener.class);
 
 	/**
-	 * Transforms Hierarchical-QPNs to QPNs. Should be called after configuration and before
+	 * Transforms Hierarchical-QPNs to QPNs. 
+	 * 
+	 * Should be called after configuration and before
 	 * execution of simulation.
 	 */
 	public static Element flattenHierarchicalNetParts(Element net, String configurationString,

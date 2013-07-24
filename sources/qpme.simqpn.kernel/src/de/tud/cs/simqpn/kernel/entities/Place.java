@@ -64,6 +64,7 @@ import org.dom4j.Element;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
+import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.stats.PlaceStats;
 import de.tud.cs.simqpn.kernel.stats.Stats;
@@ -126,70 +127,6 @@ public class Place extends Node {
 	public PlaceStats		placeStats;	 
 	
 	public Element			element;
-
-	/**
-	 * Clones the passed place
-	 * @param place
-	 * @param configuration
-	 * @throws SimQPNException
-	 */
-	public Place(Place place, SimQPNConfiguration configuration) throws SimQPNException {
-		super(place.id,place.name);
-		this.colors 				= place.colors;
-		this.numColors		    	= colors.length;	
-		this.tokenPop				= new int[numColors];
-		this.availTokens			= new int[numColors]; 
-		this.statsLevel		   		= place.statsLevel;
-		this.depDiscip		      	= place.depDiscip;
-		this.tokens			       	= place.tokens.clone();//new LinkedList[numColors];
-		this.individualTokens	   	= place.individualTokens.clone();//new boolean[numColors];
-		this.probeActions          	= new ProbeAction[numColors][place.probeActions[0].length];//numProbes
-		this.probeInstrumentations 	= new Probe[numColors][]; //JUERGEN: seems sufficiently initialized
-		this.element		       	= place.element;
-		
-		for (int c = 0; c < numColors; c++)  { 
-			this.tokenPop[c] 	= place.tokenPop[c];
-			this.availTokens[c]	= place.availTokens[c];
-		}
-		
-		if (depDiscip == DepartureDiscipline.FIFO)	{
-			//TODO Test this. This has not been tested, because the example nets did not have FIFO queues
-			this.depQueue = (LinkedList<Integer>) place.depQueue.clone();
-			this.depReady = place.depReady;		
-		}
-		
-		
-		if (statsLevel > 0) {
-			if (this instanceof QPlace)
-				placeStats = new PlaceStats(id, name, Stats.QUE_PLACE_DEP, colors, statsLevel, configuration);
-			else
-				placeStats = new PlaceStats(id, name, Stats.ORD_PLACE, colors, statsLevel, configuration);				 			
-			if (statsLevel >= 3) {
-				this.tokArrivTS = new LinkedList[numColors];
-				for (int c = 0; c < numColors; c++)
-					this.tokArrivTS[c] = (LinkedList) place.tokArrivTS[c].clone();
-			}				
-		}
-		
-		// By default tracking is disabled
-		Arrays.fill(individualTokens, false);
-		for (int c = 0; c < numColors; c++) {
-			Arrays.fill(probeActions[c], ProbeAction.PROBE_ACTION_NONE);
-			probeInstrumentations[c] = new Probe[0];
-		}
-	}
-	
-	public void finishCloning(Place placeToClone, Transition[] trans){
-		this.inTrans		      	= new Transition[placeToClone.inTrans.length];
-		for(int i=0; i<placeToClone.inTrans.length; i++){
-			this.inTrans[i] = trans[placeToClone.inTrans[i].id];
-		}
-		this.outTrans				= new Transition[placeToClone.outTrans.length];
-		for(int i=0; i<placeToClone.outTrans.length; i++){
-			this.outTrans[i] = trans[placeToClone.outTrans[i].id];
-		}
-
-	}
 	
 	/**
 	 * 
@@ -208,7 +145,7 @@ public class Place extends Node {
 	@SuppressWarnings("rawtypes")
 	public Place(int id, String name, String[] colors, int numInTrans, int numOutTrans, int numProbes, int statsLevel, DepartureDiscipline depDiscip, Element element, SimQPNConfiguration configuration) throws SimQPNException {
 		super(id, name);		
-		this.colors			       = colors;	
+		this.colors			       = colors.clone();	
 		this.numColors		       = colors.length;	
 		this.inTrans		       = new Transition[numInTrans];
 		this.outTrans		       = new Transition[numOutTrans];
@@ -250,6 +187,27 @@ public class Place extends Node {
 			probeInstrumentations[c] = new Probe[0];
 		}
 	}
+
+	public Place clone(Queue[] queues, Transition[] transitions, SimQPNConfiguration configuration) throws SimQPNException{
+		Place clone = new Place(id, name, colors, this.inTrans.length, this.outTrans.length, probeActions[0].length, statsLevel, depDiscip, element, configuration);
+		clone.finishCloning(this, queues, transitions, configuration);
+		return clone;
+	}
+
+	protected void finishCloning(Place original, Queue[] queues, Transition[] transitions, SimQPNConfiguration configuration) throws SimQPNException{
+		this.inTrans		      	= new Transition[original.inTrans.length];
+		
+		this.tokenPop = original.tokenPop.clone();
+		for(int i=0; i<original.inTrans.length; i++){
+			this.inTrans[i] = transitions[original.inTrans[i].id];
+		}
+		this.outTrans				= new Transition[original.outTrans.length];
+		for(int i=0; i<original.outTrans.length; i++){
+			this.outTrans[i] = transitions[original.outTrans[i].id];
+		}
+	}
+	
+	
 	
 	/**
 	 * Method init - initializes the place
@@ -548,5 +506,6 @@ public class Place extends Node {
 	public void setExecutor(Executor executor) {
 		this.executor = executor;
 	}
+
 			
 }

@@ -56,7 +56,6 @@ import org.apache.log4j.Logger;
 
 import cern.jet.random.Empirical;
 import cern.jet.random.EmpiricalWalker;
-import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.executor.TokenEvent;
@@ -110,65 +109,6 @@ public class Transition extends Node {
 
 	private Random randGen = new Random();
 
-	public Transition(Transition transition, Place[] places,
-			SimQPNConfiguration configuration) throws SimQPNException {
-		super(transition.id, transition.name);
-		this.numModes = transition.numModes;
-		this.transWeight = transition.transWeight;
-		this.modeWeights = new double[transition.numModes];
-		this.inPlaces = new Place[transition.inPlaces.length];
-		this.outPlaces = new Place[transition.outPlaces.length];
-
-		for (int i = 0; i < transition.inPlaces.length; i++) {
-			this.inPlaces[i] = places[transition.inPlaces[i].id];
-		}
-		for (int i = 0; i < transition.outPlaces.length; i++) {
-			this.outPlaces[i] = places[transition.outPlaces[i].id];
-		}
-
-		this.inFunc = transition.inFunc.clone();// [mode, inPlace, color]
-		this.outFunc = transition.outFunc.clone();
-
-		this.modeStatus = transition.modeStatus.clone();
-
-		this.enModesCnt = transition.enModesCnt;
-		this.probeData = transition.probeData;// new ProbeTimestamp[numProbes];
-
-		// Create randModeGen
-		double[] pdf = new double[numModes];
-		for (int m = 0; m < numModes; m++)
-			pdf[m] = 1;
-		this.randModeGen = new EmpiricalWalker(pdf, Empirical.NO_INTERPOLATION,
-				RandomNumberGenerator.nextRandNumGen());
-		// Note: Here we use a default distribution. The actual distribution is
-		// set each time before using randModeGen.
-
-		if (transition.tkCopyBuffer != null) {
-			this.tkCopyBuffer = transition.tkCopyBuffer.clone(); // JUERGEN:
-																	// seems
-																	// sufficient
-																	// in our
-																	// context
-		}
-		if (transition.tkIndexBuffer != null) {
-			this.tkIndexBuffer = transition.tkIndexBuffer.clone(); // JUERGEN:
-																	// OK
-		}
-
-	}
-
-	public void finishCloning(Transition transitionToClone, Place[] places) {
-		this.inPlaces = new Place[transitionToClone.inPlaces.length];
-		for (int i = 0; i < transitionToClone.inPlaces.length; i++) {
-			this.inPlaces[i] = places[transitionToClone.inPlaces[i].id];
-		}
-		this.outPlaces = new Place[transitionToClone.outPlaces.length];
-		for (int i = 0; i < transitionToClone.outPlaces.length; i++) {
-			this.outPlaces[i] = places[transitionToClone.outPlaces[i].id];
-		}
-
-	}
-
 	/**
 	 * Constructor
 	 * 
@@ -199,16 +139,48 @@ public class Transition extends Node {
 		this.modeStatus = new boolean[numModes];
 		this.enModesCnt = 0;
 		this.probeData = new ProbeTimestamp[numProbes];
-
+		
 		// Create randModeGen
 		double[] pdf = new double[numModes];
-		for (int m = 0; m < numModes; m++)
+		for (int m = 0; m < numModes; m++){			
 			pdf[m] = 1;
+		}
 		this.randModeGen = new EmpiricalWalker(pdf, Empirical.NO_INTERPOLATION,
 				RandomNumberGenerator.nextRandNumGen());
 		// Note: Here we use a default distribution. The actual distribution is
 		// set each time before using randModeGen.
 	}
+	
+	public Transition clone(Place[] places) {
+		Transition clone = null;
+		try {
+			int numProbes;
+			if(probeData!= null){
+				numProbes= probeData.length;
+			}else{
+				numProbes = 0;
+			}
+			clone = new Transition(id, name, numModes, inPlaces.length, outPlaces.length, numProbes,transWeight);
+			clone.finishCloning(this, places);
+		} catch (SimQPNException e) {
+			log.error(e);
+		}
+		return clone;
+	}
+
+	private void finishCloning(Transition original, Place[] places) {
+		inFunc = original.inFunc;
+		outFunc = original.outFunc;
+		this.enModesCnt = original.enModesCnt;
+		for (int i = 0; i < original.inPlaces.length; i++) {
+			this.inPlaces[i] = places[original.inPlaces[i].id];
+		}
+		for (int i = 0; i < original.outPlaces.length; i++) {
+			this.outPlaces[i] = places[original.outPlaces[i].id];
+		}
+	}
+
+
 
 	/**
 	 * Method init - checks for enabled modes and initializes modeStatus and
@@ -232,11 +204,12 @@ public class Transition extends Node {
 			for (p = 0; p < nP; p++) {
 				pl = inPlaces[p];
 				nC = pl.numColors;
-				for (c = 0; enabled && (c < nC); c++)
+				for (c = 0; enabled && (c < nC); c++){
 					if (pl.availTokens[c] < inFunc[m][p][c]) {
 						enabled = false;
 						break;
 					}
+				}
 				if (!enabled)
 					break;
 			}
@@ -245,7 +218,6 @@ public class Transition extends Node {
 				enModesCnt++;
 			}
 		}
-
 		// Init token copy buffer
 		int maxNumTokens = 0;
 		for (m = 0; m < nM; m++) {

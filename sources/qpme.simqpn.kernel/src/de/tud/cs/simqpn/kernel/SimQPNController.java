@@ -101,20 +101,24 @@ import org.dom4j.XPath;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
+import de.tud.cs.simqpn.kernel.SimQPNConfiguration.AnalysisMethod;
 import de.tud.cs.simqpn.kernel.analyzer.*;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.Probe;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.loader.ConfigurationLoader;
+import de.tud.cs.simqpn.kernel.loader.XMLAggregateStats;
 import de.tud.cs.simqpn.kernel.loader.XMLBatchMeans;
 import de.tud.cs.simqpn.kernel.loader.XMLNetFlattener;
 import de.tud.cs.simqpn.kernel.loader.NetLoader;
 import de.tud.cs.simqpn.kernel.loader.XMLHelper;
 import de.tud.cs.simqpn.kernel.loader.XMLValidator;
+import de.tud.cs.simqpn.kernel.loader.XMLWelch;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.persistency.StatsDocumentBuilder;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
+import de.tud.cs.simqpn.kernel.stats.AggregateStats;
 import de.tud.cs.simqpn.kernel.stats.Stats;
 
 /**
@@ -140,6 +144,7 @@ public class SimQPNController {
 	private Net net;
 	/** True if simulation is currently running. */
 	private static boolean simRunning;
+	private AggregateStats[] aggregateStats;
 
 	/**
 	 * Used to
@@ -195,7 +200,7 @@ public class SimQPNController {
 			throws SimQPNException {
 		ConfigurationLoader.configureSimulatorSettings(netXML,
 				configurationName, configuration);
-
+		
 		// CONFIG: Whether to use indirect estimators for FCFS queues
 		for (int p = 0; p < getNet().getNumPlaces(); p++) {
 			Place pl = getNet().getPlace(p);
@@ -209,7 +214,11 @@ public class SimQPNController {
 		XMLBatchMeans.configureBatchMeansMethod(netXML, configuration, net);
 		netXML = XMLNetFlattener.flattenHierarchicalNetParts(netXML,
 				configurationName, configuration.getStatsDir());
-
+		
+		aggregateStats = XMLAggregateStats.initStatsArray(net, configuration, netXML);
+		if(configuration.getAnalMethod() == AnalysisMethod.WELCH){
+			XMLWelch.configurePlaceStats(net.getPlaces(), netXML, configurationName);			
+		}
 	}
 
 	/**
@@ -235,29 +244,24 @@ public class SimQPNController {
 		// NOTE: In the following, if the simulation is interrupted, simRunning
 		// should be reset.
 
+		
+		Analyzer analyzer = null;
 		try {
 			// TODO Factory Methode / Factory Klasse
 			if (getConfiguration().runMode == SimQPNConfiguration.NORMAL) {
 				if (getConfiguration().getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS) {
-					/** Method of non-overlapping batch means */
-					result = new BatchMeans().analyze(net, configuration,
-							monitor);
+					analyzer = new BatchMeans();
 				} else if (getConfiguration().getAnalMethod() == SimQPNConfiguration.AnalysisMethod.REPL_DEL) {
-					/**
-					 * Replication/Deletion Approach (Method of Independent
-					 * Replications)
-					 */
-					result = new ReplicationDeletion()
-							.analyze2(net, configuration, monitor, XMLNet,
-									configurationString);
+					configuration.setUseStdStateStats(false);
+					analyzer = new ReplicationDeletion(aggregateStats);
+					
 				} else {
 					log.error("Illegal analysis method specified!");
 					throw new SimQPNException();
 				}
 			} else if (getConfiguration().runMode == SimQPNConfiguration.INIT_TRANS) {
 				if (getConfiguration().getAnalMethod() == SimQPNConfiguration.AnalysisMethod.WELCH) {
-					result = new Welch().analyze2(net, configuration, monitor,
-							XMLNet, configurationString);
+					analyzer = new Welch(XMLNet, configurationString);
 				} else {
 					log.error("Analysis method "
 							+ getConfiguration().getAnalMethod()
@@ -268,6 +272,7 @@ public class SimQPNController {
 				log.error("Invalid run mode specified!");
 				throw new SimQPNException();
 			}
+			result = analyzer.analyze(net, configuration, monitor);
 		} finally {
 			setSimRunning(false);
 			LogManager.shutdown();

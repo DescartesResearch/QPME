@@ -102,7 +102,11 @@ public class ConsoleSimulatorProgress implements SimulatorProgress {
 	 */
 	@Override
 	public void updateSimulationProgress(int lpID, double progress, long elapsedTime, SimQPNConfiguration configuration, boolean inRampUp) {
-		log.info("LP"+lpID+" progress: " + Math.round(progress) + "%");
+		if(lpID<0){
+			log.info("Progress: " + Math.round(progress) + "%");
+		}else{
+			log.info("LP"+lpID+" Progress: " + Math.round(progress) + "%");
+		}
 	}
 
 	/* (non-Javadoc)
@@ -111,7 +115,11 @@ public class ConsoleSimulatorProgress implements SimulatorProgress {
 	@Override
 	public void finishWarmUp(int lpID, SimQPNConfiguration configuration) {
 		if(configuration.getAnalMethod() != SimQPNConfiguration.AnalysisMethod.WELCH) {
-			log.info("LP"+lpID+": Warm up finished. Starting steady state analysis...");
+			if(lpID<0){
+				log.info("Warm up finished. Starting steady state analysis...");								
+			}else{
+				log.info("LP"+lpID+": Warm up finished. Starting steady state analysis...");				
+			}
 		}
 	}
 

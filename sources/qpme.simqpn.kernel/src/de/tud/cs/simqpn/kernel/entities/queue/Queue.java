@@ -122,7 +122,7 @@ public abstract class Queue {
 	 * The number of consecutive epochs in which the maximum population has
 	 * grown. Used for Overflow Detection.
 	 */
-	private int cntConsRisingEpoch;
+	public int cntConsRisingEpoch;
 	private boolean deactivateWarning = false;
 
 	/**
@@ -152,32 +152,12 @@ public abstract class Queue {
 		this.numServers = queue.numServers;
 		this.tkPopulation = queue.tkPopulation;
 		this.maxEpochPopulation = queue.maxEpochPopulation;
-		//this.totalMaxPopulation = queue.totalMaxPopulation;
+		this.totalMaxPopulation = queue.totalMaxPopulation; //
 		this.epochMsrmCnt = queue.epochMsrmCnt;
-		this.epochLength = queue.epochLength;
+		this.epochLength = queue.epochLength; //
 		this.maxEpochPopulation = queue.maxEpochPopulation;
 		this.cntConsRisingEpoch = queue.cntConsRisingEpoch;
-		this.deactivateWarning = queue.deactivateWarning;
-		if (queue.qPlaces != null) {
-			for (int i = 0; i < queue.qPlaces.length; i++) {
-				try {
-					this.addQPlace((QPlace) places[queue.qPlaces[i].id]);
-				} catch (SimQPNException e) {
-					log.error("", e);
-				}
-			}
-		}
-		if (queue.queueStats != null) {
-			try {
-				this.queueStats = new QueueStats(queue.queueStats.id,
-						queue.queueStats.name, queue.queueStats.numColors,
-						queue.queueStats.statsLevel,
-						queue.queueStats.queueDiscip,
-						queue.queueStats.numServers, this, configuration);
-			} catch (SimQPNException e) {
-				log.error("", e);
-			}
-		}
+		this.deactivateWarning = queue.deactivateWarning; //
 
 	}
 
@@ -372,18 +352,13 @@ public abstract class Queue {
 			maxEpochPopulation = tkPopulation;
 		}
 		epochMsrmCnt++;
-		
-		
-		
-
-
+				
 		if (executor.getClock() <= 1.0) {
 			// Skip overflow detection at the beginning of the simulation.
 			// No representative results can be determined during startup.
 			cntConsRisingEpoch = 0;
 			maxPopulationAtRisingStart = maxEpochPopulation;
 		} else if (epochMsrmCnt >= epochLength) {
-			//DEBUG System.out.println("\t"+epochMsrmCnt +" >= "+ epochLength);
 			// New maximum population?
 			if (maxEpochPopulation > totalMaxPopulation) {
 				totalMaxPopulation = maxEpochPopulation;
@@ -404,16 +379,8 @@ public abstract class Queue {
 				}
 			}
 			
-			//DEBUG
-			//if(this.name.equals("Q2")){
-			//	System.out.println("\t\t"+totalMaxPopulation+" > "+maxEpochPopulation+" | "+maxPopulationAtRisingStart +" < "+ totalMaxPopulation+ " " +cntConsRisingEpoch);				
-			//}
-
 			maxEpochPopulation = 0;
 			epochMsrmCnt = 0;
-
-//			SimQPNConfiguration.OVERFLOW_DET_MIN_CONS_RISING_EPOCHS
-//			+(cntConsRisingEpoch > SimQPNConfiguration.OVERFLOW_DET_MAX_CONS_RISING_EPOCHS) && (totalMaxPopulation > 2 * maxPopulationAtRisingStart))) {
 
 			if (totalMaxPopulation < SimQPNConfiguration.OVERFLOW_DET_DETECTION_THRESHOLD) {
 				// If total population is below the detection threshold, do not

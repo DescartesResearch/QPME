@@ -123,11 +123,14 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 			if (net.getTrans(i).enabled()) {
 				transStatus[i] = true;
 				enTransCnt++;
+//				System.out.println("\t"+net.getTrans(i).name+" enabled");
 			} else {
 				transStatus[i] = false;
 			}
 		}
 
+
+		
 		// Create randTransGen
 		double[] pdf = new double[net.getNumTrans()];
 		for (int t = 0; t < net.getNumTrans(); t++)
@@ -179,8 +182,8 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 		double maxProgressInterval = progressMonitor
 				.getMaxUpdateLogicalTimeInterval(configuration);
 		long progressUpdateRate = progressMonitor
-				.getMaxUpdateRealTimeInterval();
-
+				.getMaxUpdateRealTimeInterval();		
+		
 		// BEGIN MAIN SIMULATION LOOP
 		// ---------------------------------------------------------------------------------
 		while (clock < totRunL) {
@@ -190,18 +193,22 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 				endRampUpClock = clock;
 				if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.WELCH)
 					break;
-				for (int p = 0; p < net.getNumPlaces(); p++)
+				for (int p = 0; p < net.getNumPlaces(); p++){
 					net.getPlace(p).start(configuration, clock);
-				for (int q = 0; q < net.getNumQueues(); q++)
+				}
+				for (int q = 0; q < net.getNumQueues(); q++){
 					net.getQueue(q).start(clock);
-				for (int pr = 0; pr < net.getNumProbes(); pr++)
+				}
+				for (int pr = 0; pr < net.getNumProbes(); pr++){
 					net.getProbe(pr).start(configuration, clock);
+				}
 
 				progressMonitor.finishWarmUp(getId(), configuration);
 			}
 			
 			// Step 1: Fire until no transitions are enabled.
 			int fireCnt = 0;
+
 			while (enTransCnt > 0) {
 
 				Transition nextTrans; // transition to fire next
@@ -541,7 +548,7 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 		for (int i = 0; i < net.getNumProbes(); i++)
 			net.getProbe(i).init();
 		for (int i = 0; i < net.getNumPlaces(); i++)
-			net.getPlace(i).init(getClock());
+			net.getPlace(i).init(clock);
 		for (int i = 0; i < net.getNumTrans(); i++)
 			net.getTrans(i).init();
 		for (int i = 0; i < net.getNumQueues(); i++)
@@ -550,7 +557,7 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 
 	@Override
 	public int getId() {
-		return 0;
+		return -1;
 	}
 
 	@Override
