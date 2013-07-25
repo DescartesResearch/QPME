@@ -326,7 +326,6 @@ public abstract class Queue {
 	@SuppressWarnings("unchecked")
 	public void addTokens(QPlace qPl, int color, int count,
 			Token[] tokensToBeAdded, Executor executor) throws SimQPNException {
-		System.out.println(count);
 
 		tkPopulation += count;
 
