@@ -42,19 +42,19 @@ import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 public class LP implements Executor, Runnable {
 
 	/** True if still in RampUp period (no measurements taken). */
-	public boolean inRampUp;
+	private boolean inRampUp;
 	/** Clock at the end of RampUp, i.e. beginning of the measurement period. */
-	public double endRampUpClock;
+	private double endRampUpClock;
 	/** Clock at the end of the run. */
-	public double endRunClock;
+	private double endRunClock;
 	/** Duration of the measurement period (endRunClock - endRampUpClock). */
-	public double msrmPrdLen;
+	private double msrmPrdLen;
 	/** currentTimeMillis at the begin of the run (wall clock time). */
-	public double beginRunWallClock;
+	private double beginRunWallClock;
 	/** currentTimeMillis at the end of the run (wall clock time). */
-	public double endRunWallClock;
+	private double endRunWallClock;
 	/** Total duration of the run in seconds. */
-	public double runWallClockTime;
+	private double runWallClockTime;
 
 	private static Logger log = Logger.getLogger(LP.class);
 	private SimQPNConfiguration configuration;
@@ -535,6 +535,7 @@ public class LP implements Executor, Runnable {
 		List<Integer> listOfVisited = new ArrayList<Integer>();
 		Double lbts = getLBTS(listOfVisited);
 		if (lbts == null) {
+			//If we get no answer: process
 			QueueEvent event;
 			event = eventList.peek();
 			if (event != null) {
