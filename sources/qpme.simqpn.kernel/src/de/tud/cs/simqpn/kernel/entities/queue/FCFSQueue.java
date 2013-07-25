@@ -183,6 +183,7 @@ public class FCFSQueue extends Queue {
 	@Override
 	public void completeService(Token token, Executor executor)
 			throws SimQPNException {
+		super.completeService(token, executor);
 		if (waitingLine.size() > 0) {
 			Token tk = waitingLine.removeFirst();
 			QPlace qPl = (QPlace) tk.place;
