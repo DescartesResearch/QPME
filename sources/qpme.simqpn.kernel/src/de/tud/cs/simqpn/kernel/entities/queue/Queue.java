@@ -148,6 +148,7 @@ public abstract class Queue {
 	 * 
 	 * @param id
 	 *            - global id of the queue
+	 * @param xmlID - identification within XML File           
 	 * @param name
 	 *            - name of the queue
 	 * @param queueDiscipline

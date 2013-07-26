@@ -65,18 +65,21 @@ public class FCFSQueue extends Queue {
 	private int numBusyServers;
 	/** List of tokens waiting for service (waiting area of the queue). */
 	private LinkedList<Token> waitingLine;
-	
-	private List<Double> futureList;
-
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 * 
 	 * @param id
-	 * @param xmlId
+	 *            - global id of the queue
+	 * @param xmlID
+	 *            - identification within XML File
 	 * @param name
-	 * @param queueDiscip
+	 *            - name of the queue
+	 * @param queueDiscipline
+	 *            - queuing discipline
 	 * @param numServers
+	 *            - number of servers in queue
+	 * 
 	 * @throws SimQPNException
 	 */
 	public FCFSQueue(int id, String xmlId, String name,
@@ -87,7 +90,6 @@ public class FCFSQueue extends Queue {
 
 		this.numBusyServers = 0;
 		this.waitingLine = new LinkedList<Token>();
-		this.futureList = new LinkedList<Double>();
 	}
 
 	/**
@@ -134,8 +136,9 @@ public class FCFSQueue extends Queue {
 		while (n < count && numBusyServers < numServers) {
 			// Schedule service completion event
 			double servTime = qPl.randServTimeGen[color].nextDouble();
-			if (servTime < 0)
+			if (servTime < 0){
 				servTime = 0;
+			}
 			Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[n]
 					: new Token(qPl, color);
 			tk.arrivTS = executor.getClock();
@@ -156,30 +159,6 @@ public class FCFSQueue extends Queue {
 			waitingLine.addLast(tk);
 			n++;
 		}
-
-		// ORIGINAL
-		// int n = 0;
-		// while (n < count && numBusyServers < numServers) {
-		// // Schedule service completion event
-		// double servTime = qPl.randServTimeGen[color].nextDouble();
-		// if (servTime < 0) servTime = 0;
-		// Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[n] : new
-		// Token(qPl, color);
-		// tk.arrivTS = Simulator.clock;
-		// Simulator.scheduleEvent(Simulator.clock + servTime, this, tk);
-		// numBusyServers++; n++;
-		// // Update Stats
-		// if (qPl.statsLevel >= 3)
-		// qPl.qPlaceQueueStats.updateDelayTimeStats(color, 0);
-		// }
-		// while (n < count) {
-		// // Place the rest of the tokens in the waitingLine
-		// Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[n] : new
-		// Token(qPl, color);
-		// tk.arrivTS = Simulator.clock;
-		// waitingLine.addLast(tk);
-		// n++;
-		// }
 	}
 
 	/**
@@ -193,11 +172,11 @@ public class FCFSQueue extends Queue {
 			Token tk = waitingLine.removeFirst();
 			QPlace qPl = (QPlace) tk.place;
 			double servTime;
-			if(qPl.futurList.isEmpty()){
+			if (qPl.futurList.isEmpty()) {
 				servTime = qPl.randServTimeGen[tk.color].nextDouble();
 				if (servTime < 0)
 					servTime = 0;
-			}else{
+			} else {
 				servTime = qPl.futurList.get(0);
 			}
 			executor.scheduleEvent(servTime, this, tk);
@@ -224,7 +203,7 @@ public class FCFSQueue extends Queue {
 	 */
 	@Override
 	public double getLookahead(QPlace qPl, int color_id) {
-		if(qPl.futurList.isEmpty()){
+		if (qPl.futurList.isEmpty()) {
 			double servTime = qPl.randServTimeGen[color_id].nextDouble();
 			if (servTime < 0)
 				servTime = 0;
@@ -244,6 +223,7 @@ public class FCFSQueue extends Queue {
 	 * Empty method body.
 	 */
 	@Override
-	public void updateEvents(Executor executor) throws SimQPNException {}
+	public void updateEvents(Executor executor) throws SimQPNException {
+	}
 
 }
