@@ -95,7 +95,7 @@ public class QPlace extends Place {
 
 	private Logger log = Logger.getLogger(QPlace.class);
 
-	public Queue queue; // Queue of the queueing place.
+	public final Queue queue; // Queue of the queueing place.
 
 	public double[] meanServTimes; // Mean token service times at the queueing
 									// station (all times usually in
@@ -121,10 +121,6 @@ public class QPlace extends Place {
 
 	public AbstractDoubleList[] getQueueTokResidServTimes() {
 		return queueTokResidServTimes;
-	}
-
-	public AbstractDoubleList getQueueTokResidServTimesForColor(int c) {
-		return queueTokResidServTimes[c];
 	}
 
 	@SuppressWarnings("rawtypes")
