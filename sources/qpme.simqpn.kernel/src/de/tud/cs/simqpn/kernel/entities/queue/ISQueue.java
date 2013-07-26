@@ -121,7 +121,7 @@ public class ISQueue extends Queue {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public double getLookahead() {
+	public double getLookahead(QPlace qpl, int color_id) {
 		return 0;
 	}
 

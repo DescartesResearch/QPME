@@ -61,6 +61,8 @@
 package de.tud.cs.simqpn.kernel.entities;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.dom4j.Element;
@@ -103,14 +105,11 @@ public class QPlace extends Place {
 									// Note that for queueing places
 									// Place.tokenPop
 									// contains tokens in the depository.
-
-	public int[] getQueueTokenPop() {
-		return queueTokenPop;
-	}
-
-	public void setQueueTokenPop(int[] queueTokenPop) {
-		this.queueTokenPop = queueTokenPop;
-	}
+	
+	/**
+	 * Saves random numbers for future queue-service-times for this QPlace
+	 */
+	public List<Double> futurList = new LinkedList<Double>();
 
 	private AbstractDoubleList[] queueTokResidServTimes; // PS queues:
 															// expPS==false:
@@ -477,5 +476,18 @@ public class QPlace extends Place {
 			queue.report();
 		}
 	}
+	
+	public double getLookahead(int color_index){
+		return queue.getLookahead(this, color_index);
+	}
+
+	public int[] getQueueTokenPop() {
+		return queueTokenPop;
+	}
+
+	public void setQueueTokenPop(int[] queueTokenPop) {
+		this.queueTokenPop = queueTokenPop;
+	}
+
 
 }

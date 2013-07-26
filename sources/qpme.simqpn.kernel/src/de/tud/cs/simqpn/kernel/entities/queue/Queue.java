@@ -438,7 +438,7 @@ public abstract class Queue {
 	 * 
 	 * @return
 	 */
-	public abstract double getLookahead();
+	public abstract double getLookahead(QPlace qpl, int color);
 
 	/**
 	 * 

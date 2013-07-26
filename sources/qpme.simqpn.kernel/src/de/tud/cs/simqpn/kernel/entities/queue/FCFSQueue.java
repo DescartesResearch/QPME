@@ -42,6 +42,7 @@
 package de.tud.cs.simqpn.kernel.entities.queue;
 
 import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -64,6 +65,9 @@ public class FCFSQueue extends Queue {
 	private int numBusyServers;
 	/** List of tokens waiting for service (waiting area of the queue). */
 	private LinkedList<Token> waitingLine;
+	
+	private List<Double> futureList;
+
 
 	/**
 	 * Constructor
@@ -83,6 +87,7 @@ public class FCFSQueue extends Queue {
 
 		this.numBusyServers = 0;
 		this.waitingLine = new LinkedList<Token>();
+		this.futureList = new LinkedList<Double>();
 	}
 
 	/**
@@ -187,9 +192,14 @@ public class FCFSQueue extends Queue {
 		if (waitingLine.size() > 0) {
 			Token tk = waitingLine.removeFirst();
 			QPlace qPl = (QPlace) tk.place;
-			double servTime = qPl.randServTimeGen[tk.color].nextDouble();
-			if (servTime < 0)
-				servTime = 0;
+			double servTime;
+			if(qPl.futurList.isEmpty()){
+				servTime = qPl.randServTimeGen[tk.color].nextDouble();
+				if (servTime < 0)
+					servTime = 0;
+			}else{
+				servTime = qPl.futurList.get(0);
+			}
 			executor.scheduleEvent(servTime, this, tk);
 			// Update stats
 			if (qPl.statsLevel >= 3)
@@ -213,8 +223,14 @@ public class FCFSQueue extends Queue {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public double getLookahead() {
-		return 0;
+	public double getLookahead(QPlace qPl, int color_id) {
+		if(qPl.futurList.isEmpty()){
+			double servTime = qPl.randServTimeGen[color_id].nextDouble();
+			if (servTime < 0)
+				servTime = 0;
+			qPl.futurList.add(servTime);
+		}
+		return qPl.futurList.get(0);
 	}
 
 	/**
