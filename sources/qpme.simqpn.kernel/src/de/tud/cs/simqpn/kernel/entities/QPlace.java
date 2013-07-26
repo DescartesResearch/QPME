@@ -130,10 +130,8 @@ public class QPlace extends Place {
 	@SuppressWarnings("rawtypes")
 	public ArrayList[] queueTokens; // PS queues: tokens in queueing station.
 
-	public AbstractContinousDistribution[] randServTimeGen; // PS queues: Random
-															// number generators
-															// for generating
-															// service times.
+	/** Random number generators for generating service times.*/
+	public AbstractContinousDistribution[] randServTimeGen; 
 
 	public QPlaceQueueStats qPlaceQueueStats;
 
