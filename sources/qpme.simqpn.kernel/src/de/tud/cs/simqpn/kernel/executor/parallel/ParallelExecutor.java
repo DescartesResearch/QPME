@@ -199,7 +199,7 @@ public class ParallelExecutor implements Callable<Net> {
 
 				listLPs.add(new LP(placesLP, transitionsLP, queueList
 						.toArray(new Queue[queueList.size()]), configuration,
-						progressMonitor, idLP, net));
+						progressMonitor, idLP));
 				idLP++;
 			} else {
 				// Place is already in another LP
