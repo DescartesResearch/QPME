@@ -181,7 +181,7 @@ public class LP implements Executor, Runnable {
 	private boolean verbose = false;
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 * 
 	 * @param places
 	 *            the places this LP simulates
@@ -195,7 +195,6 @@ public class LP implements Executor, Runnable {
 	 *            the monitor to which progress information is send
 	 * @param id
 	 *            the id of this LP
-	 * @param net
 	 */
 	public LP(Place[] places, Transition[] transitions, Queue[] queues,
 			SimQPNConfiguration configuration,
