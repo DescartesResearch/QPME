@@ -5,7 +5,7 @@ import java.util.concurrent.CyclicBarrier;
 /**
  * This class collects the reaching of local stop criteria to build a global stop criterion
  */
-public class StopCriterion {
+public class StopCriterionController {
 	
 	private int numLPs;
 	private int finishedLPs;
@@ -16,7 +16,7 @@ public class StopCriterion {
 	 * @param numLPs The number of LPs that have to reach their local stop criterion
 	 * @param barrier The barrier to be unlocked if simulation finished
 	 */
-	public StopCriterion(int numLPs, CyclicBarrier barrier) {
+	public StopCriterionController(int numLPs, CyclicBarrier barrier) {
 		this.numLPs = numLPs;
 		this.finishedLPs = 0;
 		this.barrier = barrier;
@@ -37,7 +37,7 @@ public class StopCriterion {
 	/**
 	 * Increments the counter for finished LPs
 	 */
-	synchronized void notifyLPReachedLocalStopCrit(){
+	synchronized void incrementFinishedLPCounter(){
 		finishedLPs++;
 	}
 	

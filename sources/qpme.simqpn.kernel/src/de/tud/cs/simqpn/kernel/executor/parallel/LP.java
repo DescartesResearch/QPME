@@ -42,7 +42,6 @@
 package de.tud.cs.simqpn.kernel.executor.parallel;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -57,7 +56,6 @@ import cern.jet.random.Empirical;
 import cern.jet.random.EmpiricalWalker;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
-import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.Probe;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
@@ -133,23 +131,22 @@ public class LP implements Executor, Runnable {
 				}
 			});
 
-	// places, transitions and queues could be final if we do not merge
 	// private Probe[] probes;
 	/** The places of the QPN this LP simulates. */
-	private Place[] places;
+	private final Place[] places;
 	/** The transitions of the QPN this LP simulates. */
-	private Transition[] transitions;
+	private final Transition[] transitions;
 	/** The queues of the QPN this LP simulates. */
-	private Queue[] queues;
+	private final Queue[] queues;
 	/** The monitor which shows progress. */
-	private SimulatorProgress progressMonitor;
+	private final SimulatorProgress progressMonitor;
 	/** Transition status. true = enabled, false = disabled. */
 	private boolean[] transStatus;
 	/** Number of currently enabled transitions. */
 	private int enTransCnt;
 	/**
-	 * Array which contains ids of the enabled transitions. Used for
-	 * (random) determination of the next transition to fire.
+	 * Array which contains ids of the enabled transitions. Used for (random)
+	 * determination of the next transition to fire.
 	 */
 	private int[] enTransIDs;
 	/**
@@ -172,13 +169,13 @@ public class LP implements Executor, Runnable {
 	 */
 	private CyclicBarrier barrier;
 	/** Global stop criterion. */
-	private StopCriterion stopCriterion;
+	private StopCriterionController stopCriterionController;
 	/** Local stop criterion. */
 	private boolean hasFinished = false;
 	/** Lower bound on incoming time stamps. */
 	private double timeSaveToProcess;
-	/** Sets debug output to console used for debug purpose.*/
-	private boolean verbose = false;
+	/** Sets debug output to console used for debug purpose. */
+	private int verbosityLevel = 0;
 
 	/**
 	 * Constructor.
@@ -210,7 +207,7 @@ public class LP implements Executor, Runnable {
 	}
 
 	/**
-	 * Performs simulation for the net elements belonging to this LP
+	 * Performs simulation for the net elements belonging to this LP.
 	 * 
 	 * Should be similar to {@link SequentialExecutor#run()}
 	 * 
@@ -254,46 +251,26 @@ public class LP implements Executor, Runnable {
 			 * ######################### MAIN SIMULATION LOOP #################
 			 */
 			while (!checkStopCriterion()) {
-				if (inRampUp && clock > rampUpLength) {
-					inRampUp = false;
-					endRampUpClock = clock;
-					if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.WELCH) {
-						break;
-					}
-					for (int p = 0; p < places.length; p++) {
-						places[p].start(configuration, clock);
-					}
-					for (Place p : places) {
-						if (p instanceof QPlace) {
-							((QPlace) p).queue.start(clock);
-						}
-					}
-					// for (int pr = 0; pr < net.getNumProbes(); pr++) TODO
-					// net.getProbe(pr).start(this);
-
-					progressMonitor.finishWarmUp(id, configuration);
-				}
+				startDataCollectionIfRampUpDone(rampUpLength);
 
 				processTokenEvents();
 
-				fireTransitions(randTransGen, totRunLength);
+				fireTransitions(totRunLength);
 
 				updateQueueEvents();
 
 				QueueEvent nextEvent = eventList.peek();
 				if (nextEvent != null && nextEvent.time <= timeSaveToProcess) {
-					System.out.println("\tLP" + id + " processed event "
-							+ (int) nextEvent.time + " smaller than LBTS "
-							+ (int) timeSaveToProcess);
+					if (verbosityLevel > 1) {
+						log.info("\tLP" + id + " processed event "
+								+ (int) nextEvent.time + " smaller than LBTS "
+								+ (int) timeSaveToProcess);
+					}
 					processQueueEvent(nextEvent);
 					continue;
 				}
 
 				waitForBarrier();
-				if (id == 1) {
-					System.out
-							.println("--------------------------------------------");
-				}
 				timeSaveToProcess = getTimeSaveToProcess();
 				waitForBarrier();
 
@@ -307,17 +284,50 @@ public class LP implements Executor, Runnable {
 							lastTimeMsrm);
 				}
 
-				nextChkAfter = checkIfStatisticCollectionIsSufficient(nextChkAfter);
+				nextChkAfter = checkForSufficientDataCollection(nextChkAfter);
 
 			}
 		} catch (SimQPNException ex) {
-			System.out.println(ex);
+			log.error("Error during simulation run", ex);
 		}
 		finish();
 	}
 
 	/**
-	 * Process incoming tokens from other LPs as long as they are save to process.
+	 * Starts data collection if the clock exceeds rampUpLength.
+	 * 
+	 * @param rampUpLength
+	 *            the clock value that determines end of ramp up
+	 * @throws SimQPNException
+	 *             if starting of places or queues fails
+	 */
+	private void startDataCollectionIfRampUpDone(double rampUpLength)
+			throws SimQPNException {
+		if (inRampUp && clock > rampUpLength) {
+			inRampUp = false;
+			endRampUpClock = clock;
+			// if (configuration.getAnalMethod() ==
+			// SimQPNConfiguration.AnalysisMethod.WELCH) {
+			// break;
+			// }
+			for (int p = 0; p < places.length; p++) {
+				places[p].start(configuration, clock);
+			}
+			for (Place p : places) {
+				if (p instanceof QPlace) {
+					((QPlace) p).queue.start(clock);
+				}
+			}
+			// for (int pr = 0; pr < net.getNumProbes(); pr++) TODO
+			// net.getProbe(pr).start(this);
+
+			progressMonitor.finishWarmUp(id, configuration);
+		}
+	}
+
+	/**
+	 * Process incoming tokens from other LPs as long as they are save to
+	 * process.
 	 * 
 	 * @throws SimQPNException
 	 *             if the incomming token enables a transition which is not in
@@ -365,8 +375,8 @@ public class LP implements Executor, Runnable {
 	}
 
 	/**
-	 * Updates the queues. Make sure all service completion events in PS QPlaces
-	 * have been scheduled
+	 * Updates the queues. Makes sure all service completion events in PS
+	 * QPlaces have been scheduled.
 	 */
 	private void updateQueueEvents() {
 		for (Place p : places) {
@@ -394,7 +404,7 @@ public class LP implements Executor, Runnable {
 		} catch (InterruptedException e) {
 			log.error("", e);
 		} catch (BrokenBarrierException e) {
-			// log.error("",e);
+			log.info("left barrier");
 		}
 	}
 
@@ -404,9 +414,8 @@ public class LP implements Executor, Runnable {
 	 * @return the lower bound on timestamps for incoming TokenEvents
 	 */
 	private double getTimeSaveToProcess() {
-		synchronized (barrier) { //only for output
+		synchronized (barrier) { // only for output formatting
 			List<Integer> listOfVisitedLPs = new ArrayList<Integer>();
-			listOfVisitedLPs.add(id);
 			double lbts = getTimeSaveToProcess(listOfVisitedLPs, "\t", 0);
 			return lbts;
 		}
@@ -417,54 +426,47 @@ public class LP implements Executor, Runnable {
 	 * 
 	 * @param listOfVisitedLPs
 	 *            List containing IDs of previously visited LPs
+	 * @param string
+	 *            string to format debug output
+	 * @param sumlookahead
+	 *            sum of lookaheads on previous path
 	 * @return the time up to this LP can process
 	 * @see LP#getTimeSaveToProcess()
 	 */
 	private double getTimeSaveToProcess(List<Integer> listOfVisitedLPs,
 			String string, double sumlookahead) {
-
 		List<Double> list = new ArrayList<Double>();
 		for (LP pre : this.predecessors) {
 			if (!listOfVisitedLPs.contains(pre.id)) {
 				listOfVisitedLPs.add(pre.id);
 				if (!pre.eventList.isEmpty()) {
-					// if (pre.eventList.peek() != null) {
-					list.add(pre.eventList.peek().time);
-					pre.timeSaveToProcess = timeSaveToProcess + sumlookahead;
+					list.add(pre.eventList.peek().time); // + sumlookahead);
 				} else {
-					Double lbts = pre.getTimeSaveToProcess(listOfVisitedLPs,
-							(string + "\t"), sumlookahead + pre.getLookahead()); // +sumLookahead
-					// sumlookahead += pre.getLookahead();
-					// if(pre.lbts > lbts){
-					pre.timeSaveToProcess = lbts + sumlookahead;
-					// }
-					// System.out.println("\t\tLP"+pre.id+" : "+pre.lbts);
-					if (lbts != 0) {
-						list.add(pre.timeSaveToProcess);
-					}
+					double internalTimeSaveToProcess = pre
+							.getTimeSaveToProcess(listOfVisitedLPs,
+									(string + "\t"),
+									sumlookahead + pre.getLookahead());
+					list.add(internalTimeSaveToProcess);
 				}
 			} else {
-				// IF X?
-				if (!pre.eventList.isEmpty()) {
-					list.add(pre.timeSaveToProcess);
+				if (verbosityLevel > 2) {
+					log.info(string + "already visited LP" + pre.id + " "
+							+ pre.timeSaveToProcess);
 				}
+				list.add(pre.timeSaveToProcess);
 			}
 		}
-		if (verbose)
-			System.out.println("YYY LP" + id + string + "" + list
-					+ " sum lookahead " + sumlookahead);
-
 		if (list.isEmpty()) {
-			QueueEvent nextEvent = eventList.peek();
-			if (nextEvent != null) {
-				return nextEvent.time;
-			} else {
-				return 0; // -100.0;
+			if (verbosityLevel > 2) {
+				log.error("no queue event in net.");
 			}
+			return 0; // -100.0;
 		} else {
-			// if(verbose)
-			// System.out.println("LP"+id+" "+string+Collections.min(list));
-			return Collections.min(list);
+			if (verbosityLevel > 2) {
+				log.info(string + "LP" + id + " " + list);
+			}
+			timeSaveToProcess = Collections.min(list) + sumlookahead;
+			return timeSaveToProcess;
 		}
 
 	}
@@ -492,16 +494,27 @@ public class LP implements Executor, Runnable {
 		}
 	}
 
-	private void processQueueEvent(QueueEvent ev) throws SimQPNException {
-		// System.out.println("LP" + id + ": " + ev.queue.name
-		// + " processed job at " + (int) ev.time + " of duration "
-		// + (int) (ev.time - clock) + " with lbts " + (int) lbts);
+	/**
+	 * Processes event at its QPlace and removes event from event list.
+	 * 
+	 * @param event
+	 *            the event to be processed
+	 * @throws SimQPNException
+	 *             if an error in the QPlace occurs
+	 */
+	private void processQueueEvent(QueueEvent event) throws SimQPNException {
+		if (verbosityLevel > 0) {
+			log.info("LP" + id + ": " + event.queue.name + " processed job at "
+					+ (int) event.time + " of duration "
+					+ (int) (event.time - clock) + " with lbts "
+					+ (int) timeSaveToProcess);
+		}
 
 		// Advance simulation time
-		clock = ev.time;
+		clock = event.time;
 
-		QPlace qpl = (QPlace) ev.token.place;
-		qpl.completeService(ev.token, this);
+		QPlace qpl = (QPlace) event.token.place;
+		qpl.completeService(event.token, this);
 		// Check if some transitions were enabled and
 		// update
 		// transStatus
@@ -514,10 +527,6 @@ public class LP implements Executor, Runnable {
 			if (tr.enabled()) {
 				if (localTransId >= 0 && localTransId < transitions.length) {
 					if ((!transStatus[localTransId])) {
-						// System.out.println("LP" + id
-						// + ": \t\t enabled "
-						// + transitions[localTransId].name
-						// + "[due to queueEvent]");
 						transStatus[localTransId] = true;
 						enTransCnt++;
 					}
@@ -525,7 +534,7 @@ public class LP implements Executor, Runnable {
 			}
 
 		}
-		eventList.remove(ev);
+		eventList.remove(event);
 	}
 
 	/**
@@ -537,12 +546,12 @@ public class LP implements Executor, Runnable {
 		if (clock < configuration.totRunLen) {
 			return false;
 		} else {
-			if (stopCriterion.hasSimulationFinished()) {
+			if (stopCriterionController.hasSimulationFinished()) {
 				return true;
 			}
 			if (!hasFinished) {
 				hasFinished = true;
-				stopCriterion.notifyLPReachedLocalStopCrit();
+				stopCriterionController.incrementFinishedLPCounter();
 			}
 			return false;
 		}
@@ -551,14 +560,13 @@ public class LP implements Executor, Runnable {
 	/**
 	 * Fires until no transitions are enabled.
 	 * 
-	 * @param randTransGen
-	 *            The randon generator to chose the next transition to fire
 	 * @param totRunL
 	 *            The maximum run length
 	 * @throws SimQPNException
+	 *             if next transition to fire is null or if the firing disables
+	 *             a transition in another LP
 	 */
-	private void fireTransitions(EmpiricalWalker randTransGen, double totRunL)
-			throws SimQPNException {
+	private void fireTransitions(double totRunL) throws SimQPNException {
 		double[] pdf;
 		if (transitions != null) {
 			int fireCnt = 0;
@@ -634,7 +642,7 @@ public class LP implements Executor, Runnable {
 						nT = pl.outTrans.length;
 						for (t = 0; t < nT; t++) {
 							tr = pl.outTrans[t];
-							int localTransId = tr.id - transitions[0].id; // tr.id
+							int localTransId = tr.id - transitions[0].id;
 							if (tr.enabled()) {
 								if (localTransId >= 0
 										&& localTransId < transitions.length) {
@@ -648,9 +656,6 @@ public class LP implements Executor, Runnable {
 										transStatus[localTransId] = true;
 										enTransCnt++;
 									}
-								} else {
-									// TODO will be done at incomingTokenList
-									// processing
 								}
 							}
 						}
@@ -674,6 +679,12 @@ public class LP implements Executor, Runnable {
 		}
 	}
 
+	/**
+	 * Initializes the variables before simulation run.
+	 * 
+	 * @throws SimQPNException
+	 *             if initialization of queues or places fails
+	 */
 	private void initializeWorkingVariables() throws SimQPNException {
 		inRampUp = true;
 		endRampUpClock = 0;
@@ -818,8 +829,8 @@ public class LP implements Executor, Runnable {
 	/**
 	 * Returns a heart beat rate.
 	 * 
-	 * @param totRunL
-	 * @param nextChkAfter
+	 * @param totRunL	The total run length
+	 * @param nextChkAfter	The clock at which a next 
 	 * @param lastTimeMsrm
 	 * @param maxProgressInterval
 	 * @param progressUpdateRate
@@ -850,58 +861,20 @@ public class LP implements Executor, Runnable {
 		}
 		return nextChkAfter;
 	}
-
-	@Override
-	public void addTokenEvent(TokenEvent tokenEvent) {
-		incomingTokenList.add(tokenEvent);
-	}
-
-	public void setStopCriterion(StopCriterion stopCriterion) {
-		this.stopCriterion = stopCriterion;
-	}
-
-	public void setBarrier(CyclicBarrier barrier) {
-		this.barrier = barrier;
-	}
-
-	@Override
-	public double getClock() {
-		return clock;
-	}
-
-	@Override
-	public synchronized void scheduleEvent(double serviceTime, Queue queue,
-			Token token) {
-		QueueEvent ev = new QueueEvent(clock + serviceTime, queue, token);
-		eventList.add(ev);
-		if (queue != null) {
-			queue.onQueueEventScheduled(ev);
-		}
-	}
-
-	@Override
-	public synchronized void removeEvent(QueueEvent event) {
-		eventList.remove(event);
-	}
-
-	@Override
-	public SimQPNConfiguration getConfiguration() {
-		return configuration;
-	}
-
-	@Override
-	public SimulatorProgress getProgressMonitor() {
-		return progressMonitor;
-	}
-
-	@Override
-	public int getId() {
-		return id;
-	}
-
-	private double checkIfStatisticCollectionIsSufficient(double nextChkAfter)
+	
+	/**
+	 * Checks if simulation got enough statistics.
+	 * 
+	 * @param nextChkAfter
+	 *            the clock simulation time has to exceed to test statistics
+	 *            again
+	 * @return the earliest time for next test for sufficient data
+	 * @throws SimQPNException
+	 *             if error during test for enough statistics in PlaceStats and
+	 *             QPlaceStats
+	 */
+	private double checkForSufficientDataCollection(double nextChkAfter)
 			throws SimQPNException {
-		// Step 5: Check Stopping Criterion
 		if (configuration.stoppingRule != SimQPNConfiguration.FIXEDLEN
 				&& (!inRampUp) && clock > nextChkAfter) {
 			double elapsedSecs = (System.currentTimeMillis() - beginRunWallClock) / 1000;
@@ -909,7 +882,7 @@ public class LP implements Executor, Runnable {
 			boolean done = true;
 			Place pl = null;
 
-			//for (int p = 0; p < net.getNumPlaces(); p++) {
+			// for (int p = 0; p < net.getNumPlaces(); p++) {
 			for (int p = 0; p < places.length; p++) {
 				pl = places[p];
 				if (pl.statsLevel >= 3) {
@@ -947,14 +920,10 @@ public class LP implements Executor, Runnable {
 					progressMonitor.precisionCheck(id, done, null);
 					// break; // exit while loop
 					hasFinished = true;
-					stopCriterion.notifyLPReachedLocalStopCrit();
+					stopCriterionController.incrementFinishedLPCounter();
 				} else {
-					progressMonitor.precisionCheck(id, done, probe.name); // TODO:
-																			// distinguish
-																			// between
-																			// places
-																			// and
-																			// probes.
+					// TODO: distinguish between places and probes.
+					progressMonitor.precisionCheck(id, done, probe.name);
 				}
 			}
 
@@ -968,8 +937,88 @@ public class LP implements Executor, Runnable {
 		return nextChkAfter;
 	}
 
+
 	/**
-	 * Simple getter.
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void addTokenEvent(TokenEvent tokenEvent) {
+		incomingTokenList.add(tokenEvent);
+	}
+
+	/**
+	 * Sets StopCriterionController.
+	 * @param stopCriterionController	the controller to 
+	 */
+	public void setStopCriterion(StopCriterionController stopCriterionController) {
+		this.stopCriterionController = stopCriterionController;
+	}
+
+	/**
+	 * Sets barrier.
+	 * 
+	 * @param barrier
+	 *            the barrier LPs wait if they have no events save to process
+	 */
+	public void setBarrier(CyclicBarrier barrier) {
+		this.barrier = barrier;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public double getClock() {
+		return clock;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public synchronized void scheduleEvent(double serviceTime, Queue queue,
+			Token token) {
+		QueueEvent ev = new QueueEvent(clock + serviceTime, queue, token);
+		eventList.add(ev);
+		if (queue != null) {
+			queue.onQueueEventScheduled(ev);
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public synchronized void removeEvent(QueueEvent event) {
+		eventList.remove(event);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public SimQPNConfiguration getConfiguration() {
+		return configuration;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public SimulatorProgress getProgressMonitor() {
+		return progressMonitor;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int getId() {
+		return id;
+	}
+
+	/**
+	 * Returns transitions array.
 	 * 
 	 * @return the transitions of this LP.
 	 */
@@ -978,7 +1027,7 @@ public class LP implements Executor, Runnable {
 	}
 
 	/**
-	 * Simple getter.
+	 * Returns places array.
 	 * 
 	 * @return the places of this LP.
 	 */
@@ -987,7 +1036,7 @@ public class LP implements Executor, Runnable {
 	}
 
 	/**
-	 * Simple getter.
+	 * Returns queues array.
 	 * 
 	 * @return the queues of this LP.
 	 */
@@ -997,6 +1046,7 @@ public class LP implements Executor, Runnable {
 
 	/**
 	 * Returns a list of succeeding LPs.
+	 * 
 	 * @return LPs succeeding this LP
 	 */
 	public List<LP> getSuccessors() {
@@ -1005,7 +1055,9 @@ public class LP implements Executor, Runnable {
 
 	/**
 	 * Appends a new successor to the list of successors.
-	 * @param successor		the LP to be added
+	 * 
+	 * @param successor
+	 *            the LP to be added
 	 */
 	public void addSuccessor(LP successor) {
 		this.successors.add(successor);
@@ -1013,6 +1065,7 @@ public class LP implements Executor, Runnable {
 
 	/**
 	 * Returns a list of preceding LPs.
+	 * 
 	 * @return LPs preceding this LP
 	 */
 	public List<LP> getPredecessors() {
@@ -1021,36 +1074,11 @@ public class LP implements Executor, Runnable {
 
 	/**
 	 * Appends a new predecessor to the list of predecessors.
-	 * @param predecessor	the LP to be added to predecessors
+	 * 
+	 * @param predecessor
+	 *            the LP to be added to predecessors
 	 */
 	public void addPredecessor(LP predecessor) {
 		this.predecessors.add(predecessor);
 	}
-
-	/**
-	 * Merges passed LP into this LP.
-	 * 
-	 * TODO Work in Progress
-	 * 
-	 * @param lpToMerge	the LP which will be merged into this
-	 */
-	public void merge(LP lpToMerge) {
-		this.places = concat(places, lpToMerge.getPlaces());
-		this.transitions = concat(transitions, lpToMerge.getTransitions());
-		this.queues = concat(queues, lpToMerge.getQueues());
-	}
-
-	/**
-	 * Couples two arrays. Method coulde be extracted to Utility class.
-	 * @param first		array number one
-	 * @param second	array number two
-	 * @param <T>	Type
-	 * @return A merged array
-	 */
-	private static <T> T[] concat(T[] first, T[] second) {
-		T[] result = Arrays.copyOf(first, first.length + second.length);
-		System.arraycopy(second, 0, result, first.length, second.length);
-		return result;
-	}
-
 }

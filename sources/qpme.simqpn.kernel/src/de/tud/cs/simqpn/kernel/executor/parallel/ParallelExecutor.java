@@ -59,7 +59,7 @@ public class ParallelExecutor implements Callable<Net> {
 		System.out.println(lpDecompositionToString(lps));
 		
 		CyclicBarrier barrier = new CyclicBarrier(lps.length);
-		StopCriterion stopCriterion = new StopCriterion(lps.length,  barrier);
+		StopCriterionController stopCriterion = new StopCriterionController(lps.length,  barrier);
 		for(LP lp: lps){
 			lp.setBarrier(barrier);
 			lp.setStopCriterion(stopCriterion);
@@ -271,31 +271,6 @@ public class ParallelExecutor implements Callable<Net> {
 		}
 		arrayList.clear();
 		arrayList.addAll(newList);
-	}
-
-	/**
-	 * TODO Work in Progress
-	 * @param listLPs
-	 */
-	private void mergePlaceLPsIntoPredecessors(List<LP> listLPs) {
-		// MERGING LPs
-		int length = listLPs.size() - 1;
-		for (int i = 0; i < length; i++) {
-			LP lp = listLPs.get(i);
-			boolean mergeFlag = true;
-			for (Place place : lp.getPlaces()) {
-				if (place instanceof QPlace) {
-					mergeFlag = false;
-				}
-			}
-			if (mergeFlag) {
-				(lp.getSuccessors().get(0)).merge(lp);
-				listLPs.remove(lp);
-				--length;
-				System.out.println("LP " + lp.getId() + " was merged into "
-						+ lp.getSuccessors().get(0));
-			}
-		}
 	}
 
 }
