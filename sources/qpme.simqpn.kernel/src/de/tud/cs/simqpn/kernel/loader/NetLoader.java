@@ -102,7 +102,7 @@ public class NetLoader {
 	private Net parse(Element netXML, String configurationName, SimQPNConfiguration configuration)
 			throws SimQPNException {
 		Net net = new Net();
-		net.setConfiguration(configurationName);
+		net.setConfigurationName(configurationName);
 		idToElementMap = new HashMap<String, Element>();
 
 		XPath xpathSelector = XMLHelper.createXPath("//place");

@@ -42,7 +42,6 @@
 package de.tud.cs.simqpn.kernel.entities.queue;
 
 import java.util.LinkedList;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -53,7 +52,6 @@ import de.tud.cs.simqpn.kernel.entities.ProbeTimestamp;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.Token;
 import de.tud.cs.simqpn.kernel.executor.Executor;
-import de.tud.cs.simqpn.kernel.executor.QueueEvent;
 
 /**
  * This class implements the First-Come-First-Serve scheduling strategy.
@@ -70,21 +68,18 @@ public class FCFSQueue extends Queue {
 	 * Constructor.
 	 * 
 	 * @param id
-	 *            - global id of the queue
+	 *            global id of the queue
 	 * @param xmlID
-	 *            - identification within XML File
+	 *            identification within XML File
 	 * @param name
-	 *            - name of the queue
+	 *            name of the queue
 	 * @param queueDiscipline
-	 *            - queuing discipline
+	 *            queuing discipline
 	 * @param numServers
-	 *            - number of servers in queue
-	 * 
-	 * @throws SimQPNException
+	 *            number of servers in queue
 	 */
 	public FCFSQueue(int id, String xmlId, String name,
-			QueuingDiscipline queueDiscip, int numServers)
-			throws SimQPNException {
+			QueuingDiscipline queueDiscip, int numServers) {
 
 		super(id, xmlId, name, queueDiscip, numServers);
 
@@ -97,36 +92,43 @@ public class FCFSQueue extends Queue {
 	 */
 	@Override
 	public Queue clone(SimQPNConfiguration configuration, Place[] places) {
-		FCFSQueue clone = null;
-		try {
-			clone = new FCFSQueue(id, xmlId, name, queueDiscip, numServers);
-			clone.setParameters(this, configuration, places);
+		FCFSQueue clone = new FCFSQueue(id, xmlId, name, queueDiscip,
+				numServers);
+		clone.setParameters(this, configuration, places);
 
-			clone.numBusyServers = this.numBusyServers;
-			if (!this.waitingLine.isEmpty()) {
-				for (int i = 0; i < this.waitingLine.size(); i++) {
-					Token token = this.waitingLine.get(i);
-					ProbeTimestamp[] probeTimestamps = new ProbeTimestamp[token.probeData.length];
-					for (int j = 0; j < this.waitingLine.get(i).probeData.length; j++) {
-						probeTimestamps[j] = new ProbeTimestamp(
-								token.probeData[j].probeId,
-								token.probeData[j].timestamp);
-					}
-					Token tokenCopy = new Token(places[token.place.id],
-							token.color, probeTimestamps);
-					clone.waitingLine.add(tokenCopy);
+		clone.numBusyServers = this.numBusyServers;
+		if (!this.waitingLine.isEmpty()) {
+			for (int i = 0; i < this.waitingLine.size(); i++) {
+				Token token = this.waitingLine.get(i);
+				ProbeTimestamp[] probeTimestamps = new ProbeTimestamp[token.probeData.length];
+				for (int j = 0; j < this.waitingLine.get(i).probeData.length; j++) {
+					probeTimestamps[j] = new ProbeTimestamp(
+							token.probeData[j].probeId,
+							token.probeData[j].timestamp);
 				}
+				Token tokenCopy = new Token(places[token.place.id],
+						token.color, probeTimestamps);
+				clone.waitingLine.add(tokenCopy);
 			}
-
-			// FCFS specific settings
-		} catch (SimQPNException e) {
-			log.error("", e);
 		}
+
 		return clone;
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Deposits N tokens of particular color.
+	 * 
+	 * @param qPl
+	 *            the QPlace
+	 * @param color
+	 *            color of tokens
+	 * @param count
+	 *            number of tokens to deposit
+	 * @param tokensToBeAdded
+	 *            individual tokens (if tracking = true)
+	 * @param executor
+	 *            the executor
+	 * @throws SimQPNException	if error during place stats update
 	 */
 	@Override
 	public void addTokens(QPlace qPl, int color, int count,

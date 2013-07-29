@@ -49,7 +49,6 @@ import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.Token;
 import de.tud.cs.simqpn.kernel.executor.Executor;
-import de.tud.cs.simqpn.kernel.executor.QueueEvent;
 
 /**
  * This class implements the Infinite Server (IS) scheduling strategy.
@@ -63,28 +62,50 @@ import de.tud.cs.simqpn.kernel.executor.QueueEvent;
 public class ISQueue extends Queue {
 	private static Logger log = Logger.getLogger(ISQueue.class);
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param id
+	 *            global id of the queue
+	 * @param xmlID
+	 *            identification within XML File
+	 * @param name
+	 *            name of the queue
+	 * @param queueDiscipline
+	 *            queuing discipline
+	 * @param numServers
+	 *            number of servers in queue
+	 */
 	public ISQueue(int id, String xmlId, String name,
-			QueuingDiscipline queueDiscip, int numServers)
-			throws SimQPNException {
+			QueuingDiscipline queueDiscip, int numServers){
 		super(id, xmlId, name, queueDiscip, numServers);
 	}
 
 	@Override
 	public Queue clone(SimQPNConfiguration configuration, Place[] places) {
-		ISQueue clone = null;
-		try {
-			clone = new ISQueue(id, xmlId, name, queueDiscip, numServers);
-			clone.setParameters(this, configuration, places);
-			// IS specific settings
-		} catch (SimQPNException e) {
-			log.error("", e);
-		}
+		ISQueue clone = new ISQueue(id, xmlId, name, queueDiscip, numServers);
+		clone.setParameters(this, configuration, places);
+		// IS specific settings...
 		return clone;
 	}
 
-	@Override
+	/**
+	 * Deposits N tokens of particular color.
+	 * 
+	 * @param qPl
+	 *            the QPlace
+	 * @param color
+	 *            color of tokens
+	 * @param count
+	 *            number of tokens to deposit
+	 * @param tokensToBeAdded
+	 *            individual tokens (if tracking = true)
+	 * @param executor
+	 *            the executor
+	 * @throws SimQPNException	inherited from queue, not relevant for ISQueue
+	 */
 	public void addTokens(QPlace qPl, int color, int count,
-			Token[] tokensToBeAdded, Executor executor) throws SimQPNException {
+			Token[] tokensToBeAdded, Executor executor) throws SimQPNException{
 		super.addTokens(qPl, color, count, tokensToBeAdded, executor);
 
 		// Schedule service completion events

@@ -133,17 +133,21 @@ public class PSQueue extends Queue {
 	private EmpiricalWalker randColorGen;
 
 	/**
+	 * Constructor.
+	 * 
 	 * @param id
-	 * @param xmlId
+	 *            global id of the queue
+	 * @param xmlID
+	 *            identification within XML File
 	 * @param name
-	 * @param queueDiscip
+	 *            name of the queue
+	 * @param queueDiscipline
+	 *            queuing discipline
 	 * @param numServers
-	 * @throws SimQPNException
-	 * @Override
+	 *            number of servers in queue
 	 */
 	public PSQueue(int id, String xmlId, String name,
-			QueuingDiscipline queueDiscip, int numServers)
-			throws SimQPNException {
+			QueuingDiscipline queueDiscip, int numServers){
 
 		super(id, xmlId, name, queueDiscip, numServers);
 
@@ -332,7 +336,7 @@ public class PSQueue extends Queue {
 	 * @return
 	 * @exception
 	 */
-	public void clearEvents(Executor executor) throws SimQPNException {
+	public void clearEvents(Executor executor) {
 		// Remove scheduled event from the event list.
 		// Note that a maximum of one event can be scheduled per PS QPlace at a
 		// time.
@@ -396,11 +400,23 @@ public class PSQueue extends Queue {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Deposits N tokens of particular color.
+	 * 
+	 * @param qPl
+	 *            the QPlace
+	 * @param color
+	 *            color of tokens
+	 * @param count
+	 *            number of tokens to deposit
+	 * @param tokensToBeAdded
+	 *            individual tokens (if tracking = true)
+	 * @param executor
+	 *            the executor
+	 * @throws SimQPNException	inherited from queue, not relevant for PSQueue
 	 */
 	@Override
 	public void addTokens(QPlace qPl, int color, int count,
-			Token[] tokensToBeAdded, Executor executor) throws SimQPNException {
+			Token[] tokensToBeAdded, Executor executor) throws SimQPNException{
 		super.addTokens(qPl, color, count, tokensToBeAdded, executor);
 
 		if (!expPS) {

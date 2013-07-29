@@ -75,14 +75,14 @@ import de.tud.cs.simqpn.kernel.stats.QueueStats;
  */
 public abstract class Queue {
 
+	/** logger for progress and error logging. */
 	private static Logger log = Logger.getLogger(Queue.class);
-
 	/**
 	 * Global id of the queue.
 	 */
 	/* Note: This class does not ensure this ID to be unique */
 	public final int id;
-	/** XML ID */
+	/** XML ID. */
 	public final String xmlId;
 	/** Name of the queue. */
 	public final String name;
@@ -97,7 +97,6 @@ public abstract class Queue {
 	 * of.
 	 */
 	public int totNumColors;
-
 	/**
 	 * The minimum statsLevel of all queuing places the queue is part of.
 	 */
@@ -122,8 +121,8 @@ public abstract class Queue {
 	 */
 	private long totalMaxPopulation;
 	/**
-	 * The number of measurements that were taken in the
-	 * current epoch. Used for overflow detection.
+	 * The number of measurements that were taken in the current epoch. Used for
+	 * overflow detection.
 	 */
 	private int epochMsrmCnt;
 	/**
@@ -173,7 +172,9 @@ public abstract class Queue {
 	 * Returns a clone of this queue.
 	 * 
 	 * @param configuration
+	 *            the configuration for the simulation run
 	 * @param places
+	 *            the places of the cloned net
 	 * @return a clone of this queue
 	 */
 	public abstract Queue clone(SimQPNConfiguration configuration,
@@ -183,11 +184,11 @@ public abstract class Queue {
 	 * Sets instance parameters to the ones of the passed queue.
 	 * 
 	 * @param queue
-	 *            - The queue we take the settings from
+	 *            the queue we take the settings from
 	 * @param configuration
-	 *            - The configuration used
+	 *            the configuration used
 	 * @param places
-	 *            - The places the queue should refer to
+	 *            the places the queue should refer to
 	 */
 	protected void setParameters(Queue queue,
 			SimQPNConfiguration configuration, Place[] places) {
@@ -281,10 +282,14 @@ public abstract class Queue {
 	/**
 	 * Complete statistics collection.
 	 * 
-	 * @param configuration	the simulation configuration
-	 * @param runWallClockTime the time when finished data collection
+	 * @param configuration
+	 *            the simulation configuration
+	 * @param runWallClockTime
+	 *            the time when finished data collection
 	 * @param clock
-	 * @throws SimQPNException if error in queue stats
+	 *            simulation clock
+	 * @throws SimQPNException
+	 *             if error in queue stats
 	 */
 	public void finish(SimQPNConfiguration configuration,
 			double runWallClockTime, double clock) throws SimQPNException {
@@ -308,6 +313,9 @@ public abstract class Queue {
 	/**
 	 * Schedules next service completion event (if any) according to current
 	 * token population.
+	 * 
+	 * @param executor
+	 *            the executor to schedule event
 	 */
 	public abstract void updateEvents(Executor executor);
 
@@ -327,11 +335,10 @@ public abstract class Queue {
 	 *            individual tokens (if tracking = true)
 	 * @param executor
 	 *            the executor
-	 * @throws SimQPNException
+	 * @throws SimQPNException	if an overwriting method throws an exception
 	 */
-	@SuppressWarnings("unchecked")
 	public void addTokens(QPlace qPl, int color, int count,
-			Token[] tokensToBeAdded, Executor executor) throws SimQPNException {
+			Token[] tokensToBeAdded, Executor executor) throws SimQPNException{
 
 		tkPopulation += count;
 
@@ -461,22 +468,24 @@ public abstract class Queue {
 	 */
 	public void onQueueEventScheduled(QueueEvent queueEvent) {
 	}
-	
+
 	/**
 	 * Returns queue statistic object.
+	 * 
 	 * @return queue statistic object
 	 */
 	public QueueStats getQueueStats() {
 		return queueStats;
 	}
-	
+
 	/**
 	 * Set statistic collection object.
-	 * @param queueStats	statistic collection object
+	 * 
+	 * @param queueStats
+	 *            statistic collection object
 	 */
 	public void setQueueStats(QueueStats queueStats) {
 		this.queueStats = queueStats;
 	}
-
 
 }
