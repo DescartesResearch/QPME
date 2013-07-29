@@ -110,32 +110,19 @@ public class ISQueue extends Queue {
 	}
 
 	/**
-	 * Always true
-	 */
-	@Override
-	public boolean areEventsUpToDate() {
-		return true;
-	}
-
-	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public double getLookahead(QPlace qpl, int color_id) {
 		return 0;
 	}
-
-	/**
-	 * Nothing to do
-	 */
-	@Override
-	public void onQueueEventScheduled(QueueEvent queueEvent) {
-	};
 	
 	/**
-	 * Empty method body.
+	 * {@inheritDoc}
+	 * 
+	 * No actions necessary for IS queue. Empty method body.
 	 */
 	@Override
-	public void updateEvents(Executor executor) throws SimQPNException {};
+	public void updateEvents(Executor executor) {};
 
 }

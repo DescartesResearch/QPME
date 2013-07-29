@@ -382,13 +382,7 @@ public class LP implements Executor, Runnable {
 		for (Place p : places) {
 			if (p instanceof QPlace) {
 				Queue queue = ((QPlace) p).queue;
-				if (!queue.areEventsUpToDate()) {
-					try {
-						queue.updateEvents(this);
-					} catch (SimQPNException e) {
-						log.error("", e);
-					}
-				}
+					queue.updateEvents(this);
 			}
 		}
 	}

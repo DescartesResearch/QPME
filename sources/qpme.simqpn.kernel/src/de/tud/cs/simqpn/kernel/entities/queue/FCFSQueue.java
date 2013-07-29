@@ -136,7 +136,7 @@ public class FCFSQueue extends Queue {
 		while (n < count && numBusyServers < numServers) {
 			// Schedule service completion event
 			double servTime = qPl.randServTimeGen[color].nextDouble();
-			if (servTime < 0){
+			if (servTime < 0) {
 				servTime = 0;
 			}
 			Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[n]
@@ -191,14 +191,6 @@ public class FCFSQueue extends Queue {
 	}
 
 	/**
-	 * Always true for FCFS
-	 */
-	@Override
-	public boolean areEventsUpToDate() {
-		return true;
-	}
-
-	/**
 	 * {@inheritDoc}
 	 */
 	@Override
@@ -213,17 +205,12 @@ public class FCFSQueue extends Queue {
 	}
 
 	/**
-	 * Nothing to do for FCFS
+	 * {@inheritDoc}
+	 * 
+	 * No actions necessary for FCFS queue. Empty method body.
 	 */
 	@Override
-	public void onQueueEventScheduled(QueueEvent queueEvent) {
-	}
-
-	/**
-	 * Empty method body.
-	 */
-	@Override
-	public void updateEvents(Executor executor) throws SimQPNException {
+	public void updateEvents(Executor executor) {
 	}
 
 }

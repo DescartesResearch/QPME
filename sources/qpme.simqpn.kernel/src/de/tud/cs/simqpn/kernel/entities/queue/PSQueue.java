@@ -212,16 +212,9 @@ public class PSQueue extends Queue {
 
 	/**
 	 * {@inheritDoc}
-	 * 
-	 * Method updateEvents (Used only for PS queues). Schedules next service
-	 * completion event (if any) according to current token population.
-	 * 
-	 * @param
-	 * @return
-	 * @exception
 	 */
 	@Override
-	public void updateEvents(Executor executor) throws SimQPNException {
+	public void updateEvents(Executor executor) {
 		if (eventsUpToDate) {
 			return;
 		}
@@ -307,7 +300,6 @@ public class PSQueue extends Queue {
 				}
 				if (minRST == -1) { // DEBUG
 					log.error("Illegal state in queue " + name);
-					throw new SimQPNException();
 				}
 				double servTime = minRST * totQueTokCnt; // Default for
 															// "-/G/1-PS" queue
@@ -403,11 +395,6 @@ public class PSQueue extends Queue {
 		}
 	}
 
-	// @Override
-	// public void onQueueEventScheduled(QueueEvent queueEvent) {
-	// this.nextEvent = queueEvent;
-	// }
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -478,21 +465,13 @@ public class PSQueue extends Queue {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public boolean areEventsUpToDate() {
-		return eventsUpToDate;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
 	public void onQueueEventScheduled(QueueEvent queueEvent) {
 		nextEvent = queueEvent;
 	}
 
 	/**
 	 * {@inheritDoc}
-	 */	
+	 */
 	@Override
 	public double getLookahead(QPlace qpl, int color_id) {
 		return 0;

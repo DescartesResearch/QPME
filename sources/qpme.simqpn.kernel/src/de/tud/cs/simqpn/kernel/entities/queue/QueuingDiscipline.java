@@ -1,16 +1,14 @@
 package de.tud.cs.simqpn.kernel.entities.queue;
 
 /**
- *  Supported Queueing Disciplines:
- *
+ *  Supported queuing disciplines for queues.
  */
 public enum QueuingDiscipline {
 	IS(false),
 	FCFS(true),
-	PS(true),
-	THREAD_SCHEDULER(true);
+	PS(true);
 
-	private boolean hasServers = false;
+	private boolean hasServers;
 	
 	private QueuingDiscipline(boolean hasServers) {
 		this.hasServers = hasServers;

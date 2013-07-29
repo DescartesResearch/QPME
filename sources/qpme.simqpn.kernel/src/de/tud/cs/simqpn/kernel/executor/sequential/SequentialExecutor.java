@@ -289,8 +289,7 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 			// Step 2: Make sure all service completion events in PS QPlaces
 			// have been scheduled
 			for (int q = 0; q < net.getNumQueues(); q++)
-				if (net.getQueue(q).queueDiscip == QueuingDiscipline.PS
-						&& (!net.getQueue(q).areEventsUpToDate()))
+				if (net.getQueue(q).queueDiscip == QueuingDiscipline.PS)
 					net.getQueue(q).updateEvents(this);
 			/*
 			 * Alternative Code for (int p = 0; p < numPlaces; p++) if

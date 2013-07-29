@@ -101,14 +101,14 @@ public abstract class Queue {
 	/**
 	 * The minimum statsLevel of all queuing places the queue is part of.
 	 */
+	private int statsLevel;
 	/*
 	 * NOTE: we set statsLevel to the minimum here because currently some of
 	 * statistics we compute are based on corresponding statistics from the
 	 * QPlaces the queue is part of.
 	 */
-	private int statsLevel;
 	/** Object containing statistics for this queue. */
-	public QueueStats queueStats;
+	private QueueStats queueStats;
 	/** The current number of tokens residing in the queue. */
 	private long tkPopulation;
 	/**
@@ -122,8 +122,8 @@ public abstract class Queue {
 	 */
 	private long totalMaxPopulation;
 	/**
-	 * Overflow Detection: the number of measurements that were taken in the
-	 * current epoch
+	 * The number of measurements that were taken in the
+	 * current epoch. Used for overflow detection.
 	 */
 	private int epochMsrmCnt;
 	/**
@@ -144,23 +144,23 @@ public abstract class Queue {
 	private boolean deactivateWarning = false;
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 * 
 	 * @param id
-	 *            - global id of the queue
-	 * @param xmlID - identification within XML File           
+	 *            global id of the queue
+	 * @param xmlID
+	 *            identification within XML File
 	 * @param name
-	 *            - name of the queue
+	 *            name of the queue
 	 * @param queueDiscipline
-	 *            - queuing discipline
+	 *            queuing discipline
 	 * @param numServers
-	 *            - number of servers in queue
+	 *            number of servers in queue
 	 */
-	public Queue(int id, String xmlId, String name,
-			QueuingDiscipline queueDiscipline, int numServers)
-			throws SimQPNException {
+	public Queue(int id, String xmlID, String name,
+			QueuingDiscipline queueDiscipline, int numServers) {
 		this.id = id;
-		this.xmlId = xmlId;
+		this.xmlId = xmlID;
 		this.name = name;
 		this.queueDiscip = queueDiscipline;
 		this.numServers = numServers;
@@ -170,17 +170,17 @@ public abstract class Queue {
 	}
 
 	/**
-	 * Returns a clone of this queue
+	 * Returns a clone of this queue.
 	 * 
 	 * @param configuration
 	 * @param places
-	 * @return
+	 * @return a clone of this queue
 	 */
 	public abstract Queue clone(SimQPNConfiguration configuration,
 			Place[] places);
 
 	/**
-	 * Sets instance parameters to the ones of the passed queue
+	 * Sets instance parameters to the ones of the passed queue.
 	 * 
 	 * @param queue
 	 *            - The queue we take the settings from
@@ -206,13 +206,12 @@ public abstract class Queue {
 
 	/**
 	 * Adds a queuing place (this queue is part of) to the list of queuing
-	 * places
+	 * places.
 	 * 
 	 * @param qPl
-	 *            - The queuing place to bee added
-	 * @throws SimQPNException
+	 *            The queuing place to bee added
 	 */
-	public void addQPlace(QPlace qPl) throws SimQPNException {
+	public void addQPlace(QPlace qPl) {
 		if (qPlaces == null) {
 			qPlaces = new QPlace[1];
 			qPlaces[0] = qPl;
@@ -225,13 +224,16 @@ public abstract class Queue {
 	}
 
 	/**
-	 * Initializes object for statistic collection
+	 * Initializes object QueueStats for statistic collection.
 	 * 
 	 * NOTE: Should be called after the qPlaces array has been initialized
 	 * before the run has started.
 	 * 
 	 * @param configuration
+	 *            the simulation configuration
 	 * @throws SimQPNException
+	 *             if no qPlaces are associated with this queue or if error
+	 *             during QueueStats object generation
 	 */
 	public void init(SimQPNConfiguration configuration) throws SimQPNException {
 		statsLevel = 10;
@@ -249,80 +251,83 @@ public abstract class Queue {
 			 * addQPlace().
 			 */
 			totNumColors += qPlaces[p].numColors;
-			if (qPlaces[p].statsLevel < statsLevel)
+			if (qPlaces[p].statsLevel < statsLevel) {
 				statsLevel = qPlaces[p].statsLevel;
+			}
 		}
 
-		if (statsLevel > 0) // NOTE: This is intentionally done here after
-							// qPlaces has been initialized!
+		if (statsLevel > 0) {
+			// NOTE: This is intentionally done here after
+			// qPlaces has been initialized!
 			queueStats = new QueueStats(id, name, totNumColors, statsLevel,
 					queueDiscip, numServers, this, configuration);
-
+		}
 	}
 
 	/**
 	 * Starts the collection of statistics for this queue.
 	 * 
 	 * @param clock
-	 *            - The initial clock when to start statistic collection
+	 *            The initial clock when to start statistic collection
 	 * @throws SimQPNException
+	 *             if error in QueueStats
 	 */
 	public void start(double clock) throws SimQPNException {
-		if (statsLevel > 0)
+		if (statsLevel > 0) {
 			queueStats.start(clock);
+		}
 	}
 
 	/**
 	 * Complete statistics collection.
 	 * 
-	 * @param configuration
-	 * @param runWallClockTime
+	 * @param configuration	the simulation configuration
+	 * @param runWallClockTime the time when finished data collection
 	 * @param clock
-	 *            -
-	 * @throws SimQPNException
+	 * @throws SimQPNException if error in queue stats
 	 */
 	public void finish(SimQPNConfiguration configuration,
 			double runWallClockTime, double clock) throws SimQPNException {
-		if (statsLevel > 0)
+		if (statsLevel > 0) {
 			queueStats.finish(configuration, runWallClockTime, clock);
+		}
 	}
 
 	/**
-	 * Method report
+	 * Logs a report for this queue.
 	 * 
-	 * @param
-	 * @return
-	 * @exception
+	 * @throws SimQPNException
+	 *             if error in queueStats
 	 */
 	public void report() throws SimQPNException {
-		if (statsLevel > 0)
+		if (statsLevel > 0) {
 			queueStats.printReport();
+		}
 	}
 
 	/**
-	 * Method updateEvents (Used only for PS queues). Schedules next service
-	 * completion event (if any) according to current token population.
-	 * 
-	 * @param
-	 * @return
-	 * @exception
+	 * Schedules next service completion event (if any) according to current
+	 * token population.
 	 */
-	public abstract void updateEvents(Executor executor) throws SimQPNException;
+	public abstract void updateEvents(Executor executor);
 
 	// TODO: Consider Simulator.scheduleEvent() below for the case statsLevel <
 	// 3
 
 	/**
-	 * Method addTokens - deposits N tokens of particular color
+	 * Deposits N tokens of particular color.
 	 * 
+	 * @param qPl
+	 *            the QPlace
 	 * @param color
-	 *            - color of tokens
+	 *            color of tokens
 	 * @param count
-	 *            - number of tokens to deposit
+	 *            number of tokens to deposit
 	 * @param tokensToBeAdded
-	 *            - individual tokens (if tracking = true)
-	 * @return
-	 * @exception
+	 *            individual tokens (if tracking = true)
+	 * @param executor
+	 *            the executor
+	 * @throws SimQPNException
 	 */
 	@SuppressWarnings("unchecked")
 	public void addTokens(QPlace qPl, int color, int count,
@@ -415,9 +420,11 @@ public abstract class Queue {
 	 * service.
 	 * 
 	 * @param token
-	 *            - token completing service
-	 * @return
-	 * @exception
+	 *            token completing service
+	 * @param executor
+	 *            the executor to complete service
+	 * @throws SimQPNException
+	 *             if overwriting methods throw an exception
 	 */
 	public void completeService(Token token, Executor executor)
 			throws SimQPNException {
@@ -432,19 +439,44 @@ public abstract class Queue {
 		}
 	}
 
-	public abstract boolean areEventsUpToDate();
-
 	/**
-	 * Returns the time the queue can ensure not to finish an event
+	 * Returns the time span from current clock the queue can ensure not to
+	 * finish a token.
 	 * 
-	 * @return
+	 * @param qpl
+	 *            the QPlace to getLookahead for.
+	 * @param color
+	 *            the color of the token
+	 * @return the time span from current clock the queue can ensure not to
+	 *         finish a token
 	 */
 	public abstract double getLookahead(QPlace qpl, int color);
 
 	/**
+	 * Actualize queue if new event was scheduled. This methods only performs
+	 * actions if overwritten.
 	 * 
 	 * @param queueEvent
+	 *            the event that was scheduled
 	 */
-	public abstract void onQueueEventScheduled(QueueEvent queueEvent);
+	public void onQueueEventScheduled(QueueEvent queueEvent) {
+	}
+	
+	/**
+	 * Returns queue statistic object.
+	 * @return queue statistic object
+	 */
+	public QueueStats getQueueStats() {
+		return queueStats;
+	}
+	
+	/**
+	 * Set statistic collection object.
+	 * @param queueStats	statistic collection object
+	 */
+	public void setQueueStats(QueueStats queueStats) {
+		this.queueStats = queueStats;
+	}
+
 
 }

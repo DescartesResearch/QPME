@@ -132,20 +132,16 @@ public class Net {
 			Queue original = net.getQueue(queue.id);	
 			if (original.qPlaces != null) {
 				for (int i = 0; i < original.qPlaces.length; i++) {
-					try {
-						queue.addQPlace((QPlace) places[original.qPlaces[i].id]);
-					} catch (SimQPNException e) {
-						log.error("", e);
-					}
+					queue.addQPlace((QPlace) places[original.qPlaces[i].id]);
 				}
 			}
-			if (original.queueStats != null) {
+			if (original.getQueueStats() != null) {
 				try {
-					queue.queueStats = new QueueStats(original.queueStats.id,
-							original.queueStats.name, original.queueStats.numColors,
-							original.queueStats.statsLevel,
-							original.queueStats.queueDiscip,
-							original.queueStats.numServers, queue, configuration);
+					queue.setQueueStats(new QueueStats(original.getQueueStats().id,
+							original.getQueueStats().name, original.getQueueStats().numColors,
+							original.getQueueStats().statsLevel,
+							original.getQueueStats().queueDiscip,
+							original.getQueueStats().numServers, queue, configuration));
 				} catch (SimQPNException e) {
 					log.error("", e);
 				}
@@ -172,7 +168,7 @@ public class Net {
 			sb.append("("+queue.getClass().toString().split("queue.")[1]+")");
 			//sb.append(queue.totalMaxPopulation+" "+queue.maxEpochPopulation+" | "+queue.maxPopulationAtRisingStart +" < "+ queue.totalMaxPopulation+ " " +queue.cntConsRisingEpoch);				
 
-			if(queue.queueStats != null){
+			if(queue.getQueueStats() != null){
 				sb.append("(stats) ");
 			}
 			sb.append("\n");
