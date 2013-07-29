@@ -71,7 +71,7 @@ import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 /**
  * This class represents a logical process (LP) which simulates a part of a net.
  * 
- * The LP processes tokens until a global stopCriterion is reached
+ * The LP processes tokens until a global stop criterion is reached.
  * 
  * The LP blocks if the next event is not safe to process. An event it save to
  * process if there can not arrive previous events from LPs predecessors.
@@ -941,15 +941,15 @@ public class LP implements Executor, Runnable {
 	}
 
 	/**
-	 * Sets StopCriterionController.
-	 * @param stopCriterionController	the controller to 
+	 * Sets controller for global stop criterion.
+	 * @param stopCriterionController	the controller which manages local stop criteria
 	 */
 	public void setStopCriterion(StopCriterionController stopCriterionController) {
 		this.stopCriterionController = stopCriterionController;
 	}
 
 	/**
-	 * Sets barrier.
+	 * Sets global barrier for LP synchronization.
 	 * 
 	 * @param barrier
 	 *            the barrier LPs wait if they have no events save to process
