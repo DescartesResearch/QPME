@@ -577,8 +577,7 @@ public class Transition extends Node {
 								log.error("Exception during token addition to place",e);
 							}
 						} else {
-							executorOut.addTokenEvent(new TokenEvent(executorOut
-									.getClock(), this, pl, c, n, null));
+							executorOut.addTokenEvent(new TokenEvent(executor.getClock(), this, pl, c, n, null));
 						}
 					}
 				}
