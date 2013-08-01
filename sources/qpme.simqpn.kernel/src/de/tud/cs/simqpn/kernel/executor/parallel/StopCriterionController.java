@@ -28,6 +28,8 @@ public class StopCriterionController {
 	 */
 	boolean hasSimulationFinished(){
 		if(numLPs <= finishedLPs){
+		//if(finishedLPs > 0){
+		//if(finishedLPs > 1){
 			barrier.reset();
 			return true;
 		}
@@ -39,6 +41,10 @@ public class StopCriterionController {
 	 */
 	synchronized void incrementFinishedLPCounter(){
 		finishedLPs++;
+	}
+	
+	public int getNumFinishedLPs(){
+		return finishedLPs;
 	}
 	
 

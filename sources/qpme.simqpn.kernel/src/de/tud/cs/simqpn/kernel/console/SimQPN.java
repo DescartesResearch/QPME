@@ -136,7 +136,8 @@ public class SimQPN implements IApplication {
 				
 				if (listConfigurations == true) 
 					System.out.println("---------------------------------------");
-				
+				System.out.println("waitkey");
+				System.in.read(); //FOR DEBUG PURPOSE				
 				if (runSimulation == true) {
 					if (!validConfig) 
 						System.out.println("Error: Configuration \"" + configuration + "\" does not exist!");
