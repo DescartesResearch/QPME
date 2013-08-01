@@ -21,12 +21,15 @@ import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
 /**
- * This class decomposes a {@link Net} and runs its parts parallel by the use of {@link LP}s
+ * This class decomposes a {@link Net} and runs its parts parallel by the use of
+ * {@link LP}s
+ * 
  * @author D
- *
+ * 
  */
 public class ParallelExecutor implements Callable<Net> {
-	private static Logger log = Logger.getLogger(ReplicationDeletionParallel.class);
+	private static Logger log = Logger
+			.getLogger(ReplicationDeletionParallel.class);
 
 	private Net net;
 	private SimQPNConfiguration configuration;
@@ -35,6 +38,7 @@ public class ParallelExecutor implements Callable<Net> {
 
 	/**
 	 * Constructor
+	 * 
 	 * @param net
 	 * @param configuration
 	 * @param progressMonitor
@@ -50,17 +54,18 @@ public class ParallelExecutor implements Callable<Net> {
 
 	/**
 	 * Simulates the passed net.
-	 *
+	 * 
 	 * @throws SimQPNException
 	 */
-	//Modifies net
+	// Modifies net
 	public Net call() throws SimQPNException {
 		LP[] lps = decomposeNetIntoLPs();
 		System.out.println(lpDecompositionToString(lps));
-		
+
 		CyclicBarrier barrier = new CyclicBarrier(lps.length);
-		StopCriterionController stopCriterion = new StopCriterionController(lps.length,  barrier);
-		for(LP lp: lps){
+		StopCriterionController stopCriterion = new StopCriterionController(
+				lps.length, barrier);
+		for (LP lp : lps) {
 			lp.setBarrier(barrier);
 			lp.setStopCriterion(stopCriterion);
 		}
@@ -77,9 +82,12 @@ public class ParallelExecutor implements Callable<Net> {
 			try {
 				threads[i].join();
 			} catch (InterruptedException e) {
-				log.error("",e);
+				log.error("", e);
 			}
 		}
+		
+		
+		
 		return this.net;
 	}
 
@@ -95,8 +103,13 @@ public class ParallelExecutor implements Callable<Net> {
 			sb.append("LP" + lp.getId() + "\n");
 			for (Place p : lp.getPlaces()) {
 				if (p instanceof QPlace) {
-					sb.append("\t" + p.name + "(QPplace), queue "
-							+ ((QPlace) p).queue.name + "\n");
+					sb.append("\t"
+							+ p.name
+							+ "(QPplace), queue "
+							+ ((QPlace) p).queue.name + "  "
+							+ ((QPlace) p).queue.getClass().toString()
+									.split("queue.")[1] + "\n");
+
 				} else {
 					sb.append("\t" + p.name + "(Place)" + "\n");
 				}
@@ -107,22 +120,22 @@ public class ParallelExecutor implements Callable<Net> {
 
 			sb.append("\tsuccessors: ");
 			for (LP suc : lp.getSuccessors()) {
-				sb.append("LP"+suc.getId() + " ");
+				sb.append("LP" + suc.getId() + " ");
 			}
 			sb.append("\n");
 			sb.append("\tpredecessors: ");
 			for (LP pred : lp.getPredecessors()) {
-				sb.append("LP"+pred.getId() + " ");
+				sb.append("LP" + pred.getId() + " ");
 			}
 			sb.append("\n");
-
 
 		}
 		return sb.toString();
 	}
 
 	/**
-	 * Returns a decomposition of the (internal) {@link Net} into a logical process ({@link LP}) array
+	 * Returns a decomposition of the (internal) {@link Net} into a logical
+	 * process ({@link LP}) array
 	 * 
 	 * @return Array of logical processes
 	 */
@@ -206,6 +219,17 @@ public class ParallelExecutor implements Callable<Net> {
 			}
 		}
 
+		// mergePlaceLPsIntoPredecessors(listLPs);
+
+		// Modify transition ids
+		int transCnt = 0;
+		for (LP lp : listLPs) {
+			for (Transition trans : lp.getTransitions()) {
+				trans.id = transCnt++;
+			}
+		}
+
+
 		// Set LP id to places and transitions
 		for (LP lp : listLPs) {
 			for (Place place : lp.getPlaces()) {
@@ -218,15 +242,6 @@ public class ParallelExecutor implements Callable<Net> {
 
 		setPredAndSuccessors(listLPs);
 
-		// Modify transition ids
-		int transCnt = 0;
-		for (LP lp : listLPs) {
-			for (Transition trans : lp.getTransitions()) {
-				trans.id = transCnt++;
-			}
-		}
-
-		// mergePlaceLPsIntoPredecessors(listLPs);
 		return listLPs.toArray(new LP[listLPs.size()]);
 	}
 
