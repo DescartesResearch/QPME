@@ -20,7 +20,7 @@ import de.tud.cs.simqpn.kernel.stats.AggregateStats;
 import de.tud.cs.simqpn.kernel.stats.Stats;
 
 public class XMLAggregateStats {
-	private static Logger log = Logger.getLogger(ReplicationDeletion.class);
+	private static Logger log = Logger.getLogger(XMLAggregateStats.class);
 
 	public static AggregateStats[] initStatsArray(Net net,
 			SimQPNConfiguration configuration, Element netXML)

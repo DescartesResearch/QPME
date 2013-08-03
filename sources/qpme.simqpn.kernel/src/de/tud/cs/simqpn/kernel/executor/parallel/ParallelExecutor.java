@@ -12,7 +12,6 @@ import org.apache.log4j.Logger;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
-import de.tud.cs.simqpn.kernel.analyzer.ReplicationDeletionParallel;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
@@ -29,7 +28,7 @@ import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
  */
 public class ParallelExecutor implements Callable<Net> {
 	private static Logger log = Logger
-			.getLogger(ReplicationDeletionParallel.class);
+			.getLogger(ParallelExecutor.class);
 
 	private Net net;
 	private SimQPNConfiguration configuration;
