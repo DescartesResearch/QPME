@@ -109,7 +109,7 @@ public class QPlace extends Place {
 	/**
 	 * Saves random numbers for future queue-service-times for this QPlace
 	 */
-	public List<Double> futurList = new LinkedList<Double>();
+	public List<List<Double>> futureList;
 
 	private AbstractDoubleList[] queueTokResidServTimes; // PS queues:
 															// expPS==false:
@@ -243,6 +243,12 @@ public class QPlace extends Place {
 			SimQPNConfiguration configuration) throws SimQPNException {
 		super(id, name, colors, numInTrans, numOutTrans, numProbes, statsLevel,
 				depDiscip, element, configuration);
+
+		futureList = new ArrayList<List<Double>>(numColors);
+		for(int i=0; i< colors.length; i++){
+			futureList.add(new LinkedList<Double>());
+		}
+		
 		this.queue = queue;
 		this.meanServTimes = new double[numColors];
 		this.tkCopyBuffer = new Token[1];

@@ -174,12 +174,12 @@ public class FCFSQueue extends Queue {
 			Token tk = waitingLine.removeFirst();
 			QPlace qPl = (QPlace) tk.place;
 			double servTime;
-			if (qPl.futurList.isEmpty()) {
+			if (qPl.futureList.get(token.color).isEmpty()) {
 				servTime = qPl.randServTimeGen[tk.color].nextDouble();
 				if (servTime < 0)
 					servTime = 0;
 			} else {
-				servTime = qPl.futurList.get(0);
+				servTime = qPl.futureList.get(token.color).get(0);
 			}
 			executor.scheduleEvent(servTime, this, tk);
 			// Update stats
@@ -197,13 +197,13 @@ public class FCFSQueue extends Queue {
 	 */
 	@Override
 	public double getLookahead(QPlace qPl, int color_id) {
-		if (qPl.futurList.isEmpty()) {
+		if (qPl.futureList.get(color_id).isEmpty()) {
 			double servTime = qPl.randServTimeGen[color_id].nextDouble();
 			if (servTime < 0)
 				servTime = 0;
-			qPl.futurList.add(servTime);
+			qPl.futureList.get(color_id).add(servTime);
 		}
-		return qPl.futurList.get(0);
+		return qPl.futureList.get(color_id).get(0);
 	}
 
 	/**
