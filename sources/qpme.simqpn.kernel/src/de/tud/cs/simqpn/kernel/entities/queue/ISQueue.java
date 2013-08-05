@@ -92,7 +92,7 @@ public class ISQueue extends Queue {
 	/**
 	 * Deposits N tokens of particular color.
 	 * 
-	 * @param qPl
+	 * @param queuingPlace
 	 *            the QPlace
 	 * @param color
 	 *            color of tokens
@@ -104,19 +104,17 @@ public class ISQueue extends Queue {
 	 *            the executor
 	 * @throws SimQPNException	inherited from queue, not relevant for ISQueue
 	 */
-	public void addTokens(QPlace qPl, int color, int count,
+	public void addTokens(QPlace queuingPlace, int color, int count,
 			Token[] tokensToBeAdded, Executor executor) throws SimQPNException{
-		super.addTokens(qPl, color, count, tokensToBeAdded, executor);
+		super.addTokens(queuingPlace, color, count, tokensToBeAdded, executor);
 
 		// Schedule service completion events
 		for (int i = 0; i < count; i++) {
-			double servTime = qPl.randServTimeGen[color].nextDouble();
-			if (servTime < 0)
-				servTime = 0;
-			Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[i]
-					: new Token(qPl, color);
-			tk.arrivTS = executor.getClock();
-			executor.scheduleEvent(servTime, this, tk);
+			double servTime = queuingPlace.removeNextServiceTime(color);
+			Token token = (tokensToBeAdded != null) ? tokensToBeAdded[i]
+					: new Token(queuingPlace, color);
+			token.arrivTS = executor.getClock();
+			executor.scheduleEvent(servTime, this, token);
 		}
 	}
 

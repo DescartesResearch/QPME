@@ -171,21 +171,14 @@ public class FCFSQueue extends Queue {
 			throws SimQPNException {
 		super.completeService(token, executor);
 		if (waitingLine.size() > 0) {
-			Token tk = waitingLine.removeFirst();
-			QPlace qPl = (QPlace) tk.place;
-			double servTime;
-			if (qPl.futureList.get(token.color).isEmpty()) {
-				servTime = qPl.randServTimeGen[tk.color].nextDouble();
-				if (servTime < 0)
-					servTime = 0;
-			} else {
-				servTime = qPl.futureList.get(token.color).get(0);
-			}
-			executor.scheduleEvent(servTime, this, tk);
+			Token nextToken = waitingLine.removeFirst();
+			QPlace queuingPlace = (QPlace) nextToken.place;
+			double serviceTime = queuingPlace.removeNextServiceTime(nextToken.color);
+			executor.scheduleEvent(serviceTime, this, nextToken);
 			// Update stats
-			if (qPl.statsLevel >= 3)
-				qPl.qPlaceQueueStats.updateDelayTimeStats(tk.color,
-						executor.getClock() - tk.arrivTS,
+			if (queuingPlace.statsLevel >= 3)
+				queuingPlace.qPlaceQueueStats.updateDelayTimeStats(nextToken.color,
+						executor.getClock() - nextToken.arrivTS,
 						executor.getConfiguration());
 		} else {
 			numBusyServers--;
@@ -196,14 +189,8 @@ public class FCFSQueue extends Queue {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public double getLookahead(QPlace qPl, int color_id) {
-		if (qPl.futureList.get(color_id).isEmpty()) {
-			double servTime = qPl.randServTimeGen[color_id].nextDouble();
-			if (servTime < 0)
-				servTime = 0;
-			qPl.futureList.get(color_id).add(servTime);
-		}
-		return qPl.futureList.get(color_id).get(0);
+	public double getLookahead(QPlace qPl, int color) {
+		return qPl.getNextServiceTime(color);
 	}
 
 	/**

@@ -490,9 +490,7 @@ public class LP implements Executor, Runnable {
 		List<Double> lookaheads = new ArrayList<Double>();
 		for (Place place : places) {
 			if (place.getClass().equals(QPlace.class)) {
-				for (int i = 0; i < ((QPlace) place).colors.length; i++) {
-					lookaheads.add(((QPlace) place).getLookahead(i));
-				}
+				((QPlace)place).getLookahead();
 			}
 		}
 		if (!lookaheads.isEmpty()) {

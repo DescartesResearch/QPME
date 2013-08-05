@@ -61,6 +61,7 @@
 package de.tud.cs.simqpn.kernel.entities;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -109,7 +110,10 @@ public class QPlace extends Place {
 	/**
 	 * Saves random numbers for future queue-service-times for this QPlace
 	 */
-	public List<List<Double>> futureList;
+	private List<List<Double>> futureList;
+	
+
+
 
 	private AbstractDoubleList[] queueTokResidServTimes; // PS queues:
 															// expPS==false:
@@ -477,9 +481,61 @@ public class QPlace extends Place {
 		}
 	}
 	
-	public double getLookahead(int color_index){
-		return queue.getLookahead(this, color_index);
+	/**
+	 * Returns the minimum of lookahead over all colors.
+	 * @return the minimum of lookahead over all colors.
+	 */
+	public double getLookahead(){
+		List<Double> lookaheads = new ArrayList<Double>();
+		for (int i = 0; i < colors.length; i++) {
+			lookaheads.add(getLookahead(i));
+		}
+		return Collections.min(lookaheads);
 	}
+
+	/**
+	 * Returns the lookahead for a special colors.
+	 * @param color		the color for which lookahead is returned
+	 * @return the lookahead for a special colors.
+	 */
+	public double getLookahead(int color){
+		return queue.getLookahead(this, color);
+	}
+	
+	/**
+	 * Returns the head of future service time list.
+	 * @param color the color for which a service time is calculated
+	 * @return the value of next service time
+	 */
+	public double getNextServiceTime(int color){
+		calculateServiceTimeIfFutureListIsEmpty(color);
+		return futureList.get(color).get(0);		
+	}
+	
+	/**
+	 * Removes the head of future service time list and returns it.
+	 * @param color the color which specifies the future list
+	 * @return the next service time
+	 */
+	public double removeNextServiceTime(int color){
+		calculateServiceTimeIfFutureListIsEmpty(color);
+		return futureList.get(color).remove(0);
+	}
+	
+	/**
+	 * Adds a new element to the future list of the chosen color if list is empty.
+	 * @param color	the color for which a service time is computed
+	 */
+	private void calculateServiceTimeIfFutureListIsEmpty(int color){
+		if(futureList.get(color).isEmpty()){
+			double serviceTime = randServTimeGen[color].nextDouble();
+			if (serviceTime < 0){
+				serviceTime = 0;
+			}
+			futureList.get(color).add(serviceTime);
+		}
+	}
+
 
 	public int[] getQueueTokenPop() {
 		return queueTokenPop;

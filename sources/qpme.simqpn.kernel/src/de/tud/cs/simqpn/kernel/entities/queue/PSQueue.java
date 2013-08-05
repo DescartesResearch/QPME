@@ -402,7 +402,7 @@ public class PSQueue extends Queue {
 	/**
 	 * Deposits N tokens of particular color.
 	 * 
-	 * @param qPl
+	 * @param queuingPlace
 	 *            the QPlace
 	 * @param color
 	 *            color of tokens
@@ -415,9 +415,9 @@ public class PSQueue extends Queue {
 	 * @throws SimQPNException	inherited from queue, not relevant for PSQueue
 	 */
 	@Override
-	public void addTokens(QPlace qPl, int color, int count,
+	public void addTokens(QPlace queuingPlace, int color, int count,
 			Token[] tokensToBeAdded, Executor executor) throws SimQPNException{
-		super.addTokens(qPl, color, count, tokensToBeAdded, executor);
+		super.addTokens(queuingPlace, color, count, tokensToBeAdded, executor);
 
 		if (!expPS) {
 			if (eventScheduled) {
@@ -428,20 +428,18 @@ public class PSQueue extends Queue {
 				updateResidServTimes(executor.getClock());
 			}
 			for (int i = 0; i < count; i++) {
-				double servTime = qPl.randServTimeGen[color].nextDouble();
-				if (servTime < 0)
-					servTime = 0;
-				qPl.getQueueTokResidServTimes()[color].add(servTime);
+				double serviceTime = queuingPlace.getNextServiceTime(color);
+				queuingPlace.getQueueTokResidServTimes()[color].add(serviceTime);
 			}
 		}
-		if ((tokensToBeAdded != null) || (qPl.statsLevel >= 3)) {
+		if ((tokensToBeAdded != null) || (queuingPlace.statsLevel >= 3)) {
 			// if we get tokens from caller or we have to measure the sojourn
 			// times, store the individual tokens.
 			for (int i = 0; i < count; i++) {
-				Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[i]
-						: new Token(qPl, color);
-				tk.arrivTS = executor.getClock();
-				qPl.queueTokens[color].add(tk);
+				Token token = (tokensToBeAdded != null) ? tokensToBeAdded[i]
+						: new Token(queuingPlace, color);
+				token.arrivTS = executor.getClock();
+				queuingPlace.queueTokens[color].add(token);
 			}
 		}
 		if (eventScheduled) {
