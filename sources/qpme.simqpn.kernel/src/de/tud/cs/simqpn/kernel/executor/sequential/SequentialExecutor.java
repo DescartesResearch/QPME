@@ -184,6 +184,7 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 		long progressUpdateRate = progressMonitor
 				.getMaxUpdateRealTimeInterval();		
 		
+		
 		// BEGIN MAIN SIMULATION LOOP
 		// ---------------------------------------------------------------------------------
 		while (clock < totRunL) {

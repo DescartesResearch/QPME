@@ -49,6 +49,8 @@ import java.util.PriorityQueue;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.log4j.Logger;
 
@@ -175,7 +177,7 @@ public class LP implements Executor, Runnable {
 	/** Lower bound on incoming time stamps. */
 	private double timeSaveToProcess;
 	/** Sets debug output to console used for debug purpose. */
-	private int verbosityLevel = 0;
+	private int verbosityLevel = 0;//1; // 2
 
 	/**
 	 * Constructor.
@@ -252,28 +254,7 @@ public class LP implements Executor, Runnable {
 			 */
 			while (!checkStopCriterion()) {
 				startDataCollectionIfRampUpDone(rampUpLength);
-
-				processTokenEvents();
-
-				fireTransitions(totRunLength);
-
-				updateQueueEvents();
-
-				QueueEvent nextEvent = eventList.peek();
-				if (nextEvent != null && nextEvent.time <= timeSaveToProcess) {
-					if (verbosityLevel > 1) {
-						log.info("\tLP" + id + " processed event "
-								+ (int) nextEvent.time + " smaller than LBTS "
-								+ (int) timeSaveToProcess);
-					}
-					processQueueEvent(nextEvent);
-					continue;
-				}
-
-				waitForBarrier();
-				timeSaveToProcess = getTimeSaveToProcess();
-				waitForBarrier();
-
+				
 				if (beforeInitHeartBeat) {
 					nextChkAfter = determineMonitorUpdateRate(totRunLength,
 							nextChkAfter, lastTimeMsrm,
@@ -284,8 +265,29 @@ public class LP implements Executor, Runnable {
 							lastTimeMsrm);
 				}
 
-				nextChkAfter = checkForSufficientDataCollection(nextChkAfter);
+				nextChkAfter = checkForPrecission(nextChkAfter);
 
+
+				processTokenEvents();
+
+				fireTransitions(totRunLength);
+
+				updateQueueEvents();
+
+				QueueEvent nextEvent = eventList.peek();
+				if (nextEvent != null && nextEvent.time <= timeSaveToProcess) {
+					processQueueEvent(nextEvent);
+					continue;
+				}
+
+				waitForBarrier();
+				timeSaveToProcess = getTimeSaveToProcess() +300; //+300
+				if (verbosityLevel == 1) {
+					if (id == 1) {
+						log.info("--------------Barrier-------------------");
+					}
+				}
+				waitForBarrier();
 			}
 		} catch (SimQPNException ex) {
 			log.error("Error during simulation run", ex);
@@ -382,7 +384,7 @@ public class LP implements Executor, Runnable {
 		for (Place p : places) {
 			if (p instanceof QPlace) {
 				Queue queue = ((QPlace) p).queue;
-					queue.updateEvents(this);
+				queue.updateEvents(this);
 			}
 		}
 	}
@@ -393,12 +395,15 @@ public class LP implements Executor, Runnable {
 	private void waitForBarrier() {
 		try {
 			if (!checkStopCriterion()) {
+				// barrier.await(500,TimeUnit.MILLISECONDS);
 				barrier.await();
 			}
 		} catch (InterruptedException e) {
 			log.error("", e);
 		} catch (BrokenBarrierException e) {
-			log.info("left barrier");
+			log.info("LP" + id + " left barrier");
+			// } catch (TimeoutException e) {
+			// log.info("LP"+id+" left barrier due to timeout");
 		}
 	}
 
@@ -408,11 +413,16 @@ public class LP implements Executor, Runnable {
 	 * @return the lower bound on timestamps for incoming TokenEvents
 	 */
 	private double getTimeSaveToProcess() {
-		synchronized (barrier) { // only for output formatting
+		if (verbosityLevel > 1) {
+			synchronized (LP.class) {
+				List<Integer> listOfVisitedLPs = new ArrayList<Integer>();
+				timeSaveToProcess = getTimeSaveToProcess(listOfVisitedLPs, "");
+			}
+		} else {
 			List<Integer> listOfVisitedLPs = new ArrayList<Integer>();
-			double lbts = getTimeSaveToProcess(listOfVisitedLPs, "\t", 0);
-			return lbts;
+			timeSaveToProcess = getTimeSaveToProcess(listOfVisitedLPs, "");
 		}
+		return timeSaveToProcess;
 	}
 
 	/**
@@ -422,45 +432,49 @@ public class LP implements Executor, Runnable {
 	 *            List containing IDs of previously visited LPs
 	 * @param string
 	 *            string to format debug output
-	 * @param sumlookahead
-	 *            sum of lookaheads on previous path
 	 * @return the time up to this LP can process
 	 * @see LP#getTimeSaveToProcess()
 	 */
 	private double getTimeSaveToProcess(List<Integer> listOfVisitedLPs,
-			String string, double sumlookahead) {
+			String string) {
 		List<Double> list = new ArrayList<Double>();
 		for (LP pre : this.predecessors) {
 			if (!listOfVisitedLPs.contains(pre.id)) {
-				listOfVisitedLPs.add(pre.id);
 				if (!pre.eventList.isEmpty()) {
-					list.add(pre.eventList.peek().time); // + sumlookahead);
+					//list.add(pre.getClock()+pre.getLookahead()); //BETTER
+					list.add(pre.eventList.peek().time);
 				} else {
+					// copy list of visited
+					List<Integer> newListOfVisitedLPs = new ArrayList<Integer>(
+							listOfVisitedLPs.size() + 1);
+					if (!listOfVisitedLPs.isEmpty()) {
+						for (int i = 0; i < listOfVisitedLPs.size(); i++) {
+							newListOfVisitedLPs.add(listOfVisitedLPs.get(i));
+						}
+					}
+					// add pre to list of visited
+					newListOfVisitedLPs.add(pre.id);
 					double internalTimeSaveToProcess = pre
-							.getTimeSaveToProcess(listOfVisitedLPs,
-									(string + "\t"),
-									sumlookahead + pre.getLookahead());
-					list.add(internalTimeSaveToProcess);
+							.getTimeSaveToProcess(newListOfVisitedLPs,
+									(string + "\t"));
+					if (internalTimeSaveToProcess != 0.0) {
+						list.add(internalTimeSaveToProcess + getLookahead());
+					}
 				}
-			} else {
-				if (verbosityLevel > 2) {
-					log.info(string + "already visited LP" + pre.id + " "
-							+ pre.timeSaveToProcess);
-				}
-				list.add(pre.timeSaveToProcess);
 			}
 		}
 		if (list.isEmpty()) {
-			if (verbosityLevel > 2) {
-				log.error("no queue event in net.");
+			if (verbosityLevel > 1) {
+				// log.error("no queue event in net.");
+				log.info(string + "LP" + id + "[ ]");
 			}
 			return 0; // -100.0;
 		} else {
-			if (verbosityLevel > 2) {
+			if (verbosityLevel > 1) {
 				log.info(string + "LP" + id + " " + list);
+				// log.info("LP" + id + " " + list);
 			}
-			timeSaveToProcess = Collections.min(list) + sumlookahead;
-			return timeSaveToProcess;
+			return Collections.min(list);
 		}
 
 	}
@@ -537,18 +551,17 @@ public class LP implements Executor, Runnable {
 	 * @return if the simulation within this LP can stop
 	 */
 	private boolean checkStopCriterion() {
-		if (clock < configuration.totRunLen) {
-			return false;
-		} else {
-			if (stopCriterionController.hasSimulationFinished()) {
-				return true;
-			}
-			if (!hasFinished) {
+		if (stopCriterionController.hasSimulationFinished()) {
+			return true;
+		}
+		if (!hasFinished) {
+			if (clock >= configuration.totRunLen) {
 				hasFinished = true;
 				stopCriterionController.incrementFinishedLPCounter();
 			}
-			return false;
 		}
+		return false;
+
 	}
 
 	/**
@@ -716,9 +729,10 @@ public class LP implements Executor, Runnable {
 		for (int t = 0; t < transitions.length; t++) {
 			pdf[t] = 1;
 		}
-		randTransGen = new EmpiricalWalker(pdf, Empirical.NO_INTERPOLATION,
-				RandomNumberGenerator.nextRandNumGen());
-
+		if (pdf.length > 1) {
+			randTransGen = new EmpiricalWalker(pdf, Empirical.NO_INTERPOLATION,
+					RandomNumberGenerator.nextRandNumGen());
+		}
 		// Initialize transStatus and enTransCnt
 		transStatus = new boolean[transitions.length];
 		for (int i = 0; i < transitions.length; i++) {
@@ -795,8 +809,8 @@ public class LP implements Executor, Runnable {
 	}
 
 	/**
-	 * Updates progress monitor if the simulation progressed far enought since
-	 * last update
+	 * Updates progress monitor if the simulation progressed far enough since
+	 * last update.
 	 * 
 	 * @param totRunL
 	 *            the length of the simulation run
@@ -823,8 +837,10 @@ public class LP implements Executor, Runnable {
 	/**
 	 * Returns a heart beat rate.
 	 * 
-	 * @param totRunL	The total run length
-	 * @param nextChkAfter	The clock at which a next 
+	 * @param totRunL
+	 *            The total run length
+	 * @param nextChkAfter
+	 *            The clock at which a next
 	 * @param lastTimeMsrm
 	 * @param maxProgressInterval
 	 * @param progressUpdateRate
@@ -855,7 +871,7 @@ public class LP implements Executor, Runnable {
 		}
 		return nextChkAfter;
 	}
-	
+
 	/**
 	 * Checks if simulation got enough statistics.
 	 * 
@@ -867,7 +883,7 @@ public class LP implements Executor, Runnable {
 	 *             if error during test for enough statistics in PlaceStats and
 	 *             QPlaceStats
 	 */
-	private double checkForSufficientDataCollection(double nextChkAfter)
+	private double checkForPrecission(double nextChkAfter)
 			throws SimQPNException {
 		if (configuration.stoppingRule != SimQPNConfiguration.FIXEDLEN
 				&& (!inRampUp) && clock > nextChkAfter) {
@@ -910,11 +926,15 @@ public class LP implements Executor, Runnable {
 				// }
 				// }
 				if (done) {
-					// System.out.println("LP"+id+" is DONE DONE DONE DONE");
-					progressMonitor.precisionCheck(id, done, null);
+					// TODO
 					// break; // exit while loop
-					hasFinished = true;
-					stopCriterionController.incrementFinishedLPCounter();
+					if (!hasFinished) {
+						hasFinished = true;
+						progressMonitor.precisionCheck(id, done, null);
+						stopCriterionController.incrementFinishedLPCounter();
+						log.info("LP" + id + " "
+								+ "has finished data collection");
+					}
 				} else {
 					// TODO: distinguish between places and probes.
 					progressMonitor.precisionCheck(id, done, probe.name);
@@ -931,7 +951,6 @@ public class LP implements Executor, Runnable {
 		return nextChkAfter;
 	}
 
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -942,7 +961,9 @@ public class LP implements Executor, Runnable {
 
 	/**
 	 * Sets controller for global stop criterion.
-	 * @param stopCriterionController	the controller which manages local stop criteria
+	 * 
+	 * @param stopCriterionController
+	 *            the controller which manages local stop criteria
 	 */
 	public void setStopCriterion(StopCriterionController stopCriterionController) {
 		this.stopCriterionController = stopCriterionController;
