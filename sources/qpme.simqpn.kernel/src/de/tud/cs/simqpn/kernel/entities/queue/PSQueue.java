@@ -487,8 +487,9 @@ public class PSQueue extends Queue {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public double getLookahead(QPlace qpl, int color_id) {
-		return 0;
+	public double getLookahead(QPlace queuingPlace, int color) {
+		return queuingPlace.getNextServiceTime(color);
 	}
+
 
 }
