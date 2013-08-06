@@ -253,6 +253,9 @@ public class LP implements Executor, Runnable {
 			 * ######################### MAIN SIMULATION LOOP #################
 			 */
 			while (!checkStopCriterion()) {
+
+				fireTransitions(totRunLength);
+
 				startDataCollectionIfRampUpDone(rampUpLength);
 				
 				if (beforeInitHeartBeat) {
@@ -267,11 +270,8 @@ public class LP implements Executor, Runnable {
 
 				nextChkAfter = checkForPrecission(nextChkAfter);
 
-
-				processTokenEvents();
-
-				fireTransitions(totRunLength);
-
+				processTokenEvents(); ////////
+				
 				updateQueueEvents();
 
 				QueueEvent nextEvent = eventList.peek();
@@ -279,14 +279,14 @@ public class LP implements Executor, Runnable {
 					processQueueEvent(nextEvent);
 					continue;
 				}
-
+//				waitForBarrier();
+//				if (verbosityLevel == 1) {
+//					if (id == 1) {
+//						log.info("--------------Barrier-------------------");
+//					}
+//				}
 				waitForBarrier();
-				timeSaveToProcess = getTimeSaveToProcess() +300; //+300
-				if (verbosityLevel == 1) {
-					if (id == 1) {
-						log.info("--------------Barrier-------------------");
-					}
-				}
+				timeSaveToProcess = getTimeSaveToProcess(); //+300
 				waitForBarrier();
 			}
 		} catch (SimQPNException ex) {
@@ -420,10 +420,43 @@ public class LP implements Executor, Runnable {
 			}
 		} else {
 			List<Integer> listOfVisitedLPs = new ArrayList<Integer>();
-			timeSaveToProcess = getTimeSaveToProcess(listOfVisitedLPs, "");
+			timeSaveToProcess = getTimeSaveToProcess(listOfVisitedLPs);
 		}
 		return timeSaveToProcess;
 	}
+	
+	private double getTimeSaveToProcess(List<Integer> listOfVisitedLPs) {
+		List<Double> list = new ArrayList<Double>();
+		for (LP pre : this.predecessors) {
+			if (!listOfVisitedLPs.contains(pre.id)) {
+				if (!pre.eventList.isEmpty()) {
+					list.add(pre.eventList.peek().time);
+				} else {
+					// copy list of visited
+					List<Integer> newListOfVisitedLPs = new ArrayList<Integer>(
+							listOfVisitedLPs.size() + 1);
+					if (!listOfVisitedLPs.isEmpty()) {
+						for (int i = 0; i < listOfVisitedLPs.size(); i++) {
+							newListOfVisitedLPs.add(listOfVisitedLPs.get(i));
+						}
+					}
+					// add pre to list of visited
+					newListOfVisitedLPs.add(pre.id);
+					double internalTimeSaveToProcess = pre
+							.getTimeSaveToProcess(newListOfVisitedLPs);
+					if (internalTimeSaveToProcess != 0.0) {
+						list.add(internalTimeSaveToProcess + getLookahead());
+					}
+				}
+			}
+		}
+		if (list.isEmpty()) {
+			return 0;
+		} else {
+			return Collections.min(list);
+		}
+	}
+
 
 	/**
 	 * Returns a lower bound on time stamps of incoming events.
@@ -511,9 +544,7 @@ public class LP implements Executor, Runnable {
 	private void processQueueEvent(QueueEvent event) throws SimQPNException {
 		if (verbosityLevel > 0) {
 			log.info("LP" + id + ": " + event.queue.name + " processed job at "
-					+ (int) event.time + " of duration "
-					+ (int) (event.time - clock) + " with lbts "
-					+ (int) timeSaveToProcess);
+					+ (int) event.time + " with lbts "+ (int) timeSaveToProcess+ " | "+eventList.size());
 		}
 
 		// Advance simulation time
