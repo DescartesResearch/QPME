@@ -118,7 +118,7 @@ public class FCFSQueue extends Queue {
 	/**
 	 * Deposits N tokens of particular color.
 	 * 
-	 * @param qPl
+	 * @param queuingPlace
 	 *            the QPlace
 	 * @param color
 	 *            color of tokens
@@ -131,32 +131,29 @@ public class FCFSQueue extends Queue {
 	 * @throws SimQPNException	if error during place stats update
 	 */
 	@Override
-	public void addTokens(QPlace qPl, int color, int count,
+	public void addTokens(QPlace queuingPlace, int color, int count,
 			Token[] tokensToBeAdded, Executor executor) throws SimQPNException {
-		super.addTokens(qPl, color, count, tokensToBeAdded, executor);
+		super.addTokens(queuingPlace, color, count, tokensToBeAdded, executor);
 		int n = 0;
 		while (n < count && numBusyServers < numServers) {
 			// Schedule service completion event
-			double servTime = qPl.randServTimeGen[color].nextDouble();
-			if (servTime < 0) {
-				servTime = 0;
-			}
+			double servTime = queuingPlace.getNextServiceTime(color);
 			Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[n]
-					: new Token(qPl, color);
+					: new Token(queuingPlace, color);
 			tk.arrivTS = executor.getClock();
 			executor.scheduleEvent(servTime, this, tk);
 			numBusyServers++;
 			n++;
 			// Update Stats
-			if (qPl.statsLevel >= 3) {
-				qPl.qPlaceQueueStats.updateDelayTimeStats(color, 0,
+			if (queuingPlace.statsLevel >= 3) {
+				queuingPlace.qPlaceQueueStats.updateDelayTimeStats(color, 0,
 						executor.getConfiguration());
 			}
 		}
 		while (n < count) {
 			// Place the rest of the tokens in the waitingLine
 			Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[n]
-					: new Token(qPl, color);
+					: new Token(queuingPlace, color);
 			tk.arrivTS = executor.getClock();
 			waitingLine.addLast(tk);
 			n++;
