@@ -177,7 +177,7 @@ public class LP implements Executor, Runnable {
 	/** Lower bound on incoming time stamps. */
 	private double timeSaveToProcess;
 	/** Sets debug output to console used for debug purpose. */
-	private int verbosityLevel = 0;//1; // 2
+	private int verbosityLevel = 0;// 1; // 2
 
 	/**
 	 * Constructor.
@@ -250,14 +250,39 @@ public class LP implements Executor, Runnable {
 			waitForBarrier();
 
 			/**
-			 * ######################### MAIN SIMULATION LOOP #################
+			 * ######################### MAIN LOOP #################
 			 */
 			while (!checkStopCriterion()) {
+				QueueEvent nextEvent = eventList.peek();
+				if (nextEvent != null && nextEvent.time <= timeSaveToProcess) {
+					processQueueEvent(nextEvent);
+				} else {
+					if (verbosityLevel == 1) {
+						waitForBarrier();
+						if (id == 1) {
+							log.info("--------------Barrier-------------------");
+						}
+					}
+					waitForBarrier();
+					if (incomingTokenList.isEmpty() && enTransCnt == 0
+							&& eventList.isEmpty()) {
+						//no need for time save to process calculation
+					}else{
+						timeSaveToProcess = getTimeSaveToProcess();
+					}
+					waitForBarrier();
+				}
+				if (incomingTokenList.isEmpty() && enTransCnt == 0
+						&& eventList.isEmpty()) {
+					// continue to barrier if nothing to do
+					continue;
+				}
+				processTokenEvents(); // //////
 
 				fireTransitions(totRunLength);
 
 				startDataCollectionIfRampUpDone(rampUpLength);
-				
+
 				if (beforeInitHeartBeat) {
 					nextChkAfter = determineMonitorUpdateRate(totRunLength,
 							nextChkAfter, lastTimeMsrm,
@@ -270,24 +295,8 @@ public class LP implements Executor, Runnable {
 
 				nextChkAfter = checkForPrecission(nextChkAfter);
 
-				processTokenEvents(); ////////
-				
 				updateQueueEvents();
 
-				QueueEvent nextEvent = eventList.peek();
-				if (nextEvent != null && nextEvent.time <= timeSaveToProcess) {
-					processQueueEvent(nextEvent);
-					continue;
-				}
-//				waitForBarrier();
-//				if (verbosityLevel == 1) {
-//					if (id == 1) {
-//						log.info("--------------Barrier-------------------");
-//					}
-//				}
-				waitForBarrier();
-				timeSaveToProcess = getTimeSaveToProcess(); //+300
-				waitForBarrier();
 			}
 		} catch (SimQPNException ex) {
 			log.error("Error during simulation run", ex);
@@ -424,7 +433,7 @@ public class LP implements Executor, Runnable {
 		}
 		return timeSaveToProcess;
 	}
-	
+
 	private double getTimeSaveToProcess(List<Integer> listOfVisitedLPs) {
 		List<Double> list = new ArrayList<Double>();
 		for (LP pre : this.predecessors) {
@@ -457,7 +466,6 @@ public class LP implements Executor, Runnable {
 		}
 	}
 
-
 	/**
 	 * Returns a lower bound on time stamps of incoming events.
 	 * 
@@ -474,7 +482,7 @@ public class LP implements Executor, Runnable {
 		for (LP pre : this.predecessors) {
 			if (!listOfVisitedLPs.contains(pre.id)) {
 				if (!pre.eventList.isEmpty()) {
-					//list.add(pre.getClock()+pre.getLookahead()); //BETTER
+					// list.add(pre.getClock()+pre.getLookahead()); //BETTER
 					list.add(pre.eventList.peek().time);
 				} else {
 					// copy list of visited
@@ -523,7 +531,7 @@ public class LP implements Executor, Runnable {
 		List<Double> lookaheads = new ArrayList<Double>();
 		for (Place place : places) {
 			if (place.getClass().equals(QPlace.class)) {
-				((QPlace)place).getLookahead();
+				((QPlace) place).getLookahead();
 			}
 		}
 		if (!lookaheads.isEmpty()) {
@@ -544,7 +552,8 @@ public class LP implements Executor, Runnable {
 	private void processQueueEvent(QueueEvent event) throws SimQPNException {
 		if (verbosityLevel > 0) {
 			log.info("LP" + id + ": " + event.queue.name + " processed job at "
-					+ (int) event.time + " with lbts "+ (int) timeSaveToProcess+ " | "+eventList.size());
+					+ (int) event.time + " with lbts "
+					+ (int) timeSaveToProcess + " | " + eventList.size());
 		}
 
 		// Advance simulation time
