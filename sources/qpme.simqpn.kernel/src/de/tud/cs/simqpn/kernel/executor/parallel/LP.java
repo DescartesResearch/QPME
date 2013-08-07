@@ -50,8 +50,6 @@ import java.util.PriorityQueue;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.log4j.Logger;
 
@@ -281,7 +279,7 @@ public class LP implements Executor, Runnable {
 				}
 
 				waitForBarrier();
-				timeSaveToProcess = getTimeSaveToProcess() + 300; // +300
+				timeSaveToProcess = getTimeSaveToProcess();
 				if (verbosityLevel == 1) {
 					if (id == 1) {
 						log.info("--------------Barrier-------------------");
