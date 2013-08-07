@@ -508,7 +508,7 @@ public class QPlace extends Place {
 	 * @param color the color for which a service time is calculated
 	 * @return the value of next service time
 	 */
-	public double getNextServiceTime(int color){
+	public synchronized double getNextServiceTime(int color){
 		calculateServiceTimeIfFutureListIsEmpty(color);
 		return futureList.get(color).get(0);		
 	}
@@ -518,7 +518,7 @@ public class QPlace extends Place {
 	 * @param color the color which specifies the future list
 	 * @return the next service time
 	 */
-	public double removeNextServiceTime(int color){
+	public synchronized double removeNextServiceTime(int color){
 		calculateServiceTimeIfFutureListIsEmpty(color);
 		return futureList.get(color).remove(0);
 	}
