@@ -819,7 +819,7 @@ public class LP implements Executor, Runnable {
 	private long updateProgressMonitor(double totRunL, long lastTimeMsrm) {
 		if (clock >= nextHeartBeat) {
 			long curTimeMsrm = System.currentTimeMillis();
-			progressMonitor.updateSimulationProgress(getId(), clock
+			progressMonitor.updateSimulationProgress(id, clock
 					/ (totRunL - 1) * 100, (curTimeMsrm - lastTimeMsrm),
 					configuration, inRampUp);
 			lastTimeMsrm = curTimeMsrm;
@@ -1030,6 +1030,11 @@ public class LP implements Executor, Runnable {
 		return id;
 	}
 
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	
 	/**
 	 * Returns transitions array.
 	 * 
