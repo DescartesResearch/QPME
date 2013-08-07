@@ -27,8 +27,7 @@ import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
  * 
  */
 public class ParallelExecutor implements Callable<Net> {
-	private static Logger log = Logger
-			.getLogger(ParallelExecutor.class);
+	private static Logger log = Logger.getLogger(ParallelExecutor.class);
 
 	private Net net;
 	private SimQPNConfiguration configuration;
@@ -84,9 +83,7 @@ public class ParallelExecutor implements Callable<Net> {
 				log.error("", e);
 			}
 		}
-		
-		
-		
+
 		return this.net;
 	}
 
@@ -99,35 +96,7 @@ public class ParallelExecutor implements Callable<Net> {
 	private String lpDecompositionToString(LP[] lps) {
 		StringBuffer sb = new StringBuffer();
 		for (LP lp : lps) {
-			sb.append("LP" + lp.getId() + "\n");
-			for (Place p : lp.getPlaces()) {
-				if (p instanceof QPlace) {
-					sb.append("\t"
-							+ p.name
-							+ "(QPplace), queue "
-							+ ((QPlace) p).queue.name + "  "
-							+ ((QPlace) p).queue.getClass().toString()
-									.split("queue.")[1] + "\n");
-
-				} else {
-					sb.append("\t" + p.name + "(Place)" + "\n");
-				}
-			}
-			for (Transition t : lp.getTransitions()) {
-				sb.append("\t" + t.name + "(transition)" + " ID " + t.id + "\n");
-			}
-
-			sb.append("\tsuccessors: ");
-			for (LP suc : lp.getSuccessors()) {
-				sb.append("LP" + suc.getId() + " ");
-			}
-			sb.append("\n");
-			sb.append("\tpredecessors: ");
-			for (LP pred : lp.getPredecessors()) {
-				sb.append("LP" + pred.getId() + " ");
-			}
-			sb.append("\n");
-
+			sb.append(lp.toString());
 		}
 		return sb.toString();
 	}
@@ -218,6 +187,15 @@ public class ParallelExecutor implements Callable<Net> {
 			}
 		}
 
+		// Set LP id to places and transitions
+		for (LP lp : listLPs) {
+			lp.setExecutorToEntities();
+		}
+
+		mergeLPsInLane(listLPs);
+
+		setPredAndSuccessors(listLPs);
+
 		// mergePlaceLPsIntoPredecessors(listLPs);
 
 		// Modify transition ids
@@ -228,20 +206,45 @@ public class ParallelExecutor implements Callable<Net> {
 			}
 		}
 
+		return listLPs.toArray(new LP[listLPs.size()]);
+	}
 
-		// Set LP id to places and transitions
-		for (LP lp : listLPs) {
-			for (Place place : lp.getPlaces()) {
-				place.setExecutor(lp);
-			}
-			for (Transition transition : lp.getTransitions()) {
-				transition.setExecutor(lp);
+	private void mergeLPsInLane(List<LP> listLPs) {
+		int counterD = listLPs.size();
+		for (int i = 0; i < counterD; i++) {
+			LP lp1 = listLPs.get(i);
+			for (Transition transition : lp1.getTransitions()) {
+				if (transition.outPlaces.length == 1) {
+					LP lp2 = (LP) transition.outPlaces[0].getExecutor();
+					if (lp1.getId() != lp2.getId()) {
+						boolean shouldMerge = true;
+						for (Transition transition2 : lp2.getTransitions()) {
+							if(transition2.inPlaces.length > 1){
+								shouldMerge = false;
+								break;
+							}
+						}
+						if(!shouldMerge){
+							break;
+						}
+						// merge
+						System.out.println("Merged lp" + lp1.getId()
+								+ " and lp" + lp2.getId() + " "
+								+ lp1.equals(lp2));
+						listLPs.remove(lp1);
+						listLPs.remove(lp2);
+						LP newLP = LP.merge(lp1, lp2);
+						listLPs.add(newLP);
+						System.out.println(newLP.toShortString());
+						System.out.println("--------------");
+
+						i = -1;
+						counterD = listLPs.size();
+						break;
+					}
+				}
 			}
 		}
-
-		setPredAndSuccessors(listLPs);
-
-		return listLPs.toArray(new LP[listLPs.size()]);
 	}
 
 	/**

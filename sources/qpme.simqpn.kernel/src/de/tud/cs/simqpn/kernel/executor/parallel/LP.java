@@ -42,6 +42,7 @@
 package de.tud.cs.simqpn.kernel.executor.parallel;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -1133,5 +1134,100 @@ public class LP implements Executor, Runnable {
 	 */
 	public void addPredecessor(LP predecessor) {
 		this.predecessors.add(predecessor);
+	}
+
+	static LP merge(LP lp1, LP lp2) {
+		Place[] places = concat(lp1.places, lp2.places);
+		Transition[] transitions = concat(lp1.transitions, lp2.transitions);
+		Queue[] queues = concat(lp1.queues, lp2.queues);
+		LP lp = new LP(places, transitions, queues, lp1.configuration,
+				lp1.progressMonitor, lp1.enTransCnt + lp2.enTransCnt);
+		lp.id = lp1.id;
+		lp.setExecutorToEntities();
+		return lp;
+	}
+
+	public void setExecutorToEntities() {
+		for (Place place : this.places) {
+			place.setExecutor(this);
+		}
+		for (Transition transition : this.transitions) {
+			transition.setExecutor(this);
+		}
+
+	}
+
+
+	public String toShortString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append("LP" + this.getId() + "\n");
+		for (Place p : this.getPlaces()) {
+			if (p instanceof QPlace) {
+				sb.append("\t"
+						+ p.name
+						+ "(QPplace), queue "
+						+ ((QPlace) p).queue.name
+						+ "  "
+						+ ((QPlace) p).queue.getClass().toString()
+								.split("queue.")[1] + "\n");
+
+			} else {
+				sb.append("\t" + p.name + "(Place)" + "\n");
+			}
+		}
+		return sb.toString();
+	}
+
+	@Override
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append("LP" + this.getId() + "\n");
+		for (Place p : this.getPlaces()) {
+			if (p instanceof QPlace) {
+				sb.append("\t"
+						+ p.name
+						+ "(QPplace), queue "
+						+ ((QPlace) p).queue.name
+						+ "  "
+						+ ((QPlace) p).queue.getClass().toString()
+								.split("queue.")[1] + "\n");
+
+			} else {
+				sb.append("\t" + p.name + "(Place)" + "\n");
+			}
+		}
+		for (Transition t : this.getTransitions()) {
+			sb.append("\t" + t.name + "(transition)" + " ID " + t.id + "\n");
+		}
+
+		sb.append("\tsuccessors: ");
+		for (LP suc : this.getSuccessors()) {
+			sb.append("LP" + suc.getId() + " ");
+		}
+		sb.append("\n");
+		sb.append("\tpredecessors: ");
+		for (LP pred : this.getPredecessors()) {
+			sb.append("LP" + pred.getId() + " ");
+		}
+		sb.append("\n");
+
+		return sb.toString();
+	}
+
+	/**
+	 * Couples two arrays. Method could be extracted to Utility class.
+	 * 
+	 * @param first
+	 *            array number one
+	 * @param second
+	 *            array number two
+	 * @param <T>
+	 *            Type
+	 * @return A merged array
+	 */
+	private static <T> T[] concat(T[] first, T[] second) {
+		T[] result = Arrays.copyOf(first, first.length + second.length);
+		System.arraycopy(second, 0, result, first.length, second.length);
+		return result;
 	}
 }
