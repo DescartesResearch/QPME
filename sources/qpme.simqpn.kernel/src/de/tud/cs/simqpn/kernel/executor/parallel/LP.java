@@ -50,8 +50,6 @@ import java.util.PriorityQueue;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.log4j.Logger;
 
@@ -297,7 +295,6 @@ public class LP implements Executor, Runnable {
 				nextChkAfter = checkForPrecission(nextChkAfter);
 
 				updateQueueEvents();
-
 			}
 		} catch (SimQPNException ex) {
 			log.error("Error during simulation run", ex);
@@ -860,7 +857,7 @@ public class LP implements Executor, Runnable {
 	private long updateProgressMonitor(double totRunL, long lastTimeMsrm) {
 		if (clock >= nextHeartBeat) {
 			long curTimeMsrm = System.currentTimeMillis();
-			progressMonitor.updateSimulationProgress(getId(), clock
+			progressMonitor.updateSimulationProgress(id, clock
 					/ (totRunL - 1) * 100, (curTimeMsrm - lastTimeMsrm),
 					configuration, inRampUp);
 			lastTimeMsrm = curTimeMsrm;
@@ -1071,6 +1068,11 @@ public class LP implements Executor, Runnable {
 		return id;
 	}
 
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	
 	/**
 	 * Returns transitions array.
 	 * 

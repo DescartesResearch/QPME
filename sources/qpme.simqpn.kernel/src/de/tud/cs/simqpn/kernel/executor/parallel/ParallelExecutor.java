@@ -194,6 +194,14 @@ public class ParallelExecutor implements Callable<Net> {
 
 		mergeLPsInLane(listLPs);
 
+		/* Set new LP ids */
+		for (int i=0; i<listLPs.size(); i++) {
+			LP lp = listLPs.get(i);
+			lp.setId(i);
+			lp.setExecutorToEntities();
+		}
+
+
 		setPredAndSuccessors(listLPs);
 
 		// mergePlaceLPsIntoPredecessors(listLPs);
@@ -228,16 +236,10 @@ public class ParallelExecutor implements Callable<Net> {
 							break;
 						}
 						// merge
-						System.out.println("Merged lp" + lp1.getId()
-								+ " and lp" + lp2.getId() + " "
-								+ lp1.equals(lp2));
 						listLPs.remove(lp1);
 						listLPs.remove(lp2);
 						LP newLP = LP.merge(lp1, lp2);
 						listLPs.add(newLP);
-						System.out.println(newLP.toShortString());
-						System.out.println("--------------");
-
 						i = -1;
 						counterD = listLPs.size();
 						break;
@@ -258,8 +260,10 @@ public class ParallelExecutor implements Callable<Net> {
 				for (Transition inTrans : place.inTrans) {
 					for (Place prePlace : inTrans.inPlaces) {
 						LP predLP = (LP) prePlace.getExecutor();
-						lp.addPredecessor(predLP);
-						predLP.addSuccessor(lp);
+						if(!predLP.equals(lp)){
+							lp.addPredecessor(predLP);
+							predLP.addSuccessor(lp);
+						}
 					}
 				}
 			}
