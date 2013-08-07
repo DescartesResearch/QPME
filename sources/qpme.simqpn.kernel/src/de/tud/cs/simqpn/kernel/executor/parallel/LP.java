@@ -42,6 +42,7 @@
 package de.tud.cs.simqpn.kernel.executor.parallel;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -177,7 +178,7 @@ public class LP implements Executor, Runnable {
 	/** Lower bound on incoming time stamps. */
 	private double timeSaveToProcess;
 	/** Sets debug output to console used for debug purpose. */
-	private int verbosityLevel = 0;//1; // 2
+	private int verbosityLevel = 0;// 1; // 2
 
 	/**
 	 * Constructor.
@@ -254,7 +255,7 @@ public class LP implements Executor, Runnable {
 			 */
 			while (!checkStopCriterion()) {
 				startDataCollectionIfRampUpDone(rampUpLength);
-				
+
 				if (beforeInitHeartBeat) {
 					nextChkAfter = determineMonitorUpdateRate(totRunLength,
 							nextChkAfter, lastTimeMsrm,
@@ -266,7 +267,6 @@ public class LP implements Executor, Runnable {
 				}
 
 				nextChkAfter = checkForPrecission(nextChkAfter);
-
 
 				processTokenEvents();
 
@@ -281,7 +281,7 @@ public class LP implements Executor, Runnable {
 				}
 
 				waitForBarrier();
-				timeSaveToProcess = getTimeSaveToProcess() +300; //+300
+				timeSaveToProcess = getTimeSaveToProcess() + 300; // +300
 				if (verbosityLevel == 1) {
 					if (id == 1) {
 						log.info("--------------Barrier-------------------");
@@ -441,7 +441,7 @@ public class LP implements Executor, Runnable {
 		for (LP pre : this.predecessors) {
 			if (!listOfVisitedLPs.contains(pre.id)) {
 				if (!pre.eventList.isEmpty()) {
-					//list.add(pre.getClock()+pre.getLookahead()); //BETTER
+					// list.add(pre.getClock()+pre.getLookahead()); //BETTER
 					list.add(pre.eventList.peek().time);
 				} else {
 					// copy list of visited
@@ -490,7 +490,7 @@ public class LP implements Executor, Runnable {
 		List<Double> lookaheads = new ArrayList<Double>();
 		for (Place place : places) {
 			if (place.getClass().equals(QPlace.class)) {
-				((QPlace)place).getLookahead();
+				((QPlace) place).getLookahead();
 			}
 		}
 		if (!lookaheads.isEmpty()) {
@@ -1093,5 +1093,100 @@ public class LP implements Executor, Runnable {
 	 */
 	public void addPredecessor(LP predecessor) {
 		this.predecessors.add(predecessor);
+	}
+
+	static LP merge(LP lp1, LP lp2) {
+		Place[] places = concat(lp1.places, lp2.places);
+		Transition[] transitions = concat(lp1.transitions, lp2.transitions);
+		Queue[] queues = concat(lp1.queues, lp2.queues);
+		LP lp = new LP(places, transitions, queues, lp1.configuration,
+				lp1.progressMonitor, lp1.enTransCnt + lp2.enTransCnt);
+		lp.id = lp1.id;
+		lp.setExecutorToEntities();
+		return lp;
+	}
+
+	public void setExecutorToEntities() {
+		for (Place place : this.places) {
+			place.setExecutor(this);
+		}
+		for (Transition transition : this.transitions) {
+			transition.setExecutor(this);
+		}
+
+	}
+
+
+	public String toShortString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append("LP" + this.getId() + "\n");
+		for (Place p : this.getPlaces()) {
+			if (p instanceof QPlace) {
+				sb.append("\t"
+						+ p.name
+						+ "(QPplace), queue "
+						+ ((QPlace) p).queue.name
+						+ "  "
+						+ ((QPlace) p).queue.getClass().toString()
+								.split("queue.")[1] + "\n");
+
+			} else {
+				sb.append("\t" + p.name + "(Place)" + "\n");
+			}
+		}
+		return sb.toString();
+	}
+
+	@Override
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append("LP" + this.getId() + "\n");
+		for (Place p : this.getPlaces()) {
+			if (p instanceof QPlace) {
+				sb.append("\t"
+						+ p.name
+						+ "(QPplace), queue "
+						+ ((QPlace) p).queue.name
+						+ "  "
+						+ ((QPlace) p).queue.getClass().toString()
+								.split("queue.")[1] + "\n");
+
+			} else {
+				sb.append("\t" + p.name + "(Place)" + "\n");
+			}
+		}
+		for (Transition t : this.getTransitions()) {
+			sb.append("\t" + t.name + "(transition)" + " ID " + t.id + "\n");
+		}
+
+		sb.append("\tsuccessors: ");
+		for (LP suc : this.getSuccessors()) {
+			sb.append("LP" + suc.getId() + " ");
+		}
+		sb.append("\n");
+		sb.append("\tpredecessors: ");
+		for (LP pred : this.getPredecessors()) {
+			sb.append("LP" + pred.getId() + " ");
+		}
+		sb.append("\n");
+
+		return sb.toString();
+	}
+
+	/**
+	 * Couples two arrays. Method could be extracted to Utility class.
+	 * 
+	 * @param first
+	 *            array number one
+	 * @param second
+	 *            array number two
+	 * @param <T>
+	 *            Type
+	 * @return A merged array
+	 */
+	private static <T> T[] concat(T[] first, T[] second) {
+		T[] result = Arrays.copyOf(first, first.length + second.length);
+		System.arraycopy(second, 0, result, first.length, second.length);
+		return result;
 	}
 }
