@@ -56,8 +56,12 @@
  */
 package de.tud.cs.simqpn.kernel.entities;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.dom4j.Element;
@@ -66,120 +70,142 @@ import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 import de.tud.cs.simqpn.kernel.executor.Executor;
+import de.tud.cs.simqpn.kernel.executor.parallel.LP;
 import de.tud.cs.simqpn.kernel.stats.PlaceStats;
 import de.tud.cs.simqpn.kernel.stats.Stats;
- 
+
 /**
  * Class Place
- *
+ * 
  * @author Samuel Kounev
  * @version
  */
 
 public class Place extends Node {
-	
+
 	private Executor executor;
-	
-	/** Supported departure disciplines*/	
-	public enum DepartureDiscipline{
-		NORMAL,// Arriving tokens become available for output transitions immediately upon arrival.  
-		FIFO; // First-In-First-Out: Arriving tokens become available for output transitions in the order of their arrival.
+
+	/** Supported departure disciplines */
+	public enum DepartureDiscipline {
+		NORMAL, // Arriving tokens become available for output transitions
+				// immediately upon arrival.
+		FIFO; // First-In-First-Out: Arriving tokens become available for output
+				// transitions in the order of their arrival.
 	}
-	
-	/** Supported probe actions*/
+
+	/** Supported probe actions */
 	public enum ProbeAction {
-		PROBE_ACTION_NONE, 
-		PROBE_ACTION_START_ON_EXIT, 
-		PROBE_ACTION_START_ON_ENTRY, 
-		PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT, 
-		PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY,
-		PROBE_ACTION_END_ON_EXIT,
-		PROBE_ACTION_END_ON_ENTRY,
-		PROBE_ACTION_TRANSFER;
+		PROBE_ACTION_NONE, PROBE_ACTION_START_ON_EXIT, PROBE_ACTION_START_ON_ENTRY, PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT, PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY, PROBE_ACTION_END_ON_EXIT, PROBE_ACTION_END_ON_ENTRY, PROBE_ACTION_TRANSFER;
 	};
 
 	private static Logger log = Logger.getLogger(Place.class);
-	
-	public int				numColors;
-	public String[]			colors;			// Names of the colors that can reside in this Place.
-	public int				statsLevel;		// Determines the amount of statistics to be gathered during the run.
-	public DepartureDiscipline depDiscip;	// Departure discipline.
-	public LinkedList<Integer>		depQueue;		// depDiscip = FIFO: Departure queue - stores the colors of tokens in the order of their arrival.	
-	
-	public Transition[]		inTrans;
-	public Transition[]		outTrans;
-	public int[]			tokenPop;	
-	public int[]			availTokens;	// The token population currently available for output transitions.	
-	public boolean			depReady;		// depDiscip=FIFO: true if a token is currently available for output transitions of the place 
-	
+
+	public int numColors;
+	public String[] colors; // Names of the colors that can reside in this
+							// Place.
+	public int statsLevel; // Determines the amount of statistics to be gathered
+							// during the run.
+	public DepartureDiscipline depDiscip; // Departure discipline.
+	public LinkedList<Integer> depQueue; // depDiscip = FIFO: Departure queue -
+											// stores the colors of tokens in
+											// the order of their arrival.
+
+	public Transition[] inTrans;
+	public Transition[] outTrans;
+	public int[] tokenPop;
+	public int[] availTokens; // The token population currently available for
+								// output transitions.
+	public boolean depReady; // depDiscip=FIFO: true if a token is currently
+								// available for output transitions of the place
+
 	@SuppressWarnings("rawtypes")
-	public LinkedList[]		tokArrivTS;		// statsLevel >= 3: Arrival timestamps of tokens in the place/depository.
-	
+	public LinkedList[] tokArrivTS; // statsLevel >= 3: Arrival timestamps of
+									// tokens in the place/depository.
+
 	@SuppressWarnings("rawtypes")
-	public LinkedList[]		tokens;			// individualTokens[color] = true: list of individual tokens.
-	
-	public boolean[]		individualTokens;		// individualTokens[color] specifies whether tokens of the specified color should be stored individually
-	
+	public LinkedList[] tokens; // individualTokens[color] = true: list of
+								// individual tokens.
+
+	public boolean[] individualTokens; // individualTokens[color] specifies
+										// whether tokens of the specified color
+										// should be stored individually
+
 	// Configuration of probes
-	public ProbeAction[][]			probeActions;
-	public Probe[][]		probeInstrumentations;  // probeInstrumentations[numColors]: List of probes tracking tokens in this place
-	
-	public PlaceStats		placeStats;	 
-	
-	public Element			element;
-	
+	public ProbeAction[][] probeActions;
+	public Probe[][] probeInstrumentations; // probeInstrumentations[numColors]:
+											// List of probes tracking tokens in
+											// this place
+
+	public PlaceStats placeStats;
+
+	public Element element;
+
 	/**
 	 * 
 	 * Constructor
-	 *
-	 * @param id          - global id of the place
-	 * @param name        - name of the place
-	 * @param colors      - names of the colors that can reside in this place
-	 * @param numInTrans  - number of input transitions
-	 * @param numOutTrans - number of output transitions
-	 * @param numProbes	  - number of all probes in net
-	 * @param statsLevel  - determines the amount of statistics to be gathered during the run
-	 * @param depDiscip   - determines the departure discipline (order): NORMAL or FIFO
-	 * @param element     - reference to the XML element representing the place
+	 * 
+	 * @param id
+	 *            - global id of the place
+	 * @param name
+	 *            - name of the place
+	 * @param colors
+	 *            - names of the colors that can reside in this place
+	 * @param numInTrans
+	 *            - number of input transitions
+	 * @param numOutTrans
+	 *            - number of output transitions
+	 * @param numProbes
+	 *            - number of all probes in net
+	 * @param statsLevel
+	 *            - determines the amount of statistics to be gathered during
+	 *            the run
+	 * @param depDiscip
+	 *            - determines the departure discipline (order): NORMAL or FIFO
+	 * @param element
+	 *            - reference to the XML element representing the place
 	 */
 	@SuppressWarnings("rawtypes")
-	public Place(int id, String name, String[] colors, int numInTrans, int numOutTrans, int numProbes, int statsLevel, DepartureDiscipline depDiscip, Element element, SimQPNConfiguration configuration) throws SimQPNException {
-		super(id, name);		
-		this.colors			       = colors.clone();	
-		this.numColors		       = colors.length;	
-		this.inTrans		       = new Transition[numInTrans];
-		this.outTrans		       = new Transition[numOutTrans];
-		this.tokenPop		       = new int[numColors];
-		this.availTokens		   = new int[numColors]; 
-		this.statsLevel		       = statsLevel;
-		this.depDiscip		       = depDiscip;
-		this.tokens			       = new LinkedList[numColors];
-		this.individualTokens			   = new boolean[numColors];
-		this.probeActions          = new ProbeAction[numColors][numProbes];
+	public Place(int id, String name, String[] colors, int numInTrans,
+			int numOutTrans, int numProbes, int statsLevel,
+			DepartureDiscipline depDiscip, Element element,
+			SimQPNConfiguration configuration) throws SimQPNException {
+		super(id, name);
+		this.colors = colors.clone();
+		this.numColors = colors.length;
+		this.inTrans = new Transition[numInTrans];
+		this.outTrans = new Transition[numOutTrans];
+		this.tokenPop = new int[numColors];
+		this.availTokens = new int[numColors];
+		this.statsLevel = statsLevel;
+		this.depDiscip = depDiscip;
+		this.tokens = new LinkedList[numColors];
+		this.individualTokens = new boolean[numColors];
+		this.probeActions = new ProbeAction[numColors][numProbes];
 		this.probeInstrumentations = new Probe[numColors][];
-		this.element		       = element;
+		this.element = element;
 
-		
-		for (int c = 0; c < numColors; c++)  { 
-			this.tokenPop[c] 	= 0;
-			this.availTokens[c]	= 0;
+		for (int c = 0; c < numColors; c++) {
+			this.tokenPop[c] = 0;
+			this.availTokens[c] = 0;
 		}
-		if (depDiscip == DepartureDiscipline.FIFO)	{			
+		if (depDiscip == DepartureDiscipline.FIFO) {
 			this.depQueue = new LinkedList<Integer>();
-			this.depReady = false;		
+			this.depReady = false;
 		}
 		if (statsLevel > 0) {
 			if (this instanceof QPlace)
-				placeStats = new PlaceStats(id, name, Stats.QUE_PLACE_DEP, colors, statsLevel, configuration);
+				placeStats = new PlaceStats(id, name, Stats.QUE_PLACE_DEP,
+						colors, statsLevel, configuration);
 			else
-				placeStats = new PlaceStats(id, name, Stats.ORD_PLACE, colors, statsLevel, configuration);				 			
+				placeStats = new PlaceStats(id, name, Stats.ORD_PLACE, colors,
+						statsLevel, configuration);
 			if (statsLevel >= 3) {
 				this.tokArrivTS = new LinkedList[numColors];
 				for (int c = 0; c < numColors; c++)
 					this.tokArrivTS[c] = new LinkedList();
-			}				
+			}
 		}
-		
+
 		// By default tracking is disabled
 		Arrays.fill(individualTokens, false);
 		for (int c = 0; c < numColors; c++) {
@@ -188,67 +214,70 @@ public class Place extends Node {
 		}
 	}
 
-	public Place clone(Queue[] queues, Transition[] transitions, SimQPNConfiguration configuration) throws SimQPNException{
-		Place clone = new Place(id, name, colors, this.inTrans.length, this.outTrans.length, probeActions[0].length, statsLevel, depDiscip, element, configuration);
+	public Place clone(Queue[] queues, Transition[] transitions,
+			SimQPNConfiguration configuration) throws SimQPNException {
+		Place clone = new Place(id, name, colors, this.inTrans.length,
+				this.outTrans.length, probeActions[0].length, statsLevel,
+				depDiscip, element, configuration);
 		clone.finishCloning(this, queues, transitions, configuration);
 		return clone;
 	}
 
-	protected void finishCloning(Place original, Queue[] queues, Transition[] transitions, SimQPNConfiguration configuration) throws SimQPNException{
-		this.inTrans		      	= new Transition[original.inTrans.length];
-		
+	protected void finishCloning(Place original, Queue[] queues,
+			Transition[] transitions, SimQPNConfiguration configuration)
+			throws SimQPNException {
+		this.inTrans = new Transition[original.inTrans.length];
+
 		this.tokenPop = original.tokenPop.clone();
-		for(int i=0; i<original.inTrans.length; i++){
+		for (int i = 0; i < original.inTrans.length; i++) {
 			this.inTrans[i] = transitions[original.inTrans[i].id];
 		}
-		this.outTrans				= new Transition[original.outTrans.length];
-		for(int i=0; i<original.outTrans.length; i++){
+		this.outTrans = new Transition[original.outTrans.length];
+		for (int i = 0; i < original.outTrans.length; i++) {
 			this.outTrans[i] = transitions[original.outTrans[i].id];
 		}
 	}
-	
-	
-	
+
 	/**
 	 * Method init - initializes the place
-	 *  
+	 * 
 	 * Note: make sure clock has been initialized before calling Place.init
 	 * 
-	 * @param 
+	 * @param
 	 * @return
 	 * @exception
 	 */
 	@SuppressWarnings("unchecked")
 	public void init(double clock) throws SimQPNException {
-		
-		if (depDiscip == DepartureDiscipline.NORMAL)  {
-			availTokens = tokenPop; //Note: from here on, availTokens and tokenPop point to the same array!
-		}
-		else if (depDiscip == DepartureDiscipline.FIFO)  {
-			int totTkPop = 0;  			 
+
+		if (depDiscip == DepartureDiscipline.NORMAL) {
+			availTokens = tokenPop; // Note: from here on, availTokens and
+									// tokenPop point to the same array!
+		} else if (depDiscip == DepartureDiscipline.FIFO) {
+			int totTkPop = 0;
 			int[] tkPop = new int[numColors];
-			for (int c = 0; c < numColors; c++) { 
+			for (int c = 0; c < numColors; c++) {
 				tkPop[c] = tokenPop[c];
-				totTkPop += tokenPop[c]; 				
+				totTkPop += tokenPop[c];
 			}
-			if (totTkPop > 0)  {
-				while (totTkPop > 0)  
-					for (int c = 0; c < numColors; c++)   
-						if (tkPop[c] > 0)  {
+			if (totTkPop > 0) {
+				while (totTkPop > 0)
+					for (int c = 0; c < numColors; c++)
+						if (tkPop[c] > 0) {
 							depQueue.addLast(new Integer(c));
-							tkPop[c]--; totTkPop--; 
-						}						
+							tkPop[c]--;
+							totTkPop--;
+						}
 				int nextCol = ((Integer) depQueue.removeFirst()).intValue();
-				availTokens[nextCol]++; 
+				availTokens[nextCol]++;
 				depReady = true;
 			}
-		}
-		else {
+		} else {
 			log.error("Invalid depDiscip specified for place " + name);
 			throw new SimQPNException();
 		}
-		 			
-		if (statsLevel >= 3) {			
+
+		if (statsLevel >= 3) {
 			for (int c = 0; c < numColors; c++) {
 				for (int i = 0; i < tokenPop[c]; i++) {
 					tokArrivTS[c].addLast(new Double(clock));
@@ -259,13 +288,14 @@ public class Place extends Node {
 		// Initialize token list for the initial marking
 		for (int c = 0; c < numColors; c++) {
 			int prC = probeInstrumentations[c].length;
-			
+
 			// Create timestamps for all probes associated with this place
 			ProbeTimestamp[] timestamps = new ProbeTimestamp[prC];
 			for (int pr = 0; pr < prC; pr++) {
-				timestamps[pr] = new ProbeTimestamp(probeInstrumentations[c][pr].id, clock);
+				timestamps[pr] = new ProbeTimestamp(
+						probeInstrumentations[c][pr].id, clock);
 			}
-			
+
 			// Create tokens
 			for (int i = 0; i < tokenPop[c]; i++) {
 				if (individualTokens[c]) {
@@ -277,42 +307,45 @@ public class Place extends Node {
 
 	/**
 	 * Method start
-	 *  	    
-	 * 	 
-	 * @param 
+	 * 
+	 * 
+	 * @param
 	 * @return
 	 * @exception
 	 */
-	public void start(SimQPNConfiguration configuration, double clock) throws SimQPNException {	
-		if (statsLevel > 0)	
-			placeStats.start(tokenPop, configuration, clock);					
+	public void start(SimQPNConfiguration configuration, double clock)
+			throws SimQPNException {
+		if (statsLevel > 0)
+			placeStats.start(tokenPop, configuration, clock);
 	}
-	
+
 	/**
 	 * Method finish
-	 *  	    
-	 * 	 
-	 * @param 
+	 * 
+	 * 
+	 * @param
 	 * @return
 	 * @exception
 	 */
-	public void finish(SimQPNConfiguration configuration, double runWallClockTime, double clock) throws SimQPNException {
+	public void finish(SimQPNConfiguration configuration,
+			double runWallClockTime, double clock) throws SimQPNException {
 		// Complete statistics collection
-		if (statsLevel > 0)	
-			placeStats.finish(tokenPop, configuration, runWallClockTime, clock);					
+		if (statsLevel > 0)
+			placeStats.finish(tokenPop, configuration, runWallClockTime, clock);
 	}
 
 	/**
 	 * Method report
-	 *  	    
-	 * @param 
+	 * 
+	 * @param
 	 * @return
 	 * @exception
 	 */
-	public void report(SimQPNConfiguration configuration) throws SimQPNException {
+	public void report(SimQPNConfiguration configuration)
+			throws SimQPNException {
 		if (statsLevel > 0) {
-			placeStats.printReport(configuration);					
-			/* cdutz */ 
+			placeStats.printReport(configuration);
+			/* cdutz */
 			placeStats.addReportMetaData(element, configuration);
 		}
 	}
@@ -320,97 +353,108 @@ public class Place extends Node {
 	/**
 	 * Method addTokens - deposits N tokens of particular color
 	 * 
-	 * @param color - color of tokens
-	 * @param count - number of tokens to deposit
-	 * @param tokensToBeAdded - Tokens to be added or null if tracking=false.
-	 * 							After the call all elements of this array are set to null.
+	 * @param color
+	 *            - color of tokens
+	 * @param count
+	 *            - number of tokens to deposit
+	 * @param tokensToBeAdded
+	 *            - Tokens to be added or null if tracking=false. After the call
+	 *            all elements of this array are set to null.
 	 * @return
 	 * @exception
 	 */
 	@SuppressWarnings("unchecked")
-	public void addTokens(int color, int count, Token[] tokensToBeAdded, Executor executor) throws SimQPNException {
+	public void addTokens(int color, int count, Token[] tokensToBeAdded,
+			Executor executor) throws SimQPNException {
 		if (count <= 0) { // DEBUG
-			log.error("Attempted to add nonpositive number of tokens to place " + name);
+			log.error("Attempted to add nonpositive number of tokens to place "
+					+ name);
 			throw new SimQPNException();
 		}
-				
-		// Update Stats		
+
+		// Update Stats
 		if (statsLevel > 0) {
-			placeStats.updateTkPopStats(color, tokenPop[color], count, executor.getClock());						
+			placeStats.updateTkPopStats(color, tokenPop[color], count,
+					executor.getClock());
 			if (statsLevel >= 3) {
-				for (int i = 0; i < count; i++) 
+				for (int i = 0; i < count; i++)
 					tokArrivTS[color].addLast(new Double(executor.getClock()));
 			}
 		}
 		// Now add tokens and update affected transitions
 		tokenPop[color] += count;
-		if(individualTokens[color]) {
+		if (individualTokens[color]) {
 			if (tokensToBeAdded == null) { // DEBUG
 				log.error("Cannot add tokens to place " + name);
 				throw new SimQPNException();
 			}
-			
+
 			for (int i = 0; i < count; i++) {
 				tokens[color].addLast(tokensToBeAdded[i]);
-				tokensToBeAdded[i] = null;  // Note: set null to avoid dangling references.
+				tokensToBeAdded[i] = null; // Note: set null to avoid dangling
+											// references.
 			}
 		}
 
-		if (depDiscip == DepartureDiscipline.NORMAL)  {
+		if (depDiscip == DepartureDiscipline.NORMAL) {
 			for (int i = 0; i < outTrans.length; i++)
 				outTrans[i].updateState(id, color, tokenPop[color], count);
-		}				
-		else if (depDiscip == DepartureDiscipline.FIFO)  {			
+		} else if (depDiscip == DepartureDiscipline.FIFO) {
 			if (depReady) {
-				for (int i=0; i < count; i++)  
-					depQueue.addLast(new Integer(color));								
-			}
-			else {
-				for (int i=0; i < (count-1); i++)
+				for (int i = 0; i < count; i++)
 					depQueue.addLast(new Integer(color));
-				availTokens[color]++; 
+			} else {
+				for (int i = 0; i < (count - 1); i++)
+					depQueue.addLast(new Integer(color));
+				availTokens[color]++;
 				depReady = true;
 				for (int i = 0; i < outTrans.length; i++)
-					outTrans[i].updateState(id, color, availTokens[color], 1);												
+					outTrans[i].updateState(id, color, availTokens[color], 1);
 			}
-		}
-		else {
+		} else {
 			log.error("Invalid depDiscip specified for place " + name);
 			throw new SimQPNException();
 		}
 	}
-	
+
 	/**
 	 * Method removeTokens - removes N tokens of particular color
 	 * 
-	 * @param color - color of tokens
-	 * @param count - number of tokens to remove (must be = 1 if tracking enabled)	
-	 * @param returnBuffer - an array used to store the removed tokens, if tracking enabled. (Condition: returnBuffer.length >= count) 
+	 * @param color
+	 *            - color of tokens
+	 * @param count
+	 *            - number of tokens to remove (must be = 1 if tracking enabled)
+	 * @param returnBuffer
+	 *            - an array used to store the removed tokens, if tracking
+	 *            enabled. (Condition: returnBuffer.length >= count)
 	 * @return removed tokens (if tracking is enabled)
 	 * @exception
 	 */
-	public Token[] removeTokens(int color, int count, Token[] returnBuffer, double clock, SimQPNConfiguration configuration) throws SimQPNException {
-		/* //DEBUG
-		if (count <= 0) { 
-			Simulator.logln("Error: Attempted to remove nonpositive number of tokens from place " + name);
-			throw new SimQPNException();
-		}				
-		if (availTokens[color] < count || tokenPop[color] < count) {
-			Simulator.logln("Error: Attempted to remove more tokens from place " + name + " than are available!");
-			throw new SimQPNException();
-		}*/						
+	public Token[] removeTokens(int color, int count, Token[] returnBuffer,
+			double clock, SimQPNConfiguration configuration)
+			throws SimQPNException {
+		/*
+		 * //DEBUG if (count <= 0) { Simulator.logln(
+		 * "Error: Attempted to remove nonpositive number of tokens from place "
+		 * + name); throw new SimQPNException(); } if (availTokens[color] <
+		 * count || tokenPop[color] < count) {
+		 * Simulator.logln("Error: Attempted to remove more tokens from place "
+		 * + name + " than are available!"); throw new SimQPNException(); }
+		 */
 		// Update Stats
 		if (statsLevel > 0) {
-			placeStats.updateTkPopStats(color, tokenPop[color], (-1)*count, clock);				
+			placeStats.updateTkPopStats(color, tokenPop[color], (-1) * count,
+					clock);
 			if (statsLevel >= 3) {
 				Double arrivTS;
 				for (int i = 0; i < count; i++) {
 					arrivTS = (Double) tokArrivTS[color].removeFirst();
-					placeStats.updateSojTimeStats(color, clock - arrivTS.doubleValue(), configuration);
+					placeStats.updateSojTimeStats(color,
+							clock - arrivTS.doubleValue(), configuration);
 				}
-			}				
+			}
 		}
-		// Now remove tokens and update affected transitions	
+		// Now remove tokens and update affected transitions
 		tokenPop[color] -= count;
 		if (individualTokens[color]) {
 			if (returnBuffer.length < count) {
@@ -418,38 +462,42 @@ public class Place extends Node {
 				throw new SimQPNException();
 			}
 			for (int i = 0; i < count; i++) {
-				returnBuffer[i] = (Token)tokens[color].removeFirst();
+				returnBuffer[i] = (Token) tokens[color].removeFirst();
 			}
 		}
 
-		if (depDiscip == DepartureDiscipline.NORMAL)  {
+		if (depDiscip == DepartureDiscipline.NORMAL) {
 			for (int i = 0; i < outTrans.length; i++)
-				outTrans[i].updateState(id, color, tokenPop[color], (-1)*count);						
-		}				
-		else if (depDiscip == DepartureDiscipline.FIFO)  {
+				outTrans[i].updateState(id, color, tokenPop[color], (-1)
+						* count);
+		} else if (depDiscip == DepartureDiscipline.FIFO) {
 			availTokens[color] -= count;
 			for (int i = 0; i < outTrans.length; i++)
-				outTrans[i].updateState(id, color, availTokens[color], (-1)*count);			
+				outTrans[i].updateState(id, color, availTokens[color], (-1)
+						* count);
 			if (depQueue.size() > 0) {
 				int nextCol = ((Integer) depQueue.removeFirst()).intValue();
 				availTokens[nextCol]++;
-				depReady = true; // Left for clarity. Actually redundant since depReady should already be true.
+				depReady = true; // Left for clarity. Actually redundant since
+									// depReady should already be true.
 				for (int i = 0; i < outTrans.length; i++)
-					outTrans[i].updateState(id, nextCol, availTokens[nextCol], 1);										
-			}
-			else depReady = false;
-		}
-		else {
+					outTrans[i].updateState(id, nextCol, availTokens[nextCol],
+							1);
+			} else
+				depReady = false;
+		} else {
 			log.error("Invalid depDiscip specified for place " + name);
 			throw new SimQPNException();
 		}
-		
-		return returnBuffer;		
+
+		return returnBuffer;
 	}
-	
+
 	/**
 	 * Maps the name of a color to the index of the color in this place.
-	 * @param color - name of the color
+	 * 
+	 * @param color
+	 *            - name of the color
 	 * @return index of the color (or -1 if color not defined in this place)
 	 */
 	public int getColorIndex(String color) {
@@ -460,11 +508,14 @@ public class Place extends Node {
 		}
 		return -1;
 	}
-	
+
 	/**
 	 * Adds a probe instrumentation to this place.
-	 * @param probe - the probe
-	 * @param action - a PROBE_ACTION constant.
+	 * 
+	 * @param probe
+	 *            - the probe
+	 * @param action
+	 *            - a PROBE_ACTION constant.
 	 */
 	@SuppressWarnings("rawtypes")
 	public void addProbe(Probe probe, ProbeAction action) {
@@ -473,14 +524,15 @@ public class Place extends Node {
 			int c = getColorIndex(trackedColor);
 			if (c >= 0) {
 				probeActions[c][probeId] = action;
-				if ((action != ProbeAction.PROBE_ACTION_START_ON_EXIT) && (action != ProbeAction.PROBE_ACTION_END_ON_ENTRY) 
+				if ((action != ProbeAction.PROBE_ACTION_START_ON_EXIT)
+						&& (action != ProbeAction.PROBE_ACTION_END_ON_ENTRY)
 						&& (action != ProbeAction.PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY)) {
 					individualTokens[c] = true;
 					if (tokens[c] == null) {
 						tokens[c] = new LinkedList();
 					}
 				}
-				
+
 				boolean found = false;
 				for (int i = 0; i < probeInstrumentations[c].length; i++) {
 					if (probeInstrumentations[c][i].id == probeId) {
@@ -488,13 +540,14 @@ public class Place extends Node {
 						break;
 					}
 				}
-				
+
 				if (!found) {
 					Probe[] p = new Probe[probeInstrumentations[c].length + 1];
-					System.arraycopy(probeInstrumentations[c], 0, p, 0, probeInstrumentations[c].length);
+					System.arraycopy(probeInstrumentations[c], 0, p, 0,
+							probeInstrumentations[c].length);
 					p[p.length - 1] = probe;
 					probeInstrumentations[c] = p;
-				}				
+				}
 			}
 		}
 	}
@@ -507,5 +560,80 @@ public class Place extends Node {
 		this.executor = executor;
 	}
 
-			
+	public double getSumLookahead(int color, Place endPlace, double sumLookahead) {
+		if (this.id == endPlace.id) {
+			return sumLookahead;
+		}
+		// double look = 0;
+		// for (Transition transition : inTrans) {
+		// for (Place inPlace : transition.inPlaces) {
+		// look =
+		// }
+		// }
+		Place inPlace = this.inTrans[0].inPlaces[0];
+		return inPlace.getSumLookahead(color, endPlace, sumLookahead
+				+ getLookahead(color));
+	}
+
+	public double getTimeSaveToProcess(int color, List<Integer> visitedPlaces,
+			String format, boolean verbose) {
+		Collection<Double> saveTimes = new ArrayList<Double>();
+		if (!visitedPlaces.contains(this.id)) {
+			visitedPlaces.add(this.id);
+		}
+		format += "\t";
+		for (Transition transition : inTrans) {
+			for (Place inPlace : transition.inPlaces) {
+				if (!visitedPlaces.contains(inPlace.id)) {
+					// if (inPlace.tokenPop[color] == 0) {
+					if (((QPlace) inPlace).getQueueTokenPop()[color] == 0) {
+						double save = inPlace.getTimeSaveToProcess(color,
+								visitedPlaces, format, verbose);
+						if (save != 0) {
+							saveTimes.add(save + inPlace.getLookahead(color));
+						}
+					} else {
+						Place nextEventPlace = ((LP) inPlace.getExecutor())
+								.getNextEventPlace();
+						if (nextEventPlace != null
+								&& !(nextEventPlace.id == inPlace.id)) {
+							saveTimes.add(inPlace.getExecutor().getClock()
+									+ inPlace.getLookahead(color));
+						} else {
+							double save = inPlace.getTimeSaveToProcess(color,
+									visitedPlaces, format, verbose);
+							if (save != 0) {
+								saveTimes.add(save
+										+ inPlace.getLookahead(color));
+							}
+						}
+					}
+				}
+			}
+		}
+		if (verbose) {
+			System.out.println(format + name + " " + saveTimes);
+		}
+
+		if (saveTimes.isEmpty()) {
+			// return 0;
+			double max = Math.max(((LP) this.getExecutor()).getNextEventTime(),
+					this.getExecutor().getClock());
+			max = ((LP) this.getExecutor()).getNextEventTime();
+			return max;
+		} else {
+			return Collections.min(saveTimes);
+		}
+
+	}
+
+	/**
+	 * Returns the lookahead for a specific color.
+	 * @param color		the color for which lookahead is returned.
+	 * @return the lookahead
+	 */
+	public double getLookahead(int color) {
+		return 0;
+	}
+
 }

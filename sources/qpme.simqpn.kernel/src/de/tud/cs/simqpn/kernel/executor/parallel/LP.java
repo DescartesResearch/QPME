@@ -43,8 +43,10 @@ package de.tud.cs.simqpn.kernel.executor.parallel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.concurrent.BrokenBarrierException;
@@ -135,6 +137,8 @@ public class LP implements Executor, Runnable {
 	// private Probe[] probes;
 	/** The places of the QPN this LP simulates. */
 	private final Place[] places;
+	/** The places through-out tokens can enter this LP */
+	private Place[] inPlaces;
 	/** The transitions of the QPN this LP simulates. */
 	private final Transition[] transitions;
 	/** The queues of the QPN this LP simulates. */
@@ -253,6 +257,7 @@ public class LP implements Executor, Runnable {
 			 */
 			while (!checkStopCriterion()) {
 				QueueEvent nextEvent = eventList.peek();
+
 				if (nextEvent != null && nextEvent.time <= timeSaveToProcess) {
 					processQueueEvent(nextEvent);
 				} else {
@@ -263,19 +268,21 @@ public class LP implements Executor, Runnable {
 						}
 					}
 					waitForBarrier();
-					if (incomingTokenList.isEmpty() && enTransCnt == 0
-							&& eventList.isEmpty()) {
-						//no need for time save to process calculation
-					}else{
-						timeSaveToProcess = getTimeSaveToProcess();
-					}
+					// if (incomingTokenList.isEmpty() && enTransCnt == 0
+					// && eventList.isEmpty()) {
+					// // no need for time save to process calculation
+					// } else {
+					timeSaveToProcess = improvedGetTimeSaveToProcessVerbosity();
+					// timeSaveToProcess = getTimeSaveToProcess();
+					// timeSaveToProcess = simpleTimeSaveToProcess();
+					// }
 					waitForBarrier();
 				}
-				if (incomingTokenList.isEmpty() && enTransCnt == 0
-						&& eventList.isEmpty()) {
-					// continue to barrier if nothing to do
-					continue;
-				}
+				// if (incomingTokenList.isEmpty() && enTransCnt == 0
+				// && eventList.isEmpty()) {
+				// // continue to barrier if nothing to do
+				// continue;
+				// }
 				processTokenEvents(); // //////
 
 				fireTransitions(totRunLength);
@@ -356,6 +363,9 @@ public class LP implements Executor, Runnable {
 				}
 				place.addTokens(tkEvent.getColor(), tkEvent.getNumber(),
 						tkEvent.getTkCopyBuffer(), this);
+				if (verbosityLevel > 0) {
+					// log.info("\t\t LP"+id+" : token arrived at "+clock);
+				}
 
 				/**
 				 * Check if the new token enabled a transition
@@ -412,6 +422,84 @@ public class LP implements Executor, Runnable {
 			// } catch (TimeoutException e) {
 			// log.info("LP"+id+" left barrier due to timeout");
 		}
+	}
+
+	double simpleTimeSaveToProcess() {
+		synchronized (LP.class) {
+			return simpleTimeSaveToProcess(new LinkedList<Integer>(), "LP" + id);
+		}
+	}
+
+	double simpleTimeSaveToProcess(List<Integer> visitedLPs, String format) {
+		Collection<Double> saveTimes = new ArrayList<Double>();
+		format += "\t";
+		for (LP predecessor : predecessors) {
+			if (!visitedLPs.contains(predecessor.id)) {
+				// System.out.println(format + "LP" + predecessor.id);
+				visitedLPs.add(this.id);
+				if (predecessor.eventList.isEmpty()) {
+					// copy list
+					List<Integer> visitedLPsCopy = new ArrayList<Integer>(
+							visitedLPs.size() + 1);
+					if (!visitedLPs.isEmpty()) {
+						for (int i = 0; i < visitedLPs.size(); i++) {
+							visitedLPsCopy.add(visitedLPs.get(i));
+						}
+					}
+					saveTimes.add(predecessor.simpleTimeSaveToProcess(
+							visitedLPsCopy, format));
+				} else {
+					saveTimes.add(predecessor.getNextEventTime());
+				}
+				// }else{
+				// saveTimes.add(predecessor.getNextEventTime());
+			}
+		}
+		if (saveTimes.isEmpty()) {
+			return 0;
+		} else {
+			System.out.println(format + " " + saveTimes);
+			return Collections.min(saveTimes);
+		}
+	}
+
+	double improvedGetTimeSaveToProcessVerbosity() {
+		if (verbosityLevel > 0) {
+			synchronized (LP.class) {
+				return improvedGetTimeSaveToProcess();
+			}
+		} else {
+			return improvedGetTimeSaveToProcess();
+		}
+	}
+
+	double improvedGetTimeSaveToProcess() {
+		Collection<Double> saveTimes = new ArrayList<Double>();
+		for (Place inPlace : inPlaces) {
+			for (int color = 0; color < inPlace.colors.length; color++) {
+				List<Integer> visitedPlaces = new LinkedList<Integer>();
+				double tmp = inPlace.getTimeSaveToProcess(color,
+						visitedPlaces, "LP" + id, false);// false /**(id
+															// == 1)*/);
+				saveTimes.add(tmp);
+			}
+		}
+		double saveTime = Collections.min(saveTimes);
+		// QueueEvent queueEvent = eventList.peek();
+		// if (verbosityLevel > 0) {
+		// synchronized (LP.class) {
+		// if (queueEvent != null) {
+		// log.info("LP" + id + " clock " + clock + " save "
+		// + saveTimes + " | next " + queueEvent.time + " "
+		// + queueEvent.queue.qPlaces[0].name);
+		// } else {
+		// log.info("LP" + id + " clock " + clock + " save "
+		// + saveTimes + " |");
+		// }
+		// }
+		// }
+		//
+		return saveTime;
 	}
 
 	/**
@@ -548,10 +636,13 @@ public class LP implements Executor, Runnable {
 	 *             if an error in the QPlace occurs
 	 */
 	private void processQueueEvent(QueueEvent event) throws SimQPNException {
+
 		if (verbosityLevel > 0) {
 			log.info("LP" + id + ": " + event.queue.name + " processed job at "
-					+ (int) event.time + " with lbts "
-					+ (int) timeSaveToProcess + " | " + eventList.size());
+					+ event.time + " with lbts " + timeSaveToProcess
+					+ " | " + event.queue.name + " has now "
+					+ (event.queue.getTkPopulation())
+					+ " tokens");
 		}
 
 		// Advance simulation time
@@ -579,6 +670,7 @@ public class LP implements Executor, Runnable {
 
 		}
 		eventList.remove(event);
+
 	}
 
 	/**
@@ -857,9 +949,9 @@ public class LP implements Executor, Runnable {
 	private long updateProgressMonitor(double totRunL, long lastTimeMsrm) {
 		if (clock >= nextHeartBeat) {
 			long curTimeMsrm = System.currentTimeMillis();
-			progressMonitor.updateSimulationProgress(id, clock
-					/ (totRunL - 1) * 100, (curTimeMsrm - lastTimeMsrm),
-					configuration, inRampUp);
+			progressMonitor.updateSimulationProgress(id, clock / (totRunL - 1)
+					* 100, (curTimeMsrm - lastTimeMsrm), configuration,
+					inRampUp);
 			lastTimeMsrm = curTimeMsrm;
 			nextHeartBeat = clock + timeBtwHeartBeats;
 
@@ -1072,7 +1164,6 @@ public class LP implements Executor, Runnable {
 		this.id = id;
 	}
 
-	
 	/**
 	 * Returns transitions array.
 	 * 
@@ -1138,6 +1229,21 @@ public class LP implements Executor, Runnable {
 		this.predecessors.add(predecessor);
 	}
 
+	/**
+	 * @return the inPlaces
+	 */
+	public Place[] getInCommingPlaces() {
+		return inPlaces;
+	}
+
+	/**
+	 * @param inPlaces
+	 *            the inPlaces to set
+	 */
+	public void setInPlaces(Place[] inPlaces) {
+		this.inPlaces = inPlaces;
+	}
+
 	static LP merge(LP lp1, LP lp2) {
 		Place[] places = concat(lp1.places, lp2.places);
 		Transition[] transitions = concat(lp1.transitions, lp2.transitions);
@@ -1158,7 +1264,6 @@ public class LP implements Executor, Runnable {
 		}
 
 	}
-
 
 	public String toShortString() {
 		StringBuffer sb = new StringBuffer();
@@ -1213,6 +1318,12 @@ public class LP implements Executor, Runnable {
 		}
 		sb.append("\n");
 
+		sb.append("\tinPlaces: ");
+		for (Place inPlace : inPlaces) {
+			sb.append(inPlace.name + " ");
+		}
+		sb.append("\n");
+
 		return sb.toString();
 	}
 
@@ -1232,4 +1343,23 @@ public class LP implements Executor, Runnable {
 		System.arraycopy(second, 0, result, first.length, second.length);
 		return result;
 	}
+
+	public Place getNextEventPlace() {
+		QueueEvent queueEvent = eventList.peek();
+		if (queueEvent != null) {
+			return queueEvent.queue.qPlaces[0];
+		} else {
+			return null;
+		}
+	}
+
+	public double getNextEventTime() {
+		QueueEvent queueEvent = eventList.peek();
+		if (queueEvent != null) {
+			return queueEvent.time;
+		} else {
+			return 0.0;
+		}
+	}
+
 }

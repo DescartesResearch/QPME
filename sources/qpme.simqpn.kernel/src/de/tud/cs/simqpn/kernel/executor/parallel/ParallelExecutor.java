@@ -108,6 +108,58 @@ public class ParallelExecutor implements Callable<Net> {
 	 * @return Array of logical processes
 	 */
 	private LP[] decomposeNetIntoLPs() {
+		List<LP> listLPs = decomposeNetIntoMinimumRegionLPs();
+
+		mergeLPsInLane(listLPs);
+
+		setInPlaces(listLPs);
+
+		setPredAndSuccessors(listLPs);
+
+		// mergePlaceLPsIntoPredecessors(listLPs);
+
+		// Modify transition ids
+		int transCnt = 0;
+		for (LP lp : listLPs) {
+			for (Transition trans : lp.getTransitions()) {
+				trans.id = transCnt++;
+			}
+		}
+
+		return listLPs.toArray(new LP[listLPs.size()]);
+	}
+
+	private void setInPlaces(List<LP> listLPs) {
+		for (LP lp : listLPs) {
+			ArrayList<Place> inPlaces = new ArrayList<Place>();
+			for (Place place : lp.getPlaces()) {
+				for (Transition transition : place.inTrans) {
+					if (lp.getId() != transition.getExecutor().getId()) {
+						inPlaces.add(place);
+					}
+				}
+			}
+			lp.setInPlaces(inPlaces.toArray(new Place[inPlaces.size()]));
+		}
+	}
+
+	/**
+	 * Decomposes the net into minimum regions as described by Chiola and
+	 * Ferscha [1].
+	 * 
+	 * The basic idea is to merge places into an LP if they share an incoming
+	 * transition. Note: This function does not check recursively whether the
+	 * "second" place (which is merged whith the "first" place) shares one
+	 * incoming transition with another place.
+	 * 
+	 * [1] Chiola, G. & Ferscha, A. Ajmone Marsan, M. (Ed.) Distributed
+	 * simulation of timed Petri nets: Exploiting the net structure to obtain
+	 * efficiency Application and Theory of Petri Nets 1993, Springer Berlin
+	 * Heidelberg, 1993, 691, 146-165
+	 * 
+	 * @return
+	 */
+	private List<LP> decomposeNetIntoMinimumRegionLPs() {
 		int numPlaces = net.getNumPlaces();
 		int numTrans = net.getNumTrans();
 		Place[] places = net.getPlaces();
@@ -191,30 +243,7 @@ public class ParallelExecutor implements Callable<Net> {
 		for (LP lp : listLPs) {
 			lp.setExecutorToEntities();
 		}
-
-		mergeLPsInLane(listLPs);
-
-		/* Set new LP ids */
-		for (int i=0; i<listLPs.size(); i++) {
-			LP lp = listLPs.get(i);
-			lp.setId(i);
-			lp.setExecutorToEntities();
-		}
-
-
-		setPredAndSuccessors(listLPs);
-
-		// mergePlaceLPsIntoPredecessors(listLPs);
-
-		// Modify transition ids
-		int transCnt = 0;
-		for (LP lp : listLPs) {
-			for (Transition trans : lp.getTransitions()) {
-				trans.id = transCnt++;
-			}
-		}
-
-		return listLPs.toArray(new LP[listLPs.size()]);
+		return listLPs;
 	}
 
 	private void mergeLPsInLane(List<LP> listLPs) {
@@ -227,12 +256,12 @@ public class ParallelExecutor implements Callable<Net> {
 					if (lp1.getId() != lp2.getId()) {
 						boolean shouldMerge = true;
 						for (Transition transition2 : lp2.getTransitions()) {
-							if(transition2.inPlaces.length > 1){
+							if (transition2.inPlaces.length > 1) {
 								shouldMerge = false;
 								break;
 							}
 						}
-						if(!shouldMerge){
+						if (!shouldMerge) {
 							break;
 						}
 						// merge
@@ -247,6 +276,13 @@ public class ParallelExecutor implements Callable<Net> {
 				}
 			}
 		}
+
+		/* Set new LP ids */
+		for (int i = 0; i < listLPs.size(); i++) {
+			LP lp = listLPs.get(i);
+			lp.setId(i);
+			lp.setExecutorToEntities();
+		}
 	}
 
 	/**
@@ -260,7 +296,7 @@ public class ParallelExecutor implements Callable<Net> {
 				for (Transition inTrans : place.inTrans) {
 					for (Place prePlace : inTrans.inPlaces) {
 						LP predLP = (LP) prePlace.getExecutor();
-						if(!predLP.equals(lp)){
+						if (!predLP.equals(lp)) {
 							lp.addPredecessor(predLP);
 							predLP.addSuccessor(lp);
 						}

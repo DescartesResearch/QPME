@@ -488,4 +488,11 @@ public abstract class Queue {
 		this.queueStats = queueStats;
 	}
 
+	/**
+	 * @return the tkPopulation
+	 */
+	public long getTkPopulation() {
+		return tkPopulation;
+	}
+
 }

@@ -61,6 +61,7 @@
 package de.tud.cs.simqpn.kernel.entities;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -499,6 +500,7 @@ public class QPlace extends Place {
 	 * @param color		the color for which lookahead is returned
 	 * @return the lookahead for a special colors.
 	 */
+	@Override
 	public double getLookahead(int color){
 		return queue.getLookahead(this, color);
 	}
@@ -541,10 +543,5 @@ public class QPlace extends Place {
 	public int[] getQueueTokenPop() {
 		return queueTokenPop;
 	}
-
-	public void setQueueTokenPop(int[] queueTokenPop) {
-		this.queueTokenPop = queueTokenPop;
-	}
-
 
 }
