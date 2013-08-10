@@ -152,7 +152,7 @@ public class ConsoleSimulatorProgress implements SimulatorProgress {
 	 */
 	@Override
 	public double getMaxUpdateLogicalTimeInterval(SimQPNConfiguration configuration) {
-		return configuration.totRunLen / 20.0;
+		return configuration.totRunLength / 20.0;
 	}
 	
 	/* (non-Javadoc)

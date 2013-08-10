@@ -134,7 +134,7 @@ public class SimQPNConfiguration {
 	public int stoppingRule;				// Simulation stopping criterion.
 	private static int debugLevel;				// Debug level - TODO: currently not used consistently!
 	public double rampUpLen;				// Duration of the ramp up period.
-	public double totRunLen;				// Maximum total duration of the simulation run (incl. rampUpLen).
+	public double totRunLength;				// Maximum total duration of the simulation run (incl. rampUpLen).
 	public double timeBtwChkStops;		// Time between checks if stopping criterion is fulfilled. 
 												//   If set to 0, it is automatically adjusted to result in roughtly 
 												//   secondsBtwChkStops sec between checks.

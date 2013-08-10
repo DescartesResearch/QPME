@@ -145,7 +145,7 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 		// Note: we store totRunLen and rampUpLen in local variables to
 		// improve
 		// performance of the while loop below.
-		double totRunL = configuration.totRunLen;
+		double totRunL = configuration.totRunLength;
 		double rampUpL = configuration.rampUpLen;
 		double nextChkAfter = configuration.timeBtwChkStops > 0 ? configuration.timeBtwChkStops
 				: totRunL; // If secondsBtwChkStops is used, disable

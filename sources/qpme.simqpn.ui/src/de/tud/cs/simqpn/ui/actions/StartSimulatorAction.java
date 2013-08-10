@@ -398,7 +398,7 @@ public class StartSimulatorAction extends AbstractHandler {
 			// if numRuns > 1 distribute the heartbeats approximately evenly
 			// over the simulation runs
 			int numberHeartbeats = (100 / numRuns) + 1;
-			return configuration.totRunLen / numberHeartbeats;
+			return configuration.totRunLength / numberHeartbeats;
 		}
 
 		/*

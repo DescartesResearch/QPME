@@ -210,9 +210,9 @@ public class ConfigurationLoader {
 					"configuration", configurationString));
 			throw new SimQPNException();
 		}
-		configuration.totRunLen = Double.parseDouble(simulatorSettings
+		configuration.totRunLength = Double.parseDouble(simulatorSettings
 				.attributeValue("total-run-length"));
-		log.debug("totRunLen = " + configuration.totRunLen + ";");
+		log.debug("totRunLen = " + configuration.totRunLength + ";");
 
 		if (Integer.parseInt(simulatorSettings.attributeValue("scenario")) != 3) {
 			if (simulatorSettings.attributeValue("ramp-up-length") == null) {
@@ -225,7 +225,7 @@ public class ConfigurationLoader {
 					.attributeValue("ramp-up-length"));
 			log.debug("rampUpLen = " + configuration.rampUpLen + ";");
 		} else { // Method of Welch
-			configuration.rampUpLen = configuration.totRunLen; // Note: The
+			configuration.rampUpLen = configuration.totRunLength; // Note: The
 																// method of
 																// Welch is
 																// currently run
