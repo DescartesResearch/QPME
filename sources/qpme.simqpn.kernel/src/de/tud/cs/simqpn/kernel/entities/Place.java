@@ -576,8 +576,8 @@ public class Place extends Node {
 	}
 
 	public double getTimeSaveToProcess(int color, List<Integer> visitedPlaces,
-			String format, boolean verbose) {
-		Collection<Double> saveTimes = new ArrayList<Double>();
+			String format, final boolean verbose) {
+		Collection<Double> saveTimes = new LinkedList<Double>();
 		if (!visitedPlaces.contains(this.id)) {
 			visitedPlaces.add(this.id);
 		}
