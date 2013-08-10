@@ -180,8 +180,22 @@ public class LP implements Executor, Runnable {
 	/** Lower bound on incoming time stamps. */
 	private double timeSaveToProcess;
 	/** Sets debug output to console used for debug purpose. */
-	private int verbosityLevel = 0;// 1; // 2
+	private final int verbosityLevel = 0;// 1; // 2
 
+	/** interval for heart beats */
+	private double nextChkAfter;
+	/**
+	 * The value of the last wall clock time measurement. Used for progress
+	 * updates.
+	 */
+	private long lastTimeMsrm = System.currentTimeMillis();
+	
+	private final double totRunLength;
+	private final double rampUpLength;
+	private final double maxProgressUpdateIntervalVirtualTime;
+	private final long progressUpdateIntervalRealTime;
+
+	
 	/**
 	 * Constructor.
 	 * 
@@ -209,46 +223,26 @@ public class LP implements Executor, Runnable {
 		// this.probes = probes;
 		this.progressMonitor = progressMonitor;
 		this.configuration = configuration;
+		this.maxProgressUpdateIntervalVirtualTime = progressMonitor
+				.getMaxUpdateLogicalTimeInterval(configuration);
+		this.progressUpdateIntervalRealTime = progressMonitor
+				.getMaxUpdateRealTimeInterval();
+		this.totRunLength = configuration.totRunLength;
+		this.rampUpLength = configuration.rampUpLen;
 	}
 
 	/**
 	 * Performs simulation for the net elements belonging to this LP.
 	 * 
-	 * Should be similar to {@link SequentialExecutor#run()}
+	 * Should be similar to {@link PseudoParallelExecutor#run()}
 	 * 
-	 * @see SequentialExecutor
+	 * @see PseudoParallelExecutor
 	 */
 	@Override
 	public void run() {
 		try {
 			initializeWorkingVariables();
 
-			// Note: we store totRunLen and rampUpLen in local variables to
-			// improve performance of the while loop below.
-			double totRunLength = configuration.totRunLen;
-			double rampUpLength = configuration.rampUpLen;
-
-			/** interval for heart beats */
-			/*
-			 * If secondsBtwChkStops is used, disable checking of stopping
-			 * criterion until beforeInitHeartBeat == false. By setting
-			 * nextChkAfter = totRunL stopping criterion checking is disabled.
-			 */
-			double nextChkAfter = configuration.timeBtwChkStops > 0 ? configuration.timeBtwChkStops
-					: totRunLength;
-
-			beginRunWallClock = System.currentTimeMillis();
-
-			/*
-			 * The value of the last wall clock time measurement. Used for
-			 * progress updates.
-			 */
-			long lastTimeMsrm = System.currentTimeMillis();
-
-			double maxProgressUpdateIntervalVirtualTime = progressMonitor
-					.getMaxUpdateLogicalTimeInterval(configuration);
-			long progressUpdateIntervalRealTime = progressMonitor
-					.getMaxUpdateRealTimeInterval();
 
 			waitForBarrier();
 
@@ -285,28 +279,61 @@ public class LP implements Executor, Runnable {
 				// }
 				processTokenEvents(); // //////
 
-				fireTransitions(totRunLength);
+				fireTransitions();
 
-				startDataCollectionIfRampUpDone(rampUpLength);
+				startDataCollectionIfRampUpDone();
 
 				if (beforeInitHeartBeat) {
-					nextChkAfter = determineMonitorUpdateRate(totRunLength,
-							nextChkAfter, lastTimeMsrm,
+					determineMonitorUpdateRate(totRunLength,
 							maxProgressUpdateIntervalVirtualTime,
 							progressUpdateIntervalRealTime);
 				} else {
-					lastTimeMsrm = updateProgressMonitor(totRunLength,
-							lastTimeMsrm);
+					updateProgressMonitor();
 				}
-
-				nextChkAfter = checkForPrecission(nextChkAfter);
-
+				checkForPrecission();
 				updateQueueEvents();
 			}
 		} catch (SimQPNException ex) {
 			log.error("Error during simulation run", ex);
 		}
 		finish();
+	}
+
+	public void actualizeTimeSaveToProcess() {
+		timeSaveToProcess = improvedGetTimeSaveToProcessVerbosity();
+		//timeSaveToProcess = getTimeSaveToProcess();
+
+	}
+
+	public void processSaveEvents() throws SimQPNException {
+		processTokenEvents();
+		fireTransitions();
+		QueueEvent nextEvent = eventList.peek();
+		while (nextEvent != null && nextEvent.time <= timeSaveToProcess) {
+			processQueueEvent(nextEvent);
+			fireTransitions();
+
+			startDataCollectionIfRampUpDone();
+
+			if (beforeInitHeartBeat) {
+				determineMonitorUpdateRate(
+						totRunLength,
+						maxProgressUpdateIntervalVirtualTime,
+						progressUpdateIntervalRealTime);
+			} else {
+				updateProgressMonitor();
+			}
+			nextEvent = eventList.peek();
+		}
+		checkForPrecission();
+		updateQueueEvents();
+
+		if (!hasFinished) {
+			if (clock >= totRunLength) {
+				hasFinished = true;
+				stopCriterionController.incrementFinishedLPCounter();
+			}
+		}
 	}
 
 	/**
@@ -317,7 +344,7 @@ public class LP implements Executor, Runnable {
 	 * @throws SimQPNException
 	 *             if starting of places or queues fails
 	 */
-	private void startDataCollectionIfRampUpDone(double rampUpLength)
+	private void startDataCollectionIfRampUpDone()
 			throws SimQPNException {
 		if (inRampUp && clock > rampUpLength) {
 			inRampUp = false;
@@ -478,9 +505,9 @@ public class LP implements Executor, Runnable {
 		for (Place inPlace : inPlaces) {
 			for (int color = 0; color < inPlace.colors.length; color++) {
 				List<Integer> visitedPlaces = new LinkedList<Integer>();
-				double tmp = inPlace.getTimeSaveToProcess(color,
-						visitedPlaces, "LP" + id, false);// false /**(id
-															// == 1)*/);
+				double tmp = inPlace.getTimeSaveToProcess(color, visitedPlaces,
+						"LP" + id, false);// false /**(id
+											// == 1)*/);
 				saveTimes.add(tmp);
 			}
 		}
@@ -639,10 +666,9 @@ public class LP implements Executor, Runnable {
 
 		if (verbosityLevel > 0) {
 			log.info("LP" + id + ": " + event.queue.name + " processed job at "
-					+ event.time + " with lbts " + timeSaveToProcess
-					+ " | " + event.queue.name + " has now "
-					+ (event.queue.getTkPopulation())
-					+ " tokens");
+					+ event.time + " with lbts " + timeSaveToProcess + " | "
+					+ event.queue.name + " has now "
+					+ (event.queue.getTkPopulation()) + " tokens");
 		}
 
 		// Advance simulation time
@@ -683,7 +709,7 @@ public class LP implements Executor, Runnable {
 			return true;
 		}
 		if (!hasFinished) {
-			if (clock >= configuration.totRunLen) {
+			if (clock >= totRunLength) {
 				hasFinished = true;
 				stopCriterionController.incrementFinishedLPCounter();
 			}
@@ -701,7 +727,7 @@ public class LP implements Executor, Runnable {
 	 *             if next transition to fire is null or if the firing disables
 	 *             a transition in another LP
 	 */
-	private void fireTransitions(double totRunL) throws SimQPNException {
+	public void fireTransitions() throws SimQPNException {
 		double[] pdf;
 		if (transitions != null) {
 			int fireCnt = 0;
@@ -802,7 +828,7 @@ public class LP implements Executor, Runnable {
 					// anyway.
 					if (fireCnt > 10000) { // OLD: 10000000
 						if (progressMonitor.isCanceled()) {
-							clock = totRunL;
+							clock = totRunLength;
 							break;
 						}
 						fireCnt = 0;
@@ -820,7 +846,7 @@ public class LP implements Executor, Runnable {
 	 * @throws SimQPNException
 	 *             if initialization of queues or places fails
 	 */
-	private void initializeWorkingVariables() throws SimQPNException {
+	public void initializeWorkingVariables() throws SimQPNException {
 		inRampUp = true;
 		endRampUpClock = 0;
 		endRunClock = 0;
@@ -875,12 +901,24 @@ public class LP implements Executor, Runnable {
 		beforeInitHeartBeat = true;
 		nextHeartBeat = 0.0;
 		timeBtwHeartBeats = 0.0;
+		
+		/*
+		 * If secondsBtwChkStops is used, disable checking of stopping
+		 * criterion until beforeInitHeartBeat == false. By setting
+		 * nextChkAfter = totRunL stopping criterion checking is disabled.
+		 */
+		nextChkAfter = configuration.timeBtwChkStops > 0 ? configuration.timeBtwChkStops
+				: totRunLength;
+
+		beginRunWallClock = System.currentTimeMillis();
+		
+
 	}
 
 	/**
 	 * Clean up method after simulation run. data aufbereiten monitor...
 	 */
-	private void finish() {
+	public void finish() {
 		progressMonitor.updateSimulationProgress(id, 100, 0, configuration,
 				inRampUp);
 
@@ -891,7 +929,7 @@ public class LP implements Executor, Runnable {
 							": The simulation was canceled by the user." // \n
 									+ "The required precision may not have been reached!");
 		} else {
-			if (clock >= configuration.totRunLen) {
+			if (clock >= totRunLength) {
 				if (configuration.stoppingRule != SimQPNConfiguration.FIXEDLEN) {
 					progressMonitor
 							.warning(
@@ -940,26 +978,25 @@ public class LP implements Executor, Runnable {
 	 * Updates progress monitor if the simulation progressed far enough since
 	 * last update.
 	 * 
-	 * @param totRunL
+	 * @param totRunLength
 	 *            the length of the simulation run
 	 * @param lastTimeMsrm
 	 *            the time of the last monitor update
 	 * @return the time of the last monitor update
 	 */
-	private long updateProgressMonitor(double totRunL, long lastTimeMsrm) {
+	private void updateProgressMonitor() {
 		if (clock >= nextHeartBeat) {
 			long curTimeMsrm = System.currentTimeMillis();
-			progressMonitor.updateSimulationProgress(id, clock / (totRunL - 1)
+			progressMonitor.updateSimulationProgress(id, clock / (totRunLength - 1)
 					* 100, (curTimeMsrm - lastTimeMsrm), configuration,
 					inRampUp);
 			lastTimeMsrm = curTimeMsrm;
 			nextHeartBeat = clock + timeBtwHeartBeats;
 
 			if (progressMonitor.isCanceled()) {
-				clock = totRunL;
+				clock = totRunLength;
 			}
 		}
-		return lastTimeMsrm;
 	}
 
 	/**
@@ -975,8 +1012,7 @@ public class LP implements Executor, Runnable {
 	 * @return the heart beat rate
 	 */
 	private double determineMonitorUpdateRate(double totRunL,
-			double nextChkAfter, long lastTimeMsrm, double maxProgressInterval,
-			long progressUpdateRate) {
+			double maxProgressInterval, long progressUpdateRate) {
 		long curTimeMsrm = System.currentTimeMillis();
 		if (((curTimeMsrm - lastTimeMsrm) >= SimQPNConfiguration.MAX_INITIAL_HEARTBEAT)
 				|| (clock >= maxProgressInterval)) {
@@ -1011,8 +1047,7 @@ public class LP implements Executor, Runnable {
 	 *             if error during test for enough statistics in PlaceStats and
 	 *             QPlaceStats
 	 */
-	private double checkForPrecission(double nextChkAfter)
-			throws SimQPNException {
+	private void checkForPrecission() throws SimQPNException {
 		if (configuration.stoppingRule != SimQPNConfiguration.FIXEDLEN
 				&& (!inRampUp) && clock > nextChkAfter) {
 			double elapsedSecs = (System.currentTimeMillis() - beginRunWallClock) / 1000;
@@ -1076,7 +1111,6 @@ public class LP implements Executor, Runnable {
 						* configuration.secondsBtwChkStops;
 			}
 		}
-		return nextChkAfter;
 	}
 
 	/**
@@ -1119,7 +1153,7 @@ public class LP implements Executor, Runnable {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public synchronized void scheduleEvent(double serviceTime, Queue queue,
+	public void scheduleEvent(double serviceTime, Queue queue,
 			Token token) {
 		QueueEvent ev = new QueueEvent(clock + serviceTime, queue, token);
 		eventList.add(ev);
@@ -1132,7 +1166,7 @@ public class LP implements Executor, Runnable {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public synchronized void removeEvent(QueueEvent event) {
+	public void removeEvent(QueueEvent event) {
 		eventList.remove(event);
 	}
 

@@ -12,6 +12,7 @@ import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 import de.tud.cs.simqpn.kernel.executor.parallel.ParallelExecutor;
+import de.tud.cs.simqpn.kernel.executor.parallel.PseudoParallelExecutor;
 import de.tud.cs.simqpn.kernel.executor.sequential.SequentialExecutor;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.stats.Stats;
@@ -65,18 +66,15 @@ public class BatchMeans implements Analyzer {
 		progressMonitor = monitor;
 		progressMonitor.startSimulation(configuration);
 
-		boolean eventLevelParallel = true;
-
 		Callable<Net> run;
-		if(eventLevelParallel){
-			run = new ParallelExecutor(net, configuration, monitor, 1);			
-		}else{
-			run = new SequentialExecutor(net, configuration,monitor,1);			
-		}
+		run = new PseudoParallelExecutor(net, configuration,monitor,1);			
+		//run = new ParallelExecutor(net, configuration, monitor, 1);			
+		//run = new SequentialExecutor(net, configuration,monitor,1);			
+
 		try {
 			net = run.call();
 		} catch (Exception e) {
-			log.info(e);
+			log.error(""+e.getStackTrace(),e);
 		}
 		
 		progressMonitor.finishSimulation();
