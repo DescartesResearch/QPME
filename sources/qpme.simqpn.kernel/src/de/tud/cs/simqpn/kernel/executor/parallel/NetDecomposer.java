@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.omg.PortableInterceptor.SUCCESSFUL;
+
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
@@ -218,7 +220,15 @@ public class NetDecomposer {
 	 * @param listLPs
 	 */
 	private void setPredAndSuccessors(List<LP> listLPs) {
-		for (LP lp : listLPs) {
+		List<List<LP>> megaList = new ArrayList<List<LP>>();
+		
+		for (int i=0; i< listLPs.size(); i++) {
+			
+		}
+
+		for (int i=0; i< listLPs.size(); i++) {
+			LP lp = listLPs.get(i);
+			megaList.add(new ArrayList<LP>());
 			for (Place place : lp.getPlaces()) {
 				for (Transition inTrans : place.inTrans) {
 					for (Place prePlace : inTrans.inPlaces) {

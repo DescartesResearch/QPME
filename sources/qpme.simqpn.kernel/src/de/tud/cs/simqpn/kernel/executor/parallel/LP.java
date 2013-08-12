@@ -106,9 +106,11 @@ public class LP implements Executor, Runnable {
 	/** Identification for the LP. Note: There is no control for id to be unique */
 	private int id;
 	/** List of LPs this LP can get tokens from. */
-	private List<LP> predecessors = new ArrayList<LP>();
+	private List<LP> predecessorList = new ArrayList<LP>();
 	/** List of LPs this LP sends tokens to. */
-	private List<LP> successors = new ArrayList<LP>();
+	private List<LP> successorList = new ArrayList<LP>();
+
+	private LP[] predecessors;
 
 	/**
 	 * List of queue events scheduled for processing at specified points in
@@ -926,7 +928,7 @@ public class LP implements Executor, Runnable {
 
 		beginRunWallClock = System.currentTimeMillis();
 		
-
+		predecessors = predecessorList.toArray(new LP[predecessorList.size()]);
 	}
 
 	/**
@@ -1245,7 +1247,7 @@ public class LP implements Executor, Runnable {
 	 * @return LPs succeeding this LP
 	 */
 	public List<LP> getSuccessors() {
-		return successors;
+		return successorList;
 	}
 
 	/**
@@ -1255,7 +1257,7 @@ public class LP implements Executor, Runnable {
 	 *            the LP to be added
 	 */
 	public void addSuccessor(LP successor) {
-		this.successors.add(successor);
+		this.successorList.add(successor);
 	}
 
 	/**
@@ -1264,7 +1266,7 @@ public class LP implements Executor, Runnable {
 	 * @return LPs preceding this LP
 	 */
 	public List<LP> getPredecessors() {
-		return predecessors;
+		return predecessorList;
 	}
 
 	/**
@@ -1274,7 +1276,7 @@ public class LP implements Executor, Runnable {
 	 *            the LP to be added to predecessors
 	 */
 	public void addPredecessor(LP predecessor) {
-		this.predecessors.add(predecessor);
+		this.predecessorList.add(predecessor);
 	}
 
 	/**
