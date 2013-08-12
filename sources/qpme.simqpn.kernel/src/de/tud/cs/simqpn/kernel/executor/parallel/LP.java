@@ -180,7 +180,7 @@ public class LP implements Executor, Runnable {
 	/** Lower bound on incoming time stamps. */
 	private double timeSaveToProcess;
 	/** Sets debug output to console used for debug purpose. */
-	private final int verbosityLevel = 0;// 1; // 2
+	private final int verbosityLevel; //= 0;// 1; // 2
 
 	/** interval for heart beats */
 	private double nextChkAfter;
@@ -214,7 +214,7 @@ public class LP implements Executor, Runnable {
 	 */
 	public LP(Place[] places, Transition[] transitions, Queue[] queues,
 			SimQPNConfiguration configuration,
-			SimulatorProgress progressMonitor, int id) {
+			SimulatorProgress progressMonitor, int id, int verbosityLevel) {
 		this.id = id;
 		this.places = places;
 		this.transitions = transitions;
@@ -229,6 +229,7 @@ public class LP implements Executor, Runnable {
 				.getMaxUpdateRealTimeInterval();
 		this.totRunLength = configuration.totRunLength;
 		this.rampUpLength = configuration.rampUpLen;
+		this.verbosityLevel = verbosityLevel;
 	}
 
 	/**
@@ -300,8 +301,9 @@ public class LP implements Executor, Runnable {
 	}
 
 	public void actualizeTimeSaveToProcess() {
-		timeSaveToProcess = improvedGetTimeSaveToProcessVerbosity();
-		//timeSaveToProcess = getTimeSaveToProcess();
+		//timeSaveToProcess = improvedGetTimeSaveToProcessVerbosity();
+		//timeSaveToProcess = simpleTimeSaveToProcess(); // no lookahead
+		timeSaveToProcess = getTimeSaveToProcess();
 
 	}
 
@@ -452,7 +454,11 @@ public class LP implements Executor, Runnable {
 	}
 
 	double simpleTimeSaveToProcess() {
-		synchronized (LP.class) {
+		if(verbosityLevel > 0){
+			synchronized (LP.class) {
+				return simpleTimeSaveToProcess(new LinkedList<Integer>(), "LP" + id);
+			}
+		} else {
 			return simpleTimeSaveToProcess(new LinkedList<Integer>(), "LP" + id);
 		}
 	}
@@ -463,20 +469,26 @@ public class LP implements Executor, Runnable {
 		for (LP predecessor : predecessors) {
 			if (!visitedLPs.contains(predecessor.id)) {
 				// System.out.println(format + "LP" + predecessor.id);
-				visitedLPs.add(this.id);
+				visitedLPs.add(predecessor.id);
 				if (predecessor.eventList.isEmpty()) {
-					// copy list
-					List<Integer> visitedLPsCopy = new ArrayList<Integer>(
-							visitedLPs.size() + 1);
-					if (!visitedLPs.isEmpty()) {
-						for (int i = 0; i < visitedLPs.size(); i++) {
-							visitedLPsCopy.add(visitedLPs.get(i));
-						}
+					// copy list, necessary for loops
+//					List<Integer> visitedLPsCopy = new ArrayList<Integer>(
+//							visitedLPs.size() + 1);
+//					if (!visitedLPs.isEmpty()) {
+//						for (int i = 0; i < visitedLPs.size(); i++) {
+//							visitedLPsCopy.add(visitedLPs.get(i));
+//						}
+//					}
+					double saveTime = predecessor.simpleTimeSaveToProcess(
+							visitedLPs, format); // visitedLPsCopy
+					if(saveTime != 0){
+						saveTimes.add(saveTime);						
 					}
-					saveTimes.add(predecessor.simpleTimeSaveToProcess(
-							visitedLPsCopy, format));
 				} else {
-					saveTimes.add(predecessor.getNextEventTime());
+					double saveTime = predecessor.getNextEventTime();
+					if(saveTime != 0){
+						saveTimes.add(saveTime);						
+					}
 				}
 				// }else{
 				// saveTimes.add(predecessor.getNextEventTime());
@@ -485,7 +497,9 @@ public class LP implements Executor, Runnable {
 		if (saveTimes.isEmpty()) {
 			return 0;
 		} else {
-			System.out.println(format + " " + saveTimes);
+			if(verbosityLevel > 1){
+				System.out.println(format + " " + saveTimes + " || "+ getNextEventTime());				
+			}
 			return Collections.min(saveTimes);
 		}
 	}
@@ -668,7 +682,7 @@ public class LP implements Executor, Runnable {
 			log.info("LP" + id + ": " + event.queue.name + " processed job at "
 					+ event.time + " with lbts " + timeSaveToProcess + " | "
 					+ event.queue.name + " has now "
-					+ (event.queue.getTkPopulation()) + " tokens");
+					+ ((event.queue.getTkPopulation())-1) + " tokens");
 		}
 
 		// Advance simulation time
@@ -1283,7 +1297,7 @@ public class LP implements Executor, Runnable {
 		Transition[] transitions = concat(lp1.transitions, lp2.transitions);
 		Queue[] queues = concat(lp1.queues, lp2.queues);
 		LP lp = new LP(places, transitions, queues, lp1.configuration,
-				lp1.progressMonitor, lp1.enTransCnt + lp2.enTransCnt);
+				lp1.progressMonitor, lp1.enTransCnt + lp2.enTransCnt, Math.max(lp1.verbosityLevel, lp2.verbosityLevel));
 		lp.id = lp1.id;
 		lp.setExecutorToEntities();
 		return lp;

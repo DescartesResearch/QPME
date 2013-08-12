@@ -35,7 +35,8 @@ public class PseudoParallelExecutor implements Callable<Net> {
 
 	@Override
 	public Net call() throws Exception {
-		NetDecomposer decomposer = new NetDecomposer(net, configuration, progressMonitor);
+		final int verbosityLevel = 0;
+		NetDecomposer decomposer = new NetDecomposer(net, configuration, progressMonitor, verbosityLevel);
 		LP[] lps = decomposer.decomposeNetIntoLPs();
 		
 		CyclicBarrier barrier = new CyclicBarrier(2);
@@ -46,6 +47,7 @@ public class PseudoParallelExecutor implements Callable<Net> {
 			lp.setStopCriterion(stopCriterion);
 			lp.initializeWorkingVariables();
 		}
+		System.out.println(NetDecomposer.lpDecompositionToString(lps));
 
 		while(!stopCriterion.hasSimulationFinished()){
 			for(LP lp: lps){
@@ -54,7 +56,9 @@ public class PseudoParallelExecutor implements Callable<Net> {
 			for(LP lp: lps){
 				lp.actualizeTimeSaveToProcess();
 			}
-//			System.out.println(" ---Barrier----");
+			if(verbosityLevel>0){
+				System.out.println(" ---Barrier----");
+			}
 		}
 		for(LP lp: lps){
 			lp.finish();

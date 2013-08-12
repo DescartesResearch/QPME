@@ -73,8 +73,9 @@ public class FlexibleParallelExecutor implements Callable<Net> {
 
 	@Override
 	public Net call() throws Exception {
+		int verbosityLevel = 0;
 		NetDecomposer decomposer = new NetDecomposer(net, configuration,
-				progressMonitor);
+				progressMonitor, verbosityLevel);
 		LP[] lps = decomposer.decomposeNetIntoLPs();
 
 		CyclicBarrier barrier = new CyclicBarrier(2);

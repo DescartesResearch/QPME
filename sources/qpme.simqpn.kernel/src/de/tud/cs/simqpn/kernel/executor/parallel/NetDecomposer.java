@@ -16,14 +16,16 @@ import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
 public class NetDecomposer {
 	
-	private Net net;
-	private SimQPNConfiguration configuration;
-	private SimulatorProgress progressMonitor;
+	private final Net net;
+	private final SimQPNConfiguration configuration;
+	private final SimulatorProgress progressMonitor;
+	private final int verbosityLevel;
 	
-	public NetDecomposer(Net net, SimQPNConfiguration configuration, SimulatorProgress progressMonitor) {
+	public NetDecomposer(Net net, SimQPNConfiguration configuration, SimulatorProgress progressMonitor, int verbosityLevel) {
 		this.net = net;
 		this.configuration = configuration;
 		this.progressMonitor = progressMonitor;
+		this.verbosityLevel = verbosityLevel;
 	}
 	
 	/**
@@ -157,7 +159,7 @@ public class NetDecomposer {
 
 				listLPs.add(new LP(placesLP, transitionsLP, queueList
 						.toArray(new Queue[queueList.size()]), configuration,
-						progressMonitor, idLP));
+						progressMonitor, idLP, verbosityLevel));
 				idLP++;
 			} else {
 				// Place is already in another LP
@@ -255,4 +257,17 @@ public class NetDecomposer {
 		arrayList.addAll(newList);
 	}
 
+	/**
+	 * Returns a {@link String} representation of an {@link LP} array
+	 * 
+	 * @param lps
+	 *            Array of LPs
+	 */
+	public static String lpDecompositionToString(LP[] lps) {
+		StringBuffer sb = new StringBuffer();
+		for (LP lp : lps) {
+			sb.append(lp.toString());
+		}
+		return sb.toString();
+	}
 }

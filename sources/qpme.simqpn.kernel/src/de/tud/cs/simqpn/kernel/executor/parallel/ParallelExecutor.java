@@ -57,9 +57,10 @@ public class ParallelExecutor implements Callable<Net> {
 	 */
 	// Modifies net
 	public Net call() throws SimQPNException {
-		NetDecomposer decomposer = new NetDecomposer(net, configuration, progressMonitor);
+		int verbosityLevel = 0;
+		NetDecomposer decomposer = new NetDecomposer(net, configuration, progressMonitor, verbosityLevel);
 		LP[] lps = decomposer.decomposeNetIntoLPs();
-		System.out.println(lpDecompositionToString(lps));
+		System.out.println(NetDecomposer.lpDecompositionToString(lps));
 
 		CyclicBarrier barrier = new CyclicBarrier(lps.length);
 		StopCriterionController stopCriterion = new StopCriterionController(
@@ -87,21 +88,5 @@ public class ParallelExecutor implements Callable<Net> {
 
 		return this.net;
 	}
-
-	/**
-	 * Returns a {@link String} representation of an {@link LP} array
-	 * 
-	 * @param lps
-	 *            Array of LPs
-	 */
-	private String lpDecompositionToString(LP[] lps) {
-		StringBuffer sb = new StringBuffer();
-		for (LP lp : lps) {
-			sb.append(lp.toString());
-		}
-		return sb.toString();
-	}
-
-
 
 }
