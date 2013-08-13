@@ -194,8 +194,11 @@ public class LP implements Executor, Runnable {
 	
 	private final double totRunLength;
 	private final double rampUpLength;
-	private final double maxProgressUpdateIntervalVirtualTime;
-	private final long progressUpdateIntervalRealTime;
+
+	/** The maximum virtual time interval for progress updates*/
+	private final double maxProgressUpdateInterval;
+	/** Time in milliseconds between progress updates */
+	private final long progressUpdateRate;
 
 	
 	/**
@@ -225,9 +228,9 @@ public class LP implements Executor, Runnable {
 		// this.probes = probes;
 		this.progressMonitor = progressMonitor;
 		this.configuration = configuration;
-		this.maxProgressUpdateIntervalVirtualTime = progressMonitor
+		this.maxProgressUpdateInterval = progressMonitor
 				.getMaxUpdateLogicalTimeInterval(configuration);
-		this.progressUpdateIntervalRealTime = progressMonitor
+		this.progressUpdateRate = progressMonitor
 				.getMaxUpdateRealTimeInterval();
 		this.totRunLength = configuration.totRunLength;
 		this.rampUpLength = configuration.rampUpLen;
@@ -287,9 +290,7 @@ public class LP implements Executor, Runnable {
 				startDataCollectionIfRampUpDone();
 
 				if (beforeInitHeartBeat) {
-					determineMonitorUpdateRate(totRunLength,
-							maxProgressUpdateIntervalVirtualTime,
-							progressUpdateIntervalRealTime);
+					determineMonitorUpdateRate();
 				} else {
 					updateProgressMonitor();
 				}
@@ -320,10 +321,7 @@ public class LP implements Executor, Runnable {
 			startDataCollectionIfRampUpDone();
 
 			if (beforeInitHeartBeat) {
-				determineMonitorUpdateRate(
-						totRunLength,
-						maxProgressUpdateIntervalVirtualTime,
-						progressUpdateIntervalRealTime);
+				determineMonitorUpdateRate();
 			} else {
 				updateProgressMonitor();
 			}
@@ -1024,14 +1022,13 @@ public class LP implements Executor, Runnable {
 	 * @param progressUpdateRate
 	 * @return the heart beat rate
 	 */
-	private double determineMonitorUpdateRate(double totRunL,
-			double maxProgressInterval, long progressUpdateRate) {
+	private double determineMonitorUpdateRate() {
 		long curTimeMsrm = System.currentTimeMillis();
 		if (((curTimeMsrm - lastTimeMsrm) >= SimQPNConfiguration.MAX_INITIAL_HEARTBEAT)
-				|| (clock >= maxProgressInterval)) {
+				|| (clock >= maxProgressUpdateInterval)) {
 
-			if (clock >= maxProgressInterval) {
-				timeBtwHeartBeats = maxProgressInterval;
+			if (clock >= maxProgressUpdateInterval) {
+				timeBtwHeartBeats = maxProgressUpdateInterval;
 			} else {
 				timeBtwHeartBeats = (clock / (curTimeMsrm - lastTimeMsrm))
 						* progressUpdateRate;
@@ -1044,7 +1041,7 @@ public class LP implements Executor, Runnable {
 		}
 
 		if (progressMonitor.isCanceled()) {
-			clock = totRunL;
+			clock = totRunLength;
 		}
 		return nextChkAfter;
 	}
