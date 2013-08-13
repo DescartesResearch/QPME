@@ -429,11 +429,8 @@ public class LP implements Executor, Runnable {
 	 * QPlaces have been scheduled.
 	 */
 	private void updateQueueEvents() {
-		for (Place p : places) {
-			if (p instanceof QPlace) {
-				Queue queue = ((QPlace) p).queue;
-				queue.updateEvents(this);
-			}
+		for (Queue queue : queues) {
+			queue.updateEvents(this);
 		}
 	}
 
