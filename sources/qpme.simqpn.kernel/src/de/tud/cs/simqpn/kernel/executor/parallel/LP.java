@@ -367,7 +367,7 @@ public class LP implements Executor, Runnable {
 	 * process.
 	 * 
 	 * @throws SimQPNException
-	 *             if the incomming token enables a transition which is not in
+	 *             if the incoming token enables a transition which is not in
 	 *             the LP
 	 */
 	private void processTokenEvents() throws SimQPNException {
