@@ -780,114 +780,110 @@ public class LP implements Executor, Runnable {
 	 */
 	public void fireTransitions() throws SimQPNException {
 		double[] pdf;
-		if (transitions != null) {
-			int fireCnt = 0;
-			while (enTransCnt > 0) {
-				Transition nextTrans; // transition to fire next
-				if (enTransCnt == 1) {
-					nextTrans = null;
-					for (int t = 0; t < transitions.length; t++) {
-						if (transStatus[t]) {
-							nextTrans = transitions[t];
-							break;
+		int fireCnt = 0;
+		while (enTransCnt > 0) {
+			Transition nextTrans; // transition to fire next
+			if (enTransCnt == 1) {
+				nextTrans = null;
+				for (int t = 0; t < transitions.length; t++) {
+					if (transStatus[t]) {
+						nextTrans = transitions[t];
+						break;
+					}
+				}
+			} else {
+				// Choose transition to fire based on weights
+				pdf = new double[enTransCnt];
+				for (int t = 0, e = 0; t < transitions.length; t++) {
+					if (transStatus[t]) {
+						pdf[e] = transitions[t].transWeight;
+						enTransIDs[e] = t;
+						e++;
+					}
+				}
+				randTransGen.setState2(pdf);
+				nextTrans = transitions[enTransIDs[randTransGen.nextInt()]];
+			}
+
+			if (nextTrans != null) {
+				nextTrans.fire(); // Fire
+									// transition
+									// System.out.println("LP" + id +
+									// ": transition "
+				// + nextTrans.name + " fired");
+
+				// Update transStatus
+				int p, t, nP, nT;
+				Place pl;
+				Transition tr;
+
+				/**
+				 * Check if some transitions were disabled (newly-disabled
+				 * transitions)
+				 * 
+				 * NOTE: Only transitions of the same LP can be disabled
+				 */
+				nP = nextTrans.inPlaces.length;
+				for (p = 0; p < nP; p++) {
+					pl = nextTrans.inPlaces[p];
+					nT = pl.outTrans.length;
+					for (t = 0; t < nT; t++) {
+						tr = pl.outTrans[t];
+						int localTransId = tr.id - transitions[0].id; // ORRIG:
+						// tr.id
+						if ((!tr.enabled()) && transStatus[localTransId]) {
+							if (localTransId >= 0
+									|| localTransId < transitions.length) {
+								transStatus[localTransId] = false;
+								enTransCnt--;
+							} else {
+								throw new SimQPNException();
+							}
 						}
 					}
-				} else {
-					// Choose transition to fire based on weights
-					pdf = new double[enTransCnt];
-					for (int t = 0, e = 0; t < transitions.length; t++) {
-						if (transStatus[t]) {
-							pdf[e] = transitions[t].transWeight;
-							enTransIDs[e] = t;
-							e++;
-						}
-					}
-					randTransGen.setState2(pdf);
-					nextTrans = transitions[enTransIDs[randTransGen.nextInt()]];
 				}
 
-				if (nextTrans != null) {
-					nextTrans.fire(); // Fire
-										// transition
-										// System.out.println("LP" + id +
-										// ": transition "
-					// + nextTrans.name + " fired");
-
-					// Update transStatus
-					int p, t, nP, nT;
-					Place pl;
-					Transition tr;
-
-					/**
-					 * Check if some transitions were disabled (newly-disabled
-					 * transitions)
-					 * 
-					 * NOTE: Only transitions of the same LP can be disabled
-					 */
-					nP = nextTrans.inPlaces.length;
-					for (p = 0; p < nP; p++) {
-						pl = nextTrans.inPlaces[p];
-						nT = pl.outTrans.length;
-						for (t = 0; t < nT; t++) {
-							tr = pl.outTrans[t];
-							int localTransId = tr.id - transitions[0].id; // ORRIG:
-							// tr.id
-							if ((!tr.enabled()) && transStatus[localTransId]) {
-								if (localTransId >= 0
-										|| localTransId < transitions.length) {
-									transStatus[localTransId] = false;
-									enTransCnt--;
-								} else {
-									throw new SimQPNException();
+				/**
+				 * Check if some transitions were enabled(newly-enabled
+				 * transitions)
+				 */
+				nP = nextTrans.outPlaces.length;
+				for (p = 0; p < nP; p++) {
+					pl = nextTrans.outPlaces[p];
+					nT = pl.outTrans.length;
+					for (t = 0; t < nT; t++) {
+						tr = pl.outTrans[t];
+						int localTransId = tr.id - transitions[0].id;
+						if (tr.enabled()) {
+							if (localTransId >= 0
+									&& localTransId < transitions.length) {
+								if ((!transStatus[localTransId])) {
+									System.out.println("LP" + id
+											+ ":\t\t enabled "
+											+ transitions[localTransId].name
+											+ " [due to firing]");
+									transStatus[localTransId] = true;
+									enTransCnt++;
 								}
 							}
 						}
 					}
+				}
 
-					/**
-					 * Check if some transitions were enabled(newly-enabled
-					 * transitions)
-					 */
-					nP = nextTrans.outPlaces.length;
-					for (p = 0; p < nP; p++) {
-						pl = nextTrans.outPlaces[p];
-						nT = pl.outTrans.length;
-						for (t = 0; t < nT; t++) {
-							tr = pl.outTrans[t];
-							int localTransId = tr.id - transitions[0].id;
-							if (tr.enabled()) {
-								if (localTransId >= 0
-										&& localTransId < transitions.length) {
-									if ((!transStatus[localTransId])) {
-										System.out
-												.println("LP"
-														+ id
-														+ ":\t\t enabled "
-														+ transitions[localTransId].name
-														+ " [due to firing]");
-										transStatus[localTransId] = true;
-										enTransCnt++;
-									}
-								}
-							}
-						}
+				// If there are always transitions enabled,
+				// this results in an infinite loop. Make it
+				// possible for the user to cancel the simulation
+				// anyway.
+				if (fireCnt > 10000) { // OLD: 10000000
+					if (progressMonitor.isCanceled()) {
+						clock = totRunLength;
+						break;
 					}
-
-					// If there are always transitions enabled,
-					// this results in an infinite loop. Make it
-					// possible for the user to cancel the simulation
-					// anyway.
-					if (fireCnt > 10000) { // OLD: 10000000
-						if (progressMonitor.isCanceled()) {
-							clock = totRunLength;
-							break;
-						}
-						fireCnt = 0;
-					} else {
-						fireCnt++;
-					}
-				} // end firing enabled transitions
-			}
+					fireCnt = 0;
+				} else {
+					fireCnt++;
+				}
+			} // end firing enabled transitions
 		}
 	}
 
