@@ -404,7 +404,7 @@ public class LP implements Executor, Runnable {
 								enTransCnt++;
 							}
 						} else {
-							log.error("Error processing incomming tokens. Inconsistencies within transition array");
+							log.error("Error processing incoming tokens. Inconsistencies within transition array");
 							throw new SimQPNException();
 						}
 					}
@@ -450,7 +450,7 @@ public class LP implements Executor, Runnable {
 								enTransCnt++;
 							}
 						} else {
-							log.error("Error processing incomming tokens. Inconsistencies within transition array");
+							log.error("Error processing incoming tokens. Inconsistencies within transition array");
 							throw new SimQPNException();
 						}
 					}
@@ -1336,7 +1336,7 @@ public class LP implements Executor, Runnable {
 	/**
 	 * @return the inPlaces
 	 */
-	public Place[] getInCommingPlaces() {
+	public Place[] getIncomingPlaces() {
 		return inPlaces;
 	}
 
