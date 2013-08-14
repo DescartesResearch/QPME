@@ -304,7 +304,7 @@ public class LP implements Executor, Runnable {
 	}
 
 	public void processSaveEvents() throws SimQPNException {
-		processTokenEvents2();
+		processTokenEvents();
 		fireTransitions();
 		QueueEvent nextEvent = eventList.peek();
 		while (nextEvent != null && nextEvent.time <= timeSaveToProcess) {
