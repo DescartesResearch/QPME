@@ -50,6 +50,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.PriorityBlockingQueue;
 
@@ -124,17 +125,11 @@ public class LP implements Executor, Runnable {
 			});
 	/*
 	 * Note: EventList can be non-blocking as new {@link QueueEvents} are only
-	 * inserted by this LP. Instead, incommingTokenList has to be blocking.
+	 * inserted by this LP. Instead, incomingTokenList has to be blocking.
 	 */
 
 	/** List of Tokens with timestamp that arrived from other LPs. */
-	private PriorityBlockingQueue<TokenEvent> incomingTokenList = new PriorityBlockingQueue<TokenEvent>(
-			10, new Comparator<TokenEvent>() {
-				public int compare(TokenEvent a, TokenEvent b) {
-					return (a.getTime() < b.getTime() ? -1
-							: (a.getTime() == b.getTime() ? 0 : 1));
-				}
-			});
+	private java.util.Queue<TokenEvent> incomingTokenList;
 
 	// private Probe[] probes;
 	/** The places of the QPN this LP simulates. */
@@ -182,7 +177,7 @@ public class LP implements Executor, Runnable {
 	/** Lower bound on incoming time stamps. */
 	private double timeSaveToProcess;
 	/** Sets debug output to console used for debug purpose. */
-	private final int verbosityLevel; //= 0;// 1; // 2
+	private final int verbosityLevel; // = 0;// 1; // 2
 
 	/** interval for heart beats */
 	private double nextChkAfter;
@@ -191,16 +186,15 @@ public class LP implements Executor, Runnable {
 	 * updates.
 	 */
 	private long lastTimeMsrm = System.currentTimeMillis();
-	
+
 	private final double totRunLength;
 	private final double rampUpLength;
 
-	/** The maximum virtual time interval for progress updates*/
+	/** The maximum virtual time interval for progress updates */
 	private final double maxProgressUpdateInterval;
 	/** Time in milliseconds between progress updates */
 	private final long progressUpdateRate;
 
-	
 	/**
 	 * Constructor.
 	 * 
@@ -248,7 +242,6 @@ public class LP implements Executor, Runnable {
 	public void run() {
 		try {
 			initializeWorkingVariables();
-
 
 			waitForBarrier();
 
@@ -304,14 +297,14 @@ public class LP implements Executor, Runnable {
 	}
 
 	public void actualizeTimeSaveToProcess() {
-		//timeSaveToProcess = improvedGetTimeSaveToProcessVerbosity();
-		//timeSaveToProcess = simpleTimeSaveToProcess(); // no lookahead
+		// timeSaveToProcess = improvedGetTimeSaveToProcessVerbosity();
+		// timeSaveToProcess = simpleTimeSaveToProcess(); // no lookahead
 		timeSaveToProcess = getTimeSaveToProcess();
 
 	}
 
 	public void processSaveEvents() throws SimQPNException {
-		processTokenEvents();
+		processTokenEvents2();
 		fireTransitions();
 		QueueEvent nextEvent = eventList.peek();
 		while (nextEvent != null && nextEvent.time <= timeSaveToProcess) {
@@ -346,8 +339,7 @@ public class LP implements Executor, Runnable {
 	 * @throws SimQPNException
 	 *             if starting of places or queues fails
 	 */
-	private void startDataCollectionIfRampUpDone()
-			throws SimQPNException {
+	private void startDataCollectionIfRampUpDone() throws SimQPNException {
 		if (inRampUp && clock > rampUpLength) {
 			inRampUp = false;
 			endRampUpClock = clock;
@@ -422,6 +414,52 @@ public class LP implements Executor, Runnable {
 		}
 	}
 
+	private void processTokenEvents2() throws SimQPNException {
+		TokenEvent tkEvent;
+		while ((tkEvent = incomingTokenList.peek()) != null) {
+			if (tkEvent.getTime() > timeSaveToProcess) {
+				break;
+			} else {
+				Place place = tkEvent.getPlace();
+
+				if (clock < tkEvent.getTime()) {
+					clock = tkEvent.getTime();
+				}
+				place.addTokens(tkEvent.getColor(), tkEvent.getNumber(),
+						tkEvent.getTkCopyBuffer(), this);
+
+				incomingTokenList.poll(); //
+
+				if (verbosityLevel > 0) {
+					// log.info("\t\t LP"+id+" : token arrived at "+clock);
+				}
+
+				/**
+				 * Check if the new token enabled a transition
+				 */
+				int nT, t;
+				nT = place.outTrans.length;
+				for (t = 0; t < nT; t++) {
+					Transition trans = transitions[t];
+					if (trans.enabled()) {
+						int localTransId = trans.id - transitions[0].id;
+						if (localTransId >= 0
+								&& localTransId < transitions.length) {
+							if (!transStatus[localTransId]) {
+								transStatus[localTransId] = true;
+								enTransCnt++;
+							}
+						} else {
+							log.error("Error processing incomming tokens. Inconsistencies within transition array");
+							throw new SimQPNException();
+						}
+					}
+				}
+			}
+
+		}
+	}
+
 	/**
 	 * Updates the queues. Makes sure all service completion events in PS
 	 * QPlaces have been scheduled.
@@ -451,9 +489,10 @@ public class LP implements Executor, Runnable {
 	}
 
 	double simpleTimeSaveToProcess() {
-		if(verbosityLevel > 0){
+		if (verbosityLevel > 0) {
 			synchronized (LP.class) {
-				return simpleTimeSaveToProcess(new LinkedList<Integer>(), "LP" + id);
+				return simpleTimeSaveToProcess(new LinkedList<Integer>(), "LP"
+						+ id);
 			}
 		} else {
 			return simpleTimeSaveToProcess(new LinkedList<Integer>(), "LP" + id);
@@ -469,22 +508,22 @@ public class LP implements Executor, Runnable {
 				visitedLPs.add(predecessor.id);
 				if (predecessor.eventList.isEmpty()) {
 					// copy list, necessary for loops
-//					List<Integer> visitedLPsCopy = new ArrayList<Integer>(
-//							visitedLPs.size() + 1);
-//					if (!visitedLPs.isEmpty()) {
-//						for (int i = 0; i < visitedLPs.size(); i++) {
-//							visitedLPsCopy.add(visitedLPs.get(i));
-//						}
-//					}
+					// List<Integer> visitedLPsCopy = new ArrayList<Integer>(
+					// visitedLPs.size() + 1);
+					// if (!visitedLPs.isEmpty()) {
+					// for (int i = 0; i < visitedLPs.size(); i++) {
+					// visitedLPsCopy.add(visitedLPs.get(i));
+					// }
+					// }
 					double saveTime = predecessor.simpleTimeSaveToProcess(
 							visitedLPs, format); // visitedLPsCopy
-					if(saveTime != 0){
-						saveTimes.add(saveTime);						
+					if (saveTime != 0) {
+						saveTimes.add(saveTime);
 					}
 				} else {
 					double saveTime = predecessor.getNextEventTime();
-					if(saveTime != 0){
-						saveTimes.add(saveTime);						
+					if (saveTime != 0) {
+						saveTimes.add(saveTime);
 					}
 				}
 				// }else{
@@ -494,8 +533,9 @@ public class LP implements Executor, Runnable {
 		if (saveTimes.isEmpty()) {
 			return 0;
 		} else {
-			if(verbosityLevel > 1){
-				System.out.println(format + " " + saveTimes + " || "+ getNextEventTime());				
+			if (verbosityLevel > 1) {
+				System.out.println(format + " " + saveTimes + " || "
+						+ getNextEventTime());
 			}
 			return Collections.min(saveTimes);
 		}
@@ -679,7 +719,7 @@ public class LP implements Executor, Runnable {
 			log.info("LP" + id + ": " + event.queue.name + " processed job at "
 					+ event.time + " with lbts " + timeSaveToProcess + " | "
 					+ event.queue.name + " has now "
-					+ ((event.queue.getTkPopulation())-1) + " tokens");
+					+ ((event.queue.getTkPopulation()) - 1) + " tokens");
 		}
 
 		// Advance simulation time
@@ -912,18 +952,39 @@ public class LP implements Executor, Runnable {
 		beforeInitHeartBeat = true;
 		nextHeartBeat = 0.0;
 		timeBtwHeartBeats = 0.0;
-		
+
 		/*
-		 * If secondsBtwChkStops is used, disable checking of stopping
-		 * criterion until beforeInitHeartBeat == false. By setting
-		 * nextChkAfter = totRunL stopping criterion checking is disabled.
+		 * If secondsBtwChkStops is used, disable checking of stopping criterion
+		 * until beforeInitHeartBeat == false. By setting nextChkAfter = totRunL
+		 * stopping criterion checking is disabled.
 		 */
 		nextChkAfter = configuration.timeBtwChkStops > 0 ? configuration.timeBtwChkStops
 				: totRunLength;
 
 		beginRunWallClock = System.currentTimeMillis();
-		
+
 		predecessors = predecessorList.toArray(new LP[predecessorList.size()]);
+
+		if (predecessors.length <= 1) {
+			/*
+			 * If LP only have one predecessor, incoming events are ordered
+			 * Hence, we do not need a priority queue.
+			 * 
+			 * NOTE: LinkedBlockingQueue has bad performance
+			 * 
+			 * ArrayBlockingQueue(maxNumberOfTokens) could be another option;
+			 */
+			incomingTokenList = new ConcurrentLinkedQueue<TokenEvent>();
+		} else {
+			incomingTokenList = new PriorityBlockingQueue<TokenEvent>(10,
+					new Comparator<TokenEvent>() {
+						public int compare(TokenEvent a, TokenEvent b) {
+							return (a.getTime() < b.getTime() ? -1
+									: (a.getTime() == b.getTime() ? 0 : 1));
+						}
+					});
+		}
+
 	}
 
 	/**
@@ -998,9 +1059,9 @@ public class LP implements Executor, Runnable {
 	private void updateProgressMonitor() {
 		if (clock >= nextHeartBeat) {
 			long curTimeMsrm = System.currentTimeMillis();
-			progressMonitor.updateSimulationProgress(id, clock / (totRunLength - 1)
-					* 100, (curTimeMsrm - lastTimeMsrm), configuration,
-					inRampUp);
+			progressMonitor.updateSimulationProgress(id, clock
+					/ (totRunLength - 1) * 100, (curTimeMsrm - lastTimeMsrm),
+					configuration, inRampUp);
 			lastTimeMsrm = curTimeMsrm;
 			nextHeartBeat = clock + timeBtwHeartBeats;
 
@@ -1163,8 +1224,7 @@ public class LP implements Executor, Runnable {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void scheduleEvent(double serviceTime, Queue queue,
-			Token token) {
+	public void scheduleEvent(double serviceTime, Queue queue, Token token) {
 		QueueEvent ev = new QueueEvent(clock + serviceTime, queue, token);
 		eventList.add(ev);
 		if (queue != null) {
@@ -1293,7 +1353,8 @@ public class LP implements Executor, Runnable {
 		Transition[] transitions = concat(lp1.transitions, lp2.transitions);
 		Queue[] queues = concat(lp1.queues, lp2.queues);
 		LP lp = new LP(places, transitions, queues, lp1.configuration,
-				lp1.progressMonitor, lp1.enTransCnt + lp2.enTransCnt, Math.max(lp1.verbosityLevel, lp2.verbosityLevel));
+				lp1.progressMonitor, lp1.enTransCnt + lp2.enTransCnt, Math.max(
+						lp1.verbosityLevel, lp2.verbosityLevel));
 		lp.id = lp1.id;
 		lp.setExecutorToEntities();
 		return lp;
