@@ -298,6 +298,10 @@ public class LP implements Executor, Runnable {
 		}
 		finish();
 	}
+	
+	public void setTimeSaveToProcess(double timeSaveToProcess){
+		this.timeSaveToProcess = timeSaveToProcess;
+	}
 
 	public void actualizeTimeSaveToProcess() {
 		// timeSaveToProcess = improvedGetTimeSaveToProcessVerbosity();
