@@ -55,7 +55,7 @@ public class JBarrierExecutor implements Callable<Net> {
 		StopController stopCriterion = new SimpleStopCriterionController(
 				lps.length);
 
-		BarrierActionWithLookahead barrierAction = new BarrierActionWithLookahead(stopCriterion, lps);
+		BarrierActionWithLookahead barrierAction = new BarrierActionWithLookahead(stopCriterion, lps, verbosityLevel);
 		Barrier barrier = new CentralBarrier(lps.length, barrierAction);// ButterflyBarrier(lps.length,
 																		// barrierAction);
 		for (LP lp : lps) {

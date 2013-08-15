@@ -8,10 +8,12 @@ public class BarrierActionWithLookahead implements Runnable{
 	StopController stopController;
 	LP[] lps;
 	private Thread[] threads;
+	final int verbosityLevel;
 	
-	public BarrierActionWithLookahead(StopController stopController, LP[] lps) {
+	public BarrierActionWithLookahead(StopController stopController, LP[] lps, int verbosityLevel) {
 		this.stopController = stopController;
 		this.lps = lps;
+		this.verbosityLevel = verbosityLevel;
 	}
 	
 	@Override
@@ -19,6 +21,9 @@ public class BarrierActionWithLookahead implements Runnable{
 		if(!stopController.hasSimulationFinished()){
 			for(LP lp: lps){
 				lp.actualizeTimeSaveToProcess();
+			}
+			if(verbosityLevel > 0){
+				System.out.println("------------------- barrier ---------------");
 			}
 		}else{
 			for(Thread thread: threads){
