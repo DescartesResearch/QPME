@@ -853,10 +853,12 @@ public class LP implements Executor, Runnable {
 							if (localTransId >= 0
 									&& localTransId < transitions.length) {
 								if ((!transStatus[localTransId])) {
-									System.out.println("LP" + id
-											+ ":\t\t enabled "
-											+ transitions[localTransId].name
-											+ " [due to firing]");
+									if(verbosityLevel > 1){
+										System.out.println("LP" + id
+												+ ":\t\t enabled "
+												+ transitions[localTransId].name
+												+ " [due to firing]");										
+									}
 									transStatus[localTransId] = true;
 									enTransCnt++;
 								}
