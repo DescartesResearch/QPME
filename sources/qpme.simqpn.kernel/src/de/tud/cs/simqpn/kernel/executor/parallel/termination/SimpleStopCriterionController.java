@@ -1,51 +1,45 @@
-package de.tud.cs.simqpn.kernel.executor.parallel;
-
-import java.util.concurrent.CyclicBarrier;
+package de.tud.cs.simqpn.kernel.executor.parallel.termination;
 
 /**
  * This class collects the reaching of local stop criteria to build a global stop criterion
  */
-public class StopCriterionController {
+public class SimpleStopCriterionController implements StopController{
 	
 	private int numLPs;
 	private int finishedLPs;
-	private CyclicBarrier barrier;
-
+	private boolean hasFinished;
+	
 	/**
 	 * Constructor
 	 * @param numLPs The number of LPs that have to reach their local stop criterion
 	 * @param barrier The barrier to be unlocked if simulation finished
 	 */
-	public StopCriterionController(int numLPs, CyclicBarrier barrier) {
+	public SimpleStopCriterionController(int numLPs) {
 		this.numLPs = numLPs;
 		this.finishedLPs = 0;
-		this.barrier = barrier;
+		this.hasFinished = false;
 	}
 	
 	/**
 	 * Returns if all LPs reached their local stop criterion
 	 * @return 
 	 */
-	boolean hasSimulationFinished(){
-		if(numLPs <= finishedLPs){
-		//if(finishedLPs > 0){
-		//if(finishedLPs > 1){
-			barrier.reset();
-			return true;
-		}
-		return false;
+	public boolean hasSimulationFinished(){
+		return hasFinished;
 	}
 	
 	/**
 	 * Increments the counter for finished LPs
 	 */
-	synchronized void incrementFinishedLPCounter(){
+	public synchronized void incrementFinishedLPCounter(){
 		finishedLPs++;
+		if(numLPs <= finishedLPs){
+			hasFinished = true;
+		}
 	}
 	
 	public int getNumFinishedLPs(){
 		return finishedLPs;
 	}
-	
 
 }

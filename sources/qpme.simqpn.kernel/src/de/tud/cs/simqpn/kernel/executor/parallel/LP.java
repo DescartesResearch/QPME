@@ -69,6 +69,8 @@ import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.executor.QueueEvent;
 import de.tud.cs.simqpn.kernel.executor.TokenEvent;
+import de.tud.cs.simqpn.kernel.executor.parallel.termination.StopController;
+import de.tud.cs.simqpn.kernel.executor.parallel.termination.StopCriterionController;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 import edu.bonn.cs.net.jbarrier.barrier.Barrier;
@@ -172,7 +174,7 @@ public class LP implements Executor, Runnable {
 	 */
 	private Barrier barrier;
 	/** Global stop criterion. */
-	private StopCriterionController stopCriterionController;
+	private StopController stopCriterionController;
 	/** Local stop criterion. */
 	private boolean hasFinished = false;
 	/** Lower bound on incoming time stamps. */
@@ -1187,7 +1189,7 @@ public class LP implements Executor, Runnable {
 	 * @param stopCriterionController
 	 *            the controller which manages local stop criteria
 	 */
-	public void setStopCriterion(StopCriterionController stopCriterionController) {
+	public void setStopCriterion(StopController stopCriterionController) {
 		this.stopCriterionController = stopCriterionController;
 	}
 

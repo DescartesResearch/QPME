@@ -10,11 +10,11 @@ import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.executor.parallel.LP;
 import de.tud.cs.simqpn.kernel.executor.parallel.NetDecomposer;
 import de.tud.cs.simqpn.kernel.executor.parallel.ParallelExecutor;
+import de.tud.cs.simqpn.kernel.executor.parallel.termination.SimpleStopCriterionController;
+import de.tud.cs.simqpn.kernel.executor.parallel.termination.StopController;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import edu.bonn.cs.net.jbarrier.barrier.Barrier;
-import edu.bonn.cs.net.jbarrier.barrier.ButterflyBarrier;
 import edu.bonn.cs.net.jbarrier.barrier.CentralBarrier;
-import edu.bonn.cs.net.jbarrier.barrier.StaticTreeBarrier;
 
 public class JBarrierExecutor implements Callable<Net> {
 	private static Logger log = Logger.getLogger(ParallelExecutor.class);
@@ -48,26 +48,27 @@ public class JBarrierExecutor implements Callable<Net> {
 	// Modifies net
 	public Net call() throws SimQPNException {
 		int verbosityLevel = 0;
-		NetDecomposer decomposer = new NetDecomposer(net, configuration, progressMonitor, verbosityLevel);
+		NetDecomposer decomposer = new NetDecomposer(net, configuration,
+				progressMonitor, verbosityLevel);
 		LP[] lps = decomposer.decomposeNetIntoLPs();
 		System.out.println(NetDecomposer.lpDecompositionToString(lps));
-		BarrierAction barrierAction = new BarrierAction();
-		Barrier barrier = new CentralBarrier(lps.length);//ButterflyBarrier(lps.length, barrierAction);
-//		SimpleStopCriterionController stopCriterion = new SimpleStopCriterionController(
-//				lps.length);
+		StopController stopCriterion = new SimpleStopCriterionController(
+				lps.length);
+
+		BarrierActionWithLookahead barrierAction = new BarrierActionWithLookahead(stopCriterion, lps);
+		Barrier barrier = new CentralBarrier(lps.length, barrierAction);// ButterflyBarrier(lps.length,
+																		// barrierAction);
 		for (LP lp : lps) {
 			lp.setBarrier(barrier);
-			//lp.setStopCriterion(stopCriterion);
-		}
-		for(int i=0; i<lps.length; i++){
-			
+			lp.setStopCriterion(stopCriterion);
 		}
 
 		Thread[] threads = new Thread[lps.length];
 		for (int i = 0; i < lps.length; i++) {
-			NewLP newLP = new NewLP(lps[i]);
+			NewLP newLP = new NewLP(lps[i], stopCriterion);
 			threads[i] = new Thread(newLP);
 		}
+		barrierAction.setThreads(threads);
 		for (int i = 0; i < lps.length; i++) {
 			threads[i].start();
 		}
@@ -82,6 +83,5 @@ public class JBarrierExecutor implements Callable<Net> {
 
 		return this.net;
 	}
-
 
 }
