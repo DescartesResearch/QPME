@@ -1,35 +1,22 @@
-package de.tud.cs.simqpn.kernel.executor.parallel;
+package de.tud.cs.simqpn.kernel.executor.parallel.jbarrier;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CyclicBarrier;
 
 import org.apache.log4j.Logger;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Net;
-import de.tud.cs.simqpn.kernel.entities.Place;
-import de.tud.cs.simqpn.kernel.entities.QPlace;
-import de.tud.cs.simqpn.kernel.entities.Transition;
-import de.tud.cs.simqpn.kernel.entities.queue.Queue;
+import de.tud.cs.simqpn.kernel.executor.parallel.LP;
+import de.tud.cs.simqpn.kernel.executor.parallel.NetDecomposer;
+import de.tud.cs.simqpn.kernel.executor.parallel.ParallelExecutor;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import edu.bonn.cs.net.jbarrier.barrier.Barrier;
 import edu.bonn.cs.net.jbarrier.barrier.ButterflyBarrier;
 import edu.bonn.cs.net.jbarrier.barrier.CentralBarrier;
+import edu.bonn.cs.net.jbarrier.barrier.StaticTreeBarrier;
 
-/**
- * This class decomposes a {@link Net} and runs its parts parallel by the use of
- * {@link LP}s
- * 
- * @author D
- * 
- */
-public class ParallelExecutor implements Callable<Net> {
+public class JBarrierExecutor implements Callable<Net> {
 	private static Logger log = Logger.getLogger(ParallelExecutor.class);
 
 	private Net net;
@@ -45,7 +32,7 @@ public class ParallelExecutor implements Callable<Net> {
 	 * @param progressMonitor
 	 * @param runID
 	 */
-	public ParallelExecutor(Net net, SimQPNConfiguration configuration,
+	public JBarrierExecutor(Net net, SimQPNConfiguration configuration,
 			SimulatorProgress progressMonitor, int runID) {
 		this.net = net;
 		this.configuration = configuration;
@@ -64,19 +51,22 @@ public class ParallelExecutor implements Callable<Net> {
 		NetDecomposer decomposer = new NetDecomposer(net, configuration, progressMonitor, verbosityLevel);
 		LP[] lps = decomposer.decomposeNetIntoLPs();
 		System.out.println(NetDecomposer.lpDecompositionToString(lps));
-
-		Barrier barrier = new CentralBarrier(lps.length);
-		StopCriterionController stopCriterion = null;
-//				new StopCriterionController(
-//				lps.length, barrier);
+		BarrierAction barrierAction = new BarrierAction();
+		Barrier barrier = new CentralBarrier(lps.length);//ButterflyBarrier(lps.length, barrierAction);
+//		SimpleStopCriterionController stopCriterion = new SimpleStopCriterionController(
+//				lps.length);
 		for (LP lp : lps) {
 			lp.setBarrier(barrier);
-			lp.setStopCriterion(stopCriterion);
+			//lp.setStopCriterion(stopCriterion);
+		}
+		for(int i=0; i<lps.length; i++){
+			
 		}
 
 		Thread[] threads = new Thread[lps.length];
 		for (int i = 0; i < lps.length; i++) {
-			threads[i] = new Thread(lps[i]);
+			NewLP newLP = new NewLP(lps[i]);
+			threads[i] = new Thread(newLP);
 		}
 		for (int i = 0; i < lps.length; i++) {
 			threads[i].start();
@@ -92,5 +82,6 @@ public class ParallelExecutor implements Callable<Net> {
 
 		return this.net;
 	}
+
 
 }

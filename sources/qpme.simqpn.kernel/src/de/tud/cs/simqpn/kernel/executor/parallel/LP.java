@@ -71,6 +71,7 @@ import de.tud.cs.simqpn.kernel.executor.QueueEvent;
 import de.tud.cs.simqpn.kernel.executor.TokenEvent;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
+import edu.bonn.cs.net.jbarrier.barrier.Barrier;
 
 /**
  * This class represents a logical process (LP) which simulates a part of a net.
@@ -169,7 +170,7 @@ public class LP implements Executor, Runnable {
 	/**
 	 * The barrier at which this LPs waits until all other LPs arrive.
 	 */
-	private CyclicBarrier barrier;
+	private Barrier barrier;
 	/** Global stop criterion. */
 	private StopCriterionController stopCriterionController;
 	/** Local stop criterion. */
@@ -475,19 +476,9 @@ public class LP implements Executor, Runnable {
 	/**
 	 * Waits until all LPs have entered the barrier.
 	 */
-	private void waitForBarrier() {
-		try {
-			if (!checkStopCriterion()) {
-				// barrier.await(500,TimeUnit.MILLISECONDS);
-				barrier.await();
-			}
-		} catch (InterruptedException e) {
-			log.error("", e);
-		} catch (BrokenBarrierException e) {
-			log.info("LP" + id + " left barrier");
-			// } catch (TimeoutException e) {
-			// log.info("LP"+id+" left barrier due to timeout");
-		}
+	public void waitForBarrier() {
+		// barrier.await(500,TimeUnit.MILLISECONDS);
+		barrier.await(this.id);
 	}
 
 	double simpleTimeSaveToProcess() {
@@ -1206,7 +1197,7 @@ public class LP implements Executor, Runnable {
 	 * @param barrier
 	 *            the barrier LPs wait if they have no events save to process
 	 */
-	public void setBarrier(CyclicBarrier barrier) {
+	public void setBarrier(Barrier barrier) {
 		this.barrier = barrier;
 	}
 
