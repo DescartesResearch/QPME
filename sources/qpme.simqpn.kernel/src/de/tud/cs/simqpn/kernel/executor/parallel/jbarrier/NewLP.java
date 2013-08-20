@@ -18,6 +18,7 @@ public class NewLP implements Runnable{
 	public void run() {
 		try {
 			lp.initializeWorkingVariables();
+			lp.waitForBarrier();
 			while(!stopCriterion.hasSimulationFinished()){
 				lp.processSaveEvents();
 				lp.waitForBarrier();
