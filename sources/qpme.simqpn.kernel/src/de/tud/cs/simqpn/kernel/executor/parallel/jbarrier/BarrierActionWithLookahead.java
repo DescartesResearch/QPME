@@ -9,7 +9,6 @@ public class BarrierActionWithLookahead implements Runnable {
 	LP[] lps;
 	private Thread[] threads;
 	final int verbosityLevel;
-
 	public BarrierActionWithLookahead(StopController stopController, LP[] lps,
 			int verbosityLevel) {
 		this.stopController = stopController;
