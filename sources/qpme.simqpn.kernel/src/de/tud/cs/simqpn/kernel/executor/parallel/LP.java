@@ -234,72 +234,8 @@ public class LP implements Executor, Runnable {
 		this.verbosityLevel = verbosityLevel;
 	}
 
-	/**
-	 * Performs simulation for the net elements belonging to this LP.
-	 * 
-	 * Should be similar to {@link PseudoParallelExecutor#run()}
-	 * 
-	 * @see PseudoParallelExecutor
-	 */
-	@Override
-	public void run() {
-		try {
-			initializeWorkingVariables();
 
-			waitForBarrier();
-
-			/**
-			 * ######################### MAIN LOOP #################
-			 */
-			while (!checkStopCriterion()) {
-				QueueEvent nextEvent = eventList.peek();
-
-				if (nextEvent != null && nextEvent.time <= timeSaveToProcess) {
-					processQueueEvent();
-				} else {
-					if (verbosityLevel == 1) {
-						waitForBarrier();
-						if (id == 1) {
-							log.info("--------------Barrier-------------------");
-						}
-					}
-					waitForBarrier();
-					// if (incomingTokenList.isEmpty() && enTransCnt == 0
-					// && eventList.isEmpty()) {
-					// // no need for time save to process calculation
-					// } else {
-					timeSaveToProcess = improvedGetTimeSaveToProcessVerbosity();
-					// timeSaveToProcess = getTimeSaveToProcess();
-					// timeSaveToProcess = simpleTimeSaveToProcess();
-					// }
-					waitForBarrier();
-				}
-				// if (incomingTokenList.isEmpty() && enTransCnt == 0
-				// && eventList.isEmpty()) {
-				// // continue to barrier if nothing to do
-				// continue;
-				// }
-				processTokenEvents(); // //////
-
-				fireTransitions();
-
-				startDataCollectionIfRampUpDone();
-
-				if (beforeInitHeartBeat) {
-					determineMonitorUpdateRate();
-				} else {
-					updateProgressMonitor();
-				}
-				checkForPrecission();
-				updateQueueEvents();
-			}
-		} catch (SimQPNException ex) {
-			log.error("Error during simulation run", ex);
-		}
-		finish();
-	}
-	
-	public void setTimeSaveToProcess(double timeSaveToProcess){
+	public void setTimeSaveToProcess(double timeSaveToProcess) {
 		this.timeSaveToProcess = timeSaveToProcess;
 	}
 
@@ -311,26 +247,37 @@ public class LP implements Executor, Runnable {
 	}
 
 	public void processSaveEvents() throws SimQPNException {
-		processTokenEvents();
-		fireTransitions();
-		QueueEvent nextEvent;
-		while (!eventList.isEmpty()) {
-			if ((nextEvent = eventList.peek()).time > timeSaveToProcess) {
+		QueueEvent nextQueueEvent = null;
+		TokenEvent nextTokenEvent = null;
+		while (true) {
+			updateQueueEvents(); //TODO maybe we can call this less
+			if ((nextQueueEvent = eventList.peek()) != null
+					&& nextQueueEvent.time <= timeSaveToProcess) {
+				while ((nextTokenEvent = incomingTokenList.peek()) != null
+						&& nextTokenEvent.getTime() <= nextQueueEvent.time) {
+					processNextTokenEvent();
+				}
+				processNextQueueEvent();
+			} else if ((nextTokenEvent = incomingTokenList.peek()) != null
+					&& nextTokenEvent.getTime() <= timeSaveToProcess) {
+				do {
+					processNextTokenEvent();
+				} while ((nextTokenEvent = incomingTokenList.peek()) != null
+						&& nextTokenEvent.getTime() <= timeSaveToProcess);
+			} else {
+				fireTransitions();
 				break;
 			}
-			processQueueEvent();
 			fireTransitions();
+		}
 
-			startDataCollectionIfRampUpDone();
-
-			if (beforeInitHeartBeat) {
-				determineMonitorUpdateRate();
-			} else {
-				updateProgressMonitor();
-			}
+		startDataCollectionIfRampUpDone();
+		if (beforeInitHeartBeat) {
+			determineMonitorUpdateRate();
+		} else {
+			updateProgressMonitor();
 		}
 		checkForPrecission();
-		updateQueueEvents();
 
 		if (!hasFinished) {
 			if (clock >= totRunLength) {
@@ -390,7 +337,6 @@ public class LP implements Executor, Runnable {
 
 		}
 	}
-
 
 	/**
 	 * Updates the queues. Makes sure all service completion events in PS
@@ -635,7 +581,7 @@ public class LP implements Executor, Runnable {
 	 * @throws SimQPNException
 	 *             if an error in the QPlace occurs
 	 */
-	private void processQueueEvent() throws SimQPNException {
+	private void processNextQueueEvent() throws SimQPNException {
 		QueueEvent event = eventList.poll();
 
 		if (verbosityLevel > 0) {
@@ -670,7 +616,7 @@ public class LP implements Executor, Runnable {
 
 		}
 	}
-	
+
 	private void processNextTokenEvent() throws SimQPNException {
 		TokenEvent tkEvent = incomingTokenList.poll();
 		Place place = tkEvent.getPlace();
@@ -693,8 +639,7 @@ public class LP implements Executor, Runnable {
 			Transition trans = transitions[t];
 			if (trans.enabled()) {
 				int localTransId = trans.id - transitions[0].id;
-				if (localTransId >= 0
-						&& localTransId < transitions.length) {
+				if (localTransId >= 0 && localTransId < transitions.length) {
 					if (!transStatus[localTransId]) {
 						transStatus[localTransId] = true;
 						enTransCnt++;
@@ -706,7 +651,6 @@ public class LP implements Executor, Runnable {
 			}
 		}
 	}
-
 
 	/**
 	 * Returns true if the LP can finish.
@@ -816,11 +760,13 @@ public class LP implements Executor, Runnable {
 							if (localTransId >= 0
 									&& localTransId < transitions.length) {
 								if ((!transStatus[localTransId])) {
-									if(verbosityLevel > 1){
-										System.out.println("LP" + id
-												+ ":\t\t enabled "
-												+ transitions[localTransId].name
-												+ " [due to firing]");										
+									if (verbosityLevel > 1) {
+										System.out
+												.println("LP"
+														+ id
+														+ ":\t\t enabled "
+														+ transitions[localTransId].name
+														+ " [due to firing]");
 									}
 									transStatus[localTransId] = true;
 									enTransCnt++;
@@ -1421,6 +1367,102 @@ public class LP implements Executor, Runnable {
 		} else {
 			return 0.0;
 		}
+	}
+	
+	@Deprecated
+	public void processSaveEventsOLD() throws SimQPNException {
+		processTokenEvents();
+		fireTransitions();
+		QueueEvent nextEvent;
+		while (!eventList.isEmpty()) {
+			if ((nextEvent = eventList.peek()).time > timeSaveToProcess) {
+				break;
+			}
+			processNextQueueEvent();
+			fireTransitions();
+
+			startDataCollectionIfRampUpDone();
+		}
+		if (beforeInitHeartBeat) {
+			determineMonitorUpdateRate();
+		} else {
+			updateProgressMonitor();
+		}
+		checkForPrecission();
+		updateQueueEvents();
+
+		if (!hasFinished) {
+			if (clock >= totRunLength) {
+				hasFinished = true;
+				stopCriterionController.incrementFinishedLPCounter();
+			}
+		}
+	}
+
+	/**
+	 * Performs simulation for the net elements belonging to this LP.
+	 * 
+	 * Should be similar to {@link PseudoParallelExecutor#run()}
+	 * 
+	 * @see PseudoParallelExecutor
+	 */
+	@Override
+	@Deprecated
+	public void run() {
+		try {
+			initializeWorkingVariables();
+
+			waitForBarrier();
+
+			/**
+			 * ######################### MAIN LOOP #################
+			 */
+			while (!checkStopCriterion()) {
+				QueueEvent nextEvent = eventList.peek();
+
+				if (nextEvent != null && nextEvent.time <= timeSaveToProcess) {
+					processNextQueueEvent();
+				} else {
+					if (verbosityLevel == 1) {
+						waitForBarrier();
+						if (id == 1) {
+							log.info("--------------Barrier-------------------");
+						}
+					}
+					waitForBarrier();
+					// if (incomingTokenList.isEmpty() && enTransCnt == 0
+					// && eventList.isEmpty()) {
+					// // no need for time save to process calculation
+					// } else {
+					timeSaveToProcess = improvedGetTimeSaveToProcessVerbosity();
+					// timeSaveToProcess = getTimeSaveToProcess();
+					// timeSaveToProcess = simpleTimeSaveToProcess();
+					// }
+					waitForBarrier();
+				}
+				// if (incomingTokenList.isEmpty() && enTransCnt == 0
+				// && eventList.isEmpty()) {
+				// // continue to barrier if nothing to do
+				// continue;
+				// }
+				processTokenEvents(); // //////
+
+				fireTransitions();
+
+				startDataCollectionIfRampUpDone();
+
+				if (beforeInitHeartBeat) {
+					determineMonitorUpdateRate();
+				} else {
+					updateProgressMonitor();
+				}
+				checkForPrecission();
+				updateQueueEvents();
+			}
+		} catch (SimQPNException ex) {
+			log.error("Error during simulation run", ex);
+		}
+		finish();
 	}
 
 }
