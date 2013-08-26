@@ -255,7 +255,7 @@ public class LP implements Executor, Runnable {
 				QueueEvent nextEvent = eventList.peek();
 
 				if (nextEvent != null && nextEvent.time <= timeSaveToProcess) {
-					processQueueEvent(nextEvent);
+					processQueueEvent();
 				} else {
 					if (verbosityLevel == 1) {
 						waitForBarrier();
@@ -318,7 +318,7 @@ public class LP implements Executor, Runnable {
 			if ((nextEvent = eventList.peek()).time > timeSaveToProcess) {
 				break;
 			}
-			processQueueEvent(nextEvent);
+			processQueueEvent();
 			fireTransitions();
 
 			startDataCollectionIfRampUpDone();
@@ -385,89 +385,12 @@ public class LP implements Executor, Runnable {
 			if (incomingTokenList.peek().getTime() > timeSaveToProcess) {
 				break;
 			} else {
-				tkEvent = incomingTokenList.poll();
-				Place place = tkEvent.getPlace();
-
-				if (clock < tkEvent.getTime()) {
-					clock = tkEvent.getTime();
-				}
-				place.addTokens(tkEvent.getColor(), tkEvent.getNumber(),
-						tkEvent.getTkCopyBuffer(), this);
-				if (verbosityLevel > 0) {
-					// log.info("\t\t LP"+id+" : token arrived at "+clock);
-				}
-
-				/**
-				 * Check if the new token enabled a transition
-				 */
-				int nT, t;
-				nT = place.outTrans.length;
-				for (t = 0; t < nT; t++) {
-					Transition trans = transitions[t];
-					if (trans.enabled()) {
-						int localTransId = trans.id - transitions[0].id;
-						if (localTransId >= 0
-								&& localTransId < transitions.length) {
-							if (!transStatus[localTransId]) {
-								transStatus[localTransId] = true;
-								enTransCnt++;
-							}
-						} else {
-							log.error("Error processing incoming tokens. Inconsistencies within transition array");
-							throw new SimQPNException();
-						}
-					}
-				}
+				processNextTokenEvent();
 			}
 
 		}
 	}
 
-	private void processTokenEvents2() throws SimQPNException {
-		TokenEvent tkEvent;
-		while ((tkEvent = incomingTokenList.peek()) != null) {
-			if (tkEvent.getTime() > timeSaveToProcess) {
-				break;
-			} else {
-				Place place = tkEvent.getPlace();
-
-				if (clock < tkEvent.getTime()) {
-					clock = tkEvent.getTime();
-				}
-				place.addTokens(tkEvent.getColor(), tkEvent.getNumber(),
-						tkEvent.getTkCopyBuffer(), this);
-
-				incomingTokenList.poll(); //
-
-				if (verbosityLevel > 0) {
-					// log.info("\t\t LP"+id+" : token arrived at "+clock);
-				}
-
-				/**
-				 * Check if the new token enabled a transition
-				 */
-				int nT, t;
-				nT = place.outTrans.length;
-				for (t = 0; t < nT; t++) {
-					Transition trans = transitions[t];
-					if (trans.enabled()) {
-						int localTransId = trans.id - transitions[0].id;
-						if (localTransId >= 0
-								&& localTransId < transitions.length) {
-							if (!transStatus[localTransId]) {
-								transStatus[localTransId] = true;
-								enTransCnt++;
-							}
-						} else {
-							log.error("Error processing incoming tokens. Inconsistencies within transition array");
-							throw new SimQPNException();
-						}
-					}
-				}
-			}
-
-		}
-	}
 
 	/**
 	 * Updates the queues. Makes sure all service completion events in PS
@@ -712,7 +635,8 @@ public class LP implements Executor, Runnable {
 	 * @throws SimQPNException
 	 *             if an error in the QPlace occurs
 	 */
-	private void processQueueEvent(QueueEvent event) throws SimQPNException {
+	private void processQueueEvent() throws SimQPNException {
+		QueueEvent event = eventList.poll();
 
 		if (verbosityLevel > 0) {
 			log.info("LP" + id + ": " + event.queue.name + " processed job at "
@@ -745,9 +669,44 @@ public class LP implements Executor, Runnable {
 			}
 
 		}
-		eventList.remove(event);
-
 	}
+	
+	private void processNextTokenEvent() throws SimQPNException {
+		TokenEvent tkEvent = incomingTokenList.poll();
+		Place place = tkEvent.getPlace();
+
+		if (clock < tkEvent.getTime()) {
+			clock = tkEvent.getTime();
+		}
+		place.addTokens(tkEvent.getColor(), tkEvent.getNumber(),
+				tkEvent.getTkCopyBuffer(), this);
+		if (verbosityLevel > 0) {
+			// log.info("\t\t LP"+id+" : token arrived at "+clock);
+		}
+
+		/**
+		 * Check if the new token enabled a transition
+		 */
+		int nT, t;
+		nT = place.outTrans.length;
+		for (t = 0; t < nT; t++) {
+			Transition trans = transitions[t];
+			if (trans.enabled()) {
+				int localTransId = trans.id - transitions[0].id;
+				if (localTransId >= 0
+						&& localTransId < transitions.length) {
+					if (!transStatus[localTransId]) {
+						transStatus[localTransId] = true;
+						enTransCnt++;
+					}
+				} else {
+					log.error("Error processing incoming tokens. Inconsistencies within transition array");
+					throw new SimQPNException();
+				}
+			}
+		}
+	}
+
 
 	/**
 	 * Returns true if the LP can finish.
