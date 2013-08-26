@@ -19,13 +19,9 @@ public class BarrierActionWithLookahead implements Runnable {
 	@Override
 	public void run() {
 		if (!stopController.hasSimulationFinished()) {
-			// for(LP lp: lps){
-			// lp.actualizeTimeSaveToProcess();
-			// }
-			double timeSaveToProcess = lps[1].getClock() + 1;
-			for (LP lp : lps) {
-				lp.setTimeSaveToProcess(timeSaveToProcess);
-			}
+			 for(LP lp: lps){
+				 lp.actualizeTimeSaveToProcess();
+			 }
 			if (verbosityLevel > 0) {
 				System.out
 						.println("------------------- barrier ---------------");
