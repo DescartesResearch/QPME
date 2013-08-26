@@ -223,10 +223,6 @@ public class NetDecomposer {
 		List<List<LP>> megaList = new ArrayList<List<LP>>();
 		
 		for (int i=0; i< listLPs.size(); i++) {
-			
-		}
-
-		for (int i=0; i< listLPs.size(); i++) {
 			LP lp = listLPs.get(i);
 			megaList.add(new ArrayList<LP>());
 			for (Place place : lp.getPlaces()) {
@@ -245,7 +241,11 @@ public class NetDecomposer {
 		for (LP lp : listLPs) {
 			removeDuplicateWithOrder((ArrayList<LP>) lp.getPredecessors());
 			removeDuplicateWithOrder((ArrayList<LP>) lp.getSuccessors());
+			if(lp.getPredecessors().isEmpty()){
+				lp.addPredecessor(lp);
+			}
 		}
+		
 	}
 
 	/**
