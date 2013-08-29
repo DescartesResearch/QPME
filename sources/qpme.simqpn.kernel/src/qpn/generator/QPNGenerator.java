@@ -19,10 +19,10 @@ public class QPNGenerator {
 
 	/**Parameters*/
 	private static String configuration = "example_config";
-	private static int numLanes = 3;
-	private static String rampUpLen = "10";
-	private static String runLen = "4.0E4";
-	private static final int numPlacesPerLane = 10;
+	private static int numLanes = 4;
+	private static String rampUpLen = "10";//"399900";//"10";
+	private static String runLen = "4.0E5";
+	private static final int numPlacesPerLane = 1000;
 	private static final int numTransitionsPerLane = numPlacesPerLane; // - 1;
 	static final int statsLevel = 5;
 
@@ -31,7 +31,7 @@ public class QPNGenerator {
 	public static void main(String[] args) {
 		String path = System.getProperty("user.dir");
 		path = path.split("qpme-core")[0];
-		writeToFile(path+"\\generated"+numLanes+"x"+numPlacesPerLane+".qpe", generateNetString());
+		writeToFile(path+"\\generated"+numLanes+"x"+numPlacesPerLane+"_run"+runLen+"_ramp"+rampUpLen+".qpe", generateNetString());
 
 	}
 	
