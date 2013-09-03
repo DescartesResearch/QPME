@@ -1,4 +1,4 @@
-package de.tud.cs.simqpn.kernel.executor.parallel;
+package de.tud.cs.simqpn.kernel.executor.parallel.decomposition;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -14,6 +14,7 @@ import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.Transition;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
+import de.tud.cs.simqpn.kernel.executor.parallel.LP;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
 public class NetDecomposer {
@@ -243,6 +244,7 @@ public class NetDecomposer {
 			removeDuplicateWithOrder((ArrayList<LP>) lp.getSuccessors());
 			if(lp.getPredecessors().isEmpty()){
 				lp.addPredecessor(lp);
+				lp.addSuccessor(lp);
 			}
 		}
 		

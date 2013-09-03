@@ -7,6 +7,9 @@ import org.apache.log4j.Logger;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.entities.Net;
+import de.tud.cs.simqpn.kernel.executor.parallel.barrier.LookaheadBarrierAction;
+import de.tud.cs.simqpn.kernel.executor.parallel.barrier.LookaheadMinReductionBarrierAction;
+import de.tud.cs.simqpn.kernel.executor.parallel.decomposition.NetDecomposer;
 import de.tud.cs.simqpn.kernel.executor.parallel.termination.StopCriterionController;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
@@ -18,6 +21,9 @@ public class PseudoParallelExecutor implements Callable<Net> {
 	private SimulatorProgress progressMonitor;
 	private int runID;
 
+	private final int verbosityLevel;
+
+
 	/**
 	 * Constructor
 	 * 
@@ -27,16 +33,16 @@ public class PseudoParallelExecutor implements Callable<Net> {
 	 * @param runID
 	 */
 	public PseudoParallelExecutor(Net net, SimQPNConfiguration configuration,
-			SimulatorProgress progressMonitor, int runID) {
+			SimulatorProgress progressMonitor, int runID, int verbosityLevel) {
 		this.net = net;
 		this.configuration = configuration;
 		this.progressMonitor = progressMonitor;
 		this.runID = runID;
+		this.verbosityLevel = verbosityLevel;
 	}
 
 	@Override
 	public Net call() throws Exception {
-		final int verbosityLevel = 0;
 		NetDecomposer decomposer = new NetDecomposer(net, configuration, progressMonitor, verbosityLevel);
 		LP[] lps = decomposer.decomposeNetIntoLPs();
 		
@@ -49,17 +55,16 @@ public class PseudoParallelExecutor implements Callable<Net> {
 			lp.initializeWorkingVariables();
 		}
 		System.out.println(NetDecomposer.lpDecompositionToString(lps));
+		//LookaheadMinReductionBarrierActionWith barrierAction = new LookaheadMinReductionBarrierActionWith(stopCriterion, lps, verbosityLevel);
+		LookaheadBarrierAction barrierAction = new LookaheadBarrierAction(stopCriterion, lps, verbosityLevel);
 
+		
 		while(!stopCriterion.hasSimulationFinished()){
 			for(LP lp: lps){
 				lp.processSaveEvents();
 			}
-			for(LP lp: lps){
-				lp.actualizeTimeSaveToProcess();
-			}
-			if(verbosityLevel>0){
-				System.out.println(" ---Barrier----");
-			}
+			barrierAction.run();
+
 		}
 		for(LP lp: lps){
 			lp.finish();

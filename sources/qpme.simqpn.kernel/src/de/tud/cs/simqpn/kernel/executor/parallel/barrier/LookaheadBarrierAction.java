@@ -1,15 +1,15 @@
-package de.tud.cs.simqpn.kernel.executor.parallel.jbarrier;
+package de.tud.cs.simqpn.kernel.executor.parallel.barrier;
 
 import de.tud.cs.simqpn.kernel.executor.parallel.LP;
 import de.tud.cs.simqpn.kernel.executor.parallel.termination.StopController;
 
-public class BarrierActionWithLookahead implements Runnable {
+public class LookaheadBarrierAction implements Runnable {
 
 	StopController stopController;
 	LP[] lps;
 	private Thread[] threads;
 	final int verbosityLevel;
-	public BarrierActionWithLookahead(StopController stopController, LP[] lps,
+	public LookaheadBarrierAction(StopController stopController, LP[] lps,
 			int verbosityLevel) {
 		this.stopController = stopController;
 		this.lps = lps;
@@ -27,9 +27,6 @@ public class BarrierActionWithLookahead implements Runnable {
 						.println("------------------- barrier ---------------");
 			}
 		} else {
-			for (Thread thread : threads) {
-				thread.interrupt();
-			}
 			for (LP lp : lps) {
 				lp.finish();
 			}
