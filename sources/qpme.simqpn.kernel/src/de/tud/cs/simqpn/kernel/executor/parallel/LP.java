@@ -115,6 +115,8 @@ public class LP implements Executor, Runnable {
 	private List<LP> successorList = new ArrayList<LP>();
 
 	private LP[] predecessors;
+	public int[] sucessorIds;
+	public int[] predecessorIds;
 
 	/**
 	 * List of queue events scheduled for processing at specified points in
@@ -179,6 +181,9 @@ public class LP implements Executor, Runnable {
 	private boolean hasFinished = false;
 	/** Lower bound on incoming time stamps. */
 	private double timeSaveToProcess;
+
+	private double[] timeSaveToProcessPerPredecessor;
+	
 	/** Sets debug output to console used for debug purpose. */
 	private final int verbosityLevel; // = 0;// 1; // 2
 
@@ -239,11 +244,28 @@ public class LP implements Executor, Runnable {
 		this.timeSaveToProcess = timeSaveToProcess;
 	}
 
+	public void setTimeSaveToProcessAdvanced(double timeSaveToProcess) {
+		if(verbosityLevel > 0){
+			System.out.println("LP"+id+" actualized");			
+		}
+		if(timeSaveToProcess < this.timeSaveToProcess){
+			this.timeSaveToProcess = timeSaveToProcess;
+			if(!hasQueueEvent()){
+				for(LP suc: getSuccessorList()){
+					suc.setTimeSaveToProcessAdvanced(timeSaveToProcess);// + getLookahead());
+				}				
+			}
+		}
+	}
+	public double getCurrentTimeSaveToProcess() {
+		return timeSaveToProcess;
+	}
+
+	
 	public void actualizeTimeSaveToProcess() {
 		// timeSaveToProcess = improvedGetTimeSaveToProcessVerbosity();
 		// timeSaveToProcess = simpleTimeSaveToProcess(); // no lookahead
-		timeSaveToProcess = getTimeSaveToProcess();
-
+		timeSaveToProcess = calculateTimeSaveToProcess();
 	}
 
 	public void processSaveEvents() throws SimQPNException {
@@ -453,26 +475,29 @@ public class LP implements Executor, Runnable {
 	 * 
 	 * @return the lower bound on timestamps for incoming TokenEvents
 	 */
-	private double getTimeSaveToProcess() {
+	private double calculateTimeSaveToProcess() {
 		if (verbosityLevel > 1) {
 			synchronized (LP.class) {
 				List<Integer> listOfVisitedLPs = new ArrayList<Integer>();
-				timeSaveToProcess = getTimeSaveToProcess(listOfVisitedLPs, "");
+				timeSaveToProcess = calculateTimeSaveToProcessVerbose(listOfVisitedLPs, "");
 			}
 		} else {
 			List<Integer> listOfVisitedLPs = new ArrayList<Integer>();
-			timeSaveToProcess = getTimeSaveToProcess(listOfVisitedLPs);
+			timeSaveToProcess = calculateTimeSaveToProcess(listOfVisitedLPs);
 		}
 		return timeSaveToProcess;
 	}
 
-	private double getTimeSaveToProcess(List<Integer> listOfVisitedLPs) {
+	private double calculateTimeSaveToProcess(List<Integer> listOfVisitedLPs) {
 		List<Double> list = new ArrayList<Double>();
 		for (LP pre : this.predecessors) {
 			if (!listOfVisitedLPs.contains(pre.id)) {
 				if (!pre.eventList.isEmpty()) {
 					list.add(pre.eventList.peek().time);
-				} else {
+					//list.add(pre.getClock() + pre.getLookahead());
+				} else if(!pre.incomingTokenList.isEmpty()){
+					list.add(pre.incomingTokenList.peek().getTime() +  pre.getLookahead());
+				}else {
 					// copy list of visited
 					List<Integer> newListOfVisitedLPs = new ArrayList<Integer>(
 							listOfVisitedLPs.size() + 1);
@@ -484,7 +509,7 @@ public class LP implements Executor, Runnable {
 					// add pre to list of visited
 					newListOfVisitedLPs.add(pre.id);
 					double internalTimeSaveToProcess = pre
-							.getTimeSaveToProcess(newListOfVisitedLPs);
+							.calculateTimeSaveToProcess(newListOfVisitedLPs);
 					if (internalTimeSaveToProcess != 0.0) {
 						list.add(internalTimeSaveToProcess + getLookahead());
 					}
@@ -506,9 +531,9 @@ public class LP implements Executor, Runnable {
 	 * @param string
 	 *            string to format debug output
 	 * @return the time up to this LP can process
-	 * @see LP#getTimeSaveToProcess()
+	 * @see LP#calculateTimeSaveToProcess()
 	 */
-	private double getTimeSaveToProcess(List<Integer> listOfVisitedLPs,
+	private double calculateTimeSaveToProcessVerbose(List<Integer> listOfVisitedLPs,
 			String string) {
 		List<Double> list = new ArrayList<Double>();
 		for (LP pre : this.predecessors) {
@@ -528,7 +553,7 @@ public class LP implements Executor, Runnable {
 					// add pre to list of visited
 					newListOfVisitedLPs.add(pre.id);
 					double internalTimeSaveToProcess = pre
-							.getTimeSaveToProcess(newListOfVisitedLPs,
+							.calculateTimeSaveToProcessVerbose(newListOfVisitedLPs,
 									(string + "\t"));
 					if (internalTimeSaveToProcess != 0.0) {
 						list.add(internalTimeSaveToProcess + getLookahead());
@@ -559,15 +584,21 @@ public class LP implements Executor, Runnable {
 	 * 
 	 * @return Lookahead for this LP
 	 */
-	private double getLookahead() {
+	public double getLookahead() {
 		List<Double> lookaheads = new ArrayList<Double>();
 		for (Place place : places) {
-			if (place.getClass().equals(QPlace.class)) {
-				((QPlace) place).getLookahead();
-			}
+			lookaheads.add(place.getLookahead());
+//			if (place.getClass().equals(QPlace.class)) {
+//				lookaheads.add(place.getLookahead());
+//			}
 		}
 		if (!lookaheads.isEmpty()) {
 			return Collections.min(lookaheads);
+//			double result = 0;
+//			for(double d: lookaheads){
+//				result += d;
+//			}	
+//			return result;
 		} else {
 			return 0;
 		}
@@ -592,7 +623,15 @@ public class LP implements Executor, Runnable {
 		}
 
 		// Advance simulation time
-		clock = event.time;
+		if(verbosityLevel > 0){
+			if(clock > event.time){
+				System.err.println("LP"+id+" | ERROR: PROGRESSED EVENT EARLY");
+			}else{
+				clock = event.time;			
+			}			
+		}else{
+			clock = event.time;
+		}
 
 		QPlace qpl = (QPlace) event.token.place;
 		qpl.completeService(event.token, this);
@@ -865,8 +904,21 @@ public class LP implements Executor, Runnable {
 
 		beginRunWallClock = System.currentTimeMillis();
 
+		
+		//NEW	
+		timeSaveToProcessPerPredecessor = new double[predecessorList.size()];
+		//timeSaveToProcess = 1000;//Double.MAX_VALUE;
 		predecessors = predecessorList.toArray(new LP[predecessorList.size()]);
-
+		
+		predecessorIds = new int[predecessorList.size()];
+		for(int i=0; i< predecessorList.size() ; i++){
+			predecessorIds[i] = predecessorList.get(i).getId();
+		}
+		
+		sucessorIds = new int[getSuccessorList().size()];
+		for(int i=0; i< sucessorIds.length ; i++){
+			sucessorIds[i] = getSuccessorList().get(i).getId();
+		}
 		if (predecessors.length <= 1) {
 			/*
 			 * If LP only have one predecessor, incoming events are ordered
@@ -1203,7 +1255,7 @@ public class LP implements Executor, Runnable {
 	 * @return LPs succeeding this LP
 	 */
 	public List<LP> getSuccessors() {
-		return successorList;
+		return getSuccessorList();
 	}
 
 	/**
@@ -1213,7 +1265,7 @@ public class LP implements Executor, Runnable {
 	 *            the LP to be added
 	 */
 	public void addSuccessor(LP successor) {
-		this.successorList.add(successor);
+		this.getSuccessorList().add(successor);
 	}
 
 	/**
@@ -1250,7 +1302,7 @@ public class LP implements Executor, Runnable {
 		this.inPlaces = inPlaces;
 	}
 
-	static LP merge(LP lp1, LP lp2) {
+	public static LP merge(LP lp1, LP lp2) {
 		Place[] places = concat(lp1.places, lp2.places);
 		Transition[] transitions = concat(lp1.transitions, lp2.transitions);
 		Queue[] queues = concat(lp1.queues, lp2.queues);
@@ -1463,6 +1515,26 @@ public class LP implements Executor, Runnable {
 			log.error("Error during simulation run", ex);
 		}
 		finish();
+	}
+	
+	public boolean hasQueueEvent(){
+		return !eventList.isEmpty();
+	}
+
+
+	/**
+	 * @return the successorList
+	 */
+	public List<LP> getSuccessorList() {
+		return successorList;
+	}
+
+
+	/**
+	 * @param successorList the successorList to set
+	 */
+	public void setSuccessorList(List<LP> successorList) {
+		this.successorList = successorList;
 	}
 
 }

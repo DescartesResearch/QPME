@@ -636,4 +636,8 @@ public class Place extends Node {
 		return 0;
 	}
 
+	public double getLookahead() {
+		return 0;
+	}
+
 }
