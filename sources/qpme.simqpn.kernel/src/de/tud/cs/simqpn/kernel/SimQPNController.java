@@ -100,6 +100,7 @@ import de.tud.cs.simqpn.kernel.SimQPNConfiguration.AnalysisMethod;
 import de.tud.cs.simqpn.kernel.analyzer.Analyzer;
 import de.tud.cs.simqpn.kernel.analyzer.BatchMeans;
 import de.tud.cs.simqpn.kernel.analyzer.ReplicationDeletion;
+import de.tud.cs.simqpn.kernel.analyzer.ReplicationDeletionParallel;
 import de.tud.cs.simqpn.kernel.analyzer.Welch;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
@@ -249,7 +250,8 @@ public class SimQPNController {
 					analyzer = new BatchMeans();
 				} else if (getConfiguration().getAnalMethod() == SimQPNConfiguration.AnalysisMethod.REPL_DEL) {
 					configuration.setUseStdStateStats(false);
-					analyzer = new ReplicationDeletion(aggregateStats);
+					//analyzer = new ReplicationDeletion(aggregateStats);
+					analyzer = new ReplicationDeletionParallel(aggregateStats);
 					
 				} else {
 					log.error("Illegal analysis method specified!");
