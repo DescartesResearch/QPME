@@ -15,6 +15,7 @@ import de.tud.cs.simqpn.kernel.executor.parallel.termination.StopController;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import edu.bonn.cs.net.jbarrier.barrier.Barrier;
 import edu.bonn.cs.net.jbarrier.barrier.CentralBarrier;
+import edu.bonn.cs.net.jbarrier.barrier.ButterflyBarrier;;
 
 public class JBarrierExecutor implements Callable<Net> {
 	private static Logger log = Logger.getLogger(ParallelExecutor.class);
@@ -53,13 +54,18 @@ public class JBarrierExecutor implements Callable<Net> {
 				progressMonitor, verbosityLevel);
 		LP[] lps = decomposer.decomposeNetIntoLPs();
 		System.out.println(NetDecomposer.lpDecompositionToString(lps));
+		int numOfLPs = lps.length;
 		StopController stopCriterion = new SimpleStopCriterionController(
-				lps.length);
+				numOfLPs);
 
 		LookaheadBarrierAction barrierAction = new LookaheadBarrierAction(stopCriterion, lps, verbosityLevel);
 		//LookaheadMinReductionBarrierActionWith barrierAction = new LookaheadMinReductionBarrierActionWith(stopCriterion, lps, verbosityLevel);
-		Barrier barrier = new CentralBarrier(lps.length, barrierAction);// ButterflyBarrier(lps.length,
-																		// barrierAction);
+		Barrier barrier;
+		if(isPowerOfTwo(numOfLPs)){
+			barrier = new ButterflyBarrier(numOfLPs,barrierAction);
+		}else{
+			barrier = new CentralBarrier(numOfLPs, barrierAction);			
+		}
 		for (LP lp : lps) {
 			lp.setBarrier(barrier);
 			lp.setStopCriterion(stopCriterion);
@@ -116,5 +122,9 @@ public class JBarrierExecutor implements Callable<Net> {
 			}
 			
 		}
+	}
+	
+	private static boolean isPowerOfTwo(int number){
+		return (number & -number) == number;
 	}
 }
