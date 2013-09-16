@@ -114,6 +114,7 @@ public class Net {
 		try {
 			clone = new Net(this, configuration);
 			clone.finishCloning(this, configuration);
+			//log.info(this.toString());
 		} catch (SimQPNException e) {
 			log.error("Error during net cloning", e);
 		}
@@ -218,12 +219,22 @@ public class Net {
 	 */
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
+		int verbosityLevel = 2;
 		sb.append("\n");
 		for (Place place : places) {
 			sb.append(place.name + "\t");
 			for (int i = 0; i < place.colors.length; i++) {
 				sb.append("[" + place.colors[i] + "] " + place.tokenPop[i]);
 			}
+			if(verbosityLevel == 1){
+				sb.append("\t\t"+place.getClass());					
+			}
+			if(verbosityLevel == 2){
+				if((""+place.getClass()).endsWith("QPlace")){
+					sb.append("\t"+((QPlace)place).queue.name);															
+				}
+			}
+
 			sb.append("\n");
 		}
 		// sb.append("\n");
@@ -234,6 +245,11 @@ public class Net {
 					+ ")");
 			// sb.append(queue.totalMaxPopulation+" "+queue.maxEpochPopulation+" | "+queue.maxPopulationAtRisingStart
 			// +" < "+ queue.totalMaxPopulation+ " " +queue.cntConsRisingEpoch);
+			if(verbosityLevel == 2){
+				for(QPlace qPlace:queue.qPlaces){
+					sb.append("\t"+qPlace.name);
+				}
+			}
 
 			if (queue.getQueueStats() != null) {
 				sb.append("(stats) ");
