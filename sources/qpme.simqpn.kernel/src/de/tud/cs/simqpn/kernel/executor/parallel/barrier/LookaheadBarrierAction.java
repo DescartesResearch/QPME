@@ -1,6 +1,8 @@
 package de.tud.cs.simqpn.kernel.executor.parallel.barrier;
 
+import de.tud.cs.simqpn.kernel.entities.Transition;
 import de.tud.cs.simqpn.kernel.executor.parallel.LP;
+import de.tud.cs.simqpn.kernel.executor.parallel.lookahead.Lookahead;
 import de.tud.cs.simqpn.kernel.executor.parallel.termination.StopController;
 
 public class LookaheadBarrierAction implements Runnable {
@@ -25,6 +27,16 @@ public class LookaheadBarrierAction implements Runnable {
 			if (verbosityLevel > 0) {
 				System.out
 						.println("------------------- barrier ---------------");
+				if(verbosityLevel > 1){
+					 for(LP lp: lps){
+						 System.out.println("LP"+lp.getId() + " "+lp.calculateTimeSaveToProcess());
+						 for(Transition trans: lp.getTransitions()){
+							 Lookahead.getTimeUntilTransitionFires(trans);
+						 }
+					 }
+					 
+					 
+				}
 			}
 		} else {
 			for (LP lp : lps) {
