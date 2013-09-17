@@ -475,7 +475,7 @@ public class LP implements Executor, Runnable {
 	 * 
 	 * @return the lower bound on timestamps for incoming TokenEvents
 	 */
-	private double calculateTimeSaveToProcess() {
+	public double calculateTimeSaveToProcess() {
 		if (verbosityLevel > 1) {
 			synchronized (LP.class) {
 				List<Integer> listOfVisitedLPs = new ArrayList<Integer>();
