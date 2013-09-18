@@ -476,7 +476,7 @@ public class LP implements Executor, Runnable {
 	 * @return the lower bound on timestamps for incoming TokenEvents
 	 */
 	public double calculateTimeSaveToProcess() {
-		if (verbosityLevel > 1) {
+		if (verbosityLevel > 2) {
 			synchronized (LP.class) {
 				List<Integer> listOfVisitedLPs = new ArrayList<Integer>();
 				timeSaveToProcess = calculateTimeSaveToProcessVerbose(listOfVisitedLPs, "");
@@ -495,23 +495,32 @@ public class LP implements Executor, Runnable {
 				if (!pre.eventList.isEmpty()) {
 					list.add(pre.eventList.peek().time);
 					//list.add(pre.getClock() + pre.getLookahead());
-				} else if(!pre.incomingTokenList.isEmpty()){
-					list.add(pre.incomingTokenList.peek().getTime() +  pre.getLookahead());
+				//} else if(!pre.incomingTokenList.isEmpty()){
+				//	list.add(pre.incomingTokenList.peek().getTime() +  pre.getLookahead());
 				}else {
 					// copy list of visited
-					List<Integer> newListOfVisitedLPs = new ArrayList<Integer>(
-							listOfVisitedLPs.size() + 1);
-					if (!listOfVisitedLPs.isEmpty()) {
-						for (int i = 0; i < listOfVisitedLPs.size(); i++) {
-							newListOfVisitedLPs.add(listOfVisitedLPs.get(i));
+					if(this.predecessors.length > 1){
+						List<Integer> newListOfVisitedLPs = new ArrayList<Integer>(
+								listOfVisitedLPs.size() + 1);
+						if (!listOfVisitedLPs.isEmpty()) {
+							for (int i = 0; i < listOfVisitedLPs.size(); i++) {
+								newListOfVisitedLPs.add(listOfVisitedLPs.get(i));
+							}
+						}						
+						// add pre to list of visited
+						newListOfVisitedLPs.add(pre.id);
+						double internalTimeSaveToProcess = pre
+								.calculateTimeSaveToProcess(newListOfVisitedLPs);
+						if (internalTimeSaveToProcess != 0.0) {
+							list.add(internalTimeSaveToProcess + getLookahead());
 						}
-					}
-					// add pre to list of visited
-					newListOfVisitedLPs.add(pre.id);
-					double internalTimeSaveToProcess = pre
-							.calculateTimeSaveToProcess(newListOfVisitedLPs);
-					if (internalTimeSaveToProcess != 0.0) {
-						list.add(internalTimeSaveToProcess + getLookahead());
+					}else{
+						listOfVisitedLPs.add(pre.id);
+						double internalTimeSaveToProcess = pre
+								.calculateTimeSaveToProcess(listOfVisitedLPs);
+						if (internalTimeSaveToProcess != 0.0) {
+							list.add(internalTimeSaveToProcess + getLookahead());
+						}
 					}
 				}
 			}
@@ -593,12 +602,13 @@ public class LP implements Executor, Runnable {
 //			}
 		}
 		if (!lookaheads.isEmpty()) {
-			return Collections.min(lookaheads);
-//			double result = 0;
-//			for(double d: lookaheads){
-//				result += d;
-//			}	
-//			return result;
+			//return Collections.min(lookaheads);
+			//return Collections.max(lookaheads);
+			double result = 0;
+			for(double d: lookaheads){
+				result += d;
+			}	
+			return result;
 		} else {
 			return 0;
 		}
@@ -666,7 +676,7 @@ public class LP implements Executor, Runnable {
 		place.addTokens(tkEvent.getColor(), tkEvent.getNumber(),
 				tkEvent.getTkCopyBuffer(), this);
 		if (verbosityLevel > 0) {
-			// log.info("\t\t LP"+id+" : token arrived at "+clock);
+			log.info("LP"+id+" scheduled token at"+clock);
 		}
 
 		/**
@@ -749,9 +759,12 @@ public class LP implements Executor, Runnable {
 			if (nextTrans != null) {
 				nextTrans.fire(); // Fire
 									// transition
-									// System.out.println("LP" + id +
-									// ": transition "
-				// + nextTrans.name + " fired");
+				if(verbosityLevel > 1){
+					log.info("LP" + id +
+					 ": transition "
+					+ nextTrans.name + " fired");
+					
+				}
 
 				// Update transStatus
 				int p, t, nP, nT;
@@ -799,9 +812,8 @@ public class LP implements Executor, Runnable {
 							if (localTransId >= 0
 									&& localTransId < transitions.length) {
 								if ((!transStatus[localTransId])) {
-									if (verbosityLevel > 1) {
-										System.out
-												.println("LP"
+									if (verbosityLevel > 2) {
+										log.info("LP"
 														+ id
 														+ ":\t\t enabled "
 														+ transitions[localTransId].name
@@ -1414,9 +1426,16 @@ public class LP implements Executor, Runnable {
 
 	public double getNextEventTime() {
 		QueueEvent queueEvent = eventList.peek();
+		TokenEvent tokenEvent = incomingTokenList.peek();
 		if (queueEvent != null) {
+			if(tokenEvent != null && tokenEvent.getTime() < queueEvent.time){
+				return tokenEvent.getTime();
+			}
 			return queueEvent.time;
 		} else {
+			if(tokenEvent != null){
+				return tokenEvent.getTime();
+			}
 			return 0.0;
 		}
 	}

@@ -29,10 +29,10 @@ public class LookaheadBarrierAction implements Runnable {
 						.println("------------------- barrier ---------------");
 				if(verbosityLevel > 1){
 					 for(LP lp: lps){
-						 System.out.println("LP"+lp.getId() + " "+lp.calculateTimeSaveToProcess());
-						 for(Transition trans: lp.getTransitions()){
-							 Lookahead.getTimeUntilTransitionFires(trans);
-						 }
+						 System.out.println("LP"+lp.getId() + " "+lp.calculateTimeSaveToProcess()+" "+lp.getClock());
+//						 for(Transition trans: lp.getTransitions()){
+//							 Lookahead.getTimeUntilTransitionFires(trans);
+//						 }
 					 }
 					 
 					 

@@ -58,8 +58,8 @@ public class JBarrierExecutor implements Callable<Net> {
 		StopController stopCriterion = new SimpleStopCriterionController(
 				numOfLPs);
 
-		LookaheadBarrierAction barrierAction = new LookaheadBarrierAction(stopCriterion, lps, verbosityLevel);
-		//LookaheadMinReductionBarrierActionWith barrierAction = new LookaheadMinReductionBarrierActionWith(stopCriterion, lps, verbosityLevel);
+		//LookaheadBarrierAction barrierAction = new LookaheadBarrierAction(stopCriterion, lps, verbosityLevel);
+		LookaheadMinReductionBarrierAction barrierAction = new LookaheadMinReductionBarrierAction(stopCriterion,lps, verbosityLevel);
 		Barrier barrier;
 		if(isPowerOfTwo(numOfLPs)){
 			barrier = new ButterflyBarrier(numOfLPs,barrierAction);
@@ -70,12 +70,6 @@ public class JBarrierExecutor implements Callable<Net> {
 			lp.setBarrier(barrier);
 			lp.setStopCriterion(stopCriterion);
 		}
-		
-//		System.out.println("-><-><-");
-//		for (int i=0; i<lps.length; i++) {
-//			System.out.println(lps[i].getId());
-//		}	
-//		System.out.println("-><-><-");
 
 		Thread[] threads = new Thread[lps.length];
 		for (int i = 0; i < lps.length; i++) {
