@@ -71,10 +71,10 @@ public class BatchMeans implements Analyzer {
 		Callable<Net> run;
 		int verbosityLevel = 0;
 		//run = new JBarrierExecutor(net, configuration,monitor,1);			
-		run = new PseudoParallelExecutor(net, configuration,monitor,1, verbosityLevel);			
+		//run = new PseudoParallelExecutor(net, configuration,monitor,1, verbosityLevel);			
 		//run = new FlexibleParallelExecutor(net, configuration,monitor,1);			
 		//run = new ParallelExecutor(net, configuration, monitor, 1);			
-		//run = new SequentialExecutor(net, configuration,monitor,1);			
+		run = new SequentialExecutor(net, configuration,monitor,1);			
 
 		try {
 			net = run.call();
