@@ -17,6 +17,7 @@ import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.executor.sequential.SequentialExecutor;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
+import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.stats.AggregateStats;
 import de.tud.cs.simqpn.kernel.stats.Stats;
 
@@ -76,7 +77,7 @@ public class ReplicationDeletionParallel implements Analyzer {
 		for (int i = 0; i < configuration.getNumRuns(); i++) {
 			Net netCopy = net.clone(configuration);
 
-			Callable<Net> run = new SequentialExecutor(netCopy, configuration,
+			Callable<Net> run = new SequentialExecutor(netCopy,configuration,RandomNumberGenerator.nextRandNumGen(),
 					monitor, i + 1);
 			listOfRuns.add(run);
 

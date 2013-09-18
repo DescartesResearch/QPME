@@ -23,6 +23,7 @@ import de.tud.cs.simqpn.kernel.executor.QueueEvent;
 import de.tud.cs.simqpn.kernel.executor.TokenEvent;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
+import edu.cornell.lassp.houle.RngPack.RandomElement;
 
 public class SequentialExecutor implements Executor, Callable<Net>{
 
@@ -79,6 +80,8 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 	private Net net;
 	
 	private int runID;
+	
+	RandomElement randomElement;
 
 	public SequentialExecutor(Net net, SimQPNConfiguration configuration,
 			SimulatorProgress progressMonitor, int runID) {
@@ -88,6 +91,16 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 		this.runID = runID;
 	}
 
+	public SequentialExecutor(Net net, SimQPNConfiguration configuration, RandomElement randomElement,
+			SimulatorProgress progressMonitor, int runID) {
+		this.net = net;
+		this.configuration = configuration;
+		this.progressMonitor = progressMonitor;
+		this.runID = runID;
+		this.randomElement = randomElement;
+	}
+
+	
 	/**
 	 * Starts the simulation run.
 	 * 
@@ -136,8 +149,14 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 		for (int t = 0; t < net.getNumTrans(); t++)
 			pdf[t] = 1;
 
-		randTransGen = new EmpiricalWalker(pdf, Empirical.NO_INTERPOLATION,
-				RandomNumberGenerator.nextRandNumGen());
+		if(randomElement == null){
+			randTransGen = new EmpiricalWalker(pdf, Empirical.NO_INTERPOLATION,
+					RandomNumberGenerator.nextRandNumGen());			
+		}else{
+			randTransGen = new EmpiricalWalker(pdf, Empirical.NO_INTERPOLATION,
+					randomElement);
+			//randomElement == null; 
+		}
 		// Note: Here we use a default distribution. The actual distribution
 		// is
 		// set each time before using randTransGen.
