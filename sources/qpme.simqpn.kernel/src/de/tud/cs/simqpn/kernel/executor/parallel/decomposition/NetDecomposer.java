@@ -206,6 +206,14 @@ public class NetDecomposer {
 				}
 			}
 		}
+		
+		//for generated models
+		if(listLPs.get(1).getPlaces()[0].name.equals("token generator")){
+			LP lp1 = listLPs.remove(0);//(lp1);
+			LP lp2 = listLPs.remove(0);//(lp1);
+			LP newLP = LP.merge(lp1, lp2);
+			listLPs.add(0,newLP);
+		}
 
 		/* Set new LP ids */
 		for (int i = 0; i < listLPs.size(); i++) {
