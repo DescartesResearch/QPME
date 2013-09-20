@@ -65,6 +65,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.dom4j.Element;
@@ -79,6 +80,7 @@ import de.tud.cs.simqpn.kernel.entities.queue.PSQueue;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 import de.tud.cs.simqpn.kernel.entities.queue.QueuingDiscipline;
 import de.tud.cs.simqpn.kernel.executor.Executor;
+import de.tud.cs.simqpn.kernel.random.Deterministic;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.stats.QPlaceQueueStats;
 
@@ -193,7 +195,10 @@ public class QPlace extends Place {
 					double lambda = Double.parseDouble(lambdaString);
 					this.randServTimeGen[c] = new Exponential(lambda,
 							RandomNumberGenerator.nextRandNumGen());
-				} else {
+				} else if(((QPlace) original).randServTimeGen[c].getClass().equals(Deterministic.class)){
+					double value = ((QPlace) original).randServTimeGen[c].nextDouble();
+					this.randServTimeGen[c] = new Deterministic(value);
+				}else {
 					// TODO implement copy of other distributions
 					log.error("Copy of distribution" + distribution.getClass()
 							+ " not implemented");
