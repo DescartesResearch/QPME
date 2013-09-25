@@ -104,6 +104,7 @@ public class ISQueue extends Queue {
 	 *            the executor
 	 * @throws SimQPNException	inherited from queue, not relevant for ISQueue
 	 */
+	@Override
 	public void addTokens(QPlace queuingPlace, int color, int count,
 			Token[] tokensToBeAdded, Executor executor) throws SimQPNException{
 		super.addTokens(queuingPlace, color, count, tokensToBeAdded, executor);
