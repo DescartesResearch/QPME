@@ -270,7 +270,11 @@ public class SimQPNController {
 				log.error("Invalid run mode specified!");
 				throw new SimQPNException();
 			}
+			double runtime = System.currentTimeMillis();
 			result = analyzer.analyze(net, configuration, monitor);
+			runtime = System.currentTimeMillis() - runtime;
+			System.out.println("XXXXXXXXXXXXXXXXXXX "+runtime);
+			System.out.println("XXXXXXXXXXXXXXXXXXX "+runtime/1000 + "sec");
 		} finally {
 			setSimRunning(false);
 			LogManager.shutdown();
