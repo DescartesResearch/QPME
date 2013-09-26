@@ -15,7 +15,9 @@ import de.tud.cs.simqpn.kernel.executor.parallel.termination.StopController;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import edu.bonn.cs.net.jbarrier.barrier.Barrier;
 import edu.bonn.cs.net.jbarrier.barrier.CentralBarrier;
-import edu.bonn.cs.net.jbarrier.barrier.ButterflyBarrier;;
+import edu.bonn.cs.net.jbarrier.barrier.ButterflyBarrier;
+
+;
 
 public class JBarrierExecutor implements Callable<Net> {
 	private static Logger log = Logger.getLogger(ParallelExecutor.class);
@@ -58,13 +60,16 @@ public class JBarrierExecutor implements Callable<Net> {
 		StopController stopCriterion = new SimpleStopCriterionController(
 				numOfLPs);
 
-		//LookaheadBarrierAction barrierAction = new LookaheadBarrierAction(stopCriterion, lps, verbosityLevel);
-		LookaheadMinReductionBarrierAction barrierAction = new LookaheadMinReductionBarrierAction(stopCriterion,lps, verbosityLevel);
+		// LookaheadBarrierAction barrierAction = new
+		// LookaheadBarrierAction(stopCriterion, lps, verbosityLevel);
+		LookaheadMinReductionBarrierAction barrierAction = new LookaheadMinReductionBarrierAction(
+				stopCriterion, lps, lps[0].getRampUpLength(),
+				lps[0].getTotRunLength(), verbosityLevel);
 		Barrier barrier;
-		if(isPowerOfTwo(numOfLPs)){
-			barrier = new ButterflyBarrier(numOfLPs,barrierAction);
-		}else{
-			barrier = new CentralBarrier(numOfLPs, barrierAction);			
+		if (isPowerOfTwo(numOfLPs) && numOfLPs > 2) {
+			barrier = new ButterflyBarrier(numOfLPs, barrierAction);
+		} else {
+			barrier = new CentralBarrier(numOfLPs, barrierAction);
 		}
 		for (LP lp : lps) {
 			lp.setBarrier(barrier);
@@ -91,9 +96,9 @@ public class JBarrierExecutor implements Callable<Net> {
 
 		return this.net;
 	}
-	
-	private class InternalLP implements Runnable{
-		
+
+	private class InternalLP implements Runnable {
+
 		LP lp;
 		StopController stopCriterion;
 
@@ -107,18 +112,18 @@ public class JBarrierExecutor implements Callable<Net> {
 			try {
 				lp.initializeWorkingVariables();
 				lp.waitForBarrier();
-				while(!stopCriterion.hasSimulationFinished()){
-					lp.processSaveEvents();
+				while (!stopCriterion.hasSimulationFinished()) {
+					lp.processSaveEventsWithPrecissionCheck();
 					lp.waitForBarrier();
 				}
 			} catch (SimQPNException e) {
 				e.printStackTrace();
 			}
-			
+
 		}
 	}
-	
-	private static boolean isPowerOfTwo(int number){
+
+	private static boolean isPowerOfTwo(int number) {
 		return (number & -number) == number;
 	}
 }

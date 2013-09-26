@@ -52,7 +52,7 @@ public class FlexibleParallelExecutor implements Callable<Net> {
 
 		public Integer call() {
 			try {
-				lp.processSaveEvents();
+				lp.processSaveEventsWithPrecissionCheck();
 			} catch (SimQPNException e) {
 				e.printStackTrace();
 			}

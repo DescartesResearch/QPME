@@ -33,6 +33,7 @@ public class SimpleStopCriterionController implements StopController{
 	 */
 	public synchronized void incrementFinishedLPCounter(){
 		finishedLPs++;
+//		hasFinished = true;
 		if(numLPs <= finishedLPs){
 			hasFinished = true;
 		}
@@ -41,5 +42,11 @@ public class SimpleStopCriterionController implements StopController{
 	public int getNumFinishedLPs(){
 		return finishedLPs;
 	}
+	
+	@Override
+	public void finishSimulation() {
+		hasFinished = true;
+	}
+
 
 }

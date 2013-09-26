@@ -211,6 +211,7 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 			if (inRampUp && clock > rampUpL) {
 				inRampUp = false;
 				endRampUpClock = clock;
+				System.out.println("END RAMP "+ clock);
 				if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.WELCH)
 					break;
 				for (int p = 0; p < net.getNumPlaces(); p++){

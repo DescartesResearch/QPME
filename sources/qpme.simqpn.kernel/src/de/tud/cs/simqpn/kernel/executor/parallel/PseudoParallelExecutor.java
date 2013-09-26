@@ -61,7 +61,7 @@ public class PseudoParallelExecutor implements Callable<Net> {
 		
 		while(!stopCriterion.hasSimulationFinished()){
 			for(LP lp: lps){
-				lp.processSaveEvents();
+				lp.processSaveEventsWithPrecissionCheck();
 			}
 			barrierAction.run();
 

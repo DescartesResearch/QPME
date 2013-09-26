@@ -46,6 +46,11 @@ public class StopCriterionController implements StopController{
 	public int getNumFinishedLPs(){
 		return finishedLPs;
 	}
+
+	@Override
+	public void finishSimulation() {
+		finishedLPs = numLPs;
+	}
 	
 
 }

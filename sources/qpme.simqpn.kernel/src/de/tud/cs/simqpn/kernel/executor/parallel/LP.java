@@ -49,6 +49,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CyclicBarrier;
@@ -106,7 +107,7 @@ public class LP implements Executor, Runnable {
 	/** Configuration for simulation run. */
 	private SimQPNConfiguration configuration;
 	/** Simulation clock, virtual time. */
-	private double clock = 0;
+	private volatile double clock = 0;
 	/** Identification for the LP. Note: There is no control for id to be unique */
 	private int id;
 	/** List of LPs this LP can get tokens from. */
@@ -128,13 +129,15 @@ public class LP implements Executor, Runnable {
 					return (a.time < b.time ? -1 : (a.time == b.time ? 0 : 1));
 				}
 			});
+
 	/*
 	 * Note: EventList can be non-blocking as new {@link QueueEvents} are only
 	 * inserted by this LP. Instead, incomingTokenList has to be blocking.
 	 */
 
 	/** List of Tokens with timestamp that arrived from other LPs. */
-	private java.util.Queue<TokenEvent> incomingTokenList;
+	private volatile java.util.Queue<TokenEvent> incomingTokenList;
+	// private volatile boolean newTokenArrival = false;
 
 	// private Probe[] probes;
 	/** The places of the QPN this LP simulates. */
@@ -183,7 +186,7 @@ public class LP implements Executor, Runnable {
 	private double timeSaveToProcess;
 
 	private double[] timeSaveToProcessPerPredecessor;
-	
+
 	/** Sets debug output to console used for debug purpose. */
 	private final int verbosityLevel; // = 0;// 1; // 2
 
@@ -239,29 +242,29 @@ public class LP implements Executor, Runnable {
 		this.verbosityLevel = verbosityLevel;
 	}
 
-
 	public void setTimeSaveToProcess(double timeSaveToProcess) {
 		this.timeSaveToProcess = timeSaveToProcess;
 	}
 
 	public void setTimeSaveToProcessAdvanced(double timeSaveToProcess) {
-		if(verbosityLevel > 0){
-			System.out.println("LP"+id+" actualized");			
-		}
-		if(timeSaveToProcess < this.timeSaveToProcess){
+		// if(verbosityLevel > 0){
+		// System.out.println("LP"+id+" actualized");
+		// }
+		if (timeSaveToProcess < this.timeSaveToProcess) {
 			this.timeSaveToProcess = timeSaveToProcess;
-			if(!hasQueueEvent()){
-				for(LP suc: getSuccessorList()){
-					suc.setTimeSaveToProcessAdvanced(timeSaveToProcess);// + getLookahead());
-				}				
+			if (!hasQueueEvent()) {
+				for (LP suc : getSuccessorList()) {
+					suc.setTimeSaveToProcessAdvanced(timeSaveToProcess);// +
+																		// getLookahead());
+				}
 			}
 		}
 	}
+
 	public double getCurrentTimeSaveToProcess() {
 		return timeSaveToProcess;
 	}
 
-	
 	public void actualizeTimeSaveToProcess() {
 		// timeSaveToProcess = improvedGetTimeSaveToProcessVerbosity();
 		// timeSaveToProcess = simpleTimeSaveToProcess(); // no lookahead
@@ -272,11 +275,11 @@ public class LP implements Executor, Runnable {
 		QueueEvent nextQueueEvent = null;
 		TokenEvent nextTokenEvent = null;
 		while (true) {
-			updateQueueEvents(); //TODO maybe we can call this less
+			updateQueueEvents(); // TODO maybe we can call this less
 			if ((nextQueueEvent = eventList.peek()) != null
 					&& nextQueueEvent.time <= timeSaveToProcess) {
 				while ((nextTokenEvent = incomingTokenList.peek()) != null
-						&& nextTokenEvent.getTime() <= nextQueueEvent.time) {
+						&& nextTokenEvent.getTime() < nextQueueEvent.time) {
 					processNextTokenEvent();
 				}
 				processNextQueueEvent();
@@ -292,21 +295,75 @@ public class LP implements Executor, Runnable {
 			}
 			fireTransitions();
 		}
+	}
 
-		startDataCollectionIfRampUpDone();
+	public void processSaveEventsWithPrecissionCheck() throws SimQPNException {
+		QueueEvent nextQueueEvent = null;
+		TokenEvent nextTokenEvent = null;
+		// java.util.Queue<TokenEvent> abc = incomingTokenList;
+		// incomingTokenList = (java.util.Queue<TokenEvent>) abc;
+		while (true) {
+			//updateQueueEvents(); // TODO maybe we can call this less
+			if ((nextQueueEvent = eventList.peek()) != null
+					&& nextQueueEvent.time <= timeSaveToProcess) {
+				while ((nextTokenEvent = incomingTokenList.peek()) != null
+						&& nextTokenEvent.getTime() < nextQueueEvent.time) {
+					processNextTokenEvent();
+					updateQueueEvents();
+				}
+				processNextQueueEvent();
+				updateQueueEvents(); //X
+			} else if ((nextTokenEvent = incomingTokenList.peek()) != null
+					&& nextTokenEvent.getTime() <= timeSaveToProcess) {
+				do {
+					processNextTokenEvent();
+					updateQueueEvents();
+				} while ((nextTokenEvent = incomingTokenList.peek()) != null
+						&& nextTokenEvent.getTime() <= timeSaveToProcess);
+			} else {
+				fireTransitions();
+				updateQueueEvents();
+				break;
+			}
+			fireTransitions();
+			updateQueueEvents();
+		}
+
+		//startDataCollectionIfRampUpDone();
 		if (beforeInitHeartBeat) {
 			determineMonitorUpdateRate();
 		} else {
 			updateProgressMonitor();
 		}
+		
 		checkForPrecission();
 
-		if (!hasFinished) {
-			if (clock >= totRunLength) {
-				hasFinished = true;
-				stopCriterionController.incrementFinishedLPCounter();
+//		if (!hasFinished) {
+//			if (clock >= totRunLength) {
+//				hasFinished = true;
+//				stopCriterionController.incrementFinishedLPCounter();
+//			}
+//		}
+	}
+
+	public void startDataCollection(double startClock) throws SimQPNException {
+		endRampUpClock = startClock;
+		// if (configuration.getAnalMethod() ==
+		// SimQPNConfiguration.AnalysisMethod.WELCH) {
+		// break;
+		// }
+		for (int p = 0; p < places.length; p++) {
+			places[p].start(configuration, startClock);
+		}
+		for (Place p : places) {
+			if (p instanceof QPlace) {
+				((QPlace) p).queue.start(startClock);
 			}
 		}
+		// for (int pr = 0; pr < net.getNumProbes(); pr++) TODO
+		// net.getProbe(pr).start(this);
+
+		progressMonitor.finishWarmUp(id, configuration);
 	}
 
 	/**
@@ -479,7 +536,8 @@ public class LP implements Executor, Runnable {
 		if (verbosityLevel > 2) {
 			synchronized (LP.class) {
 				List<Integer> listOfVisitedLPs = new ArrayList<Integer>();
-				timeSaveToProcess = calculateTimeSaveToProcessVerbose(listOfVisitedLPs, "");
+				timeSaveToProcess = calculateTimeSaveToProcessVerbose(
+						listOfVisitedLPs, "");
 			}
 		} else {
 			List<Integer> listOfVisitedLPs = new ArrayList<Integer>();
@@ -494,19 +552,21 @@ public class LP implements Executor, Runnable {
 			if (!listOfVisitedLPs.contains(pre.id)) {
 				if (!pre.eventList.isEmpty()) {
 					list.add(pre.eventList.peek().time);
-					//list.add(pre.getClock() + pre.getLookahead());
-				//} else if(!pre.incomingTokenList.isEmpty()){
-				//	list.add(pre.incomingTokenList.peek().getTime() +  pre.getLookahead());
-				}else {
+					// list.add(pre.getClock() + pre.getLookahead());
+					// } else if(!pre.incomingTokenList.isEmpty()){
+					// list.add(pre.incomingTokenList.peek().getTime() +
+					// pre.getLookahead());
+				} else {
 					// copy list of visited
-					if(this.predecessors.length > 1){
+					if (this.predecessors.length > 1) {
 						List<Integer> newListOfVisitedLPs = new ArrayList<Integer>(
 								listOfVisitedLPs.size() + 1);
 						if (!listOfVisitedLPs.isEmpty()) {
 							for (int i = 0; i < listOfVisitedLPs.size(); i++) {
-								newListOfVisitedLPs.add(listOfVisitedLPs.get(i));
+								newListOfVisitedLPs
+										.add(listOfVisitedLPs.get(i));
 							}
-						}						
+						}
 						// add pre to list of visited
 						newListOfVisitedLPs.add(pre.id);
 						double internalTimeSaveToProcess = pre
@@ -514,7 +574,7 @@ public class LP implements Executor, Runnable {
 						if (internalTimeSaveToProcess != 0.0) {
 							list.add(internalTimeSaveToProcess + getLookahead());
 						}
-					}else{
+					} else {
 						listOfVisitedLPs.add(pre.id);
 						double internalTimeSaveToProcess = pre
 								.calculateTimeSaveToProcess(listOfVisitedLPs);
@@ -542,8 +602,8 @@ public class LP implements Executor, Runnable {
 	 * @return the time up to this LP can process
 	 * @see LP#calculateTimeSaveToProcess()
 	 */
-	private double calculateTimeSaveToProcessVerbose(List<Integer> listOfVisitedLPs,
-			String string) {
+	private double calculateTimeSaveToProcessVerbose(
+			List<Integer> listOfVisitedLPs, String string) {
 		List<Double> list = new ArrayList<Double>();
 		for (LP pre : this.predecessors) {
 			if (!listOfVisitedLPs.contains(pre.id)) {
@@ -562,8 +622,8 @@ public class LP implements Executor, Runnable {
 					// add pre to list of visited
 					newListOfVisitedLPs.add(pre.id);
 					double internalTimeSaveToProcess = pre
-							.calculateTimeSaveToProcessVerbose(newListOfVisitedLPs,
-									(string + "\t"));
+							.calculateTimeSaveToProcessVerbose(
+									newListOfVisitedLPs, (string + "\t"));
 					if (internalTimeSaveToProcess != 0.0) {
 						list.add(internalTimeSaveToProcess + getLookahead());
 					}
@@ -597,17 +657,17 @@ public class LP implements Executor, Runnable {
 		List<Double> lookaheads = new ArrayList<Double>();
 		for (Place place : places) {
 			lookaheads.add(place.getLookahead());
-//			if (place.getClass().equals(QPlace.class)) {
-//				lookaheads.add(place.getLookahead());
-//			}
+			// if (place.getClass().equals(QPlace.class)) {
+			// lookaheads.add(place.getLookahead());
+			// }
 		}
 		if (!lookaheads.isEmpty()) {
-			//return Collections.min(lookaheads);
-			//return Collections.max(lookaheads);
+			// return Collections.min(lookaheads);
+			// return Collections.max(lookaheads);
 			double result = 0;
-			for(double d: lookaheads){
+			for (double d : lookaheads) {
 				result += d;
-			}	
+			}
 			return result;
 		} else {
 			return 0;
@@ -633,13 +693,14 @@ public class LP implements Executor, Runnable {
 		}
 
 		// Advance simulation time
-		if(verbosityLevel > 0){
-			if(clock > event.time){
-				System.err.println("LP"+id+" | ERROR: PROGRESSED EVENT EARLY");
-			}else{
-				clock = event.time;			
-			}			
-		}else{
+		if (verbosityLevel > 0) {
+			if (clock > event.time) {
+				System.err.println("LP" + id
+						+ " | ERROR: PROGRESSED EVENT EARLY");
+			} else {
+				clock = event.time;
+			}
+		} else {
 			clock = event.time;
 		}
 
@@ -675,8 +736,8 @@ public class LP implements Executor, Runnable {
 		}
 		place.addTokens(tkEvent.getColor(), tkEvent.getNumber(),
 				tkEvent.getTkCopyBuffer(), this);
-		if (verbosityLevel > 0) {
-			log.info("LP"+id+" scheduled token at"+clock);
+		if (verbosityLevel > 1) {
+			log.info("LP" + id + " processed incoming token at" + clock);
 		}
 
 		/**
@@ -759,11 +820,10 @@ public class LP implements Executor, Runnable {
 			if (nextTrans != null) {
 				nextTrans.fire(); // Fire
 									// transition
-				if(verbosityLevel > 1){
-					log.info("LP" + id +
-					 ": transition "
-					+ nextTrans.name + " fired");
-					
+				if (verbosityLevel > 1) {
+					log.info("LP" + id + ": transition " + nextTrans.name
+							+ " fired");
+
 				}
 
 				// Update transStatus
@@ -814,10 +874,10 @@ public class LP implements Executor, Runnable {
 								if ((!transStatus[localTransId])) {
 									if (verbosityLevel > 2) {
 										log.info("LP"
-														+ id
-														+ ":\t\t enabled "
-														+ transitions[localTransId].name
-														+ " [due to firing]");
+												+ id
+												+ ":\t\t enabled "
+												+ transitions[localTransId].name
+												+ " [due to firing]");
 									}
 									transStatus[localTransId] = true;
 									enTransCnt++;
@@ -916,19 +976,18 @@ public class LP implements Executor, Runnable {
 
 		beginRunWallClock = System.currentTimeMillis();
 
-		
-		//NEW	
+		// NEW
 		timeSaveToProcessPerPredecessor = new double[predecessorList.size()];
-		//timeSaveToProcess = 1000;//Double.MAX_VALUE;
+		// timeSaveToProcess = 1000;//Double.MAX_VALUE;
 		predecessors = predecessorList.toArray(new LP[predecessorList.size()]);
-		
+
 		predecessorIds = new int[predecessorList.size()];
-		for(int i=0; i< predecessorList.size() ; i++){
+		for (int i = 0; i < predecessorList.size(); i++) {
 			predecessorIds[i] = predecessorList.get(i).getId();
 		}
-		
+
 		sucessorIds = new int[getSuccessorList().size()];
-		for(int i=0; i< sucessorIds.length ; i++){
+		for (int i = 0; i < sucessorIds.length; i++) {
 			sucessorIds[i] = getSuccessorList().get(i).getId();
 		}
 		if (predecessors.length <= 1) {
@@ -940,6 +999,10 @@ public class LP implements Executor, Runnable {
 			 * 
 			 * ArrayBlockingQueue(maxNumberOfTokens) could be another option;
 			 */
+			// incomingTokenList = new ConcurrentLinkedQueue<TokenEvent>();
+			// int maxNumberOfTokens =10;
+			// incomingTokenList = new
+			// ArrayBlockingQueue<TokenEvent>(maxNumberOfTokens);
 			incomingTokenList = new ConcurrentLinkedQueue<TokenEvent>();
 		} else {
 			incomingTokenList = new PriorityBlockingQueue<TokenEvent>(10,
@@ -956,7 +1019,7 @@ public class LP implements Executor, Runnable {
 	/**
 	 * Clean up method after simulation run. data aufbereiten monitor...
 	 */
-	public void finish() {
+	public void finish(double clock) {
 		progressMonitor.updateSimulationProgress(id, 100, 0, configuration,
 				inRampUp);
 
@@ -1029,6 +1092,9 @@ public class LP implements Executor, Runnable {
 					/ (totRunLength - 1) * 100, (curTimeMsrm - lastTimeMsrm),
 					configuration, inRampUp);
 			lastTimeMsrm = curTimeMsrm;
+
+			// nextHeartBeat = clock + timeBtwHeartBeats/(100*clock /
+			// (totRunLength - 1));
 			nextHeartBeat = clock + timeBtwHeartBeats;
 
 			if (progressMonitor.isCanceled()) {
@@ -1147,6 +1213,7 @@ public class LP implements Executor, Runnable {
 				nextChkAfter = clock + clockTimePerSec
 						* configuration.secondsBtwChkStops;
 			}
+			System.out.println("LP"+id+" "+ nextChkAfter);
 		}
 	}
 
@@ -1424,22 +1491,38 @@ public class LP implements Executor, Runnable {
 		}
 	}
 
+	public void processTokenEventIfPossible() throws SimQPNException {
+		TokenEvent tkEvent;
+		QueueEvent queueEvent;
+		if ((tkEvent = incomingTokenList.peek()) != null) {
+			if (tkEvent.getTime() <= timeSaveToProcess) {
+				if ((queueEvent = eventList.peek()) != null
+						&& queueEvent.time > tkEvent.getTime()) {
+					processNextTokenEvent();
+				}
+			}
+		}
+	}
+
 	public double getNextEventTime() {
 		QueueEvent queueEvent = eventList.peek();
 		TokenEvent tokenEvent = incomingTokenList.peek();
 		if (queueEvent != null) {
-			if(tokenEvent != null && tokenEvent.getTime() < queueEvent.time){
+			if (tokenEvent != null && tokenEvent.getTime() < queueEvent.time) {
 				return tokenEvent.getTime();
 			}
 			return queueEvent.time;
 		} else {
-			if(tokenEvent != null){
-				return tokenEvent.getTime();
+			if (tokenEvent != null) {
+				if (verbosityLevel > 0) {
+					log.info("LP" + id + ": lookahead" + getLookahead());
+				}
+				return tokenEvent.getTime(); // + getLookahead();
 			}
 			return 0.0;
 		}
 	}
-	
+
 	@Deprecated
 	public void processSaveEventsOLD() throws SimQPNException {
 		processTokenEvents();
@@ -1533,13 +1616,12 @@ public class LP implements Executor, Runnable {
 		} catch (SimQPNException ex) {
 			log.error("Error during simulation run", ex);
 		}
-		finish();
-	}
-	
-	public boolean hasQueueEvent(){
-		return !eventList.isEmpty();
+		finish(clock);
 	}
 
+	public boolean hasQueueEvent() {
+		return !eventList.isEmpty();
+	}
 
 	/**
 	 * @return the successorList
@@ -1548,12 +1630,24 @@ public class LP implements Executor, Runnable {
 		return successorList;
 	}
 
-
 	/**
-	 * @param successorList the successorList to set
+	 * @param successorList
+	 *            the successorList to set
 	 */
 	public void setSuccessorList(List<LP> successorList) {
 		this.successorList = successorList;
+	}
+
+	public double getRampUpLength() {
+		return rampUpLength;
+	}
+
+	public double getTotRunLength() {
+		return totRunLength;
+	}
+
+	public void setClock(double clock) {
+		this.clock = clock;
 	}
 
 }

@@ -2,7 +2,7 @@ package de.tud.cs.simqpn.kernel.executor.parallel.barrier;
 
 import de.tud.cs.simqpn.kernel.entities.Transition;
 import de.tud.cs.simqpn.kernel.executor.parallel.LP;
-import de.tud.cs.simqpn.kernel.executor.parallel.lookahead.Lookahead;
+//import de.tud.cs.simqpn.kernel.executor.parallel.lookahead.Lookahead;
 import de.tud.cs.simqpn.kernel.executor.parallel.termination.StopController;
 
 public class LookaheadBarrierAction implements Runnable {
