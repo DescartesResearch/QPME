@@ -178,6 +178,8 @@ public class LP implements Executor, Runnable {
 	 * The barrier at which this LPs waits until all other LPs arrive.
 	 */
 	private Barrier barrier;
+	private CyclicBarrier cyclicBarrier;
+	
 	/** Global stop criterion. */
 	private StopController stopCriterionController;
 	/** Local stop criterion. */
@@ -434,6 +436,19 @@ public class LP implements Executor, Runnable {
 		// barrier.await(500,TimeUnit.MILLISECONDS);
 		barrier.await(this.id);
 	}
+
+	public void waitForCyclicBarrier() {
+			try {
+				cyclicBarrier.await();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (BrokenBarrierException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	}
+
 
 	double simpleTimeSaveToProcess() {
 		if (verbosityLevel > 0) {
@@ -1243,6 +1258,11 @@ public class LP implements Executor, Runnable {
 	 */
 	public void setBarrier(Barrier barrier) {
 		this.barrier = barrier;
+	}
+
+	
+	public void setCyclicBarrier(CyclicBarrier barrier) {
+		this.cyclicBarrier = barrier;
 	}
 
 	/**

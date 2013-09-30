@@ -11,6 +11,7 @@ import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
+import de.tud.cs.simqpn.kernel.executor.parallel.CyclicBarrierExecutor;
 import de.tud.cs.simqpn.kernel.executor.parallel.FlexibleParallelExecutor;
 import de.tud.cs.simqpn.kernel.executor.parallel.JBarrierExecutor;
 import de.tud.cs.simqpn.kernel.executor.parallel.ParallelExecutor;
@@ -71,10 +72,11 @@ public class BatchMeans implements Analyzer {
 		Callable<Net> run;
 		int verbosityLevel = 0;
 		//run = new JBarrierExecutor(net, configuration,monitor,1, verbosityLevel);			
+		//run = new CyclicBarrierExecutor(net, configuration,monitor,1, verbosityLevel);			
 		//run = new PseudoParallelExecutor(net, configuration,monitor,1, verbosityLevel);			
 		//run = new FlexibleParallelExecutor(net, configuration,monitor,1);			
 		//run = new ParallelExecutor(net, configuration, monitor, 1);			
-		run = new SequentialExecutor(net, configuration,monitor,1);			
+		run = new SequentialExecutor(net, configuration,monitor,1);
 
 		try {
 			net = run.call();
