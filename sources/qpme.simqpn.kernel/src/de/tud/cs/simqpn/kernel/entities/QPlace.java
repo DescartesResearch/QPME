@@ -149,7 +149,7 @@ public class QPlace extends Place {
 			SimQPNConfiguration configuration) throws SimQPNException {
 		QPlace clone = new QPlace(id, name, colors, this.inTrans.length,
 				this.outTrans.length, probeActions[0].length, statsLevel,
-				depDiscip, queues[this.id], element, configuration);
+				depDiscip, queues[queue.id], element, configuration);
 		clone.finishCloning(this, queues, transitions, configuration);
 		return clone;
 	}
