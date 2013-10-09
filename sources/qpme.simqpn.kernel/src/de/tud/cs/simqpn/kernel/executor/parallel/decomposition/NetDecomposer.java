@@ -120,6 +120,12 @@ public class NetDecomposer {
 								if (!usedPlace[placeId]) {
 									idPlacesLP.add(placeId);
 									usedPlace[placeId] = true;
+									for(Transition t2 : places[placeId].outTrans){
+										if (usedTransitions[t2.id] == false) {
+											idTransitionsLP.add(t2.id);
+											usedTransitions[t2.id] = true;
+										}
+									}
 								}
 							}
 						} else {
