@@ -75,6 +75,7 @@ import de.tud.cs.simqpn.kernel.executor.parallel.termination.StopCriterionContro
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 import edu.bonn.cs.net.jbarrier.barrier.Barrier;
+import edu.cornell.lassp.houle.RngPack.RandomElement;
 
 /**
  * This class represents a logical process (LP) which simulates a part of a net.
@@ -957,14 +958,8 @@ public class LP implements Executor, Runnable {
 		enTransCnt = 0;
 		enTransIDs = new int[transitions.length];
 
-		// Create randTransGen
-		double[] pdf = new double[transitions.length];
-		for (int t = 0; t < transitions.length; t++) {
-			pdf[t] = 1;
-		}
-		if (pdf.length > 1) {
-			randTransGen = new EmpiricalWalker(pdf, Empirical.NO_INTERPOLATION,
-					RandomNumberGenerator.nextRandNumGen());
+		if(randTransGen == null){			
+			createRandomTransGen();
 		}
 		// Initialize transStatus and enTransCnt
 		transStatus = new boolean[transitions.length];
@@ -1029,6 +1024,24 @@ public class LP implements Executor, Runnable {
 					});
 		}
 
+	}
+
+	
+	private void createRandomTransGen() throws SimQPNException {
+		RandomElement randomElement = RandomNumberGenerator.nextRandNumGen();
+		createRandomTransGen(randomElement);
+	}
+
+	public void createRandomTransGen(RandomElement randomElement) throws SimQPNException {
+		// Create randTransGen
+		double[] pdf = new double[transitions.length];
+		for (int t = 0; t < transitions.length; t++) {
+			pdf[t] = 1;
+		}
+		if (pdf.length > 1) {
+			randTransGen = new EmpiricalWalker(pdf, Empirical.NO_INTERPOLATION,randomElement
+					);
+		}
 	}
 
 	/**

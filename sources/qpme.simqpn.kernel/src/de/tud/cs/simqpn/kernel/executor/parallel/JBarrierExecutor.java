@@ -13,9 +13,11 @@ import de.tud.cs.simqpn.kernel.executor.parallel.decomposition.NetDecomposer;
 import de.tud.cs.simqpn.kernel.executor.parallel.termination.SimpleStopCriterionController;
 import de.tud.cs.simqpn.kernel.executor.parallel.termination.StopController;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
+import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 import edu.bonn.cs.net.jbarrier.barrier.Barrier;
 import edu.bonn.cs.net.jbarrier.barrier.CentralBarrier;
 import edu.bonn.cs.net.jbarrier.barrier.ButterflyBarrier;
+import edu.cornell.lassp.houle.RngPack.RandomElement;
 
 ;
 
@@ -77,11 +79,14 @@ public class JBarrierExecutor implements Callable<Net> {
 		}
 
 		Thread[] threads = new Thread[lps.length];
+		RandomElement randomElement = RandomNumberGenerator.nextRandNumGen();
 		for (int i = 0; i < lps.length; i++) {
 			InternalLP newLP = new InternalLP(lps[i], stopCriterion);
+			lps[i].createRandomTransGen(randomElement);
 			threads[i] = new Thread(newLP);
 		}
 		barrierAction.setThreads(threads);
+
 		for (int i = 0; i < lps.length; i++) {
 			threads[i].start();
 		}
@@ -110,7 +115,7 @@ public class JBarrierExecutor implements Callable<Net> {
 		@Override
 		public void run() {
 			try {
-				lp.initializeWorkingVariables();
+				lp.initializeWorkingVariables();					
 				lp.waitForBarrier();
 				while (!stopCriterion.hasSimulationFinished()) {
 					lp.processSaveEventsWithPrecissionCheck();
