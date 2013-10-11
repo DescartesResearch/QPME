@@ -137,7 +137,7 @@ public class FCFSQueue extends Queue {
 		int n = 0;
 		while (n < count && numBusyServers < numServers) {
 			// Schedule service completion event
-			double servTime = queuingPlace.getNextServiceTime(color);
+			double servTime = queuingPlace.removeNextServiceTime(color);
 			Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[n]
 					: new Token(queuingPlace, color);
 			tk.arrivTS = executor.getClock();

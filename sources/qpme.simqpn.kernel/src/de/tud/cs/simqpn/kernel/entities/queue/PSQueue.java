@@ -428,7 +428,7 @@ public class PSQueue extends Queue {
 				updateResidServTimes(executor.getClock());
 			}
 			for (int i = 0; i < count; i++) {
-				double serviceTime = queuingPlace.getNextServiceTime(color);
+				double serviceTime = queuingPlace.removeNextServiceTime(color);
 				queuingPlace.getQueueTokResidServTimes()[color].add(serviceTime);
 			}
 		}
