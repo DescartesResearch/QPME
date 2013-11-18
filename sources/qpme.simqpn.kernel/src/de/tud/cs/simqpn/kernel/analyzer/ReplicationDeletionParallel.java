@@ -1,5 +1,6 @@
 package de.tud.cs.simqpn.kernel.analyzer;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -9,6 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
+import org.dom4j.Element;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
@@ -21,7 +23,7 @@ import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.stats.AggregateStats;
 import de.tud.cs.simqpn.kernel.stats.Stats;
 
-public class ReplicationDeletionParallel implements Analyzer {
+public class ReplicationDeletionParallel extends Analyzer {
 
 	private static SimulatorProgress progressMonitor;
 	private static Logger log = Logger.getLogger(ReplicationDeletionParallel.class);
@@ -138,6 +140,14 @@ public class ReplicationDeletionParallel implements Analyzer {
 				}
 			}
 		}
+	}
+
+	@Override
+	public File writeToFile(Stats[] result, SimQPNConfiguration configuration,
+			String outputFileName, Element XML, String configurationName)
+			throws SimQPNException {
+		// TODO Implement
+		return null;
 	}
 
 }

@@ -2,6 +2,7 @@ package de.tud.cs.simqpn.kernel.analyzer;
 
 import static de.tud.cs.simqpn.kernel.util.LogUtil.formatMultilineMessage;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -26,7 +27,7 @@ import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.stats.AggregateStats;
 import de.tud.cs.simqpn.kernel.stats.Stats;
 
-public class Welch implements Analyzer {
+public class Welch extends Analyzer {
 	private static Logger log = Logger.getLogger(Welch.class);
 	private static SimulatorProgress progressMonitor;
 
@@ -172,6 +173,14 @@ public class Welch implements Analyzer {
 			}
 		}
 		return aggrStats;
+	}
+
+	@Override
+	public File writeToFile(Stats[] result, SimQPNConfiguration configuration,
+			String outputFileName, Element XML, String configurationName)
+			throws SimQPNException {
+		// TODO Implement a write to File method
+		return null;
 	}
 
 }

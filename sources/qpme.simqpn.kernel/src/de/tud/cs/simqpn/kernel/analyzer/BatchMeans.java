@@ -1,10 +1,13 @@
 package de.tud.cs.simqpn.kernel.analyzer;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
+import org.dom4j.Document;
+import org.dom4j.Element;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
@@ -18,9 +21,10 @@ import de.tud.cs.simqpn.kernel.executor.parallel.ParallelExecutor;
 import de.tud.cs.simqpn.kernel.executor.parallel.PseudoParallelExecutor;
 import de.tud.cs.simqpn.kernel.executor.sequential.SequentialExecutor;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
+import de.tud.cs.simqpn.kernel.persistency.StatsDocumentBuilder;
 import de.tud.cs.simqpn.kernel.stats.Stats;
 
-public class BatchMeans implements Analyzer {
+public class BatchMeans extends Analyzer {
 	private static Logger log = Logger.getLogger(BatchMeans.class);
 
 	private static SimulatorProgress progressMonitor;
@@ -89,4 +93,27 @@ public class BatchMeans implements Analyzer {
 		return new SimulatorResults(net.getPlaces(), net.getQueues(),
 				net.getProbes());
 	}
+
+	@Override
+	public File writeToFile(Stats[] result, SimQPNConfiguration configuration, String outputFileName, Element  XMLNet, String configurationName) throws SimQPNException {
+		File resultFile = null;
+		// Skip stats document generation for WELCH and REPL_DEL since the
+		// document builder does not support these methods yet.
+
+		if ((result != null)
+				&& (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS)) {
+			StatsDocumentBuilder builder = new StatsDocumentBuilder(result,
+					XMLNet, configurationName);
+			Document statsDocument = builder.buildDocument(configuration);
+			if (outputFileName != null) {
+				resultFile = new File(outputFileName);
+			} else {
+				resultFile = new File(configuration.getStatsDir(),
+						builder.getResultFileBaseName() + ".simqpn");
+			}
+			saveXmlToFile(statsDocument, resultFile);
+		}
+		return resultFile;
+	}
+
 }

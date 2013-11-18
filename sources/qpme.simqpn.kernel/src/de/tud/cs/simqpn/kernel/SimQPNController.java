@@ -86,22 +86,13 @@ package de.tud.cs.simqpn.kernel;
 // You can add your comments/answers with a "CHRIS" label.
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.dom4j.Document;
 import org.dom4j.Element;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration.AnalysisMethod;
 import de.tud.cs.simqpn.kernel.analyzer.Analyzer;
-import de.tud.cs.simqpn.kernel.analyzer.BatchMeans;
-import de.tud.cs.simqpn.kernel.analyzer.ReplicationDeletion;
-import de.tud.cs.simqpn.kernel.analyzer.ReplicationDeletionParallel;
-import de.tud.cs.simqpn.kernel.analyzer.Welch;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
@@ -113,7 +104,6 @@ import de.tud.cs.simqpn.kernel.loader.XMLNetFlattener;
 import de.tud.cs.simqpn.kernel.loader.XMLValidator;
 import de.tud.cs.simqpn.kernel.loader.XMLWelch;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
-import de.tud.cs.simqpn.kernel.persistency.StatsDocumentBuilder;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.stats.AggregateStats;
 import de.tud.cs.simqpn.kernel.stats.Stats;
@@ -133,23 +123,19 @@ public class SimQPNController {
 	// is correct
 	//
 	public static final String QPME_VERSION = "2.1.0";
-
 	private static Logger log = Logger.getLogger(SimQPNController.class);
-
 	private SimQPNConfiguration configuration;
-
 	private Net net;
-	/** True if simulation is currently running. */
-	private static boolean simRunning;
+	private static boolean simulationCurrentlyRunning;
 	private AggregateStats[] aggregateStats;
 
 	/**
-	 * Used to
+	 * Should be called to create an instance of SimQPNController. Encapsulates
+	 * instantiation and initialization.
 	 * 
-	 * The get Ready Method
-	 * 
-	 * TODO Keine Lese-Zugriffe auf Objekt bevor initialisiert: besser in
-	 * init()-Methode auslagern: Ansonsten -->Illegal State Exception
+	 * Note: We did separate the creation and modification to have no read
+	 * access before initialization/the constructor has been left. Otherwise an
+	 * IllegalStateException is likely.
 	 * 
 	 * @param netXML
 	 * @param configurationName
@@ -164,25 +150,26 @@ public class SimQPNController {
 
 		SimQPNController sim = new SimQPNController(netXML, configurationName,
 				logConfigFilename);
-		sim.getReady(netXML, configurationName);
+		sim.initialize(netXML, configurationName);
 		return sim;
 	}
 
 	/**
-	 * Constructor
+	 * Instead of this constructor use
+	 * {@link #getSimQPNController(Element, String, String)} for object creation
 	 * 
-	 * @param netXML
+	 * @param XMLDescription
 	 * @param configurationName
 	 * @throws SimQPNException
 	 */
-	private SimQPNController(Element netXML, String configurationName,
+	private SimQPNController(Element XMLDescription, String configurationName,
 			String logConfigFilename) throws SimQPNException {
 		// Random Number Generation (Note: needs to be initialized before
 		// starting the model definition)
 		RandomNumberGenerator.initialize();
-		this.configuration = ConfigurationLoader.loadConfiguration(netXML,
-				configurationName, logConfigFilename);
-		this.net = new NetLoader().load(netXML, configurationName,
+		this.configuration = ConfigurationLoader.loadConfiguration(
+				XMLDescription, configurationName, logConfigFilename);
+		this.net = new NetLoader().load(XMLDescription, configurationName,
 				configuration);
 	}
 
@@ -193,11 +180,11 @@ public class SimQPNController {
 	 * @return
 	 * @exception
 	 */
-	private void getReady(Element netXML, String configurationName)
+	private void initialize(Element XMLNetDescription, String configurationName)
 			throws SimQPNException {
-		ConfigurationLoader.configureSimulatorSettings(netXML,
+		ConfigurationLoader.configureSimulatorSettings(XMLNetDescription,
 				configurationName, configuration);
-		
+
 		// CONFIG: Whether to use indirect estimators for FCFS queues
 		for (int p = 0; p < getNet().getNumPlaces(); p++) {
 			Place pl = getNet().getPlace(p);
@@ -208,13 +195,15 @@ public class SimQPNController {
 			}
 		}
 
-		XMLBatchMeans.configureBatchMeansMethod(netXML, configuration, net);
-		netXML = XMLNetFlattener.flattenHierarchicalNetParts(netXML,
+		XMLBatchMeans.configureBatchMeansMethod(XMLNetDescription, configuration, net);
+		XMLNetDescription = XMLNetFlattener.flattenHierarchicalNetParts(XMLNetDescription,
 				configurationName, configuration.getStatsDir());
-		
-		aggregateStats = XMLAggregateStats.initStatsArray(net, configuration, netXML);
-		if(configuration.getAnalMethod() == AnalysisMethod.WELCH){
-			XMLWelch.configurePlaceStats(net.getPlaces(), netXML, configurationName);			
+
+		aggregateStats = XMLAggregateStats.initStatsArray(net, configuration,
+				XMLNetDescription);
+		if (configuration.getAnalMethod() == AnalysisMethod.WELCH) {
+			XMLWelch.configurePlaceStats(net.getPlaces(), XMLNetDescription,
+					configurationName);
 		}
 	}
 
@@ -227,95 +216,21 @@ public class SimQPNController {
 	 * @return
 	 * @exception
 	 */
-	public File execute(Element XMLNet, String configurationString,
+	public File execute(Element XMLDescription, String configurationName,
 			String outputFilename, SimulatorProgress monitor)
 			throws SimQPNException {
-
 		// TODO: Make the Stdout output print to $statsDir/Output.txt
 		// CHRIS: Not done yet
 
-		Stats[] result = null;
-
-		setSimRunning(true); // True if simulation is currently running.
-
-		// NOTE: In the following, if the simulation is interrupted, simRunning
-		// should be reset.
-
-		
-		Analyzer analyzer = null;
-		try {
-			// TODO Factory Methode / Factory Klasse
-			if (getConfiguration().runMode == SimQPNConfiguration.NORMAL) {
-				if (getConfiguration().getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS) {
-					analyzer = new BatchMeans();
-				} else if (getConfiguration().getAnalMethod() == SimQPNConfiguration.AnalysisMethod.REPL_DEL) {
-					configuration.setUseStdStateStats(false);
-					//analyzer = new ReplicationDeletion(aggregateStats);
-					analyzer = new ReplicationDeletionParallel(aggregateStats);
-					
-				} else {
-					log.error("Illegal analysis method specified!");
-					throw new SimQPNException();
-				}
-			} else if (getConfiguration().runMode == SimQPNConfiguration.INIT_TRANS) {
-				if (getConfiguration().getAnalMethod() == SimQPNConfiguration.AnalysisMethod.WELCH) {
-					analyzer = new Welch(XMLNet, configurationString);
-				} else {
-					log.error("Analysis method "
-							+ getConfiguration().getAnalMethod()
-							+ " not supported in INIT_TRANS mode!");
-					throw new SimQPNException();
-				}
-			} else {
-				log.error("Invalid run mode specified!");
-				throw new SimQPNException();
-			}
-			double runtime = System.currentTimeMillis();
-			result = analyzer.analyze(net, configuration, monitor);
-			runtime = System.currentTimeMillis() - runtime;
-			System.out.println("XXXXXXXXXXXXXXXXXXX "+runtime);
-			System.out.println("XXXXXXXXXXXXXXXXXXX "+runtime/1000 + "sec");
-		} finally {
-			setSimRunning(false);
-			LogManager.shutdown();
-		}
-
-		File resultFile = null;
-		// Skip stats document generation for WELCH and REPL_DEL since the
-		// document builder does not support these methods yet.
-
-		if ((result != null)
-				&& (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS)) {
-			StatsDocumentBuilder builder = new StatsDocumentBuilder(result,
-					XMLNet, configurationString);
-			Document statsDocument = builder.buildDocument(configuration);
-			if (outputFilename != null) {
-				resultFile = new File(outputFilename);
-			} else {
-				resultFile = new File(configuration.getStatsDir(),
-						builder.getResultFileBaseName() + ".simqpn");
-			}
-			saveXmlToFile(statsDocument, resultFile);
-		}
+		setSimRunning(true);
+		Analyzer analyzer = Analyzer.getAnalyzer(configuration, aggregateStats,
+				XMLDescription, configurationName);
+		Stats[] result = analyzer.analyze(net, configuration, monitor);
+		setSimRunning(false);
+		LogManager.shutdown();
+		File resultFile = analyzer.writeToFile(result, configuration,
+				outputFilename, XMLDescription, configurationName);
 		return resultFile;
-	}
-
-	private void saveXmlToFile(Document doc, File file) {
-		XMLWriter writer = null;
-		try {
-			writer = new XMLWriter(new FileOutputStream(file),
-					OutputFormat.createPrettyPrint());
-			writer.write(doc);
-		} catch (IOException e) {
-			log.error("", e);
-		} finally {
-			if (writer != null) {
-				try {
-					writer.close();
-				} catch (IOException e) {
-				}
-			}
-		}
 	}
 
 	public Net getNet() {
@@ -335,11 +250,13 @@ public class SimQPNController {
 	}
 
 	public static boolean isSimRunning() {
-		return simRunning;
+		// True if simulation is currently running.
+		return simulationCurrentlyRunning;
 	}
 
+	/** Should be reset if the simulation is interrupted */
 	public static void setSimRunning(boolean simRunning) {
-		SimQPNController.simRunning = simRunning;
+		SimQPNController.simulationCurrentlyRunning = simRunning;
 	}
 
-} // end of Class Simulator
+}
