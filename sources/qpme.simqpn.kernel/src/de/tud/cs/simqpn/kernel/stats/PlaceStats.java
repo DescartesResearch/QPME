@@ -94,8 +94,8 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	// ----------------------------------------------------------------------------------------------------
 
 	// StatsLevel 1 ---------------------------------------------------------------------------------------
-	public int[] arrivCnt;					// Total number of tokens arrived to this place during the run.
-	public int[] deptCnt;					// Total number of tokens departed from this place during the run.
+	public long[] arrivCnt;					// Total number of tokens arrived to this place during the run.		//TODO Check is double is sufficient. Note: int is not sufficient
+	public long[] deptCnt;					// Total number of tokens departed from this place during the run.  //TODO Check is double is sufficient. Note: int is not sufficient 
 	public double[] arrivThrPut;			// Arrival rate = (arrivCnt[c] / msrmPrdLen).
 	public double[] deptThrPut;				// Departure rate = (deptCnt[c] / msrmPrdLen).
 	
