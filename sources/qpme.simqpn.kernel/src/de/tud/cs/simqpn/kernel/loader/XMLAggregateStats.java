@@ -12,7 +12,6 @@ import org.dom4j.XPath;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration.AnalysisMethod;
-import de.tud.cs.simqpn.kernel.analyzer.ReplicationDeletion;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
@@ -22,8 +21,8 @@ import de.tud.cs.simqpn.kernel.stats.Stats;
 public class XMLAggregateStats {
 	private static Logger log = Logger.getLogger(XMLAggregateStats.class);
 
-	public static AggregateStats[] initStatsArray(Net net,
-			SimQPNConfiguration configuration, Element netXML)
+	public static AggregateStats[] initStatsArray(Element XMLDescription, Net net,
+			SimQPNConfiguration configuration)
 			throws SimQPNException {
 
 		Place pl;
@@ -77,7 +76,7 @@ public class XMLAggregateStats {
 			 */
 			// Iterate through all places.
 			XPath xpathSelector = XMLHelper.createXPath("//place");
-			List<Element> placeList = xpathSelector.selectNodes(netXML);
+			List<Element> placeList = xpathSelector.selectNodes(XMLDescription);
 
 			Iterator placeIterator = placeList.iterator();
 			for (int p = 0; placeIterator.hasNext(); p++) {

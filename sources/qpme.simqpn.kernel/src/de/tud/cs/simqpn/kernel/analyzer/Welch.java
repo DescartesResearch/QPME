@@ -17,6 +17,7 @@ import org.dom4j.XPath;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
+import de.tud.cs.simqpn.kernel.SimQPNConfiguration.AnalysisMethod;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
@@ -33,12 +34,12 @@ public class Welch extends Analyzer {
 
 	static List<Element> placeList;
 	static String configurationName;
-	static Element netXML;
+	static Element XMLDescription;
 	
-	public Welch(Element netXML, String configurationString) {
-		Welch.netXML = netXML;
+	public Welch(Element XMLDescription, String configurationString) {
+		Welch.XMLDescription = XMLDescription;
 		XPath xpathSelector = XMLHelper.createXPath("//place");
-		placeList = xpathSelector.selectNodes(netXML);
+		placeList = xpathSelector.selectNodes(XMLDescription);
 		configurationName = configurationName;
 	}
 	
@@ -49,6 +50,9 @@ public class Welch extends Analyzer {
 	
 	public Stats[] analyze(Net net, SimQPNConfiguration configuration,
 			SimulatorProgress monitor) throws SimQPNException {
+		XMLWelch.configurePlaceStats(net.getPlaces(), XMLDescription,
+					configurationName);
+
 		return runWelchMtd(net, configuration, monitor);
 	}
 

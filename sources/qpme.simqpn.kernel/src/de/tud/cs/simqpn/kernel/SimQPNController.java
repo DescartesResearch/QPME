@@ -91,7 +91,6 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.dom4j.Element;
 
-import de.tud.cs.simqpn.kernel.SimQPNConfiguration.AnalysisMethod;
 import de.tud.cs.simqpn.kernel.analyzer.Analyzer;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
@@ -102,14 +101,13 @@ import de.tud.cs.simqpn.kernel.loader.XMLAggregateStats;
 import de.tud.cs.simqpn.kernel.loader.XMLBatchMeans;
 import de.tud.cs.simqpn.kernel.loader.XMLNetFlattener;
 import de.tud.cs.simqpn.kernel.loader.XMLValidator;
-import de.tud.cs.simqpn.kernel.loader.XMLWelch;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.stats.AggregateStats;
 import de.tud.cs.simqpn.kernel.stats.Stats;
 
 /**
- * Class Simulator
+ * The SimQPNController class manages the simulation from loading to result processing and saving.
  * 
  * @version %I%, %G%
  */
@@ -133,57 +131,56 @@ public class SimQPNController {
 	 * Should be called to create an instance of SimQPNController. Encapsulates
 	 * instantiation and initialization.
 	 * 
-	 * Note: We did separate the creation and modification to have no read
+	 * Note: We did separate the creation and modification to ensure no read
 	 * access before initialization/the constructor has been left. Otherwise an
 	 * IllegalStateException is likely.
 	 * 
-	 * @param netXML
+	 * @param XMLDescription
 	 * @param configurationName
 	 * @param logConfigFilename
 	 * @return
 	 * @throws SimQPNException
 	 */
-	public static SimQPNController getSimQPNController(Element netXML,
+	public static SimQPNController getSimQPNController(Element XMLDescription,
 			String configurationName, String logConfigFilename)
 			throws SimQPNException {
-		XMLValidator.validateInputNet(netXML);
+		XMLValidator.validateInputNet(XMLDescription);
 
-		SimQPNController sim = new SimQPNController(netXML, configurationName,
-				logConfigFilename);
-		sim.initialize(netXML, configurationName);
+		SimQPNController sim = new SimQPNController();
+		sim.initialize(XMLDescription, configurationName, logConfigFilename);
 		return sim;
 	}
 
 	/**
 	 * Instead of this constructor use
-	 * {@link #getSimQPNController(Element, String, String)} for object creation
+	 * {@link #getSimQPNController(Element, String, String)} for object creation.
 	 * 
 	 * @param XMLDescription
 	 * @param configurationName
 	 * @throws SimQPNException
 	 */
-	private SimQPNController(Element XMLDescription, String configurationName,
-			String logConfigFilename) throws SimQPNException {
-		// Random Number Generation (Note: needs to be initialized before
-		// starting the model definition)
-		RandomNumberGenerator.initialize();
-		this.configuration = ConfigurationLoader.loadConfiguration(
-				XMLDescription, configurationName, logConfigFilename);
-		this.net = new NetLoader().load(XMLDescription, configurationName,
-				configuration);
-	}
+	private SimQPNController() {};
 
 	/**
-	 * Method getReady - prepares for the simulation run
+	 * Loads net and configuration from XML description.
 	 * 
 	 * @param
 	 * @return
 	 * @exception
 	 */
-	private void initialize(Element XMLNetDescription, String configurationName)
+	private void initialize(Element XMLDescription, String configurationName, String logConfigFilename)
 			throws SimQPNException {
-		ConfigurationLoader.configureSimulatorSettings(XMLNetDescription,
-				configurationName, configuration);
+		// NOTE: Random needs to be initialized before starting the model definition
+		RandomNumberGenerator.initialize();
+
+		this.configuration = ConfigurationLoader.loadConfiguration(
+				XMLDescription, configurationName, logConfigFilename);
+		
+		XMLDescription = XMLNetFlattener.flattenHierarchicalNetParts(XMLDescription,
+				configurationName, configuration.getStatsDir());
+
+		this.net = new NetLoader().load(XMLDescription, configurationName,
+				configuration);
 
 		// CONFIG: Whether to use indirect estimators for FCFS queues
 		for (int p = 0; p < getNet().getNumPlaces(); p++) {
@@ -195,22 +192,13 @@ public class SimQPNController {
 			}
 		}
 
-		XMLBatchMeans.configureBatchMeansMethod(XMLNetDescription, configuration, net);
-		XMLNetDescription = XMLNetFlattener.flattenHierarchicalNetParts(XMLNetDescription,
-				configurationName, configuration.getStatsDir());
+		XMLBatchMeans.modificateNetForBatchMeans(XMLDescription, configuration, net);
 
-		aggregateStats = XMLAggregateStats.initStatsArray(net, configuration,
-				XMLNetDescription);
-		if (configuration.getAnalMethod() == AnalysisMethod.WELCH) {
-			XMLWelch.configurePlaceStats(net.getPlaces(), XMLNetDescription,
-					configurationName);
-		}
+		aggregateStats = XMLAggregateStats.initStatsArray(XMLDescription, net, configuration);
 	}
 
 	/**
-	 * Method execute - executes the simulation run
-	 * 
-	 * TODO do not pass Element, and configurationString TODO delet Monitor
+	 * Executes the simulation run. 
 	 * 
 	 * @param
 	 * @return

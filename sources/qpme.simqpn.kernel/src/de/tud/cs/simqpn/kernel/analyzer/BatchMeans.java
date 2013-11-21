@@ -14,27 +14,23 @@ import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
-import de.tud.cs.simqpn.kernel.executor.parallel.CyclicBarrierExecutor;
-import de.tud.cs.simqpn.kernel.executor.parallel.FlexibleParallelExecutor;
-import de.tud.cs.simqpn.kernel.executor.parallel.JBarrierExecutor;
-import de.tud.cs.simqpn.kernel.executor.parallel.ParallelExecutor;
-import de.tud.cs.simqpn.kernel.executor.parallel.PseudoParallelExecutor;
 import de.tud.cs.simqpn.kernel.executor.sequential.SequentialExecutor;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.persistency.StatsDocumentBuilder;
 import de.tud.cs.simqpn.kernel.stats.Stats;
 
+/** Method of non-overlapping batch means */
 public class BatchMeans extends Analyzer {
 	private static Logger log = Logger.getLogger(BatchMeans.class);
 
 	private static SimulatorProgress progressMonitor;
 	
-	/** Method of non-overlapping batch means */
 	public BatchMeans() {};
 
 	@Override
 	public Stats[] analyze(Net net, SimQPNConfiguration configuration,
 			SimulatorProgress monitor) throws SimQPNException {
+		
 		SimulatorResults results = runBatchMeans(net, configuration, monitor);
 
 		List<Stats> stats = new ArrayList<Stats>();

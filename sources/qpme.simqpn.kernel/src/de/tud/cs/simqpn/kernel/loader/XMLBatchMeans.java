@@ -25,7 +25,7 @@ public class XMLBatchMeans {
 	 * 
 	 * @throws SimQPNException
 	 */
-	public static void configureBatchMeansMethod(Element netXML,
+	public static void modificateNetForBatchMeans(Element XMLDescription,
 			SimQPNConfiguration configuration, Net net) throws SimQPNException {
 		/*
 		 * "Advanced Configuration Options" only applicable to the BATCH_MEANS
@@ -57,18 +57,14 @@ public class XMLBatchMeans {
 		// CONFIG: BATCH_MEANS Method Initialization Parameters
 		if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS) {
 			XPath xpathSelector = XMLHelper.createXPath("//place");
-			List<Element> placeList = xpathSelector.selectNodes(netXML);
+			List<Element> placeList = xpathSelector.selectNodes(XMLDescription);
 			xpathSelector = XMLHelper.createXPath("//probe");
-			List<Element> probeList = xpathSelector.selectNodes(netXML);
+			List<Element> probeList = xpathSelector.selectNodes(XMLDescription);
 			Iterator<Element> placeIterator;
 			placeIterator = placeList.iterator();
 			for (int p = 0; placeIterator.hasNext(); p++) {
 				Element place = placeIterator.next();
 				Place pl = net.getPlace(p);
-				/**
-				 * for (int p = 0; p<net.getNumPlaces(); p++) { Place pl =
-				 * net.getPlace(p);
-				 */
 				if (pl.statsLevel >= 3) {
 					log.debug("places[" + p + "]");
 					xpathSelector = XMLHelper
@@ -78,7 +74,7 @@ public class XMLBatchMeans {
 					for (int cr = 0; colorRefIterator.hasNext(); cr++) {
 						Element colorRef = colorRefIterator.next();
 						Element colorRefSettings = ConfigurationLoader
-								.getSettings(colorRef,
+								.getElement(colorRef,
 										net.getConfigurationName());
 						// Initialize Place (or Depository if pl is QPlace)
 						if (colorRefSettings != null) {
@@ -693,7 +689,7 @@ public class XMLBatchMeans {
 					for (int cr = 0; colorRefIterator.hasNext(); cr++) {
 						Element colorRef = colorRefIterator.next();
 						Element colorRefSettings = ConfigurationLoader
-								.getSettings(colorRef,
+								.getElement(colorRef,
 										net.getConfigurationName());
 						// Initialize Probe
 						if (colorRefSettings != null) {
