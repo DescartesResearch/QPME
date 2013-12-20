@@ -184,8 +184,8 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 		this.colors = colors;
 		
 		// statsLevel >= 1
-		this.arrivCnt 								= new int[numColors];
-		this.deptCnt 								= new int[numColors];
+		this.arrivCnt 								= new long[numColors];
+		this.deptCnt 								= new long[numColors];
 		this.arrivThrPut 							= new double[numColors];
 		this.deptThrPut 							= new double[numColors];
 		if (statsLevel >= 2) {
@@ -936,7 +936,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			Element metaAttribute = new DefaultElement("meta-attribute");
 			metaAttribute.addAttribute("name", "simulator-results");
 
-			metaAttribute.addAttribute("arrivCnt", Integer
+			metaAttribute.addAttribute("arrivCnt", Long
 					.toString(arrivCnt[c]));
 			metaAttribute.addAttribute("deptCnt", Double.toString(minST[c]));
 			metaAttribute.addAttribute("arrivThrPut", Double
