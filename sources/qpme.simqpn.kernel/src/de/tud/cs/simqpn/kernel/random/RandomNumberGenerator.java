@@ -1,5 +1,7 @@
 package de.tud.cs.simqpn.kernel.random;
 
+import java.util.Date;
+
 import org.apache.log4j.Logger;
 
 import cern.jet.random.Uniform;
@@ -29,29 +31,31 @@ public class RandomNumberGenerator {
 	private static Logger log = Logger.getLogger(RandomNumberGenerator.class);
 
 	/**
-	 * Sets a seed according to the date 
+	 * Chooses a seed randomly 
 	 */
 	public static void initialize() {
-		randGenClass = RandomGeneratorCategory.MersenneTwister;
-		useRandSeedTable = true;
-		//randNumGen = new Uniform(new DRand(new java.util.Date(0))); //January 1, 1970, 00:00:00 GMT
-		
 		java.util.Date date;
 //		date = new java.util.Date(0);
 //		System.out.println(date);
-		date = new java.util.Date((long)1350000003000.0);
-		System.out.println(date);
+//		date = new java.util.Date((long)1350000003000.0);
+//		System.out.println(date);
 //		date = new java.util.Date((long)1370000000000.0);
 //		System.out.println(date);
 //		date = new java.util.Date((long)1300000000000.0);
 //		System.out.println(date);
 //		date = new java.util.Date((long)1500000000000.0);
 //		System.out.println(date);
-		
-	
-		
+		date = new Date();
+		initialize(date);
+	}
+
+	/**
+	 * Sets a seed according to the date 
+	 */
+	public static void initialize(Date date) {
+		randGenClass = RandomGeneratorCategory.MersenneTwister;
+		useRandSeedTable = true;
 		randNumGen = new Uniform(new DRand(date));
-		//randNumGen = new Uniform(new DRand(new java.util.Date()));
 		if (useRandSeedTable)
 			randSeedGen = new RandomSeedGenerator(randNumGen.nextIntFromTo(0, Integer.MAX_VALUE), randNumGen.nextIntFromTo(0, RandomSeedTable.COLUMNS - 1));
 	}

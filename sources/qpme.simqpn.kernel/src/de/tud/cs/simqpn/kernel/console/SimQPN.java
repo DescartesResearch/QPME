@@ -43,6 +43,7 @@
 
 package de.tud.cs.simqpn.kernel.console;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -67,28 +68,37 @@ import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
 public class SimQPN implements IApplication {
 	private static Logger log = Logger.getLogger(SimQPN.class);
-
+	
+	public static void main(String[] args) {
+		startSimQPNWithCommandLine(args);
+	}
 
 	private static void runSimulatorOnDocument(Document netDocument,
-			String configurationName, String outputFilename, String logConfigFilename, SimulatorProgress progress) throws SimQPNException {
+			String configurationName, String outputFilename, String logConfigFilename, SimulatorProgress progress, Date date) throws SimQPNException {
 		Element net = netDocument.getRootElement();
-		SimQPNController sim =  SimQPNController.getSimQPNController(net, configurationName, logConfigFilename);
+		SimQPNController sim =  SimQPNController.getSimQPNController(net, configurationName, logConfigFilename, date);
 		sim.execute(net, configurationName, outputFilename, progress);
 	}
 
 	@Override
 	public Object start(IApplicationContext context) throws Exception {
-		
+		String[] args = Platform.getApplicationArgs();
+		startSimQPNWithCommandLine(args);
+		return IApplication.EXIT_OK;
+	}
+
+
+	private static Integer startSimQPNWithCommandLine(String[] args) {
 		Document netDocument = null;
 		String configuration = null;
 		String outputFilename = null;
 		String logConfigFilename = null;
+		Date date = null;
 		boolean listConfigurations = false;
 		boolean runSimulation = false;
 		boolean validConfig = false;
 
 		try {
-			String[] args = Platform.getApplicationArgs();
 			for (int x = 0; x < args.length; x++) {
 				if ("-l".equals(args[x])) {
 					listConfigurations = true;
@@ -97,9 +107,11 @@ public class SimQPN implements IApplication {
 					configuration = args[++x];
 				} else if ("-o".equals(args[x])) {
 					outputFilename = args[++x];
+				} else if ("-d".equals(args[x])) {
+					date = new Date (Long.parseLong(args[++x]));
 				} else if ("-v".equals(args[x])) { 
 					logConfigFilename = args[++x];
-				} else if (x == (args.length - 1)) {
+				} else {
 					SAXReader xmlReader = new SAXReader();
 					netDocument = xmlReader.read(args[x]);
 				}
@@ -147,7 +159,7 @@ public class SimQPN implements IApplication {
 						System.out.println();
 						try {
 							runSimulatorOnDocument(netDocument, configuration,
-									outputFilename, logConfigFilename, new ConsoleSimulatorProgress());
+									outputFilename, logConfigFilename, new ConsoleSimulatorProgress(), date);
 						} catch (SimQPNException e) {
 							log.error("",e);
 							return new Integer(1); // signal error
@@ -159,7 +171,6 @@ public class SimQPN implements IApplication {
 			log.error("",e);
 			return new Integer(1); // signal error
 		}
-		
 		return IApplication.EXIT_OK;
 	}
 

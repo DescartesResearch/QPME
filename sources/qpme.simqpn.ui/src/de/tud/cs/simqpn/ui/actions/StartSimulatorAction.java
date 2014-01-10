@@ -43,6 +43,7 @@ package de.tud.cs.simqpn.ui.actions;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.dom4j.Element;
@@ -244,7 +245,11 @@ public class StartSimulatorAction extends AbstractHandler {
 			try {
 				monitor.subTask("Configure Simulator");
 
-				SimQPNController sim = SimQPNController.getSimQPNController(net, configuration, null);
+				Date date = null;
+				if(date == null){
+					date = new Date(); //set random date
+				}
+				SimQPNController sim = SimQPNController.getSimQPNController(net, configuration, null, date);
 				File resultFile = sim.execute(net, configuration, null, this);
 
 				monitor.subTask("Collect Results");

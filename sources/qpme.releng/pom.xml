@@ -87,6 +87,8 @@
 		<module>../qpme.simqpn.ui</module>
 		
 		<module>../qpme.model.migration.tests</module>
+		<module>../../../qpme-infrastructure/qpe.regressiontests</module>
+		
 
 		<module>../qpme.model.feature</module>
 		<module>../qpme.qpe.feature</module>

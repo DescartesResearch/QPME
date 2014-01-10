@@ -86,6 +86,7 @@ package de.tud.cs.simqpn.kernel;
 // You can add your comments/answers with a "CHRIS" label.
 
 import java.io.File;
+import java.util.Date;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -113,7 +114,7 @@ import de.tud.cs.simqpn.kernel.stats.Stats;
  */
 
 public class SimQPNController {
-
+	
 	//
 	// ATTENTION: Update this constant every time a new
 	// release of qpme is delivered so that
@@ -142,13 +143,20 @@ public class SimQPNController {
 	 * @throws SimQPNException
 	 */
 	public static SimQPNController getSimQPNController(Element XMLDescription,
-			String configurationName, String logConfigFilename)
+			String configurationName, String logConfigFilename, Date date)
 			throws SimQPNException {
 		XMLValidator.validateInputNet(XMLDescription);
 
 		SimQPNController sim = new SimQPNController();
-		sim.initialize(XMLDescription, configurationName, logConfigFilename);
+		sim.initialize(XMLDescription, configurationName, logConfigFilename, date);
 		return sim;
+	}
+	
+	public static SimQPNController getSimQPNController(Element XMLDescription,
+			String configurationName, String logConfigFilename)
+			throws SimQPNException {
+		Date date = new Date();
+		return getSimQPNController(XMLDescription, configurationName, logConfigFilename, date);
 	}
 
 	/**
@@ -161,6 +169,13 @@ public class SimQPNController {
 	 */
 	private SimQPNController() {};
 
+	
+	private void initialize(Element XMLDescription, String configurationName, String logConfigFilename)
+			throws SimQPNException {
+		Date date = new Date(); //random date
+		initialize(XMLDescription, configurationName, logConfigFilename, date);
+	}
+
 	/**
 	 * Loads net and configuration from XML description.
 	 * 
@@ -168,10 +183,10 @@ public class SimQPNController {
 	 * @return
 	 * @exception
 	 */
-	private void initialize(Element XMLDescription, String configurationName, String logConfigFilename)
+	private void initialize(Element XMLDescription, String configurationName, String logConfigFilename, Date date)
 			throws SimQPNException {
 		// NOTE: Random needs to be initialized before starting the model definition
-		RandomNumberGenerator.initialize();
+		RandomNumberGenerator.initialize(date);
 
 		this.configuration = ConfigurationLoader.loadConfiguration(
 				XMLDescription, configurationName, logConfigFilename);
