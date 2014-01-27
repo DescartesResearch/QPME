@@ -1,7 +1,13 @@
 package de.tud.cs.simqpn.kernel.analyzer;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
 import org.dom4j.Element;
@@ -13,6 +19,7 @@ import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.executor.sequential.SequentialExecutor;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
+import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.stats.AggregateStats;
 import de.tud.cs.simqpn.kernel.stats.Stats;
 
@@ -32,8 +39,8 @@ public class ReplicationDeletion extends Analyzer {
 	@Override
 	public Stats[] analyze(Net net, SimQPNConfiguration configuration,
 			SimulatorProgress monitor) throws SimQPNException {
-		AggregateStats[] finishedAggrStats = runMultRepl(net, configuration,
-				monitor, aggregateStats);
+		AggregateStats[] finishedAggrStats = runMultipleReplications(net,
+				configuration, monitor, aggregateStats);
 		return finishedAggrStats;
 	}
 
@@ -48,7 +55,7 @@ public class ReplicationDeletion extends Analyzer {
 	 * @return
 	 * @exception
 	 */
-	private AggregateStats[] runMultRepl(Net net,
+	private AggregateStats[] runMultipleReplications(Net net,
 			SimQPNConfiguration configuration, SimulatorProgress monitor,
 			AggregateStats[] aggregateStats) throws SimQPNException {
 		if (configuration.getNumRuns() <= 1) {
@@ -63,22 +70,54 @@ public class ReplicationDeletion extends Analyzer {
 		progressMonitor = monitor;
 		progressMonitor.startSimulation(configuration);
 
-		// Run replication loop
-		for (int i = 0; i < configuration.getNumRuns(); i++) {
-			Net netCopy = net.clone(configuration);
-			Callable<Net> executor = new SequentialExecutor(netCopy,
-					configuration, monitor, i + 1);
-			try {
-				executor.call();
-			} catch (Exception e) {
-				log.error("", e);
+		if (!configuration.isParallel()) {
+			for (int i = 0; i < configuration.getNumRuns(); i++) {
+				runReplication(net, configuration, monitor, numPlaces, i);
+				if (progressMonitor.isCanceled()){
+					break;
+				}
 			}
+		} else {
+			ExecutorService executorService = Executors
+					.newFixedThreadPool(Runtime.getRuntime()
+							.availableProcessors());
 
-			putStatisticsIntoArray(configuration, numPlaces, netCopy);
+			List<Callable<Net>> listOfRuns = new ArrayList<Callable<Net>>();
+			for (int i = 0; i < configuration.getNumRuns(); i++) {
+				Net netCopy = net.clone(configuration);
 
-			if (progressMonitor.isCanceled())
-				break;
+				Callable<Net> run = new SequentialExecutor(netCopy,
+						configuration, RandomNumberGenerator.nextRandNumGen(),
+						monitor, i + 1);
+				listOfRuns.add(run);
+
+
+			}
+			List<Future<Net>> listOfSimulatedNets;
+			try {
+				listOfSimulatedNets = (List<Future<Net>>) executorService
+						.invokeAll((List<? extends Callable<Net>>) listOfRuns);
+				for (Future<Net> future : listOfSimulatedNets) {
+					try {
+						Net futureNet = future.get();
+						putStatisticsIntoArray(configuration, numPlaces,
+								futureNet);
+					} catch (InterruptedException e) {
+						log.error("", e);
+					} catch (ExecutionException e2) {
+						log.error("", e2);
+					}
+
+					if (progressMonitor.isCanceled()) {
+						break;
+					}
+				}
+			} catch (InterruptedException e1) {
+				log.error("", e1);
+			}
+			executorService.shutdown();
 		}
+
 		progressMonitor.finishSimulation();
 
 		for (int i = 0; i < 2 * numPlaces; i++) {
@@ -93,6 +132,22 @@ public class ReplicationDeletion extends Analyzer {
 				aggregateStats[i].printReport(configuration);
 
 		return aggregateStats;
+	}
+
+	private void runReplication(Net net, SimQPNConfiguration configuration,
+			SimulatorProgress monitor, int numPlaces, int i)
+			throws SimQPNException {
+		Net netCopy = net.clone(configuration);
+		Callable<Net> executor = new SequentialExecutor(netCopy,
+				configuration, monitor, i + 1);
+		try {
+			executor.call();
+		} catch (Exception e) {
+			log.error("", e);
+		}
+
+		putStatisticsIntoArray(configuration, numPlaces, netCopy);
+
 	}
 
 	private void putStatisticsIntoArray(SimQPNConfiguration configuration,

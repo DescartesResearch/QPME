@@ -12,6 +12,7 @@ import org.dom4j.XPath;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
+import de.tud.cs.simqpn.kernel.SimQPNConfiguration.AnalysisMethod;
 import de.tud.cs.simqpn.kernel.util.LogUtil;
 import de.tud.cs.simqpn.kernel.util.LogUtil.ReportLevel;
 
@@ -61,6 +62,8 @@ public class ConfigurationLoader {
 		loadRampUpLength(configurationName, configuration, simulatorSettings);
 		loadTimeBtwStopChecks(configurationName, configuration,
 				simulatorSettings);
+		loadIsParallel(configurationName, configuration,
+				simulatorSettings);
 
 		if (configuration.getAnalMethod() != SimQPNConfiguration.AnalysisMethod.BATCH_MEANS
 				&& configuration.stoppingRule != SimQPNConfiguration.FIXEDLEN) {
@@ -75,6 +78,22 @@ public class ConfigurationLoader {
 		// END-CONFIG
 		// ------------------------------------------------------------------------------------------------------
 		return configuration;
+	}
+
+	private static void loadIsParallel(String configurationName,
+			SimQPNConfiguration configuration, Element simulatorSettings) {
+		if (simulatorSettings.attributeValue("isParallel") == null) {
+			// take default values
+			if (configuration.getAnalMethod() == AnalysisMethod.REPL_DEL) {
+				configuration.setParallel(true);
+			} else {
+				configuration.setParallel(false);
+			}
+		} else {
+			configuration.setParallel(Boolean.parseBoolean(simulatorSettings
+					.attributeValue("isParallel")));
+		}
+		log.debug("isParallel = " + configuration.isParallel() + ";");
 	}
 
 	private static void loadDebugLevel(String configurationName,

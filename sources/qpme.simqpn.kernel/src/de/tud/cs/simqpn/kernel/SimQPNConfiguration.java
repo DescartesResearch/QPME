@@ -112,6 +112,7 @@ public class SimQPNConfiguration {
 		/** Method of non-overlapping batch means.*/BATCH_MEANS};
 		 
 	private AnalysisMethod analMethod;				// Output data analysis method.
+	private boolean isParallel;
 
 
 	// Supported Stopping Rules (Note: don't change these, values are used)
@@ -224,6 +225,14 @@ public class SimQPNConfiguration {
 	 */
 	public void setUseStdStateStats(boolean useStdStateStats) {
 		this.useStdStateStats = useStdStateStats;
+	}
+
+	public boolean isParallel() {
+		return isParallel;
+	}
+
+	public void setParallel(boolean isParallel) {
+		this.isParallel = isParallel;
 	}
 
 }

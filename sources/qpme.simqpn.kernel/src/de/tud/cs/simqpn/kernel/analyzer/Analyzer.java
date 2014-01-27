@@ -48,8 +48,7 @@ public abstract class Analyzer {
 					analyzer = new BatchMeans();
 				} else if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.REPL_DEL) {
 					configuration.setUseStdStateStats(false);
-					// analyzer = new ReplicationDeletion(aggregateStats);
-					analyzer = new ReplicationDeletionParallel(aggregateStats);
+					analyzer = new ReplicationDeletion(aggregateStats);
 				} else {
 					log.error("Illegal analysis method specified!");
 					throw new SimQPNException();
