@@ -82,7 +82,7 @@ public class ConfigurationLoader {
 
 	private static void loadIsParallel(String configurationName,
 			SimQPNConfiguration configuration, Element simulatorSettings) {
-		if (simulatorSettings.attributeValue("isParallel") == null) {
+		if (simulatorSettings.attributeValue("is-parallel") == null) {
 			// take default values
 			if (configuration.getAnalMethod() == AnalysisMethod.REPL_DEL) {
 				configuration.setParallel(true);
@@ -91,9 +91,8 @@ public class ConfigurationLoader {
 			}
 		} else {
 			configuration.setParallel(Boolean.parseBoolean(simulatorSettings
-					.attributeValue("isParallel")));
+					.attributeValue("is-parallel")));
 		}
-		log.debug("isParallel = " + configuration.isParallel() + ";");
 	}
 
 	private static void loadDebugLevel(String configurationName,
