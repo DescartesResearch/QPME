@@ -14,7 +14,7 @@ import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
-import de.tud.cs.simqpn.kernel.executor.parallel.ParallelExecutor;
+import de.tud.cs.simqpn.kernel.executor.parallel.JBarrierExecutor;
 import de.tud.cs.simqpn.kernel.executor.sequential.SequentialExecutor;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.persistency.StatsDocumentBuilder;
@@ -33,6 +33,9 @@ public class BatchMeans extends Analyzer {
 			SimulatorProgress monitor) throws SimQPNException {
 		
 		SimulatorResults results = runBatchMeans(net, configuration, monitor);
+		if(results == null){
+			return null;
+		}
 
 		List<Stats> stats = new ArrayList<Stats>();
 		for (int p = 0; p < results.getPlaces().length; p++) {
@@ -75,11 +78,14 @@ public class BatchMeans extends Analyzer {
 		if(!configuration.isParallel()){
 			run = new SequentialExecutor(net, configuration,monitor,1);
 		}else{
-			run = new ParallelExecutor(net, configuration, monitor, 1);	
+			run = new JBarrierExecutor(net, configuration, monitor, 0);	
 		}
 		
 		try {
 			net = run.call();
+			if(net == null){
+				return null;
+			}
 		} catch (Exception e) {
 			log.error(""+e.getStackTrace(),e);
 		}

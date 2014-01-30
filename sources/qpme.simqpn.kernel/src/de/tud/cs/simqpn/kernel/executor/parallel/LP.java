@@ -49,7 +49,6 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CyclicBarrier;
@@ -70,8 +69,7 @@ import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.executor.QueueEvent;
 import de.tud.cs.simqpn.kernel.executor.TokenEvent;
-import de.tud.cs.simqpn.kernel.executor.parallel.termination.StopController;
-import de.tud.cs.simqpn.kernel.executor.parallel.termination.StopCriterionController;
+import de.tud.cs.simqpn.kernel.executor.parallel.barrier.termination.StopController;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 import edu.bonn.cs.net.jbarrier.barrier.Barrier;
@@ -182,7 +180,7 @@ public class LP implements Executor, Runnable {
 	private CyclicBarrier cyclicBarrier;
 	
 	/** Global stop criterion. */
-	private StopController stopCriterionController;
+	private StopController stopController;
 	/** Local stop criterion. */
 	private boolean hasFinished = false;
 	/** Lower bound on incoming time stamps. */
@@ -784,13 +782,13 @@ public class LP implements Executor, Runnable {
 	 * @return if the simulation within this LP can stop
 	 */
 	private boolean checkStopCriterion() {
-		if (stopCriterionController.hasSimulationFinished()) {
+		if (stopController.hasSimulationFinished()) {
 			return true;
 		}
 		if (!hasFinished) {
 			if (clock >= totRunLength) {
 				hasFinished = true;
-				stopCriterionController.incrementFinishedLPCounter();
+				stopController.incrementFinishedLPCounter();
 			}
 		}
 		return false;
@@ -1225,7 +1223,7 @@ public class LP implements Executor, Runnable {
 					if (!hasFinished) {
 						hasFinished = true;
 						progressMonitor.precisionCheck(id, done, null);
-						stopCriterionController.incrementFinishedLPCounter();
+						stopController.incrementFinishedLPCounter();
 						log.info("LP" + id + " "
 								+ "has finished data collection");
 					}
@@ -1259,8 +1257,12 @@ public class LP implements Executor, Runnable {
 	 * @param stopCriterionController
 	 *            the controller which manages local stop criteria
 	 */
-	public void setStopCriterion(StopController stopCriterionController) {
-		this.stopCriterionController = stopCriterionController;
+	public void setStopController(StopController stopCriterionController) {
+		this.stopController = stopCriterionController;
+	}
+	
+	public StopController getStopController(){
+		return stopController;
 	}
 
 	/**
@@ -1490,8 +1492,10 @@ public class LP implements Executor, Runnable {
 		sb.append("\n");
 
 		sb.append("\tinPlaces: ");
-		for (Place inPlace : inPlaces) {
-			sb.append(inPlace.name + " ");
+		if(inPlaces != null){
+			for (Place inPlace : inPlaces) {
+				sb.append(inPlace.name + " ");
+			}
 		}
 		sb.append("\n");
 
@@ -1581,7 +1585,7 @@ public class LP implements Executor, Runnable {
 		if (!hasFinished) {
 			if (clock >= totRunLength) {
 				hasFinished = true;
-				stopCriterionController.incrementFinishedLPCounter();
+				stopController.incrementFinishedLPCounter();
 			}
 		}
 	}

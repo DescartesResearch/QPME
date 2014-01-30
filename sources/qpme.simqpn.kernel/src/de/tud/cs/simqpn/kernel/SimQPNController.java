@@ -226,9 +226,11 @@ public class SimQPNController {
 		// CHRIS: Not done yet
 
 		setSimRunning(true);
-		Analyzer analyzer = Analyzer.getAnalyzer(configuration, aggregateStats,
+		Analyzer analyzer = null;
+		Stats[] result = null;
+		analyzer = Analyzer.getAnalyzer(configuration, aggregateStats,
 				XMLDescription, configurationName);
-		Stats[] result = analyzer.analyze(net, configuration, monitor);
+		result = analyzer.analyze(net, configuration, monitor);
 		setSimRunning(false);
 		LogManager.shutdown();
 		File resultFile = analyzer.writeToFile(result, configuration,

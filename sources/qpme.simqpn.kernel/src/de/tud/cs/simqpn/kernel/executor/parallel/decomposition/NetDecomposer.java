@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.omg.PortableInterceptor.SUCCESSFUL;
+import org.apache.log4j.Logger;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.entities.Net;
@@ -18,48 +18,71 @@ import de.tud.cs.simqpn.kernel.executor.parallel.LP;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
 public class NetDecomposer {
-	
+
+	private static Logger log = Logger.getLogger(NetDecomposer.class);
 	private final Net net;
 	private final SimQPNConfiguration configuration;
 	private final SimulatorProgress progressMonitor;
 	private final int verbosityLevel;
-	
-	public NetDecomposer(Net net, SimQPNConfiguration configuration, SimulatorProgress progressMonitor, int verbosityLevel) {
+
+	public static LP[] decomposeNetIntoLPs(Net net,
+			SimQPNConfiguration configuration,
+			SimulatorProgress progressMonitor, int verbosityLevel) {
+		NetDecomposer decomposer = new NetDecomposer(net, configuration,
+				progressMonitor, verbosityLevel);
+		List<LP> lps = decomposer.decomposeNetIntoLPs();
+		int cores = Runtime.getRuntime().availableProcessors();
+		// if(lps.size() > cores){
+		// return null;
+		// }
+		while (lps.size() > cores) {
+			log.warn("More logical partitions("+lps.size()+") than cores("+cores+ "). Should merge logical partitions.");
+			for (int i = lps.size() - 1; i > 1; i = i - 2) {
+				log.warn("merged logical partitions "+i + " and " + (i + 1));
+				merge(lps, i, i - 1);
+			}
+		}
+		finishDecomposition(lps);
+		return lps.toArray(new LP[lps.size()]);
+	}
+
+	static void finishDecomposition(List<LP> lps) {
+		setInPlaces(lps);
+		setPredAndSuccessors(lps);
+		// mergePlaceLPsIntoPredecessors(listLPs);
+
+		// Modify transition ids
+		int transCnt = 0;
+		for (LP lp : lps) {
+			for (Transition trans : lp.getTransitions()) {
+				trans.id = transCnt++;
+			}
+		}
+	}
+
+	private NetDecomposer(Net net, SimQPNConfiguration configuration,
+			SimulatorProgress progressMonitor, int verbosityLevel) {
 		this.net = net;
 		this.configuration = configuration;
 		this.progressMonitor = progressMonitor;
 		this.verbosityLevel = verbosityLevel;
 	}
-	
+
 	/**
 	 * Returns a decomposition of the (internal) {@link Net} into a logical
 	 * process ({@link LP}) array
 	 * 
 	 * @return Array of logical processes
 	 */
-	public LP[] decomposeNetIntoLPs() {
+	private List<LP> decomposeNetIntoLPs() {
 		List<LP> listLPs = decomposeNetIntoMinimumRegionLPs();
 
 		mergeLPsInLane(listLPs);
 
-		setInPlaces(listLPs);
-
-		setPredAndSuccessors(listLPs);
-
-		// mergePlaceLPsIntoPredecessors(listLPs);
-
-		// Modify transition ids
-		int transCnt = 0;
-		for (LP lp : listLPs) {
-			for (Transition trans : lp.getTransitions()) {
-				trans.id = transCnt++;
-			}
-		}
-
-		return listLPs.toArray(new LP[listLPs.size()]);
+		return listLPs;
 	}
 
-	private void setInPlaces(List<LP> listLPs) {
+	private static void setInPlaces(List<LP> listLPs) {
 		for (LP lp : listLPs) {
 			ArrayList<Place> inPlaces = new ArrayList<Place>();
 			for (Place place : lp.getPlaces()) {
@@ -120,7 +143,7 @@ public class NetDecomposer {
 								if (!usedPlace[placeId]) {
 									idPlacesLP.add(placeId);
 									usedPlace[placeId] = true;
-									for(Transition t2 : places[placeId].outTrans){
+									for (Transition t2 : places[placeId].outTrans) {
 										if (usedTransitions[t2.id] == false) {
 											idTransitionsLP.add(t2.id);
 											usedTransitions[t2.id] = true;
@@ -200,25 +223,23 @@ public class NetDecomposer {
 						if (!shouldMerge) {
 							break;
 						}
-						// merge
-						listLPs.remove(lp1);
-						listLPs.remove(lp2);
-						LP newLP = LP.merge(lp1, lp2);
-						listLPs.add(newLP);
-						i = -1;
+
+						merge(listLPs, lp1, lp2);
+
+						i = i - 1;
 						counterD = listLPs.size();
 						break;
 					}
 				}
 			}
 		}
-		
-		//for generated models
-		if(listLPs.get(1).getPlaces()[0].name.equals("token generator")){
-			LP lp1 = listLPs.remove(0);//(lp1);
-			LP lp2 = listLPs.remove(0);//(lp1);
+
+		// for generated models
+		if (listLPs.get(1).getPlaces()[0].name.equals("token generator")) {
+			LP lp1 = listLPs.remove(0);// (lp1);
+			LP lp2 = listLPs.remove(0);// (lp1);
 			LP newLP = LP.merge(lp1, lp2);
-			listLPs.add(0,newLP);
+			listLPs.add(0, newLP);
 		}
 
 		/* Set new LP ids */
@@ -229,15 +250,27 @@ public class NetDecomposer {
 		}
 	}
 
+	private static LP merge(List<LP> listLPs, int id1, int id2) {
+		return merge(listLPs, listLPs.get(id1), listLPs.get(id2));
+	}
+
+	private static LP merge(List<LP> lps, LP lp1, LP lp2) {
+		lps.remove(lp1);
+		lps.remove(lp2);
+		LP merged = LP.merge(lp1, lp2);
+		lps.add(merged);
+		return merged;
+	}
+
 	/**
 	 * Sets predecessor and successor for the LPs
 	 * 
 	 * @param listLPs
 	 */
-	private void setPredAndSuccessors(List<LP> listLPs) {
+	private static void setPredAndSuccessors(List<LP> listLPs) {
 		List<List<LP>> megaList = new ArrayList<List<LP>>();
-		
-		for (int i=0; i< listLPs.size(); i++) {
+
+		for (int i = 0; i < listLPs.size(); i++) {
 			LP lp = listLPs.get(i);
 			megaList.add(new ArrayList<LP>());
 			for (Place place : lp.getPlaces()) {
@@ -256,12 +289,12 @@ public class NetDecomposer {
 		for (LP lp : listLPs) {
 			removeDuplicateWithOrder((ArrayList<LP>) lp.getPredecessors());
 			removeDuplicateWithOrder((ArrayList<LP>) lp.getSuccessors());
-			if(lp.getPredecessors().isEmpty()){
+			if (lp.getPredecessors().isEmpty()) {
 				lp.addPredecessor(lp);
 				lp.addSuccessor(lp);
 			}
 		}
-		
+
 	}
 
 	/**

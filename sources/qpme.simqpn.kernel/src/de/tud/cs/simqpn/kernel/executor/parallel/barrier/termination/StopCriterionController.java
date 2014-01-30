@@ -1,4 +1,4 @@
-package de.tud.cs.simqpn.kernel.executor.parallel.termination;
+package de.tud.cs.simqpn.kernel.executor.parallel.barrier.termination;
 
 import java.util.concurrent.CyclicBarrier;
 

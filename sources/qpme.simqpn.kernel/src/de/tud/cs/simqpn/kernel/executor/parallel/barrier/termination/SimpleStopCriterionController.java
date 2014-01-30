@@ -1,4 +1,4 @@
-package de.tud.cs.simqpn.kernel.executor.parallel.termination;
+package de.tud.cs.simqpn.kernel.executor.parallel.barrier.termination;
 
 /**
  * This class collects the reaching of local stop criteria to build a global stop criterion
