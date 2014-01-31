@@ -148,7 +148,11 @@ public class SimQPNController {
 		XMLValidator.validateInputNet(XMLDescription);
 
 		SimQPNController sim = new SimQPNController();
-		sim.initialize(XMLDescription, configurationName, logConfigFilename, date);
+		if(date == null){
+			sim.initialize(XMLDescription, configurationName, logConfigFilename);			
+		}else{
+			sim.initialize(XMLDescription, configurationName, logConfigFilename, date);						
+		}
 		return sim;
 	}
 	

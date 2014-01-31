@@ -55,6 +55,9 @@ public class RandomNumberGenerator {
 	public static void initialize(Date date) {
 		randGenClass = RandomGeneratorCategory.MersenneTwister;
 		useRandSeedTable = true;
+		if(date == null){
+			log.warn("passed date is null");
+		}
 		randNumGen = new Uniform(new DRand(date));
 		if (useRandSeedTable)
 			randSeedGen = new RandomSeedGenerator(randNumGen.nextIntFromTo(0, Integer.MAX_VALUE), randNumGen.nextIntFromTo(0, RandomSeedTable.COLUMNS - 1));

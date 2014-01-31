@@ -50,6 +50,7 @@ import java.util.Map;
 
 import javax.xml.XMLConstants;
 
+import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
@@ -67,7 +68,6 @@ import de.tud.cs.simqpn.kernel.monitor.ConsoleSimulatorProgress;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
 public class SimQPN implements IApplication {
-	private static Logger log = Logger.getLogger(SimQPN.class);
 	
 	public static void main(String[] args) {
 		startSimQPNWithCommandLine(args);
@@ -89,6 +89,9 @@ public class SimQPN implements IApplication {
 
 
 	private static Integer startSimQPNWithCommandLine(String[] args) {
+		//Standard config for logging until specialize logging is initilalized
+		BasicConfigurator.configure(); 
+		
 		Document netDocument = null;
 		String configuration = null;
 		String outputFilename = null;
@@ -161,14 +164,14 @@ public class SimQPN implements IApplication {
 							runSimulatorOnDocument(netDocument, configuration,
 									outputFilename, logConfigFilename, new ConsoleSimulatorProgress(), date);
 						} catch (SimQPNException e) {
-							log.error("",e);
+							e.printStackTrace();
 							return new Integer(1); // signal error
 						}
 					}					
 				}
 			}
 		} catch (Exception e) {
-			log.error("",e);
+			e.printStackTrace();
 			return new Integer(1); // signal error
 		}
 		return IApplication.EXIT_OK;
