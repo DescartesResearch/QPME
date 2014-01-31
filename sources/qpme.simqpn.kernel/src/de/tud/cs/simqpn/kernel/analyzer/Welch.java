@@ -32,20 +32,20 @@ public class Welch extends Analyzer {
 	private static Logger log = Logger.getLogger(Welch.class);
 	private static SimulatorProgress progressMonitor;
 
-	static List<Element> placeList;
-	static String configurationName;
-	static Element XMLDescription;
+	List<Element> placeList;
+	String configurationName;
+	Element XMLDescription;
 	
-	public Welch(Element XMLDescription, String configurationString) {
-		Welch.XMLDescription = XMLDescription;
+	public Welch(Element XMLDescription, String configurationName) {
+		this.XMLDescription = XMLDescription;
 		XPath xpathSelector = XMLHelper.createXPath("//place");
 		placeList = xpathSelector.selectNodes(XMLDescription);
-		configurationName = configurationName;
+		this.configurationName = configurationName;
 	}
 	
 	public Welch(List<Element> placeList, String configurationName) {
-		Welch.placeList = placeList;
-		Welch.configurationName = configurationName;
+		this.placeList = placeList;
+		this.configurationName = configurationName;
 	}
 	
 	public Stats[] analyze(Net net, SimQPNConfiguration configuration,
