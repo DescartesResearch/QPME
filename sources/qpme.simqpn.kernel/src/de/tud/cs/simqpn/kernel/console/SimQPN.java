@@ -51,7 +51,6 @@ import java.util.Map;
 import javax.xml.XMLConstants;
 
 import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
@@ -107,7 +106,7 @@ public class SimQPN implements IApplication {
 					listConfigurations = true;
 				} else if ("-r".equals(args[x])) {
 					runSimulation = true;
-					configuration = args[++x];
+					configuration = args[++x].replace("\"", "");
 				} else if ("-o".equals(args[x])) {
 					outputFilename = args[++x];
 				} else if ("-d".equals(args[x])) {
