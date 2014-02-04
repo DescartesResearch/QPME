@@ -250,7 +250,7 @@ public class StartSimulatorAction extends AbstractHandler {
 					date = new Date(); //set random date
 				}
 				SimQPNController sim = SimQPNController.getSimQPNController(net, configuration, null, date);
-				File resultFile = sim.execute(net, configuration, null, this);
+				File resultFile = sim.execute(configuration, null, this);
 
 				monitor.subTask("Collect Results");
 				if (resultFile != null){

@@ -125,6 +125,7 @@ public class SimQPNController {
 	private static Logger log = Logger.getLogger(SimQPNController.class);
 	private SimQPNConfiguration configuration;
 	private Net net;
+	private Element XMLDescription;
 	private static boolean simulationCurrentlyRunning;
 	private AggregateStats[] aggregateStats;
 
@@ -192,13 +193,14 @@ public class SimQPNController {
 		// NOTE: Random needs to be initialized before starting the model definition
 		RandomNumberGenerator.initialize(date);
 
+		
 		this.configuration = ConfigurationLoader.loadConfiguration(
 				XMLDescription, configurationName, logConfigFilename);
 		
-		XMLDescription = XMLNetFlattener.flattenHierarchicalNetParts(XMLDescription,
+		this.XMLDescription = XMLNetFlattener.flattenHierarchicalNetParts(XMLDescription,
 				configurationName, configuration.getStatsDir());
 
-		this.net = new NetLoader().load(XMLDescription, configurationName,
+		this.net = new NetLoader().load(this.XMLDescription, configurationName,
 				configuration);
 
 		// CONFIG: Whether to use indirect estimators for FCFS queues
@@ -211,9 +213,9 @@ public class SimQPNController {
 			}
 		}
 
-		XMLBatchMeans.modificateNetForBatchMeans(XMLDescription, configuration, net);
+		XMLBatchMeans.modificateNetForBatchMeans(this.XMLDescription, configuration, net);
 
-		aggregateStats = XMLAggregateStats.initStatsArray(XMLDescription, net, configuration);
+		aggregateStats = XMLAggregateStats.initStatsArray(this.XMLDescription, net, configuration);
 	}
 
 	/**
@@ -223,7 +225,7 @@ public class SimQPNController {
 	 * @return
 	 * @exception
 	 */
-	public File execute(Element XMLDescription, String configurationName,
+	public File execute(String configurationName,
 			String outputFilename, SimulatorProgress monitor)
 			throws SimQPNException {
 		// TODO: Make the Stdout output print to $statsDir/Output.txt

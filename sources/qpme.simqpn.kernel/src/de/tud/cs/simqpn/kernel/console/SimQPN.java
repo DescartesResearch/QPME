@@ -76,7 +76,7 @@ public class SimQPN implements IApplication {
 			String configurationName, String outputFilename, String logConfigFilename, SimulatorProgress progress, Date date) throws SimQPNException {
 		Element net = netDocument.getRootElement();
 		SimQPNController sim =  SimQPNController.getSimQPNController(net, configurationName, logConfigFilename, date);
-		sim.execute(net, configurationName, outputFilename, progress);
+		sim.execute(configurationName, outputFilename, progress);
 	}
 
 	@Override
