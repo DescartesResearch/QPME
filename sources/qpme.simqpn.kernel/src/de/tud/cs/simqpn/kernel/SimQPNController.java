@@ -126,6 +126,7 @@ public class SimQPNController {
 	private SimQPNConfiguration configuration;
 	private Net net;
 	private Element XMLDescription;
+
 	private static boolean simulationCurrentlyRunning;
 	private AggregateStats[] aggregateStats;
 
@@ -268,6 +269,10 @@ public class SimQPNController {
 	/** Should be reset if the simulation is interrupted */
 	public static void setSimRunning(boolean simRunning) {
 		SimQPNController.simulationCurrentlyRunning = simRunning;
+	}
+
+	public Element getXMLDescription() {
+		return XMLDescription;
 	}
 
 }

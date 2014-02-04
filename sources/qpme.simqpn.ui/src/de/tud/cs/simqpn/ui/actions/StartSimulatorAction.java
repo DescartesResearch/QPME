@@ -251,6 +251,7 @@ public class StartSimulatorAction extends AbstractHandler {
 				}
 				SimQPNController sim = SimQPNController.getSimQPNController(net, configuration, null, date);
 				File resultFile = sim.execute(configuration, null, this);
+				net = sim.getXMLDescription();
 
 				monitor.subTask("Collect Results");
 				if (resultFile != null){

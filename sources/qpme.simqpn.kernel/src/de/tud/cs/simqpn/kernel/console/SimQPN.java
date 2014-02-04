@@ -77,6 +77,7 @@ public class SimQPN implements IApplication {
 		Element net = netDocument.getRootElement();
 		SimQPNController sim =  SimQPNController.getSimQPNController(net, configurationName, logConfigFilename, date);
 		sim.execute(configurationName, outputFilename, progress);
+		net = sim.getXMLDescription();
 	}
 
 	@Override
