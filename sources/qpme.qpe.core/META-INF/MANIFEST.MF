@@ -61,3 +61,4 @@ Export-Package: de.tud.cs.qpe,
  de.tud.cs.qpe.utils,
  de.tud.cs.qpe.utils.view.anchor
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Import-Package: org.apache.log4j
