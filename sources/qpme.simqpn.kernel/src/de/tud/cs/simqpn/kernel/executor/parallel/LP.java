@@ -514,7 +514,7 @@ public class LP implements Executor, Runnable {
 
 	double improvedGetTimeSaveToProcess() {
 		Collection<Double> saveTimes = new ArrayList<Double>();
-		for (Place inPlace : inPlaces) {
+		for (Place inPlace : getInPlaces()) {
 			for (int color = 0; color < inPlace.colors.length; color++) {
 				List<Integer> visitedPlaces = new LinkedList<Integer>();
 				double tmp = inPlace.getTimeSaveToProcess(color, visitedPlaces,
@@ -1405,7 +1405,7 @@ public class LP implements Executor, Runnable {
 	 * @return the inPlaces
 	 */
 	public Place[] getIncomingPlaces() {
-		return inPlaces;
+		return getInPlaces();
 	}
 
 	/**
@@ -1492,8 +1492,8 @@ public class LP implements Executor, Runnable {
 		sb.append("\n");
 
 		sb.append("\tinPlaces: ");
-		if(inPlaces != null){
-			for (Place inPlace : inPlaces) {
+		if(getInPlaces() != null){
+			for (Place inPlace : getInPlaces()) {
 				sb.append(inPlace.name + " ");
 			}
 		}
@@ -1685,6 +1685,10 @@ public class LP implements Executor, Runnable {
 
 	public void setClock(double clock) {
 		this.clock = clock;
+	}
+
+	public Place[] getInPlaces() {
+		return inPlaces;
 	}
 
 }

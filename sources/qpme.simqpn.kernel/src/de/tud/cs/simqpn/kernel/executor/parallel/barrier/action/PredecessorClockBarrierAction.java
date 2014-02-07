@@ -18,7 +18,7 @@ public class PredecessorClockBarrierAction extends BarrierAction {
 
 	@Override
 	void setLookahead(LP lp) {
-		if (lp.predecessorIds.length == 0) {
+		if (lp.getInPlaces().length == 0) {
 			lp.setTimeSaveToProcess(lp.getClock()+100);;
 		}else{
 			double time;
