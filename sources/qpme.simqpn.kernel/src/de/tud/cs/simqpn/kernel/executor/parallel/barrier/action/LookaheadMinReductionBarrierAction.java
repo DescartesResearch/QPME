@@ -1,4 +1,4 @@
-package de.tud.cs.simqpn.kernel.executor.parallel.barrier;
+package de.tud.cs.simqpn.kernel.executor.parallel.barrier.action;
 
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.executor.parallel.LP;
@@ -20,6 +20,7 @@ public class LookaheadMinReductionBarrierAction implements Runnable {
 	private double rampUpLength;
 	private double totRunLength;
 
+	@Deprecated
 	public LookaheadMinReductionBarrierAction(LP[] lps, int verbosityLevel) {
 		this.stopController = new SimpleStopCriterionController(lps.length);
 		this.lps = lps;
@@ -35,6 +36,7 @@ public class LookaheadMinReductionBarrierAction implements Runnable {
 	}
 
 	@Override
+	@Deprecated
 	public void run() {
 		if (!stopController.hasSimulationFinished()) {
 			double min = Double.MAX_VALUE;
@@ -128,6 +130,7 @@ public class LookaheadMinReductionBarrierAction implements Runnable {
 		}
 	}
 
+	@Deprecated
 	private void finishSimulation() {
 		double maxClock = getMaximumClockOfAllLP();
 		for (LP lp : lps) {

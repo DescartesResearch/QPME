@@ -1,4 +1,4 @@
-package de.tud.cs.simqpn.kernel.executor.parallel.barrier;
+package de.tud.cs.simqpn.kernel.executor.parallel.barrier.action;
 
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.executor.parallel.LP;
@@ -6,7 +6,7 @@ import de.tud.cs.simqpn.kernel.executor.parallel.barrier.termination.SimpleStopC
 import de.tud.cs.simqpn.kernel.executor.parallel.barrier.termination.StopController;
 
 public abstract class BarrierAction implements Runnable {
-
+	
 	private final StopController stopController;
 	protected final LP[] lps;
 	protected final int numlps;
@@ -23,6 +23,7 @@ public abstract class BarrierAction implements Runnable {
 	}
 	
 	abstract void setTimesSaveToProcess();
+
 	abstract void setLookahead(LP lp);
 
 	@Override
@@ -88,4 +89,6 @@ public abstract class BarrierAction implements Runnable {
 	public StopController getStopController() {
 		return stopController;
 	}
+	
+
 }

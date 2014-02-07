@@ -7,7 +7,9 @@ import org.apache.log4j.Logger;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Net;
-import de.tud.cs.simqpn.kernel.executor.parallel.barrier.BarrierUtil;
+import de.tud.cs.simqpn.kernel.executor.parallel.barrier.BarrierFactory;
+import de.tud.cs.simqpn.kernel.executor.parallel.barrier.action.BarrierAction;
+import de.tud.cs.simqpn.kernel.executor.parallel.barrier.action.MinBarrierAction;
 import de.tud.cs.simqpn.kernel.executor.parallel.decomposition.NetDecomposer;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
@@ -51,8 +53,8 @@ public class JBarrierExecutor implements Callable<Net> {
 		}
 		System.out.println(NetDecomposer.lpDecompositionToString(lps));
 
-		BarrierUtil.createAndInitBarrier(lps, verbosityLevel);
-
+		BarrierFactory.createBarrier(lps, verbosityLevel);
+		
 		Thread[] threads = new Thread[lps.length];
 		//RandomElement randomElement = RandomNumberGenerator.nextRandNumGen();
 		for (int i = 0; i < lps.length; i++) {
