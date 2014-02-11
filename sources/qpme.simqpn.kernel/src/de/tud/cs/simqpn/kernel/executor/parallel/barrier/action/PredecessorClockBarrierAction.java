@@ -1,15 +1,21 @@
 package de.tud.cs.simqpn.kernel.executor.parallel.barrier.action;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+
 import de.tud.cs.simqpn.kernel.executor.parallel.LP;
+import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
 public class PredecessorClockBarrierAction extends BarrierAction {
 
-	public PredecessorClockBarrierAction(LP[] lps, int verbosityLevel) {
-		super(lps, verbosityLevel);
+	public PredecessorClockBarrierAction(LP[] lps, int verbosityLevel, SimulatorProgress progressMonitor) {
+		super(lps, verbosityLevel, progressMonitor);
 	}
 
 	@Override
 	void setTimesSaveToProcess() {
+		super.setTimesSaveToProcess();
 		for (int i = 0; i < numlps; i++) {
 			setLookahead(lps[i]);
 		}
@@ -19,17 +25,14 @@ public class PredecessorClockBarrierAction extends BarrierAction {
 	@Override
 	void setLookahead(LP lp) {
 		if (lp.getInPlaces().length == 0) {
-			lp.setTimeSaveToProcess(10*lp.getNextEventTime() - 9*lp.getClock());;
+			//lp.setTimeSaveToProcess(5*lp.getNextQueueEventTime() - 4*lp.getClock());;
+			lp.setTimeSaveToProcess(lp.getLastQueueEventTime());
 		}else{
-			double time;
-			double min = Double.MAX_VALUE;
+			Collection<Double> predecessorClockValues= new ArrayList<Double>();
 			for(LP pred : lp.getPredecessors()){
-				time = pred.getClock();
-				if (time < min && time != 0.0) {
-					min = time;
-				}
+				predecessorClockValues.add(pred.getClock());
 			}
-			lp.setTimeSaveToProcess(min);		
+			lp.setTimeSaveToProcess(Collections.min(predecessorClockValues));		
 			
 		}
 	}

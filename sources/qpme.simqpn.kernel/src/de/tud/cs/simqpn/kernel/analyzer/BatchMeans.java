@@ -78,7 +78,8 @@ public class BatchMeans extends Analyzer {
 		if(!configuration.isParallel()){
 			run = new SequentialExecutor(net, configuration,monitor,1);
 		}else{
-			run = new JBarrierExecutor(net, configuration, monitor, 0);	
+			int verbosityLevel = 0;	//1 //2
+			run = new JBarrierExecutor(net, configuration, monitor, verbosityLevel);
 		}
 		
 		try {

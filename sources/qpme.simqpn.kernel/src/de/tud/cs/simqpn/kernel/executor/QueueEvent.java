@@ -52,7 +52,7 @@ import de.tud.cs.simqpn.kernel.entities.queue.Queue;
  * @author Samuel Kounev
  * @version
  */
-public class QueueEvent {
+public class QueueEvent implements Comparable{
 	public double 			time;
 	public Queue			queue;
 	public Token			token;
@@ -68,5 +68,10 @@ public class QueueEvent {
 		this.time	= time;
 		this.queue	= queue;
 		this.token	= token;		
+	}
+
+	@Override
+	public int compareTo(Object a) {
+		return (this.time < ((QueueEvent) a).time ? -1 : (this.time == ((QueueEvent) a).time ? 0 : 1));
 	}
 }

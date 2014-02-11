@@ -1,11 +1,16 @@
 package de.tud.cs.simqpn.kernel.executor.parallel.barrier.action;
 
+import org.apache.log4j.Logger;
+
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.executor.parallel.LP;
 import de.tud.cs.simqpn.kernel.executor.parallel.barrier.termination.SimpleStopCriterionController;
 import de.tud.cs.simqpn.kernel.executor.parallel.barrier.termination.StopController;
+import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
 public abstract class BarrierAction implements Runnable {
+	
+	private static final Logger log = Logger.getLogger(BarrierAction.class);
 	
 	private final StopController stopController;
 	protected final LP[] lps;
@@ -13,16 +18,23 @@ public abstract class BarrierAction implements Runnable {
 	private final double rampUpLength;
 	private final double totRunLength;
 	private boolean inRampUp;
+	private final int verbosityLevel;
 	
-	public BarrierAction(LP[] lps, int verbosityLevel) {
-		this.stopController = new SimpleStopCriterionController(lps.length);
+	
+	public BarrierAction(LP[] lps, int verbosityLevel, SimulatorProgress progressMonitor) {
+		this.stopController = new SimpleStopCriterionController(lps.length, progressMonitor);
 		this.lps = lps;
 		this.numlps = lps.length;
 		this.rampUpLength = lps[0].getRampUpLength();
 		this.totRunLength = lps[0].getTotRunLength();
+		this.verbosityLevel = verbosityLevel;
 	}
 	
-	abstract void setTimesSaveToProcess();
+	void setTimesSaveToProcess(){
+		if(verbosityLevel > 0){
+			log.info("------- Barrier --------");
+		}	
+	};
 
 	abstract void setLookahead(LP lp);
 
@@ -33,18 +45,23 @@ public abstract class BarrierAction implements Runnable {
 			
 			if (inRampUp) {
 				startDataCollectionIfRampUpFinished();
-			} else {
+			}
+			else {
 				double maxClock = getMaximumClockOfAllLP();
 				if (maxClock > totRunLength) {
 					for (LP lp : lps) {
 						lp.setTimeSaveToProcess(maxClock);
+						try {
+							lp.processSaveEventsWithPrecissionCheck();
+						} catch (SimQPNException e) {
+							log.info("",e);
+						}
 					}
 					finishSimulation();
 				}
 			}
 		} else {
 			finishSimulation();
-
 		}
 	}
 
@@ -70,10 +87,10 @@ public abstract class BarrierAction implements Runnable {
 	
 	private void finishSimulation() {
 		double maxClock = getMaximumClockOfAllLP();
+		stopController.finishSimulation();
 		for (LP lp : lps) {
 			lp.finish(maxClock);
 		}
-		getStopController().finishSimulation();
 	}
 
 	private double getMaximumClockOfAllLP() {

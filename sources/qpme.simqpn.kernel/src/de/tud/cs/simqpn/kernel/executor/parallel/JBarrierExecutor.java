@@ -8,8 +8,6 @@ import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.executor.parallel.barrier.BarrierFactory;
-import de.tud.cs.simqpn.kernel.executor.parallel.barrier.action.BarrierAction;
-import de.tud.cs.simqpn.kernel.executor.parallel.barrier.action.MinBarrierAction;
 import de.tud.cs.simqpn.kernel.executor.parallel.decomposition.NetDecomposer;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
@@ -43,17 +41,14 @@ public class JBarrierExecutor implements Callable<Net> {
 	 * @throws SimQPNException
 	 */
 	public Net call() throws SimQPNException {
+		log.warn("No guaranties. Parallel simulation is still experimental and only applicable to open workloads.");
 		LP[] lps = NetDecomposer.decomposeNetIntoLPs(net, configuration,
 				progressMonitor, verbosityLevel);
-		if(lps == null){
-			log.warn("Decomposition was not successful.");
-			log.warn("Parallel execution is still experimental.");
-			log.warn("Please choose a sequential executor.");
+		if(!NetDecomposer.hasDecompositionSucceded(lps, verbosityLevel)){
 			return null;
 		}
-		System.out.println(NetDecomposer.lpDecompositionToString(lps));
-
-		BarrierFactory.createBarrier(lps, verbosityLevel);
+		
+		BarrierFactory.createBarrier(lps, verbosityLevel, progressMonitor);
 		
 		Thread[] threads = new Thread[lps.length];
 		//RandomElement randomElement = RandomNumberGenerator.nextRandNumGen();

@@ -301,10 +301,7 @@ public class LP implements Executor, Runnable {
 	public void processSaveEventsWithPrecissionCheck() throws SimQPNException {
 		QueueEvent nextQueueEvent = null;
 		TokenEvent nextTokenEvent = null;
-		// java.util.Queue<TokenEvent> abc = incomingTokenList;
-		// incomingTokenList = (java.util.Queue<TokenEvent>) abc;
 		while (true) {
-			//updateQueueEvents(); // TODO maybe we can call this less
 			if ((nextQueueEvent = eventList.peek()) != null
 					&& nextQueueEvent.time <= timeSaveToProcess) {
 				while ((nextTokenEvent = incomingTokenList.peek()) != null
@@ -316,11 +313,8 @@ public class LP implements Executor, Runnable {
 				updateQueueEvents(); //X
 			} else if ((nextTokenEvent = incomingTokenList.peek()) != null
 					&& nextTokenEvent.getTime() <= timeSaveToProcess) {
-				do {
 					processNextTokenEvent();
 					updateQueueEvents();
-				} while ((nextTokenEvent = incomingTokenList.peek()) != null
-						&& nextTokenEvent.getTime() <= timeSaveToProcess);
 			} else {
 				fireTransitions();
 				updateQueueEvents();
@@ -330,7 +324,7 @@ public class LP implements Executor, Runnable {
 			updateQueueEvents();
 		}
 
-		//startDataCollectionIfRampUpDone();
+		startDataCollectionIfRampUpDone();
 		if (beforeInitHeartBeat) {
 			determineMonitorUpdateRate();
 		} else {
@@ -700,10 +694,12 @@ public class LP implements Executor, Runnable {
 		QueueEvent event = eventList.poll();
 
 		if (verbosityLevel > 0) {
-			log.info("LP" + id + ": " + event.queue.name + " processed job at "
-					+ event.time + " with lbts " + timeSaveToProcess + " | "
-					+ event.queue.name + " has now "
-					+ ((event.queue.getTkPopulation()) - 1) + " tokens");
+			log.info("LP" + id + " processed queue event (" +event.queue.name +") at "
+					+ event.time);
+//			log.info("LP" + id + ": " + event.queue.name + " processed job at "
+//					+ event.time + " with lbts " + timeSaveToProcess + " | "
+//					+ event.queue.name + " has now "
+//					+ ((event.queue.getTkPopulation()) - 1) + " tokens");
 		}
 
 		// Advance simulation time
@@ -747,11 +743,13 @@ public class LP implements Executor, Runnable {
 
 		if (clock < tkEvent.getTime()) {
 			clock = tkEvent.getTime();
+		}else if(clock > tkEvent.getTime()){
+			log.warn("clock >= time of incoming token clock "+clock+"| tkEvent "+tkEvent.getTime());
 		}
 		place.addTokens(tkEvent.getColor(), tkEvent.getNumber(),
 				tkEvent.getTkCopyBuffer(), this);
 		if (verbosityLevel > 1) {
-			log.info("LP" + id + " processed incoming token at" + clock);
+			log.info("LP" + id + " processed incoming token"+tkEvent.getColor()+" at " + clock);
 		}
 
 		/**
@@ -835,8 +833,7 @@ public class LP implements Executor, Runnable {
 				nextTrans.fire(); // Fire
 									// transition
 				if (verbosityLevel > 1) {
-					log.info("LP" + id + ": transition " + nextTrans.name
-							+ " fired");
+					log.info("LP" + id + " fired transition " + nextTrans.name);
 
 				}
 
@@ -1040,6 +1037,10 @@ public class LP implements Executor, Runnable {
 			randTransGen = new EmpiricalWalker(pdf, Empirical.NO_INTERPOLATION,randomElement
 					);
 		}
+	}
+
+	public void finish() {
+		finish(clock);
 	}
 
 	/**
@@ -1538,6 +1539,25 @@ public class LP implements Executor, Runnable {
 					processNextTokenEvent();
 				}
 			}
+		}
+	}
+
+	public double getNextQueueEventTime() {
+		QueueEvent queueEvent = eventList.peek();
+		if(queueEvent != null){
+			return queueEvent.time;
+		}else{
+			return clock;
+		}
+	}
+	
+	public double getLastQueueEventTime() {
+		if(eventList.size() > 0){
+			//QueueEvent queueEvent = ((Collection<QueueEvent>)eventList).getget(eventList.size()-1);
+			QueueEvent queueEvent = Collections.max((Collection<QueueEvent>)eventList);
+			return queueEvent.time;
+		}else{
+			return clock;
 		}
 	}
 

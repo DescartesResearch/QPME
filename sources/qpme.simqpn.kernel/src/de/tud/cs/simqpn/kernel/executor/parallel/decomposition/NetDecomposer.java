@@ -24,29 +24,153 @@ public class NetDecomposer {
 	private final SimQPNConfiguration configuration;
 	private final SimulatorProgress progressMonitor;
 	private final int verbosityLevel;
+	private final int cores;
 
+	private NetDecomposer(Net net, SimQPNConfiguration configuration,
+			SimulatorProgress progressMonitor, int verbosityLevel) {
+		this.net = net;
+		this.configuration = configuration;
+		this.progressMonitor = progressMonitor;
+		this.verbosityLevel = verbosityLevel;
+		this.cores = Runtime.getRuntime().availableProcessors();
+	}
+
+	public static boolean hasDecompositionSucceded(LP[] lps, int verbosityLevel){
+		if(lps == null){
+			log.error("Decomposition for parallel simulation failed. Please choose a sequential executor for your experiments.");
+			return false;
+		} else if (lps.length == 0){
+			log.error("Decomposition for parallel simulation failed. Please choose a sequential executor for your experiments.");
+			log.error("Number of LPs is 0. Number of LPs has to be larger than one.");
+			return false;
+		}else if (lps.length == 1) {
+			log.error("Decomposition for parallel simulation failed. Please choose a sequential executor for your experiments.");
+			log.error("Number of LPs is 1. Number of LPs has to be larger than one.");
+			return false;
+		}else if (lps.length > Runtime.getRuntime().availableProcessors()){
+			log.error("Decomposition for parallel simulation failed. Please choose a sequential executor for your experiments.");
+			log.error("Number of LPs is higher than the number of available cores.");
+			log.info(lps.toString());
+			return false;
+		}
+		if(verbosityLevel > 0){
+			log.info(NetDecomposer.lpDecompositionToString(lps));
+		}
+		return true;
+
+	}
+	
 	public static LP[] decomposeNetIntoLPs(Net net,
 			SimQPNConfiguration configuration,
 			SimulatorProgress progressMonitor, int verbosityLevel) {
+
 		NetDecomposer decomposer = new NetDecomposer(net, configuration,
 				progressMonitor, verbosityLevel);
-		List<LP> lps = decomposer.decomposeNetIntoLPs();
-		int cores = Runtime.getRuntime().availableProcessors();
-		// if(lps.size() > cores){
-		// return null;
-		// }
-		while (lps.size() > cores) {
-			log.warn("More logical partitions("+lps.size()+") than cores("+cores+ "). Should merge logical partitions.");
-			for (int i = lps.size() - 1; i > 1; i = i - 2) {
-				log.warn("merged logical partitions "+i + " and " + (i + 1));
-				merge(lps, i, i - 1);
-			}
-		}
-		finishDecomposition(lps);
+
+		List<LP> lps = decomposer.decomposeNetIntoMinimumRegionLPs();
+		decomposer.mergeLanes(lps);
+		decomposer.mergeIntoWorkloadGenerators(lps);
+		decomposer.mergeNonWorkloadGenerators(lps);
+		setMetaInformation(lps);
 		return lps.toArray(new LP[lps.size()]);
 	}
 
-	static void finishDecomposition(List<LP> lps) {
+	private void mergeNonWorkloadGenerators(List<LP> lps) {
+		setInPlaces(lps);
+		setPredAndSuccessors(lps);
+
+		for(int i=0; i<lps.size(); i++){
+			LP lp = lps.get(i);
+			if (lp.getPlaces().length < net.getNumPlaces()
+					/ cores) {
+				for(LP lpToMerge:lps){
+					if(lp != lpToMerge){
+						if (lpToMerge.getPlaces().length < net.getNumPlaces()
+								/ cores) {
+							lp = merge(lps, lp, lpToMerge,
+									verbosityLevel);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private void mergeIntoWorkloadGenerators(List<LP> lps) {
+		setInPlaces(lps);
+		setPredAndSuccessors(lps);
+
+		for (int cnt = 0; lps.size() > cores && cnt < 10; cnt++) {
+			List<LP> openWorkloads = new ArrayList<>();
+			for (LP lp : lps) {
+				if (lp != null) {
+					if (isOpenWorkload(lp)) {
+						openWorkloads.add(lp);
+					}
+				}
+			}
+			for (LP openWorkload : openWorkloads) {
+				List<LP> successors = openWorkload.getSuccessors();
+				for (LP suc : successors) {
+					if (openWorkload.getPlaces().length < net.getNumPlaces()
+							/ cores) {
+						if (!isOpenWorkload(suc)) {
+							openWorkload = merge(lps, openWorkload, suc,
+									verbosityLevel);
+						}
+					}
+				}
+			}
+
+		}
+	}
+
+	private void mergeLanes(List<LP> listLPs) {
+		int counterD = listLPs.size();
+		for (int i = 0; i < counterD; i++) {
+			LP lp1 = listLPs.get(i);
+			for (Transition transition : lp1.getTransitions()) {
+				if (transition.outPlaces.length == 1) {
+					LP lp2 = (LP) transition.outPlaces[0].getExecutor();
+					if (lp1.getId() != lp2.getId()) {
+						boolean shouldMerge = true;
+						for (Transition transition2 : lp2.getTransitions()) {
+							if (transition2.inPlaces.length > 1) {
+								shouldMerge = false;
+								break;
+							}
+						}
+						if (!shouldMerge) {
+							break;
+						}
+
+						merge(listLPs, lp1, lp2, verbosityLevel);
+
+						i = i - 1;
+						counterD = listLPs.size();
+						break;
+					}
+				}
+			}
+		}
+
+		// for generated models
+		if (listLPs.get(1).getPlaces()[0].name.equals("token generator")) {
+			LP lp1 = listLPs.remove(0);// (lp1);
+			LP lp2 = listLPs.remove(0);// (lp1);
+			LP newLP = LP.merge(lp1, lp2);
+			listLPs.add(0, newLP);
+		}
+
+		/* Set new LP ids */
+		for (int i = 0; i < listLPs.size(); i++) {
+			LP lp = listLPs.get(i);
+			lp.setId(i);
+			lp.setExecutorToEntities();
+		}
+	}
+
+	static void setMetaInformation(List<LP> lps) {
 		setInPlaces(lps);
 		setPredAndSuccessors(lps);
 		// mergePlaceLPsIntoPredecessors(listLPs);
@@ -60,40 +184,29 @@ public class NetDecomposer {
 		}
 	}
 
-	private NetDecomposer(Net net, SimQPNConfiguration configuration,
-			SimulatorProgress progressMonitor, int verbosityLevel) {
-		this.net = net;
-		this.configuration = configuration;
-		this.progressMonitor = progressMonitor;
-		this.verbosityLevel = verbosityLevel;
-	}
-
 	/**
 	 * Returns a decomposition of the (internal) {@link Net} into a logical
 	 * process ({@link LP}) array
 	 * 
 	 * @return Array of logical processes
 	 */
-	private List<LP> decomposeNetIntoLPs() {
-		List<LP> listLPs = decomposeNetIntoMinimumRegionLPs();
-
-		mergeLPsInLane(listLPs);
-
-		return listLPs;
-	}
 
 	private static void setInPlaces(List<LP> listLPs) {
 		for (LP lp : listLPs) {
-			ArrayList<Place> inPlaces = new ArrayList<Place>();
-			for (Place place : lp.getPlaces()) {
-				for (Transition transition : place.inTrans) {
-					if (lp.getId() != transition.getExecutor().getId()) {
-						inPlaces.add(place);
-					}
+			setInPlaces(lp);
+		}
+	}
+
+	private static void setInPlaces(LP lp) {
+		ArrayList<Place> inPlaces = new ArrayList<Place>();
+		for (Place place : lp.getPlaces()) {
+			for (Transition transition : place.inTrans) {
+				if (lp.getId() != transition.getExecutor().getId()) {
+					inPlaces.add(place);
 				}
 			}
-			lp.setInPlaces(inPlaces.toArray(new Place[inPlaces.size()]));
 		}
+		lp.setInPlaces(inPlaces.toArray(new Place[inPlaces.size()]));
 	}
 
 	/**
@@ -205,60 +318,29 @@ public class NetDecomposer {
 		return listLPs;
 	}
 
-	private void mergeLPsInLane(List<LP> listLPs) {
-		int counterD = listLPs.size();
-		for (int i = 0; i < counterD; i++) {
-			LP lp1 = listLPs.get(i);
-			for (Transition transition : lp1.getTransitions()) {
-				if (transition.outPlaces.length == 1) {
-					LP lp2 = (LP) transition.outPlaces[0].getExecutor();
-					if (lp1.getId() != lp2.getId()) {
-						boolean shouldMerge = true;
-						for (Transition transition2 : lp2.getTransitions()) {
-							if (transition2.inPlaces.length > 1) {
-								shouldMerge = false;
-								break;
-							}
-						}
-						if (!shouldMerge) {
-							break;
-						}
-
-						merge(listLPs, lp1, lp2);
-
-						i = i - 1;
-						counterD = listLPs.size();
-						break;
-					}
-				}
-			}
+	private static boolean isOpenWorkload(LP lp1) {
+		if (lp1.getInPlaces() == null) {
+			log.warn("inPlaces not set");
+			return true;
 		}
-
-		// for generated models
-		if (listLPs.get(1).getPlaces()[0].name.equals("token generator")) {
-			LP lp1 = listLPs.remove(0);// (lp1);
-			LP lp2 = listLPs.remove(0);// (lp1);
-			LP newLP = LP.merge(lp1, lp2);
-			listLPs.add(0, newLP);
-		}
-
-		/* Set new LP ids */
-		for (int i = 0; i < listLPs.size(); i++) {
-			LP lp = listLPs.get(i);
-			lp.setId(i);
-			lp.setExecutorToEntities();
+		if (lp1.getInPlaces().length == 0) {
+			return true;
+		} else {
+			return false;
 		}
 	}
 
-	private static LP merge(List<LP> listLPs, int id1, int id2) {
-		return merge(listLPs, listLPs.get(id1), listLPs.get(id2));
-	}
-
-	private static LP merge(List<LP> lps, LP lp1, LP lp2) {
+	private static LP merge(List<LP> lps, LP lp1, LP lp2, int verbosityLevel) {
 		lps.remove(lp1);
 		lps.remove(lp2);
 		LP merged = LP.merge(lp1, lp2);
+		setInPlaces(merged);
 		lps.add(merged);
+		lps.remove(null);
+		if (verbosityLevel > 1) {
+			log.info("merged logical partitions " + lp1.getId() + " and "
+					+ lp2.getId());
+		}
 		return merged;
 	}
 
