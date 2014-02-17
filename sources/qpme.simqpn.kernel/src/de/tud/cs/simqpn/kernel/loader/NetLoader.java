@@ -1936,6 +1936,24 @@ public class NetLoader {
 						double[] pdf;
 						File pdfFile = new File(pdf_filename);
 						if (!pdfFile.exists()) {
+							//search standard directories for file
+							String path = (new File("")).getAbsolutePath().toString();
+							pdfFile = new File(path+File.separator+pdf_filename);
+							if (!pdfFile.exists()) {
+								path = System.getProperty("user.home");
+								log.info(path);
+								pdfFile = new File(path+File.separator+pdf_filename);
+							}
+							if (!pdfFile.exists()) {
+								path = System.getProperty("user.home"+"csv"+File.separator);
+								pdfFile = new File(path+File.separator+pdf_filename);
+							}
+							log.info("Used empirical distance from global repository: " + path+File.separator+pdf_filename);
+						}
+
+						
+						
+						if (!pdfFile.exists()) {
 							log.error(formatDetailMessage(
 									"PDF file of Empirical distribution does not exist!",
 									"place-num", Integer.toString(i),
