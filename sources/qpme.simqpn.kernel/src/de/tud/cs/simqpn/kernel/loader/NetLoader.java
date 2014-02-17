@@ -47,6 +47,7 @@ import de.tud.cs.simqpn.kernel.entities.Place.DepartureDiscipline;
 import de.tud.cs.simqpn.kernel.entities.queue.*;
 import de.tud.cs.simqpn.kernel.random.Deterministic;
 import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
+import de.tud.cs.simqpn.kernel.random.ScaledEmpirical;
 
 public class NetLoader {
 
@@ -78,8 +79,8 @@ public class NetLoader {
 	 * @return
 	 * @throws SimQPNException
 	 */
-	public Net load(Element netXML, String configurationName, SimQPNConfiguration configuration)
-			throws SimQPNException {
+	public Net load(Element netXML, String configurationName,
+			SimQPNConfiguration configuration) throws SimQPNException {
 		placeToIndexMap = new HashMap<Element, Integer>();
 		transitionToIndexMap = new HashMap<Element, Integer>();
 		queueToIndexMap = new HashMap<Element, Integer>();
@@ -99,8 +100,8 @@ public class NetLoader {
 	 * @return
 	 * @throws SimQPNException
 	 */
-	private Net parse(Element netXML, String configurationName, SimQPNConfiguration configuration)
-			throws SimQPNException {
+	private Net parse(Element netXML, String configurationName,
+			SimQPNConfiguration configuration) throws SimQPNException {
 		Net net = new Net();
 		net.setConfigurationName(configurationName);
 		idToElementMap = new HashMap<String, Element>();
@@ -165,8 +166,8 @@ public class NetLoader {
 	 * @return
 	 * @exception
 	 */
-	private Net getReady(Element netXML, Net net, SimQPNConfiguration configuration)
-			throws SimQPNException {
+	private Net getReady(Element netXML, Net net,
+			SimQPNConfiguration configuration) throws SimQPNException {
 		/*
 		 * This is the method where the QPN to be simulated is defined. The QPN
 		 * specification is currently hard-coded.
@@ -268,8 +269,8 @@ public class NetLoader {
 	 * @return
 	 * @throws SimQPNException
 	 */
-	private Net createPlaces(Element netXML, Net net, SimQPNConfiguration configuration)
-			throws SimQPNException {
+	private Net createPlaces(Element netXML, Net net,
+			SimQPNConfiguration configuration) throws SimQPNException {
 		/**
 		 * @param int id - global id of the place - IMPORTANT: must be equal to
 		 *        the index in the array!!!!!!!
@@ -551,7 +552,8 @@ public class NetLoader {
 						numOutgoingConnections, // # outgoing connections
 						net.getNumProbes(), statsLevel, // stats level
 						dDis, // departure discipline
-						place, configuration); // Reference to the place' XML element
+						place, configuration); // Reference to the place' XML
+												// element
 				placeToIndexMap.put(place, i);
 				if (log.isDebugEnabled()) {
 					log.debug("places[" + i + "] = new Place(" + i + ", '"
@@ -573,7 +575,8 @@ public class NetLoader {
 							net.getNumProbes(), statsLevel, // stats level
 							dDis, // departure discipline
 							queue, // Reference to the integrated Queue
-							place, configuration); // Reference to the place' XML element
+							place, configuration); // Reference to the place'
+													// XML element
 					placeToIndexMap.put(place, i);
 					if (log.isDebugEnabled()) {
 						log.debug("places[" + i + "] = new QPlace(" + i + ", '"
@@ -681,8 +684,10 @@ public class NetLoader {
 				throw new SimQPNException();
 			}
 
-			int numOutgoingConnections = getNumConnectionsWithSourceId(transition.attributeValue("id"));
-			int numIncomingConnections = getNumConnectionsWithTargetId(transition.attributeValue("id"));
+			int numOutgoingConnections = getNumConnectionsWithSourceId(transition
+					.attributeValue("id"));
+			int numIncomingConnections = getNumConnectionsWithTargetId(transition
+					.attributeValue("id"));
 
 			if (transition.attributeValue("weight") == null) {
 				log.error(formatDetailMessage("Transition weight not set!",
@@ -715,8 +720,8 @@ public class NetLoader {
 		return net;
 	}
 
-	private Net createProbes(Element netXML, Net net, SimQPNConfiguration configuration)
-			throws SimQPNException {
+	private Net createProbes(Element netXML, Net net,
+			SimQPNConfiguration configuration) throws SimQPNException {
 		XPath xpathSelector;
 		log.debug("/////////////////////////////////////////////");
 		log.debug("// Create probes");
@@ -1216,13 +1221,13 @@ public class NetLoader {
 				QPlace qPl = (QPlace) net.getPlace(i);
 
 				// BEGIN-CONFIG
-				if (qPl.queue.queueDiscip == QueuingDiscipline.PS){
-					((PSQueue)qPl.queue).expPS = false;
+				if (qPl.queue.queueDiscip == QueuingDiscipline.PS) {
+					((PSQueue) qPl.queue).expPS = false;
 				}
 				// END-CONFIG
 
-				if (!(qPl.queue.queueDiscip == QueuingDiscipline.PS && ((PSQueue)qPl.queue).expPS)){
-					qPl.randServTimeGen = new AbstractContinousDistribution[qPl.numColors];					
+				if (!(qPl.queue.queueDiscip == QueuingDiscipline.PS && ((PSQueue) qPl.queue).expPS)) {
+					qPl.randServTimeGen = new AbstractContinousDistribution[qPl.numColors];
 				}
 
 				XPath xpathSelector = XMLHelper
@@ -1247,7 +1252,8 @@ public class NetLoader {
 					String distributionFunction = colorRef
 							.attributeValue("distribution-function");
 
-					if (qPl.queue.queueDiscip == QueuingDiscipline.PS && ((PSQueue)qPl.queue).expPS) {
+					if (qPl.queue.queueDiscip == QueuingDiscipline.PS
+							&& ((PSQueue) qPl.queue).expPS) {
 						log.info("expPS parameter of a queueing place with PS scheduling strategy set to true!");
 						if (!"Exponential".equals(distributionFunction)) {
 							log.error(formatDetailMessage(
@@ -1601,7 +1607,7 @@ public class NetLoader {
 							throw new SimQPNException();
 						}
 						// Initialize random number generator and meanServTimes
-						if (!(qPl.queue.queueDiscip == QueuingDiscipline.PS && ((PSQueue)qPl.queue).expPS)) {
+						if (!(qPl.queue.queueDiscip == QueuingDiscipline.PS && ((PSQueue) qPl.queue).expPS)) {
 							qPl.randServTimeGen[j] = new Exponential(lambda,
 									RandomNumberGenerator.nextRandNumGen());
 							log.debug("((QPlace) places["
@@ -1997,10 +2003,42 @@ public class NetLoader {
 								throw new SimQPNException();
 							}
 						}
+
+						double scale = Double.parseDouble(colorRef
+								.attributeValue("scale"));
+						double offset = Double.parseDouble(colorRef
+								.attributeValue("offset"));
+						// Validate input parameters
+						if (!(scale > 0)) {
+							log.error(formatDetailMessage(
+									"Invalid \"scale\" parameter of Empirical distribution!",
+									"scale", Double.toString(scale),
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id",
+									colorRef.attributeValue("id"),
+									"colorRef.color-id",
+									colorRef.attributeValue("color-id")));
+							throw new SimQPNException();
+						}
+
 						// Initialize random number generator and meanServTimes
-						qPl.randServTimeGen[j] = new Empirical(pdf,
-								cern.jet.random.Empirical.LINEAR_INTERPOLATION,
-								RandomNumberGenerator.nextRandNumGen());
+						if (scale == 1 & offset == 0) {
+							qPl.randServTimeGen[j] = new Empirical(
+									pdf,
+									cern.jet.random.Empirical.LINEAR_INTERPOLATION,
+									RandomNumberGenerator.nextRandNumGen());
+						} else {
+							qPl.randServTimeGen[j] = new ScaledEmpirical(
+									offset,
+									scale,
+									pdf,
+									cern.jet.random.Empirical.LINEAR_INTERPOLATION,
+									RandomNumberGenerator.nextRandNumGen());
+						}
+
 						log.debug("((QPlace) places["
 								+ i
 								+ "]).randServTimeGen["
@@ -2008,20 +2046,37 @@ public class NetLoader {
 								+ "] = new Empirical("
 								+ pdf_filename
 								+ ", LINEAR_INTERPOLATION, RandomNumberGenerator.nextRandNumGen())");
-						// SDK-TODO: find out how meanServTimes is computed?
-						// qPl.meanServTimes[j] = (double) ???;
-						// logln(2, "((QPlace) places[" + i +
-						// "]).meanServTimes[" + j + "] = ??? = " +
-						// qPl.meanServTimes[j]);
-						log.warn(formatDetailMessage(
-								"meanServTimes for Empirical distribution not initialized! Might experience problems if indrStats is set to true!",
-								"place-num", Integer.toString(i), "place.id",
-								place.attributeValue("id"), "place.name",
-								place.attributeValue("name"), "colorRef-num",
-								Integer.toString(j), "colorRef.id",
-								colorRef.attributeValue("id"),
-								"colorRef.color-id",
-								colorRef.attributeValue("color-id")));
+						double sum = 0d;
+						for (int index = 0; index < pdf.length; index++) {
+							sum += pdf[index];
+						}
+						double epsilon = 0.0000001;
+						if (sum <= (0 + epsilon)) {
+							// qPl.meanServTimes[j] = 0;
+							log.warn(formatDetailMessage(
+									"meanServTimes for Empirical distribution not initialized! Might experience problems if indrStats is set to true!",
+									"place-num", Integer.toString(i),
+									"place.id", place.attributeValue("id"),
+									"place.name", place.attributeValue("name"),
+									"colorRef-num", Integer.toString(j),
+									"colorRef.id",
+									colorRef.attributeValue("id"),
+									"colorRef.color-id",
+									colorRef.attributeValue("color-id")));
+						} else {
+							double mean = 0d;
+							for (int index = 0; index < pdf.length; index++) {
+								// the empirical distribution consists of
+								// pdf.length uniform distributions
+								double meanValueOfUniformDistribution = (index + (index + 1))
+										/ (pdf.length * 2);
+								double weight = pdf[index];
+								mean += meanValueOfUniformDistribution * weight;
+							}
+							// normalize mean
+							mean = mean / sum;
+							qPl.meanServTimes[j] = (mean * scale) + offset;
+						}
 					} else if ("Deterministic".equals(distributionFunction)) {
 						if (colorRef.attributeValue("p1") == null) {
 							log.error(formatDetailMessage(
@@ -2107,7 +2162,7 @@ public class NetLoader {
 		}
 		throw new NoSuchElementException();
 	}
-	
+
 	private int getNumConnectionsWithSourceId(String id) {
 		Integer num = sourceIdToNumConnectionsMap.get(id);
 		if (num != null) {
@@ -2115,7 +2170,7 @@ public class NetLoader {
 		}
 		return 0;
 	}
-	
+
 	private int getNumConnectionsWithTargetId(String id) {
 		Integer num = targetIdToNumConnectionsMap.get(id);
 		if (num != null) {
@@ -2123,6 +2178,5 @@ public class NetLoader {
 		}
 		return 0;
 	}
-
 
 }
