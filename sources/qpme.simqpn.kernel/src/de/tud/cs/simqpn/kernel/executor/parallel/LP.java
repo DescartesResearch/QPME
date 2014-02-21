@@ -248,9 +248,6 @@ public class LP implements Executor, Runnable {
 	}
 
 	public void setTimeSaveToProcessAdvanced(double timeSaveToProcess) {
-		// if(verbosityLevel > 0){
-		// System.out.println("LP"+id+" actualized");
-		// }
 		if (timeSaveToProcess < this.timeSaveToProcess) {
 			this.timeSaveToProcess = timeSaveToProcess;
 			if (!hasQueueEvent()) {
@@ -1240,7 +1237,6 @@ public class LP implements Executor, Runnable {
 				nextChkAfter = clock + clockTimePerSec
 						* configuration.secondsBtwChkStops;
 			}
-			System.out.println("LP"+id+" "+ nextChkAfter);
 		}
 	}
 
