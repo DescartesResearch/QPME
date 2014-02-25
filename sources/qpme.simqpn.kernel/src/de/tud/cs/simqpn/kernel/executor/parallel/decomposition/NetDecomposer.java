@@ -68,11 +68,31 @@ public class NetDecomposer {
 				progressMonitor, verbosityLevel);
 
 		List<LP> lps = decomposer.decomposeNetIntoMinimumRegionLPs();
+		decomposer.mergeNoQueueLPs(lps);
 		decomposer.mergeLanes(lps);
 		decomposer.mergeIntoWorkloadGenerators(lps);
 		decomposer.mergeNonWorkloadGenerators(lps);
 		setMetaInformation(lps);
 		return lps.toArray(new LP[lps.size()]);
+	}
+
+	/**
+	 * Merges LPs that include no queueing places into a predecessor LP
+	 * @param lps
+	 */
+	private void mergeNoQueueLPs(List<LP> lps) {
+		for(int i=0; i<lps.size(); i++){
+			LP lp = lps.get(i);
+			if(lp.getQueues().length == 0){
+				setPredecessors(lps, lp);
+				LP pred = lp.getPredecessors().get(0);
+				merge(lps, pred, lp, verbosityLevel);
+				i = 0;
+			}
+		}
+		for(int i=0; i<lps.size(); i++){
+			lps.get(i).resetPredecessors();
+		}
 	}
 
 	private void mergeNonWorkloadGenerators(List<LP> lps) {
@@ -143,9 +163,13 @@ public class NetDecomposer {
 						if (!shouldMerge) {
 							break;
 						}
+						
+						if(listLPs.size() <= cores){
+							return;
+						}
 
 						merge(listLPs, lp1, lp2, verbosityLevel);
-
+						
 						i = i - 1;
 						counterD = listLPs.size();
 						break;
@@ -344,6 +368,20 @@ public class NetDecomposer {
 		return merged;
 	}
 
+	public static void setPredecessors(List<LP> lps, LP lp){
+		for (Place place : lp.getPlaces()) {
+			for (Transition inTrans : place.inTrans) {
+				for (Place prePlace : inTrans.inPlaces) {
+					LP predLP = (LP) prePlace.getExecutor();
+					if (!predLP.equals(lp)) {
+						lp.addPredecessor(predLP);
+						predLP.addSuccessor(lp);
+					}
+				}
+			}
+		}
+	}
+	
 	/**
 	 * Sets predecessor and successor for the LPs
 	 * 
