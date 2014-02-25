@@ -302,7 +302,7 @@ public class LP implements Executor, Runnable {
 			if ((nextQueueEvent = eventList.peek()) != null
 					&& nextQueueEvent.time <= timeSaveToProcess) {
 				while ((nextTokenEvent = incomingTokenList.peek()) != null
-						&& nextTokenEvent.getTime() < nextQueueEvent.time) {
+						&& nextTokenEvent.getTime() < (nextQueueEvent = eventList.peek()).time) {
 					processNextTokenEvent();
 					updateQueueEvents();
 				}
@@ -703,13 +703,10 @@ public class LP implements Executor, Runnable {
 		if (verbosityLevel > 0) {
 			if (clock > event.time) {
 				System.err.println("LP" + id
-						+ " | ERROR: PROGRESSED EVENT EARLY");
-			} else {
-				clock = event.time;
+						+ " | ERROR: PROGRESSED EVENT EARLY| "+clock+"\t "+event.time);
 			}
-		} else {
-			clock = event.time;
 		}
+		clock = event.time;
 
 		QPlace qpl = (QPlace) event.token.place;
 		qpl.completeService(event.token, this);
@@ -741,7 +738,7 @@ public class LP implements Executor, Runnable {
 		if (clock < tkEvent.getTime()) {
 			clock = tkEvent.getTime();
 		}else if(clock > tkEvent.getTime()){
-			log.warn("clock >= time of incoming token clock "+clock+"| tkEvent "+tkEvent.getTime());
+			log.warn("LP" + id + "clock >= time of incoming token clock "+clock+"| tkEvent "+tkEvent.getTime());
 		}
 		place.addTokens(tkEvent.getColor(), tkEvent.getNumber(),
 				tkEvent.getTkCopyBuffer(), this);
@@ -1062,7 +1059,7 @@ public class LP implements Executor, Runnable {
 									"The simulation was stopped because of reaching max totalRunLen." // \n
 											+ "The required precision may not have been reached!");
 				} else {
-					log.info("STOPPING because max totalRunLen is reached!");
+					log.info("LP" + id + " STOPPING because max totalRunLen is reached!");
 				}
 			}
 		}
@@ -1396,6 +1393,10 @@ public class LP implements Executor, Runnable {
 	 */
 	public void addPredecessor(LP predecessor) {
 		this.predecessorList.add(predecessor);
+	}
+	
+	public void resetPredecessors() {
+		this.predecessorList = new ArrayList<>();
 	}
 
 	/**
