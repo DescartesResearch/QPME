@@ -1672,6 +1672,18 @@ public class LP implements Executor, Runnable {
 		}
 		finish(clock);
 	}
+	
+	public boolean isOpenWorkload() {
+		if (this.getInPlaces() == null) {
+			log.warn("inPlaces not set");
+			return true;
+		}
+		if (this.getInPlaces().length == 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 
 	public boolean hasQueueEvent() {
 		return !eventList.isEmpty();

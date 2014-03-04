@@ -124,7 +124,7 @@ public class NetDecomposer {
 			List<LP> openWorkloads = new ArrayList<>();
 			for (LP lp : lps) {
 				if (lp != null) {
-					if (isOpenWorkload(lp)) {
+					if (lp.isOpenWorkload()) {
 						openWorkloads.add(lp);
 					}
 				}
@@ -134,7 +134,7 @@ public class NetDecomposer {
 				for (LP suc : successors) {
 					if (openWorkload.getPlaces().length < net.getNumPlaces()
 							/ cores) {
-						if (!isOpenWorkload(suc)) {
+						if (!suc.isOpenWorkload()) {
 							openWorkload = merge(lps, openWorkload, suc,
 									verbosityLevel);
 						}
@@ -340,18 +340,6 @@ public class NetDecomposer {
 			lp.setExecutorToEntities();
 		}
 		return listLPs;
-	}
-
-	private static boolean isOpenWorkload(LP lp1) {
-		if (lp1.getInPlaces() == null) {
-			log.warn("inPlaces not set");
-			return true;
-		}
-		if (lp1.getInPlaces().length == 0) {
-			return true;
-		} else {
-			return false;
-		}
 	}
 
 	private static LP merge(List<LP> lps, LP lp1, LP lp2, int verbosityLevel) {
