@@ -12,13 +12,13 @@ public class PredecessorBarrierAction extends BarrierAction {
 	@Override
 	void setTimesSaveToProcess() {
 		for (int i = 0; i < numlps; i++) {
-			setLookahead(lps[i]);
+			setTimeSaveToProcess(lps[i]);
 		}
 
 	}
 
 	@Override
-	void setLookahead(LP lp) {
+	void setTimeSaveToProcess(LP lp) {
 		double time;
 		double min = Double.MAX_VALUE;
 		for(LP pred : lp.getPredecessors()){

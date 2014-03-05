@@ -7,10 +7,11 @@ import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
  */
 public class SimpleStopCriterionController implements StopController{
 	
-	private int numLPs;
-	private int finishedLPs;
+	private final int numLPs;
+	private int readyTofinishLPs;
 	private boolean hasFinished;
 	private final SimulatorProgress progressMonitor;
+	private boolean isReadyToFinish;
 	
 	/**
 	 * Constructor
@@ -20,54 +21,47 @@ public class SimpleStopCriterionController implements StopController{
 	public SimpleStopCriterionController(int numLPs, SimulatorProgress progressMonitor) {
 		this.progressMonitor = progressMonitor;
 		this.numLPs = numLPs;
-		this.finishedLPs = 0;
+		this.readyTofinishLPs = 0;
 		this.hasFinished = false;
+		this.isReadyToFinish = false;
 	}
-	
-	/**
-	 * Constructor
-	 * @param numLPs The number of LPs that have to reach their local stop criterion
-	 * @param barrier The barrier to be unlocked if simulation finished
-	 */
-//	public SimpleStopCriterionController(int numLPs) {
-//		this.progressMonitor = null;
-//		this.numLPs = numLPs;
-//		this.finishedLPs = 0;
-//		this.hasFinished = false;
-//	}
 	
 	/**
 	 * Returns if all LPs reached their local stop criterion
 	 * @return 
 	 */
-	public boolean hasSimulationFinished(){
+	public boolean isReadyToFinish(){
 		if(progressMonitor != null){
 			if(progressMonitor.isCanceled()){
-				hasFinished = true;
-				return true;
+				isReadyToFinish = true;
 			}
 		}
-		return hasFinished;
+		return isReadyToFinish;
 	}
 	
 	/**
 	 * Increments the counter for finished LPs
 	 */
-	public synchronized void incrementFinishedLPCounter(){
-		finishedLPs++;
-//		hasFinished = true;
-		if(numLPs <= finishedLPs){
-			hasFinished = true;
+	@Override
+	public synchronized void incrementReadyToFinishLPCounter(){
+		readyTofinishLPs++;
+		if(numLPs <= readyTofinishLPs){
+			isReadyToFinish = true;
 		}
 	}
 	
-	public int getNumFinishedLPs(){
-		return finishedLPs;
+	@Override
+	public synchronized void finishSimulation() {
+		hasFinished = true;
 	}
 	
+	public boolean hasFinished() {
+		return hasFinished;
+	}
+
 	@Override
-	public void finishSimulation() {
-		hasFinished = true;
+	public void setReadyToFinish() {
+		isReadyToFinish = true;		
 	}
 
 

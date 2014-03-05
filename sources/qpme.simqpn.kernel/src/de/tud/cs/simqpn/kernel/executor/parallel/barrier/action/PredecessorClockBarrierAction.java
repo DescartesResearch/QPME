@@ -17,14 +17,14 @@ public class PredecessorClockBarrierAction extends BarrierAction {
 	void setTimesSaveToProcess() {
 		super.setTimesSaveToProcess();
 		for (int i = 0; i < numlps; i++) {
-			setLookahead(lps[i]);
+			setTimeSaveToProcess(lps[i]);
 		}
 
 	}
 
 	@Override
-	void setLookahead(LP lp) {
-		if (lp.getInPlaces().length == 0) {
+	void setTimeSaveToProcess(LP lp) {
+		if (lp.isWorkloadGenerator()) {
 			//lp.setTimeSaveToProcess(5*lp.getNextQueueEventTime() - 4*lp.getClock());;
 			lp.setTimeSaveToProcess(lp.getLastQueueEventTime());
 		}else{
@@ -32,8 +32,7 @@ public class PredecessorClockBarrierAction extends BarrierAction {
 			for(LP pred : lp.getPredecessors()){
 				predecessorClockValues.add(pred.getClock());
 			}
-			lp.setTimeSaveToProcess(Collections.min(predecessorClockValues));		
-			
+			lp.setTimeSaveToProcess(Collections.min(predecessorClockValues));
 		}
 	}
 

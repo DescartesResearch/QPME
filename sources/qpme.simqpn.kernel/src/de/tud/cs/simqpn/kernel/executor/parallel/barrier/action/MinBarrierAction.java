@@ -14,7 +14,7 @@ public class MinBarrierAction extends BarrierAction {
 		double min = Double.MAX_VALUE;
 		for (int i = 0; i < numlps; i++) {
 			final LP lp = lps[i];
-			if (lp.sucessorIds.length == 0) {
+			if (!lp.hasSuccessor()) {
 				continue;
 			}
 			double time = lp.getNextEventTime();
@@ -29,7 +29,7 @@ public class MinBarrierAction extends BarrierAction {
 	}
 
 	@Override
-	void setLookahead(LP lp) {
+	void setTimeSaveToProcess(LP lp) {
 		// TODO Auto-generated method stub		
 	}
 

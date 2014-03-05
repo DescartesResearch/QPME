@@ -70,8 +70,8 @@ public class JBarrierExecutor implements Callable<Net> {
 	}
 
 	private class InternalLP implements Runnable {
-		LP lp;
-
+		final LP lp;
+		
 		public InternalLP(final LP lp) {
 			this.lp = lp;
 		}
@@ -81,14 +81,15 @@ public class JBarrierExecutor implements Callable<Net> {
 			try {
 				lp.initializeWorkingVariables();
 				lp.waitForBarrier();
-				while (!lp.getStopController().hasSimulationFinished()) {
-					lp.processSaveEventsWithPrecissionCheck();
+				while (!lp.getStopController().hasFinished()) {
+					lp.processSaveEvents();
+					lp.checkForPrecission();
 					lp.waitForBarrier();
 				}
+				lp.finish();
 			} catch (SimQPNException e) {
 				log.error(e);
 			}
-
 		}
 	}
 	

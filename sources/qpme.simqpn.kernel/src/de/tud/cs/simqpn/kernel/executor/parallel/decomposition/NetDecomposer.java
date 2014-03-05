@@ -124,7 +124,7 @@ public class NetDecomposer {
 			List<LP> openWorkloads = new ArrayList<>();
 			for (LP lp : lps) {
 				if (lp != null) {
-					if (lp.isOpenWorkload()) {
+					if (lp.isWorkloadGenerator()) {
 						openWorkloads.add(lp);
 					}
 				}
@@ -134,7 +134,7 @@ public class NetDecomposer {
 				for (LP suc : successors) {
 					if (openWorkload.getPlaces().length < net.getNumPlaces()
 							/ cores) {
-						if (!suc.isOpenWorkload()) {
+						if (!suc.isWorkloadGenerator()) {
 							openWorkload = merge(lps, openWorkload, suc,
 									verbosityLevel);
 						}
@@ -397,10 +397,6 @@ public class NetDecomposer {
 		for (LP lp : listLPs) {
 			removeDuplicateWithOrder((ArrayList<LP>) lp.getPredecessors());
 			removeDuplicateWithOrder((ArrayList<LP>) lp.getSuccessors());
-			if (lp.getPredecessors().isEmpty()) {
-				lp.addPredecessor(lp);
-				lp.addSuccessor(lp);
-			}
 		}
 
 	}
