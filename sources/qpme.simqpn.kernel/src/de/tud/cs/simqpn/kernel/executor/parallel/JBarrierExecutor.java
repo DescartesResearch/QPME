@@ -8,16 +8,15 @@ import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.executor.parallel.barrier.BarrierFactory;
-import de.tud.cs.simqpn.kernel.executor.parallel.decomposition.NetDecomposer;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
 public class JBarrierExecutor implements Callable<Net> {
 
 	private static Logger log = Logger.getLogger(JBarrierExecutor.class);
 	private Net net;
-	private SimQPNConfiguration configuration;
 	private SimulatorProgress progressMonitor;
 	private final int verbosityLevel;
+	private final LP[] lps;
 
 	/**
 	 * Constructor
@@ -27,10 +26,9 @@ public class JBarrierExecutor implements Callable<Net> {
 	 * @param progressMonitor
 	 * @param runID
 	 */
-	public JBarrierExecutor(Net net, SimQPNConfiguration configuration,
+	public JBarrierExecutor(LP[] lps, SimQPNConfiguration configuration,
 			SimulatorProgress progressMonitor, int verbosityLevel) {
-		this.net = net;
-		this.configuration = configuration;
+		this.lps = lps;
 		this.progressMonitor = progressMonitor;
 		this.verbosityLevel = verbosityLevel;
 	}
@@ -41,13 +39,7 @@ public class JBarrierExecutor implements Callable<Net> {
 	 * @throws SimQPNException
 	 */
 	public Net call() throws SimQPNException {
-		log.warn("No guaranties. Parallel simulation is still experimental and only applicable to open workloads.");
-		LP[] lps = NetDecomposer.decomposeNetIntoLPs(net, configuration,
-				progressMonitor, verbosityLevel);
-		if(!NetDecomposer.hasDecompositionSucceded(lps, verbosityLevel)){
-			return null;
-		}
-		
+
 		BarrierFactory.createBarrier(lps, verbosityLevel, progressMonitor);
 		
 		Thread[] threads = new Thread[lps.length];

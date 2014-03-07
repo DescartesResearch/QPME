@@ -15,6 +15,8 @@ import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 import de.tud.cs.simqpn.kernel.executor.parallel.JBarrierExecutor;
+import de.tud.cs.simqpn.kernel.executor.parallel.LP;
+import de.tud.cs.simqpn.kernel.executor.parallel.decomposition.NetDecomposer;
 import de.tud.cs.simqpn.kernel.executor.sequential.SequentialExecutor;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.persistency.StatsDocumentBuilder;
@@ -25,15 +27,16 @@ public class BatchMeans extends Analyzer {
 	private static Logger log = Logger.getLogger(BatchMeans.class);
 
 	private static SimulatorProgress progressMonitor;
-	
-	public BatchMeans() {};
+
+	public BatchMeans() {
+	};
 
 	@Override
 	public Stats[] analyze(Net net, SimQPNConfiguration configuration,
 			SimulatorProgress monitor) throws SimQPNException {
-		
+
 		SimulatorResults results = runBatchMeans(net, configuration, monitor);
-		if(results == null){
+		if (results == null) {
 			return null;
 		}
 
@@ -74,23 +77,38 @@ public class BatchMeans extends Analyzer {
 		progressMonitor.startSimulation(configuration);
 
 		Callable<Net> run;
-		
-		if(!configuration.isParallel()){
-			run = new SequentialExecutor(net, configuration,monitor,1);
-		}else{
-			int verbosityLevel = 0;	//1 //2
-			run = new JBarrierExecutor(net, configuration, monitor, verbosityLevel);
+
+		int verbosityLevel = 0; // 1 //2
+		if (!configuration.isParallel()) {
+			run = new SequentialExecutor(net, configuration, monitor, 1);
+		} else {
+			log.warn("No guaranties. Parallel simulation is still experimental and only applicable to open workloads.");
+			if (net.getProbes().length > 0) {
+				log.warn("Probes are not supportet for parallel simulation. Starting sequential simulation ...");
+				run = new SequentialExecutor(net, configuration, monitor, 1);
+			} else {
+				LP[] lps = NetDecomposer.decomposeNetIntoLPs(net,
+						configuration, progressMonitor, verbosityLevel);
+				if (!NetDecomposer
+						.hasDecompositionSucceded(lps, verbosityLevel)) {
+					log.warn("Decomposition for parallel simulation failed. Starting sequential simulation ...");
+					run = new SequentialExecutor(net, configuration, monitor, 1);
+				} else {
+					run = new JBarrierExecutor(lps, configuration, monitor,
+							verbosityLevel);
+				}
+			}
 		}
-		
 		try {
 			net = run.call();
-			if(net == null){
+			if (net == null) {
 				return null;
 			}
 		} catch (Exception e) {
-			log.error(""+e.getStackTrace(),e);
+			log.error("" + e.getStackTrace(), e);
 		}
-		
+
+
 		progressMonitor.finishSimulation();
 		progressMonitor = null;
 		return new SimulatorResults(net.getPlaces(), net.getQueues(),
@@ -98,7 +116,9 @@ public class BatchMeans extends Analyzer {
 	}
 
 	@Override
-	public File writeToFile(Stats[] result, SimQPNConfiguration configuration, String outputFileName, Element  XMLNet, String configurationName) throws SimQPNException {
+	public File writeToFile(Stats[] result, SimQPNConfiguration configuration,
+			String outputFileName, Element XMLNet, String configurationName)
+			throws SimQPNException {
 		File resultFile = null;
 		// Skip stats document generation for WELCH and REPL_DEL since the
 		// document builder does not support these methods yet.
