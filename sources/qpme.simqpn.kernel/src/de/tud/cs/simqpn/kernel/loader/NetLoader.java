@@ -114,6 +114,8 @@ public class NetLoader {
 		this.queueList = xpathSelector.selectNodes(netXML);
 		xpathSelector = XMLHelper.createXPath("//probe");
 		this.probeList = xpathSelector.selectNodes(netXML);
+		net.setNumProbes(this.probeList.size());
+
 
 		xpathSelector = XMLHelper.createXPath("//connection");
 		for (Object o : xpathSelector.selectNodes(netXML)) {

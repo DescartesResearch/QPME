@@ -431,4 +431,8 @@ public class Net {
 		this.xmlConfigurationName = configurationName;
 	}
 
+	public void setNumProbes(int numProbes) {
+		this.numProbes = numProbes;
+	}
+
 }
