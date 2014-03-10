@@ -177,6 +177,7 @@ public class SubnetPlacePropertyComposite extends PlacePropertyComposite {
 	// subnet.
 	@Override
 	public void colorRefRemoved(Element colorRef) {
+		super.colorRefRemoved(colorRef);
 		
 		Element subnet = SubnetHelper.getSubnetOfColorReference(colorRef);
 		Element color = NetHelper.getColorByReference(colorRef);
