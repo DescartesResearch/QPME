@@ -1,3 +1,5 @@
+package de.tud.cs.simqpn.kernel.loader.distributions;
+
 /* ==============================================
  * QPME : Queueing Petri net Modeling Environment
  * ==============================================
@@ -9,7 +11,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -26,7 +28,7 @@
  *                                
  * =============================================
  *
- * Original Author(s):  Philipp Meier
+ * Original Author(s):  Fabian Brosig
  * Contributor(s):      
  * 
  * NOTE: The above list of contributors lists only the people that have
@@ -36,38 +38,43 @@
  *  History:
  *  Date        ID                Description
  *  ----------  ----------------  ------------------------------------------------------------------  
- *  2010	    Philipp Meier     Created.
+ *  2013	    Fabian Brosig     Created.
  */
-package de.tud.cs.simqpn.kernel.random;
 
-import cern.jet.random.AbstractContinousDistribution;
+import cern.jet.random.Empirical;
+import edu.cornell.lassp.houle.RngPack.RandomElement;
 
 /**
- * A deterministic distribution that always returns the double passed to the
- * constructor.
+ * An empirical distribution that adds a scaling factor and an offset to the
+ * empirical distribution {@link cern.jet.random.Empirical} which only ranges from 0 to 1.
  * 
- * Extends the colt framework which does not provide deterministic distributions
- * 
- * @author Philipp Meier
+ * @author Fabian Brosig
  * 
  */
-public class Deterministic extends AbstractContinousDistribution {
+public class ScaledEmpirical extends Empirical {
 
-	private double value;
+@Override
+public double cdf(int arg0) {
+	throw new UnsupportedOperationException("CDF not available for " + this.getClass().getCanonicalName());
+}
 
-	public Deterministic(double value) {
-		super();
-		this.value = value;
-	}
+private double offset;
+private double scale;
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+public ScaledEmpirical(double offset, double scale, double[] pdf, int interpolationType, RandomElement randomElement) {
+	super(pdf, interpolationType, randomElement);
+	this.offset = offset;
+	this.scale = scale;
+}
 
-	@Override
-	public double nextDouble() {
-		return value;
-	}
+/**
+ * 
+ */
+private static final long serialVersionUID = 1l;
+
+@Override
+public double nextDouble() {
+	return super.nextDouble() * scale + offset;
+}
 
 }

@@ -47,6 +47,7 @@ import cern.jet.random.AbstractContinousDistribution;
 import cern.jet.random.Empirical;
 import cern.jet.random.EmpiricalWalker;
 import cern.jet.random.Exponential;
+import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Place;
@@ -54,7 +55,6 @@ import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.Token;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.executor.QueueEvent;
-import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 
 /**
  * This class implements the Processor Sharing(PS) scheduling strategy.

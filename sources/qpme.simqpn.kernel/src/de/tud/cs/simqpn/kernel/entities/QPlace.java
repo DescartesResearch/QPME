@@ -61,11 +61,9 @@
 package de.tud.cs.simqpn.kernel.entities;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.dom4j.Element;
@@ -74,14 +72,14 @@ import cern.colt.list.AbstractDoubleList;
 import cern.colt.list.DoubleArrayList;
 import cern.jet.random.AbstractContinousDistribution;
 import cern.jet.random.Exponential;
+import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.queue.PSQueue;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 import de.tud.cs.simqpn.kernel.entities.queue.QueuingDiscipline;
 import de.tud.cs.simqpn.kernel.executor.Executor;
-import de.tud.cs.simqpn.kernel.random.Deterministic;
-import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
+import de.tud.cs.simqpn.kernel.loader.distributions.Deterministic;
 import de.tud.cs.simqpn.kernel.stats.QPlaceQueueStats;
 
 /**

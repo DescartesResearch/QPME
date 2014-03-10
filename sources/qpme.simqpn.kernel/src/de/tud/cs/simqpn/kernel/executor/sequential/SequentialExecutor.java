@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 
 import cern.jet.random.Empirical;
 import cern.jet.random.EmpiricalWalker;
+import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Net;
@@ -22,7 +23,6 @@ import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.executor.QueueEvent;
 import de.tud.cs.simqpn.kernel.executor.TokenEvent;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
-import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 import edu.cornell.lassp.houle.RngPack.RandomElement;
 
 public class SequentialExecutor implements Executor, Callable<Net>{

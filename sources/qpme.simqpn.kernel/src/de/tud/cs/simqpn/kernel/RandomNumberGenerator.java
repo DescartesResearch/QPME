@@ -1,4 +1,4 @@
-package de.tud.cs.simqpn.kernel.random;
+package de.tud.cs.simqpn.kernel;
 
 import java.util.Date;
 
@@ -9,7 +9,6 @@ import cern.jet.random.engine.DRand;
 import cern.jet.random.engine.MersenneTwister;
 import cern.jet.random.engine.RandomSeedGenerator;
 import cern.jet.random.engine.RandomSeedTable;
-import de.tud.cs.simqpn.kernel.SimQPNException;
 import edu.cornell.lassp.houle.RngPack.RandomElement;
 
 /**

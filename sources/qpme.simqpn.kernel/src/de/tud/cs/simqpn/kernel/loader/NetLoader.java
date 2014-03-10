@@ -2,10 +2,6 @@ package de.tud.cs.simqpn.kernel.loader;
 
 import static de.tud.cs.simqpn.kernel.util.LogUtil.formatDetailMessage;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -22,20 +18,6 @@ import org.dom4j.QName;
 import org.dom4j.XPath;
 
 import cern.jet.random.AbstractContinousDistribution;
-import cern.jet.random.Beta;
-import cern.jet.random.BreitWigner;
-import cern.jet.random.BreitWignerMeanSquare;
-import cern.jet.random.ChiSquare;
-import cern.jet.random.Empirical;
-import cern.jet.random.Exponential;
-import cern.jet.random.ExponentialPower;
-import cern.jet.random.Gamma;
-import cern.jet.random.Hyperbolic;
-import cern.jet.random.Logarithmic;
-import cern.jet.random.Normal;
-import cern.jet.random.StudentT;
-import cern.jet.random.Uniform;
-import cern.jet.random.VonMises;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Net;
@@ -45,9 +27,7 @@ import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.Transition;
 import de.tud.cs.simqpn.kernel.entities.Place.DepartureDiscipline;
 import de.tud.cs.simqpn.kernel.entities.queue.*;
-import de.tud.cs.simqpn.kernel.random.Deterministic;
-import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
-import de.tud.cs.simqpn.kernel.random.ScaledEmpirical;
+import de.tud.cs.simqpn.kernel.loader.distributions.DistributionCreator;
 
 public class NetLoader {
 
@@ -1188,26 +1168,6 @@ public class NetLoader {
 	private Net configureQueueServiceTimeDistributions(Net net)
 			throws SimQPNException {
 		/*
-		 * Distribution Name (Initialization Parameters)
-		 * ------------------------
-		 * ---------------------------------------------------------------------
-		 * - Beta (double alpha, double beta) - BreitWigner (double mean, double
-		 * gamma, double cut) - BreitWignerMeanSquare (double mean, double
-		 * gamma, double cut) - ChiSquare (double freedom) - Gamma (double
-		 * alpha, double lambda) - Hyperbolic (double alpha, double beta) -
-		 * Exponential (double lambda) - ExponentialPower (double tau) -
-		 * Logarithmic (double p) - Normal (double mean, double stdDev) -
-		 * StudentT (double freedom) - Uniform (double min, double max) -
-		 * VonMises (double freedom) - Empirical (String pdf_filename)
-		 * 
-		 * For each distribution, additional initialization parameters needed
-		 * are shown in the brackets. The default distribution should be
-		 * Exponential. Note that the last distribution has a String parameter
-		 * containing a file name.
-		 * 
-		 * Three parameters p1, p2 and p3 of type double in the data model are
-		 * used here to initialize the distribution function.
-		 * 
 		 * TODO: make the editor display the real names of the expected
 		 * parameters after the user has chosen the distribution, e.g. for
 		 * Exponential a single field labeled "lambda" should be displayed.
@@ -1222,11 +1182,9 @@ public class NetLoader {
 					.attributeValue(XSI_TYPE_ATTRIBUTE))) {
 				QPlace qPl = (QPlace) net.getPlace(i);
 
-				// BEGIN-CONFIG
 				if (qPl.queue.queueDiscip == QueuingDiscipline.PS) {
 					((PSQueue) qPl.queue).expPS = false;
 				}
-				// END-CONFIG
 
 				if (!(qPl.queue.queueDiscip == QueuingDiscipline.PS && ((PSQueue) qPl.queue).expPS)) {
 					qPl.randServTimeGen = new AbstractContinousDistribution[qPl.numColors];
@@ -1273,870 +1231,77 @@ public class NetLoader {
 									colorRef.attributeValue("color-id")));
 							throw new SimQPNException();
 						}
-					}
-
-					/*
-					 * The code below does the following: - checks the chosen
-					 * distribution function - checks that all required
-					 * distribution input parameters have been set - validates
-					 * the values of the distribution input parameters -
-					 * initializes the random number generators for service
-					 * times - initializes the meanServTimes array based on the
-					 * chosen distribution
-					 * 
-					 * The actual values in the meanServTimes array are
-					 * currently only used in three cases 1. QPlace.expPS ==
-					 * true (Exponential distribution) 2.
-					 * QPlace.qPlaceQueueStats.indrStats == true 3.
-					 * distribution-function == Deterministic
-					 * 
-					 * Note: Service time distributions are truncated at 0 to
-					 * avoid negative values for service times, i.e.
-					 * "if (servTime < 0) servTime = 0;"
-					 */
-
-					if ("Beta".equals(distributionFunction)) {
-						if (colorRef.attributeValue("alpha") == null
-								|| colorRef.attributeValue("beta") == null) {
-							log.error(formatDetailMessage(
-									"Parameter \"alpha\" or \"beta\" of Beta distribution function not set!",
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						double alpha = Double.parseDouble(colorRef
-								.attributeValue("alpha"));
-						double beta = Double.parseDouble(colorRef
-								.attributeValue("beta"));
-						// Validate input parameters
-						if (!(alpha > 0 && beta > 0)) {
-							log.error(formatDetailMessage(
-									"Invalid \"alpha\" or \"beta\" parameter of Beta distribution!",
-									"alpha, beta", alpha + ", " + beta,
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						// Initialize random number generator and meanServTimes
-						qPl.randServTimeGen[j] = new Beta(alpha, beta,
-								RandomNumberGenerator.nextRandNumGen());
-						log.debug("((QPlace) places[" + i
-								+ "]).randServTimeGen[" + j + "] = new Beta("
-								+ alpha + ", " + beta
-								+ ", RandomNumberGenerator.nextRandNumGen())");
-						qPl.meanServTimes[j] = (double) alpha / (alpha + beta);
-						log.debug("((QPlace) places[" + i + "]).meanServTimes["
-								+ j + "] = alpha / (alpha + beta) = "
-								+ qPl.meanServTimes[j]);
-					} else if ("BreitWigner".equals(distributionFunction)) {
-						if (colorRef.attributeValue("mean") == null
-								|| colorRef.attributeValue("gamma") == null
-								|| colorRef.attributeValue("cut") == null) {
-							log.error(formatDetailMessage(
-									"Parameter \"mean\", \"gamma\" or \"cut\" of BreitWigner distribution function not set!",
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						double mean = Double.parseDouble(colorRef
-								.attributeValue("mean"));
-						double gamma = Double.parseDouble(colorRef
-								.attributeValue("gamma"));
-						double cut = Double.parseDouble(colorRef
-								.attributeValue("cut"));
-						// Validate input parameters
-						if (gamma <= 0) {
-							log.error(formatDetailMessage(
-									"Invalid \"gamma\" parameter of BreitWigner distribution!",
-									"gamma", Double.toString(gamma),
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						// Initialize random number generator and meanServTimes
-						qPl.randServTimeGen[j] = new BreitWigner(mean, gamma,
-								cut, RandomNumberGenerator.nextRandNumGen());
-						log.debug("((QPlace) places[" + i
-								+ "]).randServTimeGen[" + j
-								+ "] = new BreitWigner(" + mean + ", " + gamma
-								+ ", " + cut
-								+ ", RandomNumberGenerator.nextRandNumGen())");
-						// NOTE: BreitWigner does not have a mean value! It is
-						// undefined.
-					} else if ("BreitWignerMeanSquare"
-							.equals(distributionFunction)) {
-						if (colorRef.attributeValue("mean") == null
-								|| colorRef.attributeValue("gamma") == null
-								|| colorRef.attributeValue("cut") == null) {
-							log.error(formatDetailMessage(
-									"Parameter \"mean\", \"gamma\" or \"cut\" of BreitWignerMeanSquare distribution function not set!",
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						double mean = Double.parseDouble(colorRef
-								.attributeValue("mean"));
-						double gamma = Double.parseDouble(colorRef
-								.attributeValue("gamma"));
-						double cut = Double.parseDouble(colorRef
-								.attributeValue("cut"));
-						// Validate input parameters
-						if (gamma <= 0) {
-							log.error(formatDetailMessage(
-									"Invalid \"gamma\" parameter of BreitWignerMeanSquare distribution!",
-									"gamma", Double.toString(gamma),
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						// Initialize random number generator and meanServTimes
-						qPl.randServTimeGen[j] = new BreitWignerMeanSquare(
-								mean, gamma, cut,
-								RandomNumberGenerator.nextRandNumGen());
-						log.debug("((QPlace) places[" + i
-								+ "]).randServTimeGen[" + j
-								+ "] = new BreitWignerMeanSquare(" + mean
-								+ ", " + gamma + ", " + cut
-								+ ", RandomNumberGenerator.nextRandNumGen())");
-						// NOTE: BreitWigner does not have a mean value! It is
-						// undefined.
-					} else if ("ChiSquare".equals(distributionFunction)) {
-						if (colorRef.attributeValue("freedom") == null) {
-							log.error(formatDetailMessage(
-									"Parameter \"freedom\" of ChiSquare distribution function not set!",
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						double freedom = Double.parseDouble(colorRef
-								.attributeValue("freedom"));
-						// Validate input parameters
-						if (!(freedom > 0)) {
-							log.error(formatDetailMessage(
-									"Invalid \"freedom\" parameter of ChiSquare distribution!",
-									"freedom", Double.toString(freedom),
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						// Initialize random number generator and meanServTimes
-						qPl.randServTimeGen[j] = new ChiSquare(freedom,
-								RandomNumberGenerator.nextRandNumGen());
-						log.debug("((QPlace) places[" + i
-								+ "]).randServTimeGen[" + j
-								+ "] = new ChiSquare(" + freedom
-								+ ", RandomNumberGenerator.nextRandNumGen())");
-						qPl.meanServTimes[j] = freedom;
-						log.debug("((QPlace) places[" + i + "]).meanServTimes["
-								+ j + "] = freedom = " + qPl.meanServTimes[j]);
-					} else if ("Gamma".equals(distributionFunction)) {
-						if (colorRef.attributeValue("alpha") == null
-								|| colorRef.attributeValue("lambda") == null) {
-							log.error(formatDetailMessage(
-									"Parameter \"alpha\" or \"lambda\" of Gamma distribution function not set!",
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						double alpha = Double.parseDouble(colorRef
-								.attributeValue("alpha"));
-						double lambda = Double.parseDouble(colorRef
-								.attributeValue("lambda"));
-						// Validate input parameters
-						if (!(alpha > 0 && lambda > 0)) {
-							log.error(formatDetailMessage(
-									"Invalid \"alpha\" or \"lambda\" parameter of Gamma distribution!",
-									"alpha, lambda", alpha + ", " + lambda,
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						// Initialize random number generator and meanServTimes
-						qPl.randServTimeGen[j] = new Gamma(alpha, lambda,
-								RandomNumberGenerator.nextRandNumGen());
-						log.debug("((QPlace) places[" + i
-								+ "]).randServTimeGen[" + j + "] = new Gamma("
-								+ alpha + ", " + lambda
-								+ ", RandomNumberGenerator.nextRandNumGen())");
-						qPl.meanServTimes[j] = alpha * lambda;
-						log.debug("((QPlace) places[" + i + "]).meanServTimes["
-								+ j + "] = alpha * lambda = "
-								+ qPl.meanServTimes[j]);
-					} else if ("Hyperbolic".equals(distributionFunction)) {
-						if (colorRef.attributeValue("alpha") == null
-								|| colorRef.attributeValue("beta") == null) {
-							log.error(formatDetailMessage(
-									"Parameter \"alpha\" or \"beta\" of Hyperbolic distribution function not set!",
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						double alpha = Double.parseDouble(colorRef
-								.attributeValue("alpha"));
-						double beta = Double.parseDouble(colorRef
-								.attributeValue("beta"));
-						// Validate input parameters
-						if (!(alpha > 0 && beta > 0)) {
-							log.error(formatDetailMessage(
-									"Invalid \"alpha\" or \"beta\" parameter of Hyperbolic distribution!",
-									"alpha, beta", alpha + ", " + beta,
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						// Initialize random number generator and meanServTimes
-						qPl.randServTimeGen[j] = new Hyperbolic(alpha, beta,
-								RandomNumberGenerator.nextRandNumGen());
-						log.debug("((QPlace) places[" + i
-								+ "]).randServTimeGen[" + j
-								+ "] = new Hyperbolic(" + alpha + ", " + beta
-								+ ", RandomNumberGenerator.nextRandNumGen())");
-						// SDK-TODO: find out how meanServTimes is computed?
-						// qPl.meanServTimes[j] = (double) ???;
-						// logln(2, "((QPlace) places[" + i +
-						// "]).meanServTimes[" + j + "] = ??? = " +
-						// qPl.meanServTimes[j]);
-						log.warn(formatDetailMessage(
-								"meanServTimes for Hyperbolic distribution not initialized! Might experience problems if indrStats is set to true!",
-								"place-num", Integer.toString(i), "place.id",
-								place.attributeValue("id"), "place.name",
-								place.attributeValue("name"), "colorRef-num",
-								Integer.toString(j), "colorRef.id",
-								colorRef.attributeValue("id"),
-								"colorRef.color-id",
-								colorRef.attributeValue("color-id")));
-					} else if ("Exponential".equals(distributionFunction)) {
-						if (colorRef.attributeValue("lambda") == null) {
+						
+						if(colorRef.attributeValue("lambda") == null) {
 							log.error(formatDetailMessage(
 									"Parameter \"lambda\" of Exponential distribution function not set!",
 									"place-num", Integer.toString(i),
 									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
+									"place.name", place.attributeValue("name"),						
 									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
+							throw new SimQPNException();																					
 						}
-						double lambda = Double.parseDouble(colorRef
-								.attributeValue("lambda"));
+						double lambda = Double.parseDouble(colorRef.attributeValue("lambda"));
 						// Validate input parameters
-						if (!(lambda > 0)) {
+						if (!(lambda > 0))  {
 							log.error(formatDetailMessage(
 									"Invalid \"lambda\" parameter of Exponential distribution!",
 									"lambda", Double.toString(lambda),
 									"place-num", Integer.toString(i),
 									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
+									"place.name", place.attributeValue("name"),						
 									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						// Initialize random number generator and meanServTimes
-						if (!(qPl.queue.queueDiscip == QueuingDiscipline.PS && ((PSQueue) qPl.queue).expPS)) {
-							qPl.randServTimeGen[j] = new Exponential(lambda,
-									RandomNumberGenerator.nextRandNumGen());
-							log.debug("((QPlace) places["
-									+ i
-									+ "]).randServTimeGen["
-									+ j
-									+ "] = new Exponential("
-									+ lambda
-									+ ", RandomNumberGenerator.nextRandNumGen())");
-						}
+									"colorRef.id", colorRef.attributeValue("id"),
+									"colorRef.color-id", colorRef.attributeValue("color-id")
+									));
+							throw new SimQPNException();																												
+						}						
+						
 						qPl.meanServTimes[j] = (double) 1 / lambda;
-						log.debug("((QPlace) places[" + i + "]).meanServTimes["
-								+ j + "] = 1 / lambda = "
-								+ qPl.meanServTimes[j]);
-					} else if ("ExponentialPower".equals(distributionFunction)) {
-						if (colorRef.attributeValue("tau") == null) {
-							log.error(formatDetailMessage(
-									"Parameter \"tau\" of ExponentialPower distribution function not set!",
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						double tau = Double.parseDouble(colorRef
-								.attributeValue("tau"));
-						// Validate input parameters
-						if (!(tau >= 1)) {
-							log.error(formatDetailMessage(
-									"Invalid \"tau\" parameter of ExponentialPower distribution!",
-									"tau", Double.toString(tau), "place-num",
-									Integer.toString(i), "place.id",
-									place.attributeValue("id"), "place.name",
-									place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						// Initialize random number generator and meanServTimes
-						qPl.randServTimeGen[j] = new ExponentialPower(tau,
-								RandomNumberGenerator.nextRandNumGen());
-						log.debug("((QPlace) places[" + i
-								+ "]).randServTimeGen[" + j
-								+ "] = new ExponentialPower(" + tau
-								+ ", RandomNumberGenerator.nextRandNumGen())");
-						// SDK-TODO: find out how meanServTimes is computed?
-						// qPl.meanServTimes[j] = (double) ???;
-						// logln(2, "((QPlace) places[" + i +
-						// "]).meanServTimes[" + j + "] = ??? = " +
-						// qPl.meanServTimes[j]);
-						log.warn(formatDetailMessage(
-								"meanServTimes for ExponentialPower distribution not initialized! Might experience problems if indrStats is set to true!",
-								"place-num", Integer.toString(i), "place.id",
-								place.attributeValue("id"), "place.name",
-								place.attributeValue("name"), "colorRef-num",
-								Integer.toString(j), "colorRef.id",
-								colorRef.attributeValue("id"),
-								"colorRef.color-id",
-								colorRef.attributeValue("color-id")));
-					} else if ("Logarithmic".equals(distributionFunction)) {
-						if (colorRef.attributeValue("p") == null) {
-							log.error(formatDetailMessage(
-									"Parameter \"p\" of Logarithmic distribution function not set!",
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						double p = Double.parseDouble(colorRef
-								.attributeValue("p"));
-						// Validate input parameters
-						if (!(0 < p && p < 1)) {
-							log.error(formatDetailMessage(
-									"Invalid \"p\" parameter of Logarithmic distribution!",
-									"p", Double.toString(p), "place-num",
-									Integer.toString(i), "place.id",
-									place.attributeValue("id"), "place.name",
-									place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						// Initialize random number generator and meanServTimes
-						qPl.randServTimeGen[j] = new Logarithmic(p,
-								RandomNumberGenerator.nextRandNumGen());
-						log.debug("((QPlace) places[" + i
-								+ "]).randServTimeGen[" + j
-								+ "] = new Logarithmic(" + p
-								+ ", RandomNumberGenerator.nextRandNumGen())");
-						qPl.meanServTimes[j] = (double) ((-1) * p)
-								/ (Math.log(1 - p) * (1 - p));
-						log.debug("((QPlace) places[" + i + "]).meanServTimes["
-								+ j
-								+ "] = ((-1) * p) / (Math.log(1-p) * (1-p)) = "
-								+ qPl.meanServTimes[j]);
-					} else if ("Normal".equals(distributionFunction)) {
-						if (colorRef.attributeValue("mean") == null
-								|| colorRef.attributeValue("stdDev") == null) {
-							log.error(formatDetailMessage(
-									"Parameter \"mean\" or \"stdDev\" of Normal distribution function not set!",
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						double mean = Double.parseDouble(colorRef
-								.attributeValue("mean"));
-						double stdDev = Double.parseDouble(colorRef
-								.attributeValue("stdDev"));
-						// Validate input parameters
-						if (!(stdDev > 0)) {
-							log.error(formatDetailMessage(
-									"Invalid \"stdDev\" parameter of Normal distribution!",
-									"stdDev", Double.toString(stdDev),
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						// Initialize random number generator and meanServTimes
-						qPl.randServTimeGen[j] = new Normal(mean, stdDev,
-								RandomNumberGenerator.nextRandNumGen());
-						log.debug("((QPlace) places[" + i
-								+ "]).randServTimeGen[" + j + "] = new Normal("
-								+ mean + ", " + stdDev
-								+ ", RandomNumberGenerator.nextRandNumGen())");
-						qPl.meanServTimes[j] = mean;
-						log.debug("((QPlace) places[" + i + "]).meanServTimes["
-								+ j + "] = mean = " + qPl.meanServTimes[j]);
-					} else if ("StudentT".equals(distributionFunction)) {
-						if (colorRef.attributeValue("freedom") == null) {
-							log.error(formatDetailMessage(
-									"Parameter \"freedom\" of StudentT distribution function not set!",
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						double freedom = Double.parseDouble(colorRef
-								.attributeValue("freedom"));
-						// Validate input parameters
-						if (!(freedom > 0)) {
-							log.error(formatDetailMessage(
-									"Invalid \"freedom\" parameter of StudentT distribution!",
-									"freedom", Double.toString(freedom),
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						// Initialize random number generator and meanServTimes
-						qPl.randServTimeGen[j] = new StudentT(freedom,
-								RandomNumberGenerator.nextRandNumGen());
-						log.debug("((QPlace) places[" + i
-								+ "]).randServTimeGen[" + j
-								+ "] = new StudentT(" + freedom
-								+ ", RandomNumberGenerator.nextRandNumGen())");
-						// NOTE: The mean of the StudentT distribution is 0 for
-						// freedom > 1, otherwise it is undefined.
-						if (freedom > 1) {
-							qPl.meanServTimes[j] = 0;
-							log.debug("((QPlace) places[" + i
-									+ "]).meanServTimes[" + j + "] = "
-									+ qPl.meanServTimes[j]);
-						} else {
-							log.warn(formatDetailMessage(
-									"meanServTimes for StudentT distribution not initialized! Might experience problems if indrStats is set to true!",
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-						}
-					} else if ("Uniform".equals(distributionFunction)) {
-						if (colorRef.attributeValue("min") == null
-								|| colorRef.attributeValue("max") == null) {
-							log.error(formatDetailMessage(
-									"Parameter \"min\" or \"max\" of Uniform distribution function not set!",
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						double min = Double.parseDouble(colorRef
-								.attributeValue("min"));
-						double max = Double.parseDouble(colorRef
-								.attributeValue("max"));
-						if (!(min < max)) {
-							log.error(formatDetailMessage(
-									"Invalid \"min\" or \"max\" parameter of Uniform distribution!",
-									"min,max", min + "," + max, "place-num",
-									Integer.toString(i), "place.id",
-									place.attributeValue("id"), "place.name",
-									place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						// Initialize random number generator and meanServTimes
-						qPl.randServTimeGen[j] = new Uniform(min, max,
-								RandomNumberGenerator.nextRandNumGen());
-						log.debug("((QPlace) places[" + i
-								+ "]).randServTimeGen[" + j
-								+ "] = new Uniform(" + min + ", " + max
-								+ ", RandomNumberGenerator.nextRandNumGen())");
-						qPl.meanServTimes[j] = (double) (min + max) / 2;
-						log.debug("((QPlace) places[" + i + "]).meanServTimes["
-								+ j + "] = (min + max) / 2 = "
-								+ qPl.meanServTimes[j]);
-					} else if ("VonMises".equals(distributionFunction)) {
-						if (colorRef.attributeValue("freedom") == null) {
-							log.error(formatDetailMessage(
-									"Parameter \"freedom\" of VonMises distribution function not set!",
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						double freedom = Double.parseDouble(colorRef
-								.attributeValue("freedom"));
-						if (!(freedom > 0)) {
-							log.error(formatDetailMessage(
-									"Invalid \"k\" parameter of VonMises distribution!",
-									"k", Double.toString(freedom), "place-num",
-									Integer.toString(i), "place.id",
-									place.attributeValue("id"), "place.name",
-									place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						// TODO: Check parameters. Rename "freedom" to "k" to
-						// avoid confusion.
-						// Initialize random number generator and meanServTimes
-						qPl.randServTimeGen[j] = new VonMises(freedom,
-								RandomNumberGenerator.nextRandNumGen());
-						log.debug("((QPlace) places[" + i
-								+ "]).randServTimeGen[" + j
-								+ "] = new VonMises(" + freedom
-								+ ", RandomNumberGenerator.nextRandNumGen())");
-						// SDK-TODO: find out how meanServTimes is computed?
-						// qPl.meanServTimes[j] = (double) ???;
-						// logln(2, "((QPlace) places[" + i +
-						// "]).meanServTimes[" + j + "] = ??? = " +
-						// qPl.meanServTimes[j]);
-
-						log.warn(formatDetailMessage(
-								" meanServTimes for VonMises distribution not initialized! Might experience problems if indrStats is set to true!",
-								"place-num", Integer.toString(i), "place.id",
-								place.attributeValue("id"), "place.name",
-								place.attributeValue("name"), "colorRef-num",
-								Integer.toString(j), "colorRef.id",
-								colorRef.attributeValue("id"),
-								"colorRef.color-id",
-								colorRef.attributeValue("color-id")));
-					} else if ("Empirical".equals(distributionFunction)) {
-						if (colorRef.attributeValue("pdf_filename") == null) {
-							log.error(formatDetailMessage(
-									"Parameter \"pdf_filename\" of Empirical distribution function not set!",
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						String pdf_filename = colorRef
-								.attributeValue("pdf_filename");
-						double[] pdf;
-						File pdfFile = new File(pdf_filename);
-						if (!pdfFile.exists()) {
-							//search standard directories for file
-							String path = (new File("")).getAbsolutePath().toString();
-							pdfFile = new File(path+File.separator+pdf_filename);
-							if (!pdfFile.exists()) {
-								path = System.getProperty("user.home");
-								log.info(path);
-								pdfFile = new File(path+File.separator+pdf_filename);
-							}
-							if (!pdfFile.exists()) {
-								path = System.getProperty("user.home"+"csv"+File.separator);
-								pdfFile = new File(path+File.separator+pdf_filename);
-							}
-							log.info("Used empirical distance from global repository: " + path+File.separator+pdf_filename);
-						}
-
-						
-						
-						if (!pdfFile.exists()) {
-							log.error(formatDetailMessage(
-									"PDF file of Empirical distribution does not exist!",
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id"),
-									"colorRef.pdf_filename", pdf_filename));
-							throw new SimQPNException();
-						}
-						BufferedReader input = null;
-						try {
-							input = new BufferedReader(new FileReader(pdfFile));
-							String line = null;
-							if ((line = input.readLine()) == null) {
-								log.error(formatDetailMessage(
-										"Invalid PDF file of Empirical distribution!",
-										"place-num", Integer.toString(i),
-										"place.id", place.attributeValue("id"),
-										"place.name",
-										place.attributeValue("name"),
-										"colorRef-num", Integer.toString(j),
-										"colorRef.id",
-										colorRef.attributeValue("id"),
-										"colorRef.color-id",
-										colorRef.attributeValue("color-id"),
-										"colorRef.pdf_filename", pdf_filename));
-								throw new SimQPNException();
-							}
-							// SDK-TODO: See if it would be better to have
-							// values on separate lines?
-							String[] params = line.split(";");
-							pdf = new double[params.length];
-							for (int x = 0; x < params.length; x++)
-								pdf[x] = Double.parseDouble(params[x]);
-						} catch (IOException ex) {
-							log.error(
-									formatDetailMessage(
-											"Invalid PDF file of Empirical distribution!",
-											"place-num",
-											Integer.toString(i),
-											"place.id",
-											place.attributeValue("id"),
-											"place.name",
-											place.attributeValue("name"),
-											"colorRef-num",
-											Integer.toString(j),
-											"colorRef.id",
-											colorRef.attributeValue("id"),
-											"colorRef.color-id",
-											colorRef.attributeValue("color-id"),
-											"colorRef.pdf_filename",
-											pdf_filename), ex);
-							throw new SimQPNException();
-						} finally {
-							try {
-								if (input != null)
-									input.close();
-							} catch (IOException ex) {
-								log.error("ERROR: Cannot close PDF file "
-										+ pdf_filename, ex);
-								throw new SimQPNException();
-							}
-						}
-
-						double scale = Double.parseDouble(colorRef
-								.attributeValue("scale"));
-						double offset = Double.parseDouble(colorRef
-								.attributeValue("offset"));
-						// Validate input parameters
-						if (!(scale > 0)) {
-							log.error(formatDetailMessage(
-									"Invalid \"scale\" parameter of Empirical distribution!",
-									"scale", Double.toString(scale),
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-
-						// Initialize random number generator and meanServTimes
-						if (scale == 1 & offset == 0) {
-							qPl.randServTimeGen[j] = new Empirical(
-									pdf,
-									cern.jet.random.Empirical.LINEAR_INTERPOLATION,
-									RandomNumberGenerator.nextRandNumGen());
-						} else {
-							qPl.randServTimeGen[j] = new ScaledEmpirical(
-									offset,
-									scale,
-									pdf,
-									cern.jet.random.Empirical.LINEAR_INTERPOLATION,
-									RandomNumberGenerator.nextRandNumGen());
-						}
-
-						log.debug("((QPlace) places["
-								+ i
-								+ "]).randServTimeGen["
-								+ j
-								+ "] = new Empirical("
-								+ pdf_filename
-								+ ", LINEAR_INTERPOLATION, RandomNumberGenerator.nextRandNumGen())");
-						double sum = 0d;
-						for (int index = 0; index < pdf.length; index++) {
-							sum += pdf[index];
-						}
-						double epsilon = 0.0000001;
-						if (sum <= (0 + epsilon)) {
-							// qPl.meanServTimes[j] = 0;
-							log.warn(formatDetailMessage(
-									"meanServTimes for Empirical distribution not initialized! Might experience problems if indrStats is set to true!",
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-						} else {
-							double mean = 0d;
-							for (int index = 0; index < pdf.length; index++) {
-								// the empirical distribution consists of
-								// pdf.length uniform distributions
-								double meanValueOfUniformDistribution = (index + (index + 1))
-										/ (pdf.length * 2);
-								double weight = pdf[index];
-								mean += meanValueOfUniformDistribution * weight;
-							}
-							// normalize mean
-							mean = mean / sum;
-							qPl.meanServTimes[j] = (mean * scale) + offset;
-						}
-					} else if ("Deterministic".equals(distributionFunction)) {
-						if (colorRef.attributeValue("p1") == null) {
-							log.error(formatDetailMessage(
-									"Parameter \"p1\" of Deterministic distribution function not set!",
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						double p1 = Double.parseDouble(colorRef
-								.attributeValue("p1"));
-						// Validate input parameters
-						if (!(p1 >= 0)) {
-							log.error(formatDetailMessage(
-									"Invalid \"p1\" parameter of Exponential distribution!",
-									"p1", Double.toString(p1), "place-num",
-									Integer.toString(i), "place.id",
-									place.attributeValue("id"), "place.name",
-									place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-
-						qPl.randServTimeGen[j] = new Deterministic(p1);
-						log.debug("((QPlace) places[" + i
-								+ "]).randServTimeGen[" + j
-								+ "] = new Deterministic(" + p1 + ")");
-						qPl.meanServTimes[j] = p1;
-						log.debug("((QPlace) places[" + i + "]).meanServTimes["
-								+ j + "] = p1 = " + qPl.meanServTimes[j]);
+						log.debug("((QPlace) places[" + i + "]).meanServTimes[" + j + "] = 1 / lambda = " + qPl.meanServTimes[j]);																			
 					}
+
+					
+					/*
+					 * The code below does the following:
+					 *   - checks the chosen distribution function
+					 *   - checks that all required distribution input parameters have been set
+					 *   - validates the values of the distribution input parameters
+					 *   - initializes the random number generators for service times 
+					 *   - initializes the meanServTimes array based on the chosen distribution   
+					 * 
+					 * The actual values in the meanServTimes array are currently only used in three cases 
+					 *    1. QPlace.expPS == true (Exponential distribution)     
+					 *    2. QPlace.qPlaceQueueStats.indrStats == true
+					 *    3. distribution-function == Deterministic
+					 * 
+					 * Note: Service time distributions are truncated at 0 to avoid negative
+					 *       values for service times, i.e. "if (servTime < 0) servTime = 0;"
+					 *       
+					 */
+					
+					try {
+						DistributionCreator distribution = DistributionCreator.constructCreator(distributionFunction, colorRef);
+						qPl.randServTimeGen[j] = distribution.getDistribution();
+						log.debug("((QPlace) places[" + i + "]).randServTimeGen[" + j + "] = new " + distribution.getClass().getName() + distribution.getConstructionText());						
+						qPl.meanServTimes[j] = distribution.getMean();
+						log.debug("((QPlace) places[" + i + "]).meanServTimes[" + j + "] = " + distribution.getMeanComputationText() + " = " + qPl.meanServTimes[j]);
+					} catch (SimQPNException e) {
+						log.error(formatDetailMessage(
+								e.getMessage(),
+								"place-num", Integer.toString(i),
+								"place.id", place.attributeValue("id"),
+								"place.name", place.attributeValue("name"),						
+								"colorRef-num", Integer.toString(j),
+								"colorRef.id", colorRef.attributeValue("id"),
+								"colorRef.color-id", colorRef.attributeValue("color-id")
+								));
+						
+						throw e;
+					}					
 				}
 			}
 		}

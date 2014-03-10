@@ -103,7 +103,6 @@ import de.tud.cs.simqpn.kernel.loader.XMLBatchMeans;
 import de.tud.cs.simqpn.kernel.loader.XMLValidator;
 import de.tud.cs.simqpn.kernel.loader.flatten.XMLNetFlattener;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
-import de.tud.cs.simqpn.kernel.random.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.stats.AggregateStats;
 import de.tud.cs.simqpn.kernel.stats.Stats;
 
