@@ -42,7 +42,7 @@
  *  2006/10/21  Samuel Kounev     Modified to use the Simulator.log() methods for output.           
  * 
  */
-package de.tud.cs.simqpn.kernel.stats;
+package de.tud.cs.simqpn.kernel.entities.stats;
 
 import static de.tud.cs.simqpn.kernel.util.LogUtil.formatMultilineMessage;
 

@@ -46,7 +46,7 @@ import org.apache.log4j.Logger;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
-import de.tud.cs.simqpn.kernel.stats.QueueStats;
+import de.tud.cs.simqpn.kernel.entities.stats.QueueStats;
 
 /**
  * The Net class holds all entities of a Queuing Petri Net(QPN).

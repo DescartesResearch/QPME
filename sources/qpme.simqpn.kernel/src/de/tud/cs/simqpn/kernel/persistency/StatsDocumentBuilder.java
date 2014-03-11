@@ -55,12 +55,12 @@ import org.dom4j.XPath;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.SimQPNController;
-import de.tud.cs.simqpn.kernel.stats.PlaceStats;
-import de.tud.cs.simqpn.kernel.stats.ProbeStats;
-import de.tud.cs.simqpn.kernel.stats.QPlaceQueueStats;
-import de.tud.cs.simqpn.kernel.stats.QueueStats;
-import de.tud.cs.simqpn.kernel.stats.Stats;
-import de.tud.cs.simqpn.kernel.stats.TimeHistogram;
+import de.tud.cs.simqpn.kernel.entities.stats.PlaceStats;
+import de.tud.cs.simqpn.kernel.entities.stats.ProbeStats;
+import de.tud.cs.simqpn.kernel.entities.stats.QPlaceQueueStats;
+import de.tud.cs.simqpn.kernel.entities.stats.QueueStats;
+import de.tud.cs.simqpn.kernel.entities.stats.Stats;
+import de.tud.cs.simqpn.kernel.entities.stats.TimeHistogram;
 
 
 

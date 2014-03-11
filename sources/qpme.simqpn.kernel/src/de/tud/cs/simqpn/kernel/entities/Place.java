@@ -69,10 +69,10 @@ import org.dom4j.Element;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
+import de.tud.cs.simqpn.kernel.entities.stats.PlaceStats;
+import de.tud.cs.simqpn.kernel.entities.stats.Stats;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.executor.parallel.LP;
-import de.tud.cs.simqpn.kernel.stats.PlaceStats;
-import de.tud.cs.simqpn.kernel.stats.Stats;
 
 /**
  * Class Place

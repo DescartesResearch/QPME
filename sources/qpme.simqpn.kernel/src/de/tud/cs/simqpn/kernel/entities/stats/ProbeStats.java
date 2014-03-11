@@ -39,7 +39,7 @@
  *  2010/08/02	Simon Spinner     Created.
  *  
  */
-package de.tud.cs.simqpn.kernel.stats;
+package de.tud.cs.simqpn.kernel.entities.stats;
 
 import java.util.Arrays;
 

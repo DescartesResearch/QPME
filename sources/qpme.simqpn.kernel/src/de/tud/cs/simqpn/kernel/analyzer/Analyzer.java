@@ -14,9 +14,9 @@ import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Net;
+import de.tud.cs.simqpn.kernel.entities.stats.AggregateStats;
+import de.tud.cs.simqpn.kernel.entities.stats.Stats;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
-import de.tud.cs.simqpn.kernel.stats.AggregateStats;
-import de.tud.cs.simqpn.kernel.stats.Stats;
 
 public abstract class Analyzer {
 	private static Logger log = Logger.getLogger(Analyzer.class);

@@ -58,9 +58,9 @@ import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.Token;
+import de.tud.cs.simqpn.kernel.entities.stats.QueueStats;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.executor.QueueEvent;
-import de.tud.cs.simqpn.kernel.stats.QueueStats;
 
 /**
  * This class is the abstract base class for all queuing strategies.

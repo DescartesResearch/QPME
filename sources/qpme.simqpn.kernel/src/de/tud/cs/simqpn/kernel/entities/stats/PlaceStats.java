@@ -53,7 +53,7 @@
  *  2010/08/02  Simon Spinner     Changed output code to make it more customizable in subclasses.
  *  
  */
-package de.tud.cs.simqpn.kernel.stats;
+package de.tud.cs.simqpn.kernel.entities.stats;
 
 import static de.tud.cs.simqpn.kernel.util.LogUtil.formatMultilineMessage;
 

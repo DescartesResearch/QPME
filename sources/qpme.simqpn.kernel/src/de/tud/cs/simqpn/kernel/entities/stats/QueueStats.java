@@ -39,7 +39,7 @@
  *  2008/11/25  Samuel Kounev     Created.
  * 
  */
-package de.tud.cs.simqpn.kernel.stats;
+package de.tud.cs.simqpn.kernel.entities.stats;
 
 import org.apache.log4j.Logger;
 

@@ -56,7 +56,7 @@ import org.dom4j.Element;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
-import de.tud.cs.simqpn.kernel.stats.ProbeStats;
+import de.tud.cs.simqpn.kernel.entities.stats.ProbeStats;
 
 /**
  * Class probe.

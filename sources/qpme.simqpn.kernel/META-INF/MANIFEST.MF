@@ -7,9 +7,9 @@ Bundle-Localization: plugin
 Eclipse-AutoStart: true
 Export-Package: de.tud.cs.simqpn.kernel,
  de.tud.cs.simqpn.kernel.console,
+ de.tud.cs.simqpn.kernel.entities.stats,
  de.tud.cs.simqpn.kernel.monitor,
  de.tud.cs.simqpn.kernel.persistency,
- de.tud.cs.simqpn.kernel.stats,
  de.tud.cs.simqpn.kernel.util
 Bundle-Vendor: Descartes Research Group
 Require-Bundle: org.dom4j;bundle-version="1.6.1",

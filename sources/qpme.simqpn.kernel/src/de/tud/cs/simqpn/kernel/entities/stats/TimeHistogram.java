@@ -42,7 +42,7 @@
  * 
  */
 
-package de.tud.cs.simqpn.kernel.stats;
+package de.tud.cs.simqpn.kernel.entities.stats;
 
 import java.io.Serializable;
 

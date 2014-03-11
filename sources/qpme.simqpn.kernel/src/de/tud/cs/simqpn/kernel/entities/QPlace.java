@@ -78,9 +78,9 @@ import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.queue.PSQueue;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 import de.tud.cs.simqpn.kernel.entities.queue.QueuingDiscipline;
+import de.tud.cs.simqpn.kernel.entities.stats.QPlaceQueueStats;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.loading.distributions.Deterministic;
-import de.tud.cs.simqpn.kernel.stats.QPlaceQueueStats;
 
 /**
  * Class QPlace

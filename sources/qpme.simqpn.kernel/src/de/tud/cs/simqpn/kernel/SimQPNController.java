@@ -96,6 +96,8 @@ import de.tud.cs.simqpn.kernel.analyzer.Analyzer;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
+import de.tud.cs.simqpn.kernel.entities.stats.AggregateStats;
+import de.tud.cs.simqpn.kernel.entities.stats.Stats;
 import de.tud.cs.simqpn.kernel.loading.ConfigurationLoader;
 import de.tud.cs.simqpn.kernel.loading.NetLoader;
 import de.tud.cs.simqpn.kernel.loading.XMLAggregateStats;
@@ -103,8 +105,6 @@ import de.tud.cs.simqpn.kernel.loading.XMLBatchMeans;
 import de.tud.cs.simqpn.kernel.loading.XMLValidator;
 import de.tud.cs.simqpn.kernel.loading.flatten.XMLNetFlattener;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
-import de.tud.cs.simqpn.kernel.stats.AggregateStats;
-import de.tud.cs.simqpn.kernel.stats.Stats;
 
 /**
  * The SimQPNController class manages the simulation from loading to result processing and saving.

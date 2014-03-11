@@ -42,7 +42,7 @@
  *  2010/08/02  Simon Spinner     Added constant for PROBE stats.
  * 
  */
-package de.tud.cs.simqpn.kernel.stats;
+package de.tud.cs.simqpn.kernel.entities.stats;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 

@@ -54,7 +54,7 @@
  *                                for estimating tkOcp. This way we avoid having them duplicated.
  * 
  */
-package de.tud.cs.simqpn.kernel.stats;
+package de.tud.cs.simqpn.kernel.entities.stats;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
