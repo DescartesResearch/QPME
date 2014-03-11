@@ -37,27 +37,44 @@ public class NetDecomposer {
 
 	public static boolean hasDecompositionSucceded(LP[] lps, int verbosityLevel){
 		if(lps == null){
-			log.error("Decomposition for parallel simulation failed. Please choose a sequential executor for your experiments.");
+			log.info("Error during decomposition for parallel simulation.");
 			return false;
 		} else if (lps.length == 0){
-			log.error("Decomposition for parallel simulation failed. Please choose a sequential executor for your experiments.");
-			log.error("Number of LPs is 0. Number of LPs has to be larger than one.");
+			log.info("Number of LPs is 0. Number of LPs has to be larger than one.");
 			return false;
 		}else if (lps.length == 1) {
-			log.error("Decomposition for parallel simulation failed. Please choose a sequential executor for your experiments.");
-			log.error("Number of LPs is 1. Number of LPs has to be larger than one.");
+			log.info("Number of LPs is 1. Number of LPs has to be larger than one.");
 			return false;
 		}else if (lps.length > Runtime.getRuntime().availableProcessors()){
-			log.error("Decomposition for parallel simulation failed. Please choose a sequential executor for your experiments.");
-			log.error("Number of LPs is higher than the number of available cores.");
+			log.info("Number of LPs is higher than the number of available cores.");
 			log.info(lps.toString());
 			return false;
+		}else{
+			boolean hasOpenWorkload = false;
+			boolean hasOpenWorkloadWithQueue = false;
+			for(LP lp: lps){
+				if(lp.isWorkloadGenerator()){
+					hasOpenWorkload = true;
+					if(lp.getQueues().length > 0){
+						hasOpenWorkloadWithQueue = true;
+					}
+				}
+			}
+			if(!hasOpenWorkload){
+				log.info("Could not identify open workloads.");
+				return false;
+			}else{
+				if(hasOpenWorkloadWithQueue){
+					if(verbosityLevel > 0){
+						log.info(NetDecomposer.lpDecompositionToString(lps));
+					}
+					return true;
+				}else{
+					log.info("Identified open workload, but no queue in it.");
+					return false;
+				}
+			}
 		}
-		if(verbosityLevel > 0){
-			log.info(NetDecomposer.lpDecompositionToString(lps));
-		}
-		return true;
-
 	}
 	
 	public static LP[] decomposeNetIntoLPs(Net net,
@@ -85,13 +102,17 @@ public class NetDecomposer {
 			LP lp = lps.get(i);
 			if(lp.getQueues().length == 0){
 				setPredecessors(lps, lp);
-				LP pred = lp.getPredecessors().get(0);
-				merge(lps, pred, lp, verbosityLevel);
-				i = 0;
+				setInPlaces(lp);
+				if(!lp.isWorkloadGenerator()){
+					LP pred = lp.getPredecessors().get(0);
+					merge(lps, pred, lp, verbosityLevel);
+					i = 0;
+				}
 			}
 		}
 		for(int i=0; i<lps.size(); i++){
 			lps.get(i).resetPredecessors();
+			lps.get(i).resetInPlaces();
 		}
 	}
 
@@ -194,7 +215,7 @@ public class NetDecomposer {
 		}
 	}
 
-	static void setMetaInformation(List<LP> lps) {
+	private static void setMetaInformation(List<LP> lps) {
 		setInPlaces(lps);
 		setPredAndSuccessors(lps);
 		// mergePlaceLPsIntoPredecessors(listLPs);
@@ -356,7 +377,7 @@ public class NetDecomposer {
 		return merged;
 	}
 
-	public static void setPredecessors(List<LP> lps, LP lp){
+	private static void setPredecessors(List<LP> lps, LP lp){
 		for (Place place : lp.getPlaces()) {
 			for (Transition inTrans : place.inTrans) {
 				for (Place prePlace : inTrans.inPlaces) {
@@ -426,7 +447,7 @@ public class NetDecomposer {
 	 * @param lps
 	 *            Array of LPs
 	 */
-	public static String lpDecompositionToString(LP[] lps) {
+	private static String lpDecompositionToString(LP[] lps) {
 		StringBuffer sb = new StringBuffer();
 		for (LP lp : lps) {
 			sb.append(lp.toString());
