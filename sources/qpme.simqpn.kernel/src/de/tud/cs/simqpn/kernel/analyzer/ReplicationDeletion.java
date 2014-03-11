@@ -38,7 +38,7 @@ public class ReplicationDeletion extends Analyzer {
 
 	@Override
 	public Stats[] analyze(Net net, SimQPNConfiguration configuration,
-			SimulatorProgress monitor) throws SimQPNException {
+			SimulatorProgress monitor, int verbosityLevel) throws SimQPNException {
 		AggregateStats[] finishedAggrStats = runMultipleReplications(net,
 				configuration, monitor, aggregateStats);
 		return finishedAggrStats;

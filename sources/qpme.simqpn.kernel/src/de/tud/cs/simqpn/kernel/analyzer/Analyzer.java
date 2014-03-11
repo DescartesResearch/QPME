@@ -23,7 +23,7 @@ public abstract class Analyzer {
 
 	
 	public abstract Stats[] analyze(Net net, SimQPNConfiguration configuration,
-			SimulatorProgress monitor)
+			SimulatorProgress monitor, int verbositiyLevel)
 			throws SimQPNException;
 
 	public abstract File writeToFile(Stats[] result, SimQPNConfiguration configuration,

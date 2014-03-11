@@ -49,7 +49,7 @@ public class Welch extends Analyzer {
 	}
 	
 	public Stats[] analyze(Net net, SimQPNConfiguration configuration,
-			SimulatorProgress monitor) throws SimQPNException {
+			SimulatorProgress monitor, int verbosityLevel) throws SimQPNException {
 		XMLWelch.configurePlaceStats(net.getPlaces(), XMLDescription,
 					configurationName);
 

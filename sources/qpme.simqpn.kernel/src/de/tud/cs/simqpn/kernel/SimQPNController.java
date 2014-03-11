@@ -235,7 +235,8 @@ public class SimQPNController {
 		Stats[] result = null;
 		analyzer = Analyzer.getAnalyzer(configuration, aggregateStats,
 				XMLDescription, configurationName);
-		result = analyzer.analyze(net, configuration, monitor);
+		int verbosityLevel = 1;
+		result = analyzer.analyze(net, configuration, monitor, verbosityLevel);
 		setSimRunning(false);
 		LogManager.shutdown();
 		File resultFile = analyzer.writeToFile(result, configuration,

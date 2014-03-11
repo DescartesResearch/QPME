@@ -33,9 +33,9 @@ public class BatchMeans extends Analyzer {
 
 	@Override
 	public Stats[] analyze(Net net, SimQPNConfiguration configuration,
-			SimulatorProgress monitor) throws SimQPNException {
+			SimulatorProgress monitor, int verbosityLevel) throws SimQPNException {
 
-		SimulatorResults results = runBatchMeans(net, configuration, monitor);
+		SimulatorResults results = runBatchMeans(net, configuration, monitor, verbosityLevel);
 		if (results == null) {
 			return null;
 		}
@@ -71,29 +71,33 @@ public class BatchMeans extends Analyzer {
 	 * @exception
 	 */
 	private SimulatorResults runBatchMeans(Net net,
-			SimQPNConfiguration configuration, SimulatorProgress monitor)
+			SimQPNConfiguration configuration, SimulatorProgress monitor, int verbosityLevel)
 			throws SimQPNException {
 		progressMonitor = monitor;
 		progressMonitor.startSimulation(configuration);
 
 		Callable<Net> run;
 
-		int verbosityLevel = 0; // 1 //2
 		if (!configuration.isParallel()) {
 			run = new SequentialExecutor(net, configuration, monitor, 1);
 		} else {
-			log.warn("No guaranties. Parallel simulation is still experimental and only applicable to open workloads.");
+			//log.info("Parallel simulation is limited to open workloads");
+			//log.warn("No guaranties. Parallel simulation is still experimental and only applicable to open workloads.");
 			if (net.getProbes().length > 0) {
-				log.warn("Probes are not supportet for parallel simulation. Starting sequential simulation ...");
+				log.info("Probes are not supportet for parallel simulation.");
+				log.info("Started sequential simulation ...");
 				run = new SequentialExecutor(net, configuration, monitor, 1);
 			} else {
+				log.info("Started decomposition for parallel simulation ...");
 				LP[] lps = NetDecomposer.decomposeNetIntoLPs(net,
 						configuration, progressMonitor, verbosityLevel);
 				if (!NetDecomposer
 						.hasDecompositionSucceded(lps, verbosityLevel)) {
-					log.warn("Decomposition for parallel simulation failed. Starting sequential simulation ...");
+					log.info("Decomposition for parallel simulation failed.");
+					log.info("Started sequential simulation ...");
 					run = new SequentialExecutor(net, configuration, monitor, 1);
 				} else {
+					log.info("Started parallel simulation ...");
 					run = new JBarrierExecutor(lps, configuration, monitor,
 							verbosityLevel);
 				}
