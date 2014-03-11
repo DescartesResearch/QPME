@@ -41,7 +41,7 @@ public abstract class BarrierAction implements Runnable {
 	}
 
 	void setTimesSaveToProcess() {
-		if (verbosityLevel > 0) {
+		if (verbosityLevel > 1) {
 			log.info("------- Barrier --------");
 		}
 	};

@@ -191,6 +191,8 @@ public class LP implements Executor {
 	private final double maxProgressUpdateInterval;
 	/** Time in milliseconds between progress updates */
 	private final long progressUpdateRate;
+	
+	private long barrierWaitingTime = 0;
 
 	/**
 	 * Constructor.
@@ -259,7 +261,9 @@ public class LP implements Executor {
 			determineMonitorUpdateRate();
 		} else {
 			updateProgressMonitor();
-			log.info("LP" + id + " updating progress at monitor");
+			if(verbosityLevel > 1){
+				log.info("LP" + id + " updating progress at monitor");
+			}
 		}
 
 		if (clock > totRunLength) {
@@ -380,7 +384,13 @@ public class LP implements Executor {
 	 * Waits until all LPs have entered the barrier.
 	 */
 	public void waitForBarrier() {
-		barrier.await(this.id);
+		if(verbosityLevel > 0 ){
+			long nanos = System.nanoTime();
+			barrier.await(this.id);
+			barrierWaitingTime += System.nanoTime() - nanos;
+		}else{
+			barrier.await(this.id);			
+		}
 	}
 
 	/**
@@ -394,10 +404,18 @@ public class LP implements Executor {
 		// total time elapsed in seconds
 		runWallClockTime = (endRunWallClock - beginRunWallClock) / 1000;
 
-		log.info("LP" + id + ": " + "msrmPrdLen= " + msrmPrdLen
-				+ " totalRunLen= " + endRunClock + " runWallClockTime="
-				+ (int) (runWallClockTime / 60) + " min (=" + runWallClockTime
-				+ " sec)");
+		if (verbosityLevel > 0) {
+			log.info("LP" + id + ": " + "msrmPrdLen= " + msrmPrdLen
+					+ " totalRunLen= " + endRunClock + " runWallClockTime="
+					+ (int) (runWallClockTime / 60) + " min (=" + runWallClockTime
+					+ " sec)"+ " barrierWait= " + (barrierWaitingTime/(1000000000.0))+" sec");
+		}else{
+			log.info("LP" + id + ": " + "msrmPrdLen= " + msrmPrdLen
+					+ " totalRunLen= " + endRunClock + " runWallClockTime="
+					+ (int) (runWallClockTime / 60) + " min (=" + runWallClockTime
+					+ " sec)");
+		}
+
 
 		// Complete statistics collection (make sure this is done AFTER the
 		// above statements)
@@ -430,7 +448,7 @@ public class LP implements Executor {
 	private void processNextQueueEvent() throws SimQPNException {
 		QueueEvent event = eventList.poll();
 
-		if (verbosityLevel > 0) {
+		if (verbosityLevel > 1) {
 			log.info("LP" + id + " processed queue event (" + event.queue.name
 					+ ") at " + event.time);
 		}
@@ -942,6 +960,10 @@ public class LP implements Executor {
 		this.predecessorList = new ArrayList<>();
 	}
 
+	public void resetInPlaces() {
+		this.inPlaces = null;
+	}
+	
 	public Place[] getIncomingPlaces() {
 		return getInPlaces();
 	}
