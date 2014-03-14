@@ -58,6 +58,11 @@ public abstract class BarrierAction implements Runnable {
 				startDataCollection(endRampUpClock);
 				inRampUp = false;
 				consistencyCounter = 0;
+				for(LP lp: lps){
+					if(lp.isWorkloadGenerator()){
+						lp.setTimeSaveToProcess(Double.MAX_VALUE);
+					}
+				}
 				setTimesSaveToProcess();
 			} else {
 				setTimesSaveToProcessTowardsConsistency(endRampUpClock);
