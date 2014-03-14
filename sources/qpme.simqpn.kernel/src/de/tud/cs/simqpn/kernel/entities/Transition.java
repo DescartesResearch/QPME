@@ -60,6 +60,7 @@ import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.executor.TokenEvent;
+import de.tud.cs.simqpn.kernel.executor.parallel.LP;
 
 /**
  * Class Transition
@@ -577,6 +578,9 @@ public class Transition extends Node {
 								log.error("Exception during token addition to place",e);
 							}
 						} else {
+							if(((LP) executor).isCountingEmittedTokens()){
+								((LP)executor).incrementEmittedTokenCounter();
+							}
 							executorOut.addTokenEvent(new TokenEvent(executor.getClock(), this, pl, c, n, null));
 						}
 					}

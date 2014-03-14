@@ -43,6 +43,7 @@ package de.tud.cs.simqpn.kernel.executor.parallel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -193,6 +194,8 @@ public class LP implements Executor {
 	private final long progressUpdateRate;
 	
 	private long barrierWaitingTime = 0;
+	private int emittedTokenCounter = 0;
+	private boolean isCountingEmittedTokens = false;
 
 	/**
 	 * Constructor.
@@ -231,32 +234,18 @@ public class LP implements Executor {
 	}
 
 	public void processSaveEvents() throws SimQPNException {
-		QueueEvent nextQueueEvent = null;
-		TokenEvent nextTokenEvent = null;
-		while (true) {
-			if ((nextQueueEvent = eventList.peek()) != null
-					&& nextQueueEvent.time <= timeSaveToProcess) {
-				while ((nextTokenEvent = incomingTokenList.peek()) != null
-						&& nextTokenEvent.getTime() < (nextQueueEvent = eventList
-								.peek()).time) {
-					processNextTokenEvent();
-					updateQueueEvents();
-				}
-				processNextQueueEvent();
-				updateQueueEvents();
-			} else if ((nextTokenEvent = incomingTokenList.peek()) != null
-					&& nextTokenEvent.getTime() <= timeSaveToProcess) {
-				processNextTokenEvent();
-				updateQueueEvents();
-			} else {
-				fireTransitions();
-				updateQueueEvents();
-				break;
+		boolean hasCompleted = false;
+		if(isCountingEmittedTokens){
+			while (emittedTokenCounter < 100 && !hasCompleted) {
+				hasCompleted = performActions();
 			}
-			fireTransitions();
-			updateQueueEvents();
+			emittedTokenCounter = 0;
+		}else{
+			while(!hasCompleted){
+				hasCompleted = performActions();		
+			}
 		}
-
+		
 		if (beforeInitHeartBeat) {
 			determineMonitorUpdateRate();
 		} else {
@@ -269,6 +258,33 @@ public class LP implements Executor {
 		if (clock > totRunLength) {
 			stopController.setReadyToFinish();
 		}
+	}
+	
+	private boolean performActions() throws SimQPNException {
+		QueueEvent nextQueueEvent;
+		TokenEvent nextTokenEvent;
+		if ((nextQueueEvent = eventList.peek()) != null
+				&& nextQueueEvent.time <= timeSaveToProcess) {
+			while ((nextTokenEvent = incomingTokenList.peek()) != null
+					&& nextTokenEvent.getTime() < (nextQueueEvent = eventList
+							.peek()).time) {
+				processNextTokenEvent();
+				updateQueueEvents();
+			}
+			processNextQueueEvent();
+			updateQueueEvents();
+		} else if ((nextTokenEvent = incomingTokenList.peek()) != null
+				&& nextTokenEvent.getTime() <= timeSaveToProcess) {
+			processNextTokenEvent();
+			updateQueueEvents();
+		} else {
+			fireTransitions();
+			updateQueueEvents();
+			return true;
+		}
+		fireTransitions();
+		updateQueueEvents();
+		return false;
 	}
 
 	public void startDataCollection(double endRampUpClock) {
@@ -394,7 +410,7 @@ public class LP implements Executor {
 	}
 
 	/**
-	 * Clean up method after simulation run. data aufbereiten monitor...
+	 * Clean up method after simulation run. Mostly data post processing...
 	 */
 	public void finish() {
 		endRunClock = clock;
@@ -964,12 +980,12 @@ public class LP implements Executor {
 		this.inPlaces = null;
 	}
 	
-	public Place[] getIncomingPlaces() {
-		return getInPlaces();
-	}
-
 	public void setInPlaces(Place[] inPlaces) {
 		this.inPlaces = inPlaces;
+		if(inPlaces.length == 0){
+			isCountingEmittedTokens = true;			
+			emittedTokenCounter = 0;
+		}
 	}
 
 	public String toShortString() {
@@ -1111,6 +1127,17 @@ public class LP implements Executor {
 	public boolean hasSuccessor() {
 		return (successorList.size() != 0);
 	}
+	
+	public double getMinimumClockOfPredecessors(){
+		double minimumClockOfPredecessors = 0; 
+		for (LP pred : getPredecessors()) {
+			if(minimumClockOfPredecessors == 0){
+				minimumClockOfPredecessors = pred.getClock();
+			}
+			minimumClockOfPredecessors = (pred.getClock() < minimumClockOfPredecessors) ? pred.getClock() : minimumClockOfPredecessors;
+		}
+		return minimumClockOfPredecessors;
+	}
 
 	/**
 	 * @return the successorList
@@ -1149,6 +1176,14 @@ public class LP implements Executor {
 
 	public double getTimeSaveToProcess() {
 		return timeSaveToProcess;
+	}
+	
+	public void incrementEmittedTokenCounter(){
+		emittedTokenCounter++;
+	}
+
+	public boolean isCountingEmittedTokens() {
+		return isCountingEmittedTokens;
 	}
 
 }

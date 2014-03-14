@@ -3,7 +3,6 @@ package de.tud.cs.simqpn.kernel.executor.parallel.barrier.action;
 import org.apache.log4j.Logger;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
-import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.executor.parallel.LP;
 import de.tud.cs.simqpn.kernel.executor.parallel.barrier.termination.SimpleStopCriterionController;
 import de.tud.cs.simqpn.kernel.executor.parallel.barrier.termination.StopController;
@@ -18,13 +17,13 @@ public abstract class BarrierAction implements Runnable {
 	protected final LP[] lps;
 	protected final int numlps;
 	private final double rampUpLength;
-	private boolean inRampUp;
-	private double endRampUpClock;
 	private final int recursionDepth;
 	private final int verbosityLevel;
+	private boolean inRampUp;
+	private double endRampUpClock;
 	private int consistencyCounter;
-	SimulatorProgress progressMonitor;
-	double endRunClock = 0;
+	private SimulatorProgress progressMonitor;
+	private double endRunClock = 0;
 
 	public BarrierAction(LP[] lps, int verbosityLevel,
 			SimulatorProgress progressMonitor) {
@@ -38,16 +37,9 @@ public abstract class BarrierAction implements Runnable {
 		this.inRampUp = true;
 		this.progressMonitor = progressMonitor;
 		this.consistencyCounter = 0;
+		this.endRunClock = 0;
 	}
-
-	void setTimesSaveToProcess() {
-		if (verbosityLevel > 1) {
-			log.info("------- Barrier --------");
-		}
-	};
-
-	abstract void setTimeSaveToProcess(LP lp);
-
+	
 	@Override
 	public void run() {
 		if (stopController.isReadyToFinish()) {
@@ -78,6 +70,17 @@ public abstract class BarrierAction implements Runnable {
 	public StopController getStopController() {
 		return stopController;
 	}
+	
+	abstract void setTimeSaveToProcess(LP lp);
+	
+	void setTimesSaveToProcess() {
+		if (verbosityLevel > 1) {
+			log.info("------- Barrier --------");
+		}
+		for(LP lp:lps){
+			setTimeSaveToProcess(lp);
+		}
+	};
 	
 	private void makeConsistentAndFinish() {
 		 endRunClock = (endRunClock == 0) ? getMaximumClockOfAllLP(): endRunClock;
@@ -117,10 +120,6 @@ public abstract class BarrierAction implements Runnable {
 				}
 			}
 		}
-		// log.info("msrmPrdLen= " + msrmPrdLen
-		// + " totalRunLen= " + endRunClock + " runWallClockTime="
-		// + (int) (runWallClockTime / 60) + " min (=" + runWallClockTime
-		// + " sec)");
 	}
 
 	private boolean setTimesSaveToProcessTowardsConsistency(double clock) {
