@@ -79,7 +79,7 @@ import de.tud.cs.simqpn.kernel.entities.queue.PSQueue;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 import de.tud.cs.simqpn.kernel.entities.queue.QueuingDiscipline;
 import de.tud.cs.simqpn.kernel.executor.Executor;
-import de.tud.cs.simqpn.kernel.loader.distributions.Deterministic;
+import de.tud.cs.simqpn.kernel.loading.distributions.Deterministic;
 import de.tud.cs.simqpn.kernel.stats.QPlaceQueueStats;
 
 /**
@@ -542,7 +542,9 @@ public class QPlace extends Place {
 		}
 	}
 
-
+	public boolean hasQueuedTokens(int color) {
+		return queueTokenPop[color] > 0;
+	}
 	public int[] getQueueTokenPop() {
 		return queueTokenPop;
 	}

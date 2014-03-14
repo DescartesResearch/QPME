@@ -60,8 +60,6 @@ import de.tud.cs.simqpn.kernel.executor.Executor;
  * 
  */
 public class ISQueue extends Queue {
-	private static Logger log = Logger.getLogger(ISQueue.class);
-
 	/**
 	 * Constructor.
 	 * 

@@ -96,12 +96,12 @@ import de.tud.cs.simqpn.kernel.analyzer.Analyzer;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
-import de.tud.cs.simqpn.kernel.loader.ConfigurationLoader;
-import de.tud.cs.simqpn.kernel.loader.NetLoader;
-import de.tud.cs.simqpn.kernel.loader.XMLAggregateStats;
-import de.tud.cs.simqpn.kernel.loader.XMLBatchMeans;
-import de.tud.cs.simqpn.kernel.loader.XMLValidator;
-import de.tud.cs.simqpn.kernel.loader.flatten.XMLNetFlattener;
+import de.tud.cs.simqpn.kernel.loading.ConfigurationLoader;
+import de.tud.cs.simqpn.kernel.loading.NetLoader;
+import de.tud.cs.simqpn.kernel.loading.XMLAggregateStats;
+import de.tud.cs.simqpn.kernel.loading.XMLBatchMeans;
+import de.tud.cs.simqpn.kernel.loading.XMLValidator;
+import de.tud.cs.simqpn.kernel.loading.flatten.XMLNetFlattener;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.kernel.stats.AggregateStats;
 import de.tud.cs.simqpn.kernel.stats.Stats;
@@ -193,14 +193,13 @@ public class SimQPNController {
 		// NOTE: Random needs to be initialized before starting the model definition
 		RandomNumberGenerator.initialize(date);
 
-		
 		this.configuration = ConfigurationLoader.loadConfiguration(
 				XMLDescription, configurationName, logConfigFilename);
 		
 		this.XMLDescription = XMLNetFlattener.flattenHierarchicalNetParts(XMLDescription,
 				configurationName, configuration.getStatsDir());
 
-		this.net = new NetLoader().load(this.XMLDescription, configurationName,
+		this.net = NetLoader.load(this.XMLDescription, configurationName,
 				configuration);
 
 		// CONFIG: Whether to use indirect estimators for FCFS queues
