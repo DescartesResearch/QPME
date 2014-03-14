@@ -35,11 +35,10 @@ public class PredecessorClockBarrierAction extends BarrierAction {
 			}
 		}
 		LP[] lpsWithPredecessors = new LP[numberOfLPsWithPredecessors];
-		for(int i = 0; i<lps.length;){
-			if(lps[i].isWorkloadGenerator()){
-				i++;
-			}else{
-				lpsWithPredecessors[i] = lps[i];
+		int i=0;
+		for(LP lp:lps){
+			if(!lp.isWorkloadGenerator()){
+				lpsWithPredecessors[i++] = lp;
 			}
 		}
 		return lpsWithPredecessors;
