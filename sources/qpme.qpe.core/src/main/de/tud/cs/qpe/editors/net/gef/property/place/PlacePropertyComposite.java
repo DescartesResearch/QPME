@@ -100,6 +100,7 @@ public abstract class PlacePropertyComposite extends PlaceTransitionPropertyComp
 		departureDiscipline = new Combo(this, SWT.BORDER);
 		departureDiscipline.add("NORMAL");
 		departureDiscipline.add("FIFO");
+		departureDiscipline.add("RANDOM");
 		departureDiscipline.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		departureDiscipline.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent evnt) {

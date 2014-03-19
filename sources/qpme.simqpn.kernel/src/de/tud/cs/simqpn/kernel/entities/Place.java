@@ -56,12 +56,12 @@
  */
 package de.tud.cs.simqpn.kernel.entities;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.dom4j.Element;
@@ -69,6 +69,7 @@ import org.dom4j.Element;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
+import de.tud.cs.simqpn.kernel.entities.queue.QueuingDiscipline;
 import de.tud.cs.simqpn.kernel.entities.stats.PlaceStats;
 import de.tud.cs.simqpn.kernel.entities.stats.Stats;
 import de.tud.cs.simqpn.kernel.executor.Executor;
@@ -89,8 +90,9 @@ public class Place extends Node {
 	public enum DepartureDiscipline {
 		NORMAL, // Arriving tokens become available for output transitions
 				// immediately upon arrival.
-		FIFO; // First-In-First-Out: Arriving tokens become available for output
+		FIFO, // First-In-First-Out: Arriving tokens become available for output
 				// transitions in the order of their arrival.
+		RANDOM;	// First-In-First-Out: Arriving tokens become available for output transitions randomly.
 	}
 
 	/** Supported probe actions */
@@ -105,7 +107,7 @@ public class Place extends Node {
 							// Place.
 	public int statsLevel; // Determines the amount of statistics to be gathered
 							// during the run.
-	public DepartureDiscipline depDiscip; // Departure discipline.
+	public DepartureDiscipline departureDiscipline;
 	public LinkedList<Integer> depQueue; // depDiscip = FIFO: Departure queue -
 											// stores the colors of tokens in
 											// the order of their arrival.
@@ -177,7 +179,7 @@ public class Place extends Node {
 		this.tokenPop = new int[numColors];
 		this.availTokens = new int[numColors];
 		this.statsLevel = statsLevel;
-		this.depDiscip = depDiscip;
+		this.departureDiscipline = depDiscip;
 		this.tokens = new LinkedList[numColors];
 		this.individualTokens = new boolean[numColors];
 		this.probeActions = new ProbeAction[numColors][numProbes];
@@ -188,7 +190,7 @@ public class Place extends Node {
 			this.tokenPop[c] = 0;
 			this.availTokens[c] = 0;
 		}
-		if (depDiscip == DepartureDiscipline.FIFO) {
+		if (depDiscip == DepartureDiscipline.FIFO || depDiscip == DepartureDiscipline.RANDOM) {
 			this.depQueue = new LinkedList<Integer>();
 			this.depReady = false;
 		}
@@ -218,7 +220,7 @@ public class Place extends Node {
 			SimQPNConfiguration configuration) throws SimQPNException {
 		Place clone = new Place(id, name, colors, this.inTrans.length,
 				this.outTrans.length, probeActions[0].length, statsLevel,
-				depDiscip, element, configuration);
+				departureDiscipline, element, configuration);
 		clone.finishCloning(this, queues, transitions, configuration);
 		return clone;
 	}
@@ -250,10 +252,10 @@ public class Place extends Node {
 	@SuppressWarnings("unchecked")
 	public void init(double clock) throws SimQPNException {
 
-		if (depDiscip == DepartureDiscipline.NORMAL) {
+		if (departureDiscipline == DepartureDiscipline.NORMAL) {
 			availTokens = tokenPop; // Note: from here on, availTokens and
 									// tokenPop point to the same array!
-		} else if (depDiscip == DepartureDiscipline.FIFO) {
+		} else if (departureDiscipline == DepartureDiscipline.FIFO || departureDiscipline == DepartureDiscipline.RANDOM) {
 			int totTkPop = 0;
 			int[] tkPop = new int[numColors];
 			for (int c = 0; c < numColors; c++) {
@@ -396,10 +398,10 @@ public class Place extends Node {
 			}
 		}
 
-		if (depDiscip == DepartureDiscipline.NORMAL) {
+		if (departureDiscipline == DepartureDiscipline.NORMAL) {
 			for (int i = 0; i < outTrans.length; i++)
 				outTrans[i].updateState(id, color, tokenPop[color], count);
-		} else if (depDiscip == DepartureDiscipline.FIFO) {
+		} else if (departureDiscipline == DepartureDiscipline.FIFO || departureDiscipline == DepartureDiscipline.RANDOM) {
 			if (depReady) {
 				for (int i = 0; i < count; i++)
 					depQueue.addLast(new Integer(color));
@@ -466,11 +468,11 @@ public class Place extends Node {
 			}
 		}
 
-		if (depDiscip == DepartureDiscipline.NORMAL) {
+		if (departureDiscipline == DepartureDiscipline.NORMAL) {
 			for (int i = 0; i < outTrans.length; i++)
 				outTrans[i].updateState(id, color, tokenPop[color], (-1)
 						* count);
-		} else if (depDiscip == DepartureDiscipline.FIFO) {
+		} else if (departureDiscipline == DepartureDiscipline.FIFO) {
 			availTokens[color] -= count;
 			for (int i = 0; i < outTrans.length; i++)
 				outTrans[i].updateState(id, color, availTokens[color], (-1)
@@ -483,8 +485,24 @@ public class Place extends Node {
 				for (int i = 0; i < outTrans.length; i++)
 					outTrans[i].updateState(id, nextCol, availTokens[nextCol],
 							1);
-			} else
+			} else{
 				depReady = false;
+			}
+		}else if (departureDiscipline == DepartureDiscipline.RANDOM)  {
+			availTokens[color] -= count;
+			for (int i = 0; i < outTrans.length; i++){
+				outTrans[i].updateState(id, color, availTokens[color], (-1)*count);			
+			}
+			if (depQueue.size() > 0) {
+				Random rand = new Random();
+				int nextCol = ((Integer) depQueue.remove(rand.nextInt(depQueue.size()))).intValue();
+				availTokens[nextCol]++;
+				depReady = true; // Left for clarity. Actually redundant since depReady should already be true.
+				for (int i = 0; i < outTrans.length; i++)
+					outTrans[i].updateState(id, nextCol, availTokens[nextCol], 1);										
+			}else{ 
+				depReady = false;
+			}
 		} else {
 			log.error("Invalid depDiscip specified for place " + name);
 			throw new SimQPNException();

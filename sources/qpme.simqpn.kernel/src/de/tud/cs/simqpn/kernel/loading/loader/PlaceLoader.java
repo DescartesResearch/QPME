@@ -107,7 +107,7 @@ public class PlaceLoader {
 			int statsLevel = Integer.parseInt(metaAttribute
 					.attributeValue("statsLevel"));
 
-			DepartureDiscipline dDis;
+			DepartureDiscipline departureDiscipline;
 
 			// This is a user-defined config-parameter for both ordinary- and
 			// queueing-place.
@@ -120,10 +120,12 @@ public class PlaceLoader {
 				throw new SimQPNException();
 			}
 			if ("NORMAL".equals(place.attributeValue("departure-discipline"))) {
-				dDis = Place.DepartureDiscipline.NORMAL;
+				departureDiscipline = Place.DepartureDiscipline.NORMAL;
 			} else if ("FIFO".equals(place
 					.attributeValue("departure-discipline"))) {
-				dDis = Place.DepartureDiscipline.FIFO;
+				departureDiscipline = Place.DepartureDiscipline.FIFO;
+			} else if ("RANDOM".equals(place.attributeValue("departure-discipline"))) {
+				departureDiscipline = Place.DepartureDiscipline.RANDOM;
 			} else {
 				log.error(formatDetailMessage(
 						"Invalid departure-discipline setting!", "place-num",
@@ -195,7 +197,7 @@ public class PlaceLoader {
 						numIncomingConnections, // # incoming connections
 						numOutgoingConnections, // # outgoing connections
 						net.getNumProbes(), statsLevel, // stats level
-						dDis, // departure discipline
+						departureDiscipline, // departure discipline
 						place, configuration); // Reference to the place' XML
 												// element
 				netloader.placeToIndexMap.put(place, i);
@@ -204,7 +206,7 @@ public class PlaceLoader {
 							+ place.attributeValue("name") + "', " + colors
 							+ ", " + numIncomingConnections + ", "
 							+ numOutgoingConnections + ", " + statsLevel + ", "
-							+ dDis + ", " + place + ")");
+							+ departureDiscipline + ", " + place + ")");
 				}
 			} else if ("queueing-place".equals(place
 					.attributeValue(NetLoader.XSI_TYPE_ATTRIBUTE))) {
@@ -217,7 +219,7 @@ public class PlaceLoader {
 							numIncomingConnections, // # incoming connections
 							numOutgoingConnections, // # outgoing connections
 							net.getNumProbes(), statsLevel, // stats level
-							dDis, // departure discipline
+							departureDiscipline, // departure discipline
 							queue, // Reference to the integrated Queue
 							place, configuration); // Reference to the place'
 													// XML element
@@ -227,7 +229,7 @@ public class PlaceLoader {
 								+ place.attributeValue("name") + "', " + colors
 								+ ", " + numIncomingConnections + ", "
 								+ numOutgoingConnections + ", " + statsLevel
-								+ ", " + dDis + ", " + queue + ", " + place
+								+ ", " + departureDiscipline + ", " + queue + ", " + place
 								+ ")");
 					}
 					queue.addQPlace((QPlace) places[i]);
