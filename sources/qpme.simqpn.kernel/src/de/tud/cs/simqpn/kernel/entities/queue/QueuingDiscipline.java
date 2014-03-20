@@ -48,6 +48,7 @@ public enum QueuingDiscipline {
 	IS(false),
 	FCFS(true),
 	PS(true),
+	RANDOM(true),
 	PRIO(true);
 
 	private boolean hasServers;

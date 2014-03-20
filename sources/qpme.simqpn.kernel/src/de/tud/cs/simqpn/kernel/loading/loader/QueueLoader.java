@@ -17,6 +17,7 @@ import de.tud.cs.simqpn.kernel.entities.queue.PRIOQueue;
 import de.tud.cs.simqpn.kernel.entities.queue.PSQueue;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 import de.tud.cs.simqpn.kernel.entities.queue.QueuingDiscipline;
+import de.tud.cs.simqpn.kernel.entities.queue.RANDOMQueue;
 
 public class QueueLoader {
 	private static Logger log = Logger.getLogger(QueueLoader.class);
@@ -31,81 +32,75 @@ public class QueueLoader {
 		HashSet<String> queueNames = new HashSet<String>();
 
 		for (int i = 0; i < numQueues; i++) {
-			Element queue = (Element) queueList.get(i);
+			Element XMLReferenceQueue = (Element) queueList.get(i);
 
 			QueuingDiscipline queueingStrategy = QueuingDiscipline.FCFS;
 
-			String name = queue.attributeValue("name");
+			String name = XMLReferenceQueue.attributeValue("name");
 			if (queueNames.contains(name)) {
 				log.error(formatDetailMessage(
 						"Another queue definition with the same name does already exist!",
 						"queue-num", Integer.toString(i), "queue.id",
-						queue.attributeValue("id"), "queue.name", name));
+						XMLReferenceQueue.attributeValue("id"), "queue.name", name));
 				throw new SimQPNException();
 			} else {
 				queueNames.add(name);
 			}
 
-			String disciplineName = queue.attributeValue("strategy");
+			String disciplineName = XMLReferenceQueue.attributeValue("strategy");
 			try {
 				queueingStrategy = QueuingDiscipline.valueOf(disciplineName);
 			} catch (IllegalArgumentException e) {
 				log.error(formatDetailMessage(
 						"Invalid or missing \"strategy\" (queueing discipline) setting!",
 						"queue-num", Integer.toString(i), "queue.id",
-						queue.attributeValue("id"), "queue.name", name,
-						"queue.strategy", queue.attributeValue("strategy")));
+						XMLReferenceQueue.attributeValue("id"), "queue.name", name,
+						"queue.strategy", XMLReferenceQueue.attributeValue("strategy")));
 				throw new SimQPNException();
 			}
 
-			int numberOfServers = getNumberOfServers(i, queue,
+			int numberOfServers = getNumberOfServers(i, XMLReferenceQueue,
 					queueingStrategy, name);
 
 			switch (queueingStrategy) {
 			case IS:
-				queues[i] = new ISQueue(i, // index
-						queue.attributeValue("id"), // xml-id
-						queue.attributeValue("name"), // name
-						queueingStrategy, // queueing d
-						numberOfServers // # servers
-				);
+				queues[i] = new ISQueue(i, XMLReferenceQueue.attributeValue("id"),
+						XMLReferenceQueue.attributeValue("name"), queueingStrategy,
+						numberOfServers);
 				break;
 			case FCFS:
-				queues[i] = new FCFSQueue(i, // index
-						queue.attributeValue("id"), // xml-id
-						queue.attributeValue("name"), // name
-						queueingStrategy, // queueing d
-						numberOfServers // # servers
-				);
+				queues[i] = new FCFSQueue(i, XMLReferenceQueue.attributeValue("id"),
+						XMLReferenceQueue.attributeValue("name"), queueingStrategy,
+						numberOfServers);
 				break;
 			case PS:
-				queues[i] = new PSQueue(i, // index
-						queue.attributeValue("id"), // xml-id
-						queue.attributeValue("name"), // name
-						queueingStrategy, // queueing d
-						numberOfServers // # servers
-				);
+				queues[i] = new PSQueue(i, XMLReferenceQueue.attributeValue("id"),
+						XMLReferenceQueue.attributeValue("name"), queueingStrategy,
+						numberOfServers);
 				break;
 			case PRIO:
-				queues[i] = new PRIOQueue(i, // index
-						queue.attributeValue("id"), // xml-id
-						queue.attributeValue("name"), // name
-						queueingStrategy, // queueing d
-						numberOfServers // # servers
-				);
+				queues[i] = new PRIOQueue(i, XMLReferenceQueue.attributeValue("id"),
+						XMLReferenceQueue.attributeValue("name"), queueingStrategy,
+						numberOfServers);
 				break;
+			case RANDOM:
+				queues[i] = new RANDOMQueue(i, XMLReferenceQueue.attributeValue("id"),
+						XMLReferenceQueue.attributeValue("name"), queueingStrategy,
+						numberOfServers);
+				break;
+
 			default:
 				log.error(formatDetailMessage(
 						"Invalid or missing \"strategy\" (queueing discipline) setting!",
 						"queue-num", Integer.toString(i), "queue.id",
-						queue.attributeValue("id"), "queue.name", name,
-						"queue.strategy", queue.attributeValue("strategy")));
+						XMLReferenceQueue.attributeValue("id"), "queue.name", name,
+						"queue.strategy", XMLReferenceQueue.attributeValue("strategy")));
 				// throw new SimQPNException(); //TODO uncomment
 			}
-			queueToIndexMap.put(queue, i);
+			queueToIndexMap.put(XMLReferenceQueue, i);
 			if (log.isDebugEnabled()) {
 				log.debug("queues[" + i + "] = new Queue(" + i + ", '"
-						+ queue.attributeValue("name") + "', "
+						+ XMLReferenceQueue.attributeValue("name") + "', "
 						+ queueingStrategy + ", " + numberOfServers + ")");
 			}
 		}
