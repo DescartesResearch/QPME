@@ -13,6 +13,7 @@ import org.dom4j.Element;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.queue.FCFSQueue;
 import de.tud.cs.simqpn.kernel.entities.queue.ISQueue;
+import de.tud.cs.simqpn.kernel.entities.queue.PRIOQueue;
 import de.tud.cs.simqpn.kernel.entities.queue.PSQueue;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 import de.tud.cs.simqpn.kernel.entities.queue.QueuingDiscipline;
@@ -79,6 +80,14 @@ public class QueueLoader {
 				break;
 			case PS:
 				queues[i] = new PSQueue(i, // index
+						queue.attributeValue("id"), // xml-id
+						queue.attributeValue("name"), // name
+						queueingStrategy, // queueing d
+						numberOfServers // # servers
+				);
+				break;
+			case PRIO:
+				queues[i] = new PRIOQueue(i, // index
 						queue.attributeValue("id"), // xml-id
 						queue.attributeValue("name"), // name
 						queueingStrategy, // queueing d

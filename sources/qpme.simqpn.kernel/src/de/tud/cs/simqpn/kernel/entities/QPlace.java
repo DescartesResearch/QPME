@@ -107,29 +107,24 @@ public class QPlace extends Place {
 									// Note that for queueing places
 									// Place.tokenPop
 									// contains tokens in the depository.
+	public AbstractDoubleList[] getQueueTokResidServTimes() {
+		return queueTokenResidualServiceTimes;
+	}
+	
+	/** Priorities of each color for {@link PSQueue}*/
+	private int[] priorities; 
+
+	/** {@link PSQueue}: expPS==false: Residual service times of the tokens in the queueing station (queue).*/
+	private AbstractDoubleList[] queueTokenResidualServiceTimes; 
 	
 	/**
 	 * Saves random numbers for future queue-service-times for this QPlace
 	 */
 	private List<List<Double>> futureList;
-	
 
-
-
-	private AbstractDoubleList[] queueTokResidServTimes; // PS queues:
-															// expPS==false:
-															// Residual service
-															// times of the
-															// tokens
-															// in the queueing
-															// station (queue).
-
-	public AbstractDoubleList[] getQueueTokResidServTimes() {
-		return queueTokResidServTimes;
-	}
-
+	/** {@link PSQueue}: tokens in queueing station. */
 	@SuppressWarnings("rawtypes")
-	public ArrayList[] queueTokens; // PS queues: tokens in queueing station.
+	public ArrayList[] queueTokens; 
 
 	/** Random number generators for generating service times.*/
 	public AbstractContinousDistribution[] randServTimeGen; 
@@ -138,7 +133,7 @@ public class QPlace extends Place {
 
 	public Element element;
 
-	private Token[] tkCopyBuffer; // INTERNAL: Used to transfer tokens.
+	private Token[] tokenCopyBuffer;
 
 	/**
 	 * Clones
@@ -167,7 +162,7 @@ public class QPlace extends Place {
 		// this.queue = queues[((QPlace)original).queue.id];
 
 		this.meanServTimes = ((QPlace) original).meanServTimes.clone();
-		this.tkCopyBuffer = new Token[((QPlace) original).tkCopyBuffer.length];// new
+		this.tokenCopyBuffer = new Token[((QPlace) original).tokenCopyBuffer.length];// new
 		// Token[1];
 		// // TODO
 		for (int c = 0; c < numColors; c++)
@@ -204,10 +199,10 @@ public class QPlace extends Place {
 			}
 
 		}
-		if (((QPlace) original).queueTokResidServTimes != null) {
-			this.queueTokResidServTimes = new AbstractDoubleList[original.numColors];
+		if (((QPlace) original).queueTokenResidualServiceTimes != null) {
+			this.queueTokenResidualServiceTimes = new AbstractDoubleList[original.numColors];
 			for (int c = 0; c < numColors; c++) {
-				queueTokResidServTimes[c] = new DoubleArrayList(100);
+				queueTokenResidualServiceTimes[c] = new DoubleArrayList(100);
 			}
 		}
 
@@ -259,7 +254,7 @@ public class QPlace extends Place {
 		
 		this.queue = queue;
 		this.meanServTimes = new double[numColors];
-		this.tkCopyBuffer = new Token[1];
+		this.tokenCopyBuffer = new Token[1];
 		for (int c = 0; c < numColors; c++)
 			this.meanServTimes[c] = -1; // -1 means 'uninitialized'
 
@@ -267,10 +262,9 @@ public class QPlace extends Place {
 		for (int c = 0; c < numColors; c++)
 			this.queueTokenPop[c] = 0;
 
-		if (queue != null) {
-			if (statsLevel > 0)
-				qPlaceQueueStats = new QPlaceQueueStats(id, name, colors,
-						statsLevel, queue.queueDiscip, queue.numServers,
+		if (queue != null && statsLevel > 0){
+			qPlaceQueueStats = new QPlaceQueueStats(id, name, colors,
+					statsLevel, queue.queueDiscip, queue.numServers,
 						meanServTimes, configuration);
 		}
 	}
@@ -324,7 +318,7 @@ public class QPlace extends Place {
 		// PS Queues
 		if (queue.queueDiscip == QueuingDiscipline.PS
 				&& (!isExponentialPSQueue)) {
-			queueTokResidServTimes = new DoubleArrayList[numColors]; // NOTE:
+			queueTokenResidualServiceTimes = new DoubleArrayList[numColors]; // NOTE:
 																		// Note
 																		// that
 																		// given
@@ -345,7 +339,7 @@ public class QPlace extends Place {
 																		// a
 																		// LinkedList!
 			for (int c = 0; c < numColors; c++)
-				queueTokResidServTimes[c] = new DoubleArrayList(100); // SDK-TODO:
+				queueTokenResidualServiceTimes[c] = new DoubleArrayList(100); // SDK-TODO:
 																		// See
 																		// if
 																		// 100
@@ -469,8 +463,8 @@ public class QPlace extends Place {
 
 		// Finally move token to depository
 		if (individualTokens[token.color]) {
-			tkCopyBuffer[0] = token;
-			super.addTokens(token.color, 1, tkCopyBuffer, executor);
+			tokenCopyBuffer[0] = token;
+			super.addTokens(token.color, 1, tokenCopyBuffer, executor);
 		} else {
 			super.addTokens(token.color, 1, null, executor);
 		}
@@ -547,6 +541,14 @@ public class QPlace extends Place {
 	}
 	public int[] getQueueTokenPop() {
 		return queueTokenPop;
+	}
+
+	public int[] getPriorities() {
+		return priorities;
+	}
+
+	public void setPriorities(int[] priorities) {
+		this.priorities = priorities;
 	}
 
 }

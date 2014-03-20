@@ -69,7 +69,7 @@ public class PSQueue extends Queue {
 
 	/**
 	 * True if currently scheduled events for this queue (if any) reflect the
-	 * latest token popolation of the queue.
+	 * latest token population of the queue.
 	 */
 	private boolean eventsUpToDate;
 

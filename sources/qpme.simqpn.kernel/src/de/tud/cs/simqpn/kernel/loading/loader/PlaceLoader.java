@@ -18,6 +18,7 @@ import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.Place.DepartureDiscipline;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
+import de.tud.cs.simqpn.kernel.entities.queue.QueuingDiscipline;
 import de.tud.cs.simqpn.kernel.loading.NetLoader;
 import de.tud.cs.simqpn.kernel.loading.XMLHelper;
 
@@ -32,8 +33,10 @@ public class PlaceLoader {
 	 * @return
 	 * @throws SimQPNException
 	 */
-	public static Place[] createPlaces(NetLoader netloader) throws SimQPNException {
-		//List<Element> placeList, Element netXML, Net net,	SimQPNConfiguration configuration
+	public static Place[] createPlaces(NetLoader netloader)
+			throws SimQPNException {
+		// List<Element> placeList, Element netXML, Net net, SimQPNConfiguration
+		// configuration
 		/*
 		 * SDK-DEBUG: A general question: Does your code guarantee that all id's
 		 * assigned to elements (places, transitions, colors, connections,
@@ -59,12 +62,12 @@ public class PlaceLoader {
 
 		// Create the place-objects of every-place. Depending on its
 		// type-attribute create Place or QPlace objects.
-		Iterator placeIterator = placeList.iterator();
+		Iterator<Element> placeIterator = placeList.iterator();
 		// Set for checking the uniqueness of place names
 		HashSet<String> placeNames = new HashSet<String>();
 
 		for (int i = 0; placeIterator.hasNext(); i++) {
-			Element place = (Element) placeIterator.next();
+			Element place = placeIterator.next();
 
 			String name = place.attributeValue("name");
 			if (placeNames.contains(name)) {
@@ -89,10 +92,10 @@ public class PlaceLoader {
 			// the ids are concidered unique, the correct connection element
 			// will be selected.
 
-			int numOutgoingConnections = netloader.getNumConnectionsWithSourceId(place
-					.attributeValue("id"));
-			int numIncomingConnections = netloader.getNumConnectionsWithTargetId(place
-					.attributeValue("id"));
+			int numOutgoingConnections = netloader
+					.getNumConnectionsWithSourceId(place.attributeValue("id"));
+			int numIncomingConnections = netloader
+					.getNumConnectionsWithTargetId(place.attributeValue("id"));
 
 			Element metaAttribute = XMLHelper.getSettings(place,
 					net.getConfigurationName());
@@ -124,7 +127,8 @@ public class PlaceLoader {
 			} else if ("FIFO".equals(place
 					.attributeValue("departure-discipline"))) {
 				departureDiscipline = Place.DepartureDiscipline.FIFO;
-			} else if ("RANDOM".equals(place.attributeValue("departure-discipline"))) {
+			} else if ("RANDOM".equals(place
+					.attributeValue("departure-discipline"))) {
 				departureDiscipline = Place.DepartureDiscipline.RANDOM;
 			} else {
 				log.error(formatDetailMessage(
@@ -167,7 +171,7 @@ public class PlaceLoader {
 						place.attributeValue("departure-discipline")));
 				throw new SimQPNException();
 			}
-			List colorRefs = colorRefsElem.elements("color-ref");
+			List<Element> colorRefs = colorRefsElem.elements("color-ref");
 			if (colorRefs.size() == 0) {
 				log.error(formatDetailMessage("Missing color references!",
 						"place-num", Integer.toString(i), "place.id",
@@ -178,15 +182,18 @@ public class PlaceLoader {
 				throw new SimQPNException();
 			}
 			String[] colors = new String[colorRefs.size()];
-			Iterator colorRefIterator = colorRefs.iterator();
+			int[] priorities = new int[colorRefs.size()];
+			Iterator<Element> colorRefIterator = colorRefs.iterator();
 			for (int c = 0; colorRefIterator.hasNext(); c++) {
-				Element colorRef = (Element) colorRefIterator.next();
+				Element colorRef = colorRefIterator.next();
 				XPath xpathSelector = XMLHelper
 						.createXPath("colors/color[(@id='"
 								+ colorRef.attributeValue("color-id") + "')]");
 				Element color = (Element) xpathSelector
 						.selectSingleNode(netXML);
 				colors[c] = color.attributeValue("name");
+				priorities[c] = (colorRef.attributeValue("priority") == null) ? 0
+						: Integer.valueOf(colorRef.attributeValue("priority"));
 			}
 
 			if ("ordinary-place".equals(place
@@ -212,7 +219,8 @@ public class PlaceLoader {
 					.attributeValue(NetLoader.XSI_TYPE_ATTRIBUTE))) {
 				try {
 					String queueRef = place.attributeValue("queue-ref");
-					Queue queue = netloader.findQueueByXmlId(queueRef, net.getQueues());
+					Queue queue = netloader.findQueueByXmlId(queueRef,
+							net.getQueues());
 					places[i] = new QPlace(i, // id
 							place.attributeValue("name"), // name
 							colors, // color names
@@ -223,14 +231,23 @@ public class PlaceLoader {
 							queue, // Reference to the integrated Queue
 							place, configuration); // Reference to the place'
 													// XML element
+					if(queue.queueDiscip == QueuingDiscipline.PRIO){
+						for(int j=0; j<priorities.length; j++){
+							if(priorities[j]==0){
+								log.warn("Priority for color "+colors[j]+" at queueing place "+place.attributeValue("name")+" has not been specified");
+								log.warn("Priority has been set to 0.");
+							}
+						}
+						((QPlace) places[i]).setPriorities(priorities);
+					}
 					netloader.placeToIndexMap.put(place, i);
 					if (log.isDebugEnabled()) {
 						log.debug("places[" + i + "] = new QPlace(" + i + ", '"
 								+ place.attributeValue("name") + "', " + colors
 								+ ", " + numIncomingConnections + ", "
 								+ numOutgoingConnections + ", " + statsLevel
-								+ ", " + departureDiscipline + ", " + queue + ", " + place
-								+ ")");
+								+ ", " + departureDiscipline + ", " + queue
+								+ ", " + place + ")");
 					}
 					queue.addQPlace((QPlace) places[i]);
 				} catch (NoSuchElementException ex) {
@@ -253,6 +270,5 @@ public class PlaceLoader {
 		}
 		return places;
 	}
-
 
 }

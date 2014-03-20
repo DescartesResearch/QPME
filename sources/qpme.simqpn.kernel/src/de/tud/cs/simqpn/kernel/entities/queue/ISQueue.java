@@ -41,8 +41,6 @@
  */
 package de.tud.cs.simqpn.kernel.entities.queue;
 
-import org.apache.log4j.Logger;
-
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Place;

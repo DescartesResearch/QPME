@@ -946,7 +946,7 @@ public class NetLoader {
 		}
 	}
 
-	public static Queue findQueueByXmlId(String xmlId, Queue[] queues) {
+	public Queue findQueueByXmlId(String xmlId, Queue[] queues) {
 		for (int i = 0; i < queues.length; i++) {
 			Queue queue = queues[i];
 			if (xmlId.equals(queue.xmlId)) {

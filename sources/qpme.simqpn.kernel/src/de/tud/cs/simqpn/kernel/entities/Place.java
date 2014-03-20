@@ -69,7 +69,6 @@ import org.dom4j.Element;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
-import de.tud.cs.simqpn.kernel.entities.queue.QueuingDiscipline;
 import de.tud.cs.simqpn.kernel.entities.stats.PlaceStats;
 import de.tud.cs.simqpn.kernel.entities.stats.Stats;
 import de.tud.cs.simqpn.kernel.executor.Executor;
@@ -131,7 +130,7 @@ public class Place extends Node {
 	public boolean[] individualTokens; // individualTokens[color] specifies
 										// whether tokens of the specified color
 										// should be stored individually
-
+	
 	// Configuration of probes
 	public ProbeAction[][] probeActions;
 	public Probe[][] probeInstrumentations; // probeInstrumentations[numColors]:

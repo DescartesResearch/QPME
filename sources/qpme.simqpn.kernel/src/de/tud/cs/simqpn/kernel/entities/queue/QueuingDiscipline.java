@@ -47,7 +47,8 @@ package de.tud.cs.simqpn.kernel.entities.queue;
 public enum QueuingDiscipline {
 	IS(false),
 	FCFS(true),
-	PS(true);
+	PS(true),
+	PRIO(true);
 
 	private boolean hasServers;
 	
