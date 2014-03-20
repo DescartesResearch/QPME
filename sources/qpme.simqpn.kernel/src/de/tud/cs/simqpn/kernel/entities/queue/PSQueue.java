@@ -147,7 +147,7 @@ public class PSQueue extends Queue {
 	 *            number of servers in queue
 	 */
 	public PSQueue(int id, String xmlId, String name,
-			QueuingDiscipline queueDiscip, int numServers){
+			QueuingDiscipline queueDiscip, int numServers) {
 
 		super(id, xmlId, name, queueDiscip, numServers);
 
@@ -223,25 +223,26 @@ public class PSQueue extends Queue {
 			return;
 		}
 
-		int totQueTokCnt = 0;
-		for (int p = 0, nC = 0; p < qPlaces.length; p++) {
-			nC = qPlaces[p].numColors;
-			for (int c = 0; c < nC; c++)
-				totQueTokCnt += qPlaces[p].getQueueTokenPop()[c];
+		int totalQueueTokenCnt = 0;
+		for (int placeID = 0, numColors = 0; placeID < qPlaces.length; placeID++) {
+			numColors = qPlaces[placeID].numColors;
+			for (int c = 0; c < numColors; c++){
+				totalQueueTokenCnt += qPlaces[placeID].getQueueTokenPop()[c];
+			}
 		}
 
-		if (totQueTokCnt > 0) {
+		if (totalQueueTokenCnt > 0) {
 			if (expPS) { // Exponential service times
 				double[] meanServRates = new double[totNumColors];
 				double conc = 1;
-				if (numServers > 1 && totQueTokCnt > 1) // "-/M/n-PS" queues
-					conc = (totQueTokCnt <= numServers) ? totQueTokCnt
+				if (numServers > 1 && totalQueueTokenCnt > 1) // "-/M/n-PS" queues
+					conc = (totalQueueTokenCnt <= numServers) ? totalQueueTokenCnt
 							: numServers;
 				for (int p = 0, nC = 0, i = 0; p < qPlaces.length; p++) {
 					nC = qPlaces[p].numColors;
 					for (int c = 0; c < nC; c++)
 						meanServRates[i++] = (((double) qPlaces[p]
-								.getQueueTokenPop()[c]) / totQueTokCnt)
+								.getQueueTokenPop()[c]) / totalQueueTokenCnt)
 								* ((double) 1 / qPlaces[p].meanServTimes[c])
 								* conc;
 				}
@@ -305,10 +306,10 @@ public class PSQueue extends Queue {
 				if (minRST == -1) { // DEBUG
 					log.error("Illegal state in queue " + name);
 				}
-				double servTime = minRST * totQueTokCnt; // Default for
+				double servTime = minRST * totalQueueTokenCnt; // Default for
 															// "-/G/1-PS" queue
-				if (numServers > 1 && totQueTokCnt > 1) // "-/G/n-PS" queues
-					servTime /= ((totQueTokCnt <= numServers) ? totQueTokCnt
+				if (numServers > 1 && totalQueueTokenCnt > 1) // "-/G/n-PS" queues
+					servTime /= ((totalQueueTokenCnt <= numServers) ? totalQueueTokenCnt
 							: numServers);
 				if (qPlaces[tkSchedPl].queueTokens[tkSchedCol] != null) {
 					executor.scheduleEvent(servTime, this,
@@ -319,24 +320,113 @@ public class PSQueue extends Queue {
 							qPlaces[tkSchedPl], tkSchedCol));
 				}
 				lastEventClock = executor.getClock();
-				lastEventTkCnt = totQueTokCnt;
+				lastEventTkCnt = totalQueueTokenCnt;
 				eventScheduled = true;
 			}
 		}
 		eventsUpToDate = true;
 	}
 
+
 	/**
-	 * Clears all scheduled service completion events for this queue.
+	 * Deposits N tokens of particular color.
 	 * 
-	 * Method clearEvents (Used only for PS queues) - clears all scheduled
-	 * service completion events for this queue.
-	 * 
-	 * @param
-	 * @return
-	 * @exception
+	 * @param queuingPlace
+	 *            the QPlace
+	 * @param color
+	 *            color of tokens
+	 * @param count
+	 *            number of tokens to deposit
+	 * @param tokensToBeAdded
+	 *            individual tokens (if tracking = true)
+	 * @param executor
+	 *            the executor
+	 * @throws SimQPNException
+	 *             inherited from queue, not relevant for PSQueue
 	 */
-	public void clearEvents(Executor executor) {
+	@Override
+	public void addTokens(QPlace queuingPlace, int color, int count,
+			Token[] tokensToBeAdded, Executor executor) throws SimQPNException {
+		super.addTokens(queuingPlace, color, count, tokensToBeAdded, executor);
+
+		if (!expPS) {
+			if (eventScheduled) {
+				/*
+				 * NOTE: WATCH OUT! Method should be called before the new
+				 * tokens have been added to queueTokResidServTimes!
+				 */
+				updateResidualServiceTimes(executor.getClock());
+			}
+			for (int i = 0; i < count; i++) {
+				double serviceTime = queuingPlace.removeNextServiceTime(color);
+				queuingPlace.getQueueTokResidServTimes()[color]
+						.add(serviceTime);
+			}
+		}
+		if ((tokensToBeAdded != null) || (queuingPlace.statsLevel >= 3)) {
+			// if we get tokens from caller or we have to measure the sojourn
+			// times, store the individual tokens.
+			for (int i = 0; i < count; i++) {
+				Token token = (tokensToBeAdded != null) ? tokensToBeAdded[i]
+						: new Token(queuingPlace, color);
+				token.arrivTS = executor.getClock();
+				queuingPlace.queueTokens[color].add(token);
+			}
+		}
+		if (eventScheduled) {
+			removeScheduledEvent(executor); // NOTE: clearEvents() resets eventScheduled
+									// to false;
+		}
+		eventsUpToDate = false;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void completeService(Token token, Executor executor)
+			throws SimQPNException {
+		super.completeService(token, executor);
+
+		QPlace qPl = ((QPlace) token.place);
+		if (!expPS) {
+			if (qPlaces[tkSchedPl].queueTokens[tkSchedCol] != null)
+				qPlaces[tkSchedPl].queueTokens[tkSchedCol].remove(tkSchedPos);
+			qPlaces[tkSchedPl].getQueueTokResidServTimes()[tkSchedCol]
+					.remove(tkSchedPos);
+			updateResidualServiceTimes(executor.getClock()); // NOTE: WATCH OUT!
+														// Method should be
+														// called after served
+														// token has been
+														// removed from
+														// queueTokResidServTimes!
+		} else if (qPl.queueTokens[token.color] != null)
+			qPl.queueTokens[token.color].remove(0);
+		eventScheduled = false;
+		eventsUpToDate = false;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void onQueueEventScheduled(QueueEvent queueEvent) {
+		nextEvent = queueEvent;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public double getLookahead(QPlace queuingPlace, int color) {
+		return queuingPlace.getNextServiceTime(color);
+	}
+	
+	/**
+	 * Clears scheduled service completion event.
+	 * @param executor
+	 */
+	private void removeScheduledEvent(Executor executor) {
 		// Remove scheduled event from the event list.
 		// Note that a maximum of one event can be scheduled per PS QPlace at a
 		// time.
@@ -370,7 +460,7 @@ public class PSQueue extends Queue {
 	 * @return
 	 * @exception
 	 */
-	public void updateResidServTimes(double clock) {
+	private void updateResidualServiceTimes(double clock) {
 		int numTk;
 		double curRST;
 		double timeServed = (clock - lastEventClock) / lastEventTkCnt; // Default
@@ -397,98 +487,6 @@ public class PSQueue extends Queue {
 					}
 			}
 		}
-	}
-
-	/**
-	 * Deposits N tokens of particular color.
-	 * 
-	 * @param queuingPlace
-	 *            the QPlace
-	 * @param color
-	 *            color of tokens
-	 * @param count
-	 *            number of tokens to deposit
-	 * @param tokensToBeAdded
-	 *            individual tokens (if tracking = true)
-	 * @param executor
-	 *            the executor
-	 * @throws SimQPNException	inherited from queue, not relevant for PSQueue
-	 */
-	@Override
-	public void addTokens(QPlace queuingPlace, int color, int count,
-			Token[] tokensToBeAdded, Executor executor) throws SimQPNException{
-		super.addTokens(queuingPlace, color, count, tokensToBeAdded, executor);
-
-		if (!expPS) {
-			if (eventScheduled) {
-				/*
-				 * NOTE: WATCH OUT! Method should be called before the new
-				 * tokens have been added to queueTokResidServTimes!
-				 */
-				updateResidServTimes(executor.getClock());
-			}
-			for (int i = 0; i < count; i++) {
-				double serviceTime = queuingPlace.removeNextServiceTime(color);
-				queuingPlace.getQueueTokResidServTimes()[color].add(serviceTime);
-			}
-		}
-		if ((tokensToBeAdded != null) || (queuingPlace.statsLevel >= 3)) {
-			// if we get tokens from caller or we have to measure the sojourn
-			// times, store the individual tokens.
-			for (int i = 0; i < count; i++) {
-				Token token = (tokensToBeAdded != null) ? tokensToBeAdded[i]
-						: new Token(queuingPlace, color);
-				token.arrivTS = executor.getClock();
-				queuingPlace.queueTokens[color].add(token);
-			}
-		}
-		if (eventScheduled) {
-			clearEvents(executor); // NOTE: clearEvents() resets eventScheduled
-									// to false;
-		}
-		eventsUpToDate = false;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void completeService(Token token, Executor executor)
-			throws SimQPNException {
-		super.completeService(token, executor);
-
-		QPlace qPl = ((QPlace) token.place);
-		if (!expPS) {
-			if (qPlaces[tkSchedPl].queueTokens[tkSchedCol] != null)
-				qPlaces[tkSchedPl].queueTokens[tkSchedCol].remove(tkSchedPos);
-			qPlaces[tkSchedPl].getQueueTokResidServTimes()[tkSchedCol]
-					.remove(tkSchedPos);
-			updateResidServTimes(executor.getClock()); // NOTE: WATCH OUT!
-														// Method should be
-														// called after served
-														// token has been
-														// removed from
-														// queueTokResidServTimes!
-		} else if (qPl.queueTokens[token.color] != null)
-			qPl.queueTokens[token.color].remove(0);
-		eventScheduled = false;
-		eventsUpToDate = false;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void onQueueEventScheduled(QueueEvent queueEvent) {
-		nextEvent = queueEvent;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public double getLookahead(QPlace queuingPlace, int color) {
-		return queuingPlace.getNextServiceTime(color);
 	}
 
 

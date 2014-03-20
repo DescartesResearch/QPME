@@ -123,15 +123,14 @@ public class QPlace extends Place {
 	private List<List<Double>> futureList;
 
 	/** {@link PSQueue}: tokens in queueing station. */
-	@SuppressWarnings("rawtypes")
-	public ArrayList[] queueTokens; 
+	public ArrayList<Token>[] queueTokens; 
 
 	/** Random number generators for generating service times.*/
 	public AbstractContinousDistribution[] randServTimeGen; 
 
 	public QPlaceQueueStats qPlaceQueueStats;
 
-	public Element element;
+	private Element element;
 
 	private Token[] tokenCopyBuffer;
 

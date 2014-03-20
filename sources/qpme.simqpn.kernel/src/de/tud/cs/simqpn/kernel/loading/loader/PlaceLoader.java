@@ -235,7 +235,7 @@ public class PlaceLoader {
 						for(int j=0; j<priorities.length; j++){
 							if(priorities[j]==0){
 								log.warn("Priority for color "+colors[j]+" at queueing place "+place.attributeValue("name")+" has not been specified");
-								log.warn("Priority has been set to 0.");
+								log.warn("Set priority to 0.");
 							}
 						}
 						((QPlace) places[i]).setPriorities(priorities);
