@@ -74,7 +74,7 @@ public class XMLBatchMeans {
 					for (int cr = 0; colorRefIterator.hasNext(); cr++) {
 						Element colorRef = colorRefIterator.next();
 						Element colorRefSettings = XMLHelper
-								.getElement(colorRef,
+								.getSettings(colorRef,
 										net.getConfigurationName());
 						// Initialize Place (or Depository if pl is QPlace)
 						if (colorRefSettings != null) {
@@ -689,7 +689,7 @@ public class XMLBatchMeans {
 					for (int cr = 0; colorRefIterator.hasNext(); cr++) {
 						Element colorRef = colorRefIterator.next();
 						Element colorRefSettings = XMLHelper
-								.getElement(colorRef,
+								.getSettings(colorRef,
 										net.getConfigurationName());
 						// Initialize Probe
 						if (colorRefSettings != null) {

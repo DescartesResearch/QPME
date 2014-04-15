@@ -105,6 +105,7 @@ import de.tud.cs.simqpn.kernel.loading.XMLBatchMeans;
 import de.tud.cs.simqpn.kernel.loading.XMLValidator;
 import de.tud.cs.simqpn.kernel.loading.flatten.XMLNetFlattener;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
+import de.tud.cs.simqpn.kernel.util.LogUtil;
 
 /**
  * The SimQPNController class manages the simulation from loading to result processing and saving.
@@ -190,11 +191,13 @@ public class SimQPNController {
 	 */
 	private void initialize(Element XMLDescription, String configurationName, String logConfigFilename, Date date)
 			throws SimQPNException {
+		LogUtil.initializeLogging(XMLDescription, configurationName, logConfigFilename);
+
 		// NOTE: Random needs to be initialized before starting the model definition
 		RandomNumberGenerator.initialize(date);
-
+		
 		this.configuration = ConfigurationLoader.loadConfiguration(
-				XMLDescription, configurationName, logConfigFilename);
+				XMLDescription, configurationName);
 		
 		this.XMLDescription = XMLNetFlattener.flattenHierarchicalNetParts(XMLDescription,
 				configurationName, configuration.getStatsDir());

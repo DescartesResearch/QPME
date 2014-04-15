@@ -2,6 +2,7 @@ package de.tud.cs.simqpn.kernel.loading;
 
 import static de.tud.cs.simqpn.kernel.util.LogUtil.formatDetailMessage;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -20,6 +21,7 @@ import org.dom4j.XPath;
 import cern.jet.random.AbstractContinousDistribution;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
+import de.tud.cs.simqpn.kernel.entities.ColorReference;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.Probe;
@@ -40,8 +42,8 @@ public class NetLoader {
 	// hashmaps to allow fast lookup of array index for a given element
 	public Map<Element, Integer> placeToIndexMap;
 	private Map<Element, Integer> transitionToIndexMap;
+	private Map<Element, Integer> colorToIndexMap;
 	private Map<String, Element> idToElementMap;
-
 	// hashmaps to allow fast lookup of number of incoming and outgoing
 	// connections
 	private Map<String, Integer> sourceIdToNumConnectionsMap = new HashMap<String, Integer>();
@@ -51,7 +53,7 @@ public class NetLoader {
 			new Namespace("xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI));
 
 	private static Logger log = Logger.getLogger(NetLoader.class);
-	
+
 	private Net net;
 	private Element netXML;
 	private SimQPNConfiguration configuration;
@@ -63,7 +65,7 @@ public class NetLoader {
 		this.configurationName = configurationName;
 		this.configuration = configuration;
 	}
-	
+
 	/**
 	 * Loads a {@link Net} from XML.
 	 * 
@@ -73,13 +75,14 @@ public class NetLoader {
 	 */
 	public static Net load(Element netXML, String configurationName,
 			SimQPNConfiguration configuration) throws SimQPNException {
-		NetLoader netLoader = new NetLoader(netXML, configurationName,configuration);
+		NetLoader netLoader = new NetLoader(netXML, configurationName,
+				configuration);
 		netLoader.initElementLists();
 		return netLoader.loadNet();
 	}
 
 	/**
-	 * Initialization for NetLoader 
+	 * Initialization for NetLoader
 	 * 
 	 * @param netXML
 	 * @return
@@ -88,10 +91,10 @@ public class NetLoader {
 	private void initElementLists() throws SimQPNException {
 		placeToIndexMap = new HashMap<Element, Integer>();
 		transitionToIndexMap = new HashMap<Element, Integer>();
+		colorToIndexMap = new HashMap<Element, Integer>();
 		sourceIdToNumConnectionsMap = new HashMap<String, Integer>();
 		targetIdToNumConnectionsMap = new HashMap<String, Integer>();
 		idToElementMap = new HashMap<String, Element>();
-
 
 		XPath xpathSelector = XMLHelper.createXPath("//place");
 		placeList = xpathSelector.selectNodes(netXML);
@@ -136,7 +139,7 @@ public class NetLoader {
 	 * @param netXML
 	 * @throws SimQPNException
 	 */
-	private static void checkColorDefinitions(Element netXML)
+	private void checkColorDefinitions(Element netXML)
 			throws SimQPNException {
 		XPath colorSelector = XMLHelper.createXPath("//color");
 		List<Element> colorList = colorSelector.selectNodes(netXML);
@@ -145,6 +148,7 @@ public class NetLoader {
 
 		for (int i = 0; i < colorList.size(); i++) {
 			Element col = colorList.get(i);
+			colorToIndexMap.put(col, i);
 
 			String name = col.attributeValue("name");
 			if (colorNames.contains(name)) {
@@ -158,6 +162,7 @@ public class NetLoader {
 			}
 		}
 	}
+
 	private void extractConnections(Element netXML) {
 		XPath xpathSelector;
 		xpathSelector = XMLHelper.createXPath("//connection");
@@ -211,7 +216,8 @@ public class NetLoader {
 		 * supported!!! If the net uses them, just print an error message and
 		 * exit.
 		 * 
-		 * IMPORTANT: trans id must be equal to its index in the transition array!!!
+		 * IMPORTANT: trans id must be equal to its index in the transition
+		 * array!!!
 		 */
 
 		log.debug("/////////////////////////////////////////////");
@@ -452,8 +458,8 @@ public class NetLoader {
 		// Initialize the place-transition and transition-place connections.
 		XPath xpathSelector = XMLHelper
 				.createXPath("/net/connections/connection");
-		Iterator<Element> connectionIterator = xpathSelector.selectNodes(netXML)
-				.iterator();
+		Iterator<Element> connectionIterator = xpathSelector
+				.selectNodes(netXML).iterator();
 
 		while (connectionIterator.hasNext()) {
 			// Get the next connection
@@ -551,8 +557,10 @@ public class NetLoader {
 		for (int i = 0; transitionIterator.hasNext(); i++) {
 			Element transition = transitionIterator.next();
 			XPath xpathSelector = XMLHelper.createXPath("modes/mode");
-			Iterator<Element> modeIterator = xpathSelector.selectNodes(transition)
-					.iterator();
+			Iterator<Element> modeIterator = xpathSelector.selectNodes(
+					transition).iterator();
+		
+			net.getTrans(i).initDynamicModeWeights();
 			for (int j = 0; modeIterator.hasNext(); j++) {
 				Element mode = modeIterator.next();
 				if (mode.attributeValue("firing-weight") == null) {
@@ -567,12 +575,81 @@ public class NetLoader {
 							mode.attributeValue("name")));
 					throw new SimQPNException();
 				}
+
 				net.getTrans(i).modeWeights[j] = Double.parseDouble(mode
 						.attributeValue("firing-weight"));
+				List<ColorReference> dynamicModeWeights = getColorRefsForDynamicModeWeights(mode, j);
+				net.getTrans(i).setDynamicModeWeights(j, dynamicModeWeights);
+	
 				log.debug("trans[" + i + "].modeWeights[" + j + "] = "
 						+ net.getTrans(i).modeWeights[j]);
 			}
 		}
+		//TODO net.getTrans(i).setDynamicModeWeightFlags(isDynamicModeWeight)
+	}
+
+	
+	/**
+	 * To add dynamic firing weights to your model use the following XML schema
+	 * <pre>
+	 * {@code
+     * <mode ...>
+     * 	<dynamic-firing-weights>
+     * 		<dynamic-firing-weight place-id="_somePlaceID1" color-ref-id="_someColorID2"/>
+     * 		<dynamic-firing-weight place-id="_somePlaceID2" color-ref-id="_someColorID3"/>
+     * 	</dynamic-firing-weights>
+     * </mode>	
+	 * }
+	 * </pre>
+	 */
+	private List<ColorReference> getColorRefsForDynamicModeWeights(Element mode, int modeID) {
+
+		Element dynamicWeights = mode.element("dynamic-firing-weights");
+		if (dynamicWeights != null) {
+			log.info("firing mode "+modeID + " is dynamic and depends on the following color references");
+			List<ColorReference> colorReferences = new ArrayList<ColorReference>();
+			Iterator<Element> dynamicWeightIterator = dynamicWeights.elementIterator("dynamic-firing-weight");
+			for (int i = 0; dynamicWeightIterator.hasNext(); i++) {
+				Element dynamicWeight = dynamicWeightIterator.next();
+				String colorRefID = dynamicWeight.attributeValue("color-ref-id");
+				Element colorRef = idToElementMap.get(colorRefID);
+				Element color = idToElementMap.get(colorRef.attributeValue("color-id"));
+				String colorName = color.attributeValue("name");
+				
+				String placeIDXML = dynamicWeight.attributeValue("place-id");
+				Element placeXML = idToElementMap.get(placeIDXML);
+				int placeID = placeToIndexMap.get(placeXML);
+				Place place = net.getPlace(placeID);
+				int colorID = -1;
+				for(int j=0; j<place.colors.length; j++){
+					if(place.colors[j].equals(colorName)){
+						colorID=j;
+						break;
+					}
+				}
+				ColorReference colorReference = new ColorReference(place, colorID);
+				colorReferences.add(colorReference);
+				log.info("place["+ placeID+"]   color["+colorID+"]");
+			}
+			return colorReferences;
+		}else{
+			return null;
+		}
+	}
+	
+	private Element helper(String id){
+		Element place = null;
+		Iterator<Element> allPlacesIterator = placeList.iterator();
+		for (int j = 0; allPlacesIterator.hasNext(); j++) {
+			place = allPlacesIterator.next();
+			System.out.println(place.attributeValue("id"));
+			if(place.attributeValue("id").equals(id)){
+				System.out.println("found place "+place);
+				System.out.println(placeToIndexMap.get(place));
+				return place;
+			}
+		}
+		return null;
 	}
 
 	/** CONFIGURE TRANSITION INPUT/OUTPUT FUNCTIONS [mode, inPlace, color] **/
@@ -593,7 +670,6 @@ public class NetLoader {
 			// Select the element for the current transition.
 			Element transition = this.transitionList.get(t);
 
-			// HIER HIER OBEN FR
 			XPath xpathSelector = XMLHelper.createXPath("modes/mode");
 			List<Element> modes = xpathSelector.selectNodes(transition);
 
@@ -606,7 +682,8 @@ public class NetLoader {
 					// Go through all color-refs for the current place.
 					xpathSelector = XMLHelper
 							.createXPath("color-refs/color-ref");
-					List<Element> colorRefs = xpathSelector.selectNodes(inputPlace);
+					List<Element> colorRefs = xpathSelector
+							.selectNodes(inputPlace);
 
 					// Allocate an array saving the number of tokens for each
 					// color-ref to the current mode for the
@@ -621,8 +698,7 @@ public class NetLoader {
 						Element colorRef = colorRefIterator.next();
 
 						String colorRefId = colorRef.attributeValue("id");
-						String modeId = modes.get(m)
-								.attributeValue("id");
+						String modeId = modes.get(m).attributeValue("id");
 
 						xpathSelector = XMLHelper
 								.createXPath("connections/connection[(@source-id='"
@@ -641,8 +717,8 @@ public class NetLoader {
 										"transition.name", transition
 												.attributeValue("name"),
 										"mode-num", Integer.toString(m),
-										"mode.id", modes.get(m)
-												.attributeValue("id"),
+										"mode.id",
+										modes.get(m).attributeValue("id"),
 										"mode.name", modes.get(m)
 												.attributeValue("name"),
 										"inPlace.id", inputPlace
@@ -678,13 +754,9 @@ public class NetLoader {
 							"transition.id" + transition.attributeValue("id"),
 							"transition.name"
 									+ transition.attributeValue("name"),
-							"mode-num" + Integer.toString(m),
-							"mode.id"
-									+ modes.get(m)
-											.attributeValue("id"),
-							"mode.name"
-									+ modes.get(m)
-											.attributeValue("name")));
+							"mode-num" + Integer.toString(m), "mode.id"
+									+ modes.get(m).attributeValue("id"),
+							"mode.name" + modes.get(m).attributeValue("name")));
 					throw new SimQPNException();
 				}
 
@@ -694,7 +766,8 @@ public class NetLoader {
 					// Go through all color-refs for the current place.
 					xpathSelector = XMLHelper
 							.createXPath("color-refs/color-ref");
-					List<Element> colorRefs = xpathSelector.selectNodes(outputPlace);
+					List<Element> colorRefs = xpathSelector
+							.selectNodes(outputPlace);
 
 					// Allocate an array saving the number of tokens for each
 					// color-ref to mode connection.
@@ -708,8 +781,7 @@ public class NetLoader {
 						Element colorRef = colorRefIterator.next();
 
 						String colorRefId = colorRef.attributeValue("id");
-						String modeId = modes.get(m)
-								.attributeValue("id");
+						String modeId = modes.get(m).attributeValue("id");
 
 						xpathSelector = XMLHelper
 								.createXPath("connections/connection[(@source-id='"
@@ -728,8 +800,8 @@ public class NetLoader {
 										"transition.name", transition
 												.attributeValue("name"),
 										"mode-num", Integer.toString(m),
-										"mode.id", modes.get(m)
-												.attributeValue("id"),
+										"mode.id",
+										modes.get(m).attributeValue("id"),
 										"mode.name", modes.get(m)
 												.attributeValue("name"),
 										"outPlace.id", outputPlace
@@ -785,8 +857,8 @@ public class NetLoader {
 
 				XPath xpathSelector = XMLHelper
 						.createXPath("color-refs/color-ref");
-				Iterator<Element> colorRefIterator = xpathSelector.selectNodes(place)
-						.iterator();
+				Iterator<Element> colorRefIterator = xpathSelector.selectNodes(
+						place).iterator();
 				for (int j = 0; colorRefIterator.hasNext(); j++) {
 					Element colorRef = colorRefIterator.next();
 
@@ -923,8 +995,8 @@ public class NetLoader {
 		for (int i = 0; placeIterator.hasNext(); i++) {
 			Element place = placeIterator.next();
 			XPath xpathSelector = XMLHelper.createXPath("color-refs/color-ref");
-			Iterator<Element> colorRefIterator = xpathSelector.selectNodes(place)
-					.iterator();
+			Iterator<Element> colorRefIterator = xpathSelector.selectNodes(
+					place).iterator();
 			for (int j = 0; colorRefIterator.hasNext(); j++) {
 				Element colorRef = colorRefIterator.next();
 				if (colorRef.attributeValue("initial-population") == null) {
@@ -975,10 +1047,11 @@ public class NetLoader {
 	public Net getNet() {
 		return net;
 	}
+
 	public List<Element> getPlaceList() {
 		return placeList;
 	}
-	
+
 	public SimQPNConfiguration getConfiguration() {
 		return configuration;
 	}

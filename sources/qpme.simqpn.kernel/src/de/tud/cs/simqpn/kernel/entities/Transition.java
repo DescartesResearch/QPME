@@ -49,7 +49,9 @@ package de.tud.cs.simqpn.kernel.entities;
 
 import static de.tud.cs.simqpn.kernel.util.LogUtil.formatMultilineMessage;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
@@ -87,7 +89,12 @@ public class Transition extends Node {
 	private boolean[] modeStatus; // [1..numModes] Specifying the current status
 									// (enabled/disabled) of a mode
 	private int enModesCnt; // Number of currently enabled modes
-
+	
+	private boolean[] isDynamicMode;
+	private List<Integer> dynamicModeIDs;
+	/** [modeID, colorReference]*/
+	private ColorReference[][] dynamicModeWeights;
+	
 	private Token[] tkCopyBuffer; // INTERNAL: [1..maxNumTokens] with
 									// maxNumTokens=max(outFunc[mode, outPlace,
 									// color])
@@ -594,7 +601,28 @@ public class Transition extends Node {
 			probeData[i] = null;
 		}
 
-	} // end fire()
+	}
+	
+	public void initDynamicModeWeights(){
+		isDynamicMode = new boolean[numModes];
+		dynamicModeIDs = new ArrayList<Integer>();
+		dynamicModeWeights = new ColorReference[numModes][];
+	}
+	
+	public void setDynamicModeWeights(int modeID, List<ColorReference> colorReferences){
+		if(colorReferences != null){
+			dynamicModeIDs.add(modeID);
+			isDynamicMode[modeID] = true;
+			dynamicModeWeights[modeID] = new ColorReference[colorReferences.size()];
+			for(int i=0; i<colorReferences.size(); i++){
+				dynamicModeWeights[modeID][i] = colorReferences.get(i);
+			}
+		}else{
+			dynamicModeIDs.remove((Integer)modeID);
+			isDynamicMode[modeID] = false;
+		}
+	}
+
 
 	/**
 	 * Get the index of an output place in this transition.
@@ -635,5 +663,6 @@ public class Transition extends Node {
 	public void setExecutor(Executor executor) {
 		this.executor = executor;
 	}
+
 
 }

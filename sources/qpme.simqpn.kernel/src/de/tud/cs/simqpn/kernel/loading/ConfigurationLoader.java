@@ -2,25 +2,20 @@ package de.tud.cs.simqpn.kernel.loading;
 
 import static de.tud.cs.simqpn.kernel.util.LogUtil.formatDetailMessage;
 
-import java.io.IOException;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.dom4j.Attribute;
 import org.dom4j.Element;
-import org.dom4j.XPath;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
-import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration.AnalysisMethod;
-import de.tud.cs.simqpn.kernel.util.LogUtil;
+import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.util.LogUtil.ReportLevel;
 
 public class ConfigurationLoader {
 	private static Logger log = Logger.getLogger(ConfigurationLoader.class);
 
 	public static SimQPNConfiguration loadConfiguration(Element XMLDescription,
-			String configurationName, String logConfigFilename)
+			String configurationName)
 			throws SimQPNException {
 		/*
 		 * Global run configuration parameters:
@@ -28,9 +23,9 @@ public class ConfigurationLoader {
 		 * 1. "Analysis Method" (analMethod) == BATCH_MEANS, REPL_DEL or WELCH
 		 * 
 		 * 2."Maximum Number of Runs" (numRuns)
+		 *  numRuns should only be available if analMethod is REPL_DEL or WELCH.
 		 * 
-		 * 3. "Output Directory" (statsDir) numRuns should only be available if
-		 * analMethod is REPL_DEL or WELCH.
+		 * 3. "Output Directory" (statsDir) 
 		 * 
 		 * IMPORTANT: runMode is implied from the chosen analysis method: - If
 		 * the user chooses BATCH_MEANS or REPL_DEL, runMode is set to NORMAL. -
@@ -42,9 +37,7 @@ public class ConfigurationLoader {
 		 */
 		SimQPNConfiguration configuration = new SimQPNConfiguration();
 
-		initializeLogging(XMLDescription, configurationName, logConfigFilename);
-
-		Element simulatorSettings = XMLHelper.getElement(
+		Element simulatorSettings = XMLHelper.getSettings(
 				XMLDescription, configurationName);
 
 		loadDebugLevel(configurationName, simulatorSettings);
@@ -179,30 +172,7 @@ public class ConfigurationLoader {
 		;
 	}
 
-	private static void initializeLogging(Element XMLDescription,
-			String configurationString, String logConfigFilename)
-			throws SimQPNException {
-		// Initialize logging
-		if (logConfigFilename != null) {
-			LogUtil.configureCustomLogging(logConfigFilename);
-		} else {
-			XPath xpathSelector = XMLHelper
-					.createXPath("/net/meta-attributes/meta-attribute[@xsi:type = 'simqpn-configuration' and @configuration-name = '"
-							+ configurationString + "']/@output-directory");
-			Attribute outputDirAttribute = (Attribute) xpathSelector
-					.selectSingleNode(XMLDescription);
-			try {
-				LogUtil.configureDefaultLogging(
-						outputDirAttribute.getStringValue(), "SimQPN_Output_"
-								+ configurationString);
-			} catch (IOException e) {
-				log.error(
-						"Cannot create simulation output log file! Please check output directory path.",
-						e);
-				throw new SimQPNException();
-			}
-		}
-	}
+
 
 	private static void loadTimeBtwStopChecks(String configurationName,
 			SimQPNConfiguration configuration, Element simulatorSettings)

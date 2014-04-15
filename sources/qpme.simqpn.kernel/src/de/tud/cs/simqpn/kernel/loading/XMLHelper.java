@@ -10,29 +10,24 @@ import org.dom4j.Element;
 import org.dom4j.XPath;
 
 public class XMLHelper {
-	private static Map<String, String> namespaceUris = new HashMap<String, String>();	
+	private static Map<String, String> namespaceUris = new HashMap<String, String>();
 	static {
 		namespaceUris.put("xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
 	}
 
 	public static XPath createXPath(String xpath) {
-		XPath selector = DocumentHelper.createXPath(xpath);
-		selector.setNamespaceURIs(namespaceUris);
-		return selector;
+		XPath xPath = DocumentHelper.createXPath(xpath);
+		xPath.setNamespaceURIs(namespaceUris);
+		return xPath;
 	}
-	
+
 	public static Element getSettings(Element element, String configuration) {
-		XPath xpathSelector = XMLHelper.createXPath("meta-attributes/meta-attribute[starts-with(@xsi:type, 'simqpn') and @configuration-name='" + configuration + "']");
-		Element elementSettings = (Element) xpathSelector.selectSingleNode(element);
-		return elementSettings;
-	}
-	
-	public static Element getElement(Element element, String configurationName) {
 		XPath xpathSelector = XMLHelper
 				.createXPath("meta-attributes/meta-attribute[starts-with(@xsi:type, 'simqpn') and @configuration-name='"
-						+ configurationName + "']");
+						+ configuration + "']");
 		Element elementSettings = (Element) xpathSelector
 				.selectSingleNode(element);
 		return elementSettings;
 	}
+
 }
