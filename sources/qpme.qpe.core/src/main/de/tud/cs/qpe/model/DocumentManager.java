@@ -224,7 +224,7 @@ public class DocumentManager {
 		if (wrapper != null) {
 			wrapper.addElement(element, child, createId);
 		}else{
-			log.error("No net specified. Call DocumentManager.registerInput(net.getDocument());");
+			throw new RuntimeException("No net specified. Call DocumentManager.registerInput(net.getDocument());");
 		}
 	}
 
