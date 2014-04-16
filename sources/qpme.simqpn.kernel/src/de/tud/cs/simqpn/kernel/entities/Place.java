@@ -87,11 +87,27 @@ public class Place extends Node {
 
 	/** Supported departure disciplines */
 	public enum DepartureDiscipline {
-		NORMAL, // Arriving tokens become available for output transitions
-				// immediately upon arrival.
-		FIFO, // First-In-First-Out: Arriving tokens become available for output
-				// transitions in the order of their arrival.
-		RANDOM;	// First-In-First-Out: Arriving tokens become available for output transitions randomly.
+		/**
+		 * Departure as specified in the original QPN formalism. Arriving tokens
+		 * become available for output transitions immediately upon arrival.
+		 */
+		NORMAL,
+		/**
+		 * Extension to the original QPN formalism. Arriving tokens become
+		 * available for output transitions in the order of their arrival. That
+		 * means a token can leave the place/depository only after all tokens
+		 * that have arrived before it have left, hence the term
+		 * First-In-First-Out (FIFO)
+		 */
+		FIFO,
+		/**
+		 * Extension to the original QPN formalism. Arriving tokens become
+		 * available for output transitions randomly. That means a token has to
+		 * wait until it is randomly chosen before it can leave the
+		 * place/depository. The token has to wait on all previously chosen
+		 * tokens.
+		 */
+		RANDOM;	
 	}
 
 	/** Supported probe actions */
