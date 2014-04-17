@@ -79,7 +79,7 @@ public class PRIOQueue extends Queue {
 	 */
 	@Override
 	public void updateEvents(Executor executor) {
-	};
+	}
 
 	@Override
 	public double getLookahead(QPlace qpl, int color) {
@@ -114,9 +114,9 @@ public class PRIOQueue extends Queue {
 		@Override
 		public int compare(Token t1, Token t2) {
 			if (((QPlace) t1.place).getPriorities()[t1.color] > ((QPlace) t2.place).getPriorities()[t2.color]){
-				return -1;
-			}else if (((QPlace) t1.place).getPriorities()[t1.color] < ((QPlace) t2.place).getPriorities()[t2.color]){
 				return 1;
+			}else if (((QPlace) t1.place).getPriorities()[t1.color] < ((QPlace) t2.place).getPriorities()[t2.color]){
+				return -1;
 			}else{
 				return 0;
 			}
