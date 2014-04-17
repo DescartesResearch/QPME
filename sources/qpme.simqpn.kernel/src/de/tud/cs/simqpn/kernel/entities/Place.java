@@ -81,7 +81,6 @@ import edu.cornell.lassp.houle.RngPack.RandomElement;
  * @author Samuel Kounev
  * @version
  */
-
 public class Place extends Node {
 
 	private Executor executor;
@@ -108,7 +107,7 @@ public class Place extends Node {
 		 * place/depository. The token has to wait on all previously chosen
 		 * tokens.
 		 */
-		RANDOM;	
+		RANDOM;
 	}
 
 	/** Supported probe actions */
@@ -119,22 +118,21 @@ public class Place extends Node {
 	private static Logger log = Logger.getLogger(Place.class);
 
 	public int numColors;
-	public String[] colors; // Names of the colors that can reside in this
-							// Place.
-	public int statsLevel; // Determines the amount of statistics to be gathered
-							// during the run.
-	public DepartureDiscipline departureDiscipline;
-	public LinkedList<Integer> depQueue; // depDiscip = FIFO: Departure queue -
-											// stores the colors of tokens in
-											// the order of their arrival.
-
+	/** Names of the colors that can reside in this Place. **/
+	public String[] colors;
+	/** Determines the amount of statistics to be gathered during the run. */
+	public int statsLevel;
+	protected DepartureDiscipline departureDiscipline;
+	/** stores the colors of tokens in the order of their arrival. **/
+	private LinkedList<Integer> departureQueue; // FIFO + RANDOM
+											
 	public Transition[] inTrans;
 	public Transition[] outTrans;
 	public int[] tokenPop;
-	public int[] availTokens; // The token population currently available for
-								// output transitions.
-	public boolean depReady; // depDiscip=FIFO: true if a token is currently
-								// available for output transitions of the place
+	/** The token population currently available for output transitions.*/
+	public int[] availTokens;
+	/** true if a token is currently available for output transitions of the place */
+	public boolean departureReady; 
 
 	@SuppressWarnings("rawtypes")
 	public LinkedList[] tokArrivTS; // statsLevel >= 3: Arrival timestamps of
@@ -144,9 +142,11 @@ public class Place extends Node {
 	public LinkedList[] tokens; // individualTokens[color] = true: list of
 								// individual tokens.
 
-	public boolean[] individualTokens; // individualTokens[color] specifies
-										// whether tokens of the specified color
-										// should be stored individually
+	/**
+	 * individualTokens[color] specifies whether tokens of the specified color
+	 * should be stored individually
+	 */
+	public boolean[] individualTokens; 
 	
 	// Configuration of probes
 	public ProbeAction[][] probeActions;
@@ -158,7 +158,7 @@ public class Place extends Node {
 
 	public Element element;
 
-	/** Used for RANDOM departure discipline*/
+	/** RANDOM departure discipline */
 	private RandomElement randomElement;
 
 	/**
@@ -210,8 +210,8 @@ public class Place extends Node {
 			this.availTokens[c] = 0;
 		}
 		if (departureDiscipline == DepartureDiscipline.FIFO || departureDiscipline == DepartureDiscipline.RANDOM) {
-			this.depQueue = new LinkedList<Integer>();
-			this.depReady = false;
+			this.departureQueue = new LinkedList<Integer>();
+			this.departureReady = false;
 		}
 		if(departureDiscipline == DepartureDiscipline.RANDOM){
 			randomElement = RandomNumberGenerator.nextRandNumGen();
@@ -263,7 +263,7 @@ public class Place extends Node {
 	}
 
 	/**
-	 * Method init - initializes the place
+	 * Initializes internal data structures for the place.
 	 * 
 	 * Note: make sure clock has been initialized before calling Place.init
 	 * 
@@ -288,13 +288,13 @@ public class Place extends Node {
 				while (totTkPop > 0)
 					for (int c = 0; c < numColors; c++)
 						if (tkPop[c] > 0) {
-							depQueue.addLast(new Integer(c));
+							departureQueue.addLast(new Integer(c));
 							tkPop[c]--;
 							totTkPop--;
 						}
-				int nextCol = ((Integer) depQueue.removeFirst()).intValue();
+				int nextCol = ((Integer) departureQueue.removeFirst()).intValue();
 				availTokens[nextCol]++;
-				depReady = true;
+				departureReady = true;
 			}
 		} else {
 			log.error("Invalid depDiscip specified for place " + name);
@@ -375,7 +375,7 @@ public class Place extends Node {
 	}
 
 	/**
-	 * Method addTokens - deposits N tokens of particular color
+	 * Deposits N tokens of particular color
 	 * 
 	 * @param color
 	 *            - color of tokens
@@ -424,14 +424,14 @@ public class Place extends Node {
 			for (int i = 0; i < outTrans.length; i++)
 				outTrans[i].updateState(id, color, tokenPop[color], count);
 		} else if (departureDiscipline == DepartureDiscipline.FIFO || departureDiscipline == DepartureDiscipline.RANDOM) {
-			if (depReady) {
+			if (departureReady) {
 				for (int i = 0; i < count; i++)
-					depQueue.addLast(new Integer(color));
+					departureQueue.addLast(new Integer(color));
 			} else {
 				for (int i = 0; i < (count - 1); i++)
-					depQueue.addLast(new Integer(color));
+					departureQueue.addLast(new Integer(color));
 				availTokens[color]++;
-				depReady = true;
+				departureReady = true;
 				for (int i = 0; i < outTrans.length; i++)
 					outTrans[i].updateState(id, color, availTokens[color], 1);
 			}
@@ -442,7 +442,7 @@ public class Place extends Node {
 	}
 
 	/**
-	 * Method removeTokens - removes N tokens of particular color
+	 * Removes N tokens of particular color
 	 * 
 	 * @param color
 	 *            - color of tokens
@@ -499,31 +499,31 @@ public class Place extends Node {
 			for (int i = 0; i < outTrans.length; i++)
 				outTrans[i].updateState(id, color, availTokens[color], (-1)
 						* count);
-			if (depQueue.size() > 0) {
-				int nextCol = ((Integer) depQueue.removeFirst()).intValue();
+			if (departureQueue.size() > 0) {
+				int nextCol = ((Integer) departureQueue.removeFirst()).intValue();
 				availTokens[nextCol]++;
-				depReady = true; // Left for clarity. Actually redundant since
+				departureReady = true; // Left for clarity. Actually redundant since
 									// depReady should already be true.
 				for (int i = 0; i < outTrans.length; i++)
 					outTrans[i].updateState(id, nextCol, availTokens[nextCol],
 							1);
 			} else{
-				depReady = false;
+				departureReady = false;
 			}
 		}else if (departureDiscipline == DepartureDiscipline.RANDOM)  {
 			availTokens[color] -= count;
 			for (int i = 0; i < outTrans.length; i++){
 				outTrans[i].updateState(id, color, availTokens[color], (-1)*count);			
 			}
-			if (depQueue.size() > 0) {
-				int nextCol = ((Integer) depQueue.remove(
-						randomElement.choose(depQueue.size())));
+			if (departureQueue.size() > 0) {
+				int nextCol = ((Integer) departureQueue.remove(
+						randomElement.choose(departureQueue.size())));
 				availTokens[nextCol]++;
-				depReady = true; // Left for clarity. Actually redundant since depReady should already be true.
+				departureReady = true; // Left for clarity. Actually redundant since depReady should already be true.
 				for (int i = 0; i < outTrans.length; i++)
 					outTrans[i].updateState(id, nextCol, availTokens[nextCol], 1);										
 			}else{ 
-				depReady = false;
+				departureReady = false;
 			}
 		} else {
 			log.error("Invalid depDiscip specified for place " + name);
