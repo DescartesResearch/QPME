@@ -61,11 +61,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.dom4j.Element;
 
+import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
@@ -73,6 +73,7 @@ import de.tud.cs.simqpn.kernel.entities.stats.PlaceStats;
 import de.tud.cs.simqpn.kernel.entities.stats.Stats;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.executor.parallel.LP;
+import edu.cornell.lassp.houle.RngPack.RandomElement;
 
 /**
  * Class Place
@@ -113,7 +114,7 @@ public class Place extends Node {
 	/** Supported probe actions */
 	public enum ProbeAction {
 		PROBE_ACTION_NONE, PROBE_ACTION_START_ON_EXIT, PROBE_ACTION_START_ON_ENTRY, PROBE_ACTION_START_ON_ENTRY_AND_END_ON_EXIT, PROBE_ACTION_START_ON_EXIT_AND_END_ON_ENTRY, PROBE_ACTION_END_ON_EXIT, PROBE_ACTION_END_ON_ENTRY, PROBE_ACTION_TRANSFER;
-	};
+	}
 
 	private static Logger log = Logger.getLogger(Place.class);
 
@@ -157,6 +158,9 @@ public class Place extends Node {
 
 	public Element element;
 
+	/** Used for RANDOM departure discipline*/
+	private RandomElement randomElement;
+
 	/**
 	 * 
 	 * Constructor
@@ -176,15 +180,15 @@ public class Place extends Node {
 	 * @param statsLevel
 	 *            - determines the amount of statistics to be gathered during
 	 *            the run
-	 * @param depDiscip
-	 *            - determines the departure discipline (order): NORMAL or FIFO
+	 * @param departureDiscipline
+	 *            - determines the order of token departure
 	 * @param element
 	 *            - reference to the XML element representing the place
 	 */
 	@SuppressWarnings("rawtypes")
 	public Place(int id, String name, String[] colors, int numInTrans,
 			int numOutTrans, int numProbes, int statsLevel,
-			DepartureDiscipline depDiscip, Element element,
+			DepartureDiscipline departureDiscipline, Element element,
 			SimQPNConfiguration configuration) throws SimQPNException {
 		super(id, name);
 		this.colors = colors.clone();
@@ -194,7 +198,7 @@ public class Place extends Node {
 		this.tokenPop = new int[numColors];
 		this.availTokens = new int[numColors];
 		this.statsLevel = statsLevel;
-		this.departureDiscipline = depDiscip;
+		this.departureDiscipline = departureDiscipline;
 		this.tokens = new LinkedList[numColors];
 		this.individualTokens = new boolean[numColors];
 		this.probeActions = new ProbeAction[numColors][numProbes];
@@ -205,9 +209,12 @@ public class Place extends Node {
 			this.tokenPop[c] = 0;
 			this.availTokens[c] = 0;
 		}
-		if (depDiscip == DepartureDiscipline.FIFO || depDiscip == DepartureDiscipline.RANDOM) {
+		if (departureDiscipline == DepartureDiscipline.FIFO || departureDiscipline == DepartureDiscipline.RANDOM) {
 			this.depQueue = new LinkedList<Integer>();
 			this.depReady = false;
+		}
+		if(departureDiscipline == DepartureDiscipline.RANDOM){
+			randomElement = RandomNumberGenerator.nextRandNumGen();
 		}
 		if (statsLevel > 0) {
 			if (this instanceof QPlace)
@@ -509,8 +516,8 @@ public class Place extends Node {
 				outTrans[i].updateState(id, color, availTokens[color], (-1)*count);			
 			}
 			if (depQueue.size() > 0) {
-				Random rand = new Random();
-				int nextCol = ((Integer) depQueue.remove(rand.nextInt(depQueue.size()))).intValue();
+				int nextCol = ((Integer) depQueue.remove(
+						randomElement.choose(depQueue.size())));
 				availTokens[nextCol]++;
 				depReady = true; // Left for clarity. Actually redundant since depReady should already be true.
 				for (int i = 0; i < outTrans.length; i++)
