@@ -51,7 +51,6 @@ public class RANDOMQueue extends Queue {
 			// for(Token token:((RANDOMQueue)queue).waitingLine){
 			// waitingLine.add(token.clone(placesOfNewNet));
 			// }
-
 		}
 	}
 
@@ -60,7 +59,6 @@ public class RANDOMQueue extends Queue {
 	 * 
 	 * No actions necessary for this queue. Empty method body.
 	 */
-
 	@Override
 	public double getLookahead(QPlace qpl, int color) {
 		return 0;
@@ -130,6 +128,6 @@ public class RANDOMQueue extends Queue {
 	 */
 	@Override
 	public void updateEvents(Executor executor) {
-	};
+	}
 
 }

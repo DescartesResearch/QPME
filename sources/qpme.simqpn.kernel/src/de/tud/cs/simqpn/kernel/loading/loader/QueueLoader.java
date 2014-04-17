@@ -32,60 +32,60 @@ public class QueueLoader {
 		HashSet<String> queueNames = new HashSet<String>();
 
 		for (int i = 0; i < numQueues; i++) {
-			Element XMLReferenceQueue = (Element) queueList.get(i);
+			Element xmlReferenceQueue = (Element) queueList.get(i);
 
 			QueuingDiscipline queueingStrategy = QueuingDiscipline.FCFS;
 
-			String name = XMLReferenceQueue.attributeValue("name");
+			String name = xmlReferenceQueue.attributeValue("name");
 			if (queueNames.contains(name)) {
 				log.error(formatDetailMessage(
 						"Another queue definition with the same name does already exist!",
 						"queue-num", Integer.toString(i), "queue.id",
-						XMLReferenceQueue.attributeValue("id"), "queue.name", name));
+						xmlReferenceQueue.attributeValue("id"), "queue.name", name));
 				throw new SimQPNException();
 			} else {
 				queueNames.add(name);
 			}
 
-			String disciplineName = XMLReferenceQueue.attributeValue("strategy");
+			String disciplineName = xmlReferenceQueue.attributeValue("strategy");
 			try {
 				queueingStrategy = QueuingDiscipline.valueOf(disciplineName);
 			} catch (IllegalArgumentException e) {
 				log.error(formatDetailMessage(
 						"Invalid or missing \"strategy\" (queueing discipline) setting!",
 						"queue-num", Integer.toString(i), "queue.id",
-						XMLReferenceQueue.attributeValue("id"), "queue.name", name,
-						"queue.strategy", XMLReferenceQueue.attributeValue("strategy")));
+						xmlReferenceQueue.attributeValue("id"), "queue.name", name,
+						"queue.strategy", xmlReferenceQueue.attributeValue("strategy")));
 				throw new SimQPNException();
 			}
 
-			int numberOfServers = getNumberOfServers(i, XMLReferenceQueue,
+			int numberOfServers = getNumberOfServers(i, xmlReferenceQueue,
 					queueingStrategy, name);
 
 			switch (queueingStrategy) {
 			case IS:
-				queues[i] = new ISQueue(i, XMLReferenceQueue.attributeValue("id"),
-						XMLReferenceQueue.attributeValue("name"), queueingStrategy,
+				queues[i] = new ISQueue(i, xmlReferenceQueue.attributeValue("id"),
+						xmlReferenceQueue.attributeValue("name"), queueingStrategy,
 						numberOfServers);
 				break;
 			case FCFS:
-				queues[i] = new FCFSQueue(i, XMLReferenceQueue.attributeValue("id"),
-						XMLReferenceQueue.attributeValue("name"), queueingStrategy,
+				queues[i] = new FCFSQueue(i, xmlReferenceQueue.attributeValue("id"),
+						xmlReferenceQueue.attributeValue("name"), queueingStrategy,
 						numberOfServers);
 				break;
 			case PS:
-				queues[i] = new PSQueue(i, XMLReferenceQueue.attributeValue("id"),
-						XMLReferenceQueue.attributeValue("name"), queueingStrategy,
+				queues[i] = new PSQueue(i, xmlReferenceQueue.attributeValue("id"),
+						xmlReferenceQueue.attributeValue("name"), queueingStrategy,
 						numberOfServers);
 				break;
 			case PRIO:
-				queues[i] = new PRIOQueue(i, XMLReferenceQueue.attributeValue("id"),
-						XMLReferenceQueue.attributeValue("name"), queueingStrategy,
+				queues[i] = new PRIOQueue(i, xmlReferenceQueue.attributeValue("id"),
+						xmlReferenceQueue.attributeValue("name"), queueingStrategy,
 						numberOfServers);
 				break;
 			case RANDOM:
-				queues[i] = new RANDOMQueue(i, XMLReferenceQueue.attributeValue("id"),
-						XMLReferenceQueue.attributeValue("name"), queueingStrategy,
+				queues[i] = new RANDOMQueue(i, xmlReferenceQueue.attributeValue("id"),
+						xmlReferenceQueue.attributeValue("name"), queueingStrategy,
 						numberOfServers);
 				break;
 
@@ -93,14 +93,14 @@ public class QueueLoader {
 				log.error(formatDetailMessage(
 						"Invalid or missing \"strategy\" (queueing discipline) setting!",
 						"queue-num", Integer.toString(i), "queue.id",
-						XMLReferenceQueue.attributeValue("id"), "queue.name", name,
-						"queue.strategy", XMLReferenceQueue.attributeValue("strategy")));
+						xmlReferenceQueue.attributeValue("id"), "queue.name", name,
+						"queue.strategy", xmlReferenceQueue.attributeValue("strategy")));
 				// throw new SimQPNException(); //TODO uncomment
 			}
-			queueToIndexMap.put(XMLReferenceQueue, i);
+			queueToIndexMap.put(xmlReferenceQueue, i);
 			if (log.isDebugEnabled()) {
 				log.debug("queues[" + i + "] = new Queue(" + i + ", '"
-						+ XMLReferenceQueue.attributeValue("name") + "', "
+						+ xmlReferenceQueue.attributeValue("name") + "', "
 						+ queueingStrategy + ", " + numberOfServers + ")");
 			}
 		}
