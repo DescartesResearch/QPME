@@ -23,9 +23,37 @@
 	</scm>
 
 	<properties>
-		<tycho-version>0.16.0</tycho-version>
+		<tycho-version>0.20.0</tycho-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+
+	<distributionManagement>
+		<repository>
+			<id>se-uw-releases</id>
+			<name>Releases</name>
+			<url>http://win2007.informatik.uni-wuerzburg.de:8081/nexus/content/repositories/releases/</url>
+		</repository>
+
+		<repository>
+			<id>se-uw-snapshots</id>
+			<name>Snapshots</name>
+			<url>http://win2007.informatik.uni-wuerzburg.de:8081/nexus/content/repositories/snapshots/</url>
+		</repository>
+	</distributionManagement>
+
+	<repositories>
+		<repository>
+			<id>se-uw-public</id>
+			<name>Public Repositories</name>
+			<url>http://win2007.informatik.uni-wuerzburg.de:8081/nexus/content/groups/public/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
 
 	<build>
 		<plugins>
