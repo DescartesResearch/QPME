@@ -29,13 +29,13 @@
 
 	<distributionManagement>
 		<repository>
-			<id>se-uw-releases</id>
+			<id>se-uw-nexus</id>
 			<name>Releases</name>
 			<url>http://win2007.informatik.uni-wuerzburg.de:8081/nexus/content/repositories/releases/</url>
 		</repository>
 
 		<snapshotRepository>
-			<id>se-uw-snapshots</id>
+			<id>se-uw-nexus</id>
 			<name>Snapshots</name>
 			<url>http://win2007.informatik.uni-wuerzburg.de:8081/nexus/content/repositories/snapshots/</url>
 		</snapshotRepository>
@@ -43,7 +43,7 @@
 
 	<repositories>
 		<repository>
-			<id>se-uw-public</id>
+			<id>se-uw-nexus</id>
 			<name>Public Repositories</name>
 			<url>http://win2007.informatik.uni-wuerzburg.de:8081/nexus/content/groups/public/</url>
 			<releases>
