@@ -34,11 +34,11 @@
 			<url>http://win2007.informatik.uni-wuerzburg.de:8081/nexus/content/repositories/releases/</url>
 		</repository>
 
-		<repository>
+		<snapshotRepository>
 			<id>se-uw-snapshots</id>
 			<name>Snapshots</name>
 			<url>http://win2007.informatik.uni-wuerzburg.de:8081/nexus/content/repositories/snapshots/</url>
-		</repository>
+		</snapshotRepository>
 	</distributionManagement>
 
 	<repositories>
