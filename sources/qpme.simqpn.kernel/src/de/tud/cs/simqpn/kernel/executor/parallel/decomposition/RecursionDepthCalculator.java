@@ -27,7 +27,7 @@ public class RecursionDepthCalculator {
 	}
 
 	private static int getRecursionDepth(LP lp) {
-		List<Integer> pathLengths = new ArrayList<>();
+		List<Integer> pathLengths = new ArrayList<Integer>();
 		if (!lp.hasSuccessor()) {
 			return 1;
 		} else {

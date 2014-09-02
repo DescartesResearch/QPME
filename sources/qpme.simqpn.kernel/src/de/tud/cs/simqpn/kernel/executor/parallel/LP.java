@@ -973,7 +973,7 @@ public class LP implements Executor {
 	}
 
 	public void resetPredecessors() {
-		this.predecessorList = new ArrayList<>();
+		this.predecessorList = new ArrayList<LP>();
 	}
 
 	public void resetInPlaces() {

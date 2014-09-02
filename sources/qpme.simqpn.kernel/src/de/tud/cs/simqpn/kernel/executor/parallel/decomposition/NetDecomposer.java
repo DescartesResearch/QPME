@@ -142,7 +142,7 @@ public class NetDecomposer {
 		setPredAndSuccessors(lps);
 
 		for (int cnt = 0; lps.size() > cores && cnt < 10; cnt++) {
-			List<LP> openWorkloads = new ArrayList<>();
+			List<LP> openWorkloads = new ArrayList<LP>();
 			for (LP lp : lps) {
 				if (lp != null) {
 					if (lp.isWorkloadGenerator()) {
