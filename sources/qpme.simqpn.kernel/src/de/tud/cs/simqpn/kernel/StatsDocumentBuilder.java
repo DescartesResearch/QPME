@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- * http://www.eclipse.org/legal/epl-v10.html
+ï¿½* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -44,6 +44,11 @@ package de.tud.cs.simqpn.kernel;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.GregorianCalendar;
+
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
@@ -75,8 +80,20 @@ public class StatsDocumentBuilder {
 		this.doc.setRootElement(root);
 		root.addAttribute("qpme-version", Simulator.QPME_VERSION);
 		root.addAttribute("model-file", net.attributeValue("path"));
-		String timestamp = TIMESTAMP_FORMAT.format(new Date());
-		root.addAttribute("date", timestamp);
+		
+		// Boilerplate code to produce a timestamp conforming to XML DateTime
+		XMLGregorianCalendar xmlGregCal = null;
+		GregorianCalendar gregCal = new GregorianCalendar();
+		gregCal.setTime(new Date());
+		String datetime = "";
+		try {
+			xmlGregCal = DatatypeFactory.newInstance().newXMLGregorianCalendar(gregCal);
+			datetime = xmlGregCal.toString();
+		} catch (DatatypeConfigurationException e) {
+			log.warn(e.getMessage(), e);
+		}
+		root.addAttribute("date", datetime);
+		
 		root.addAttribute("name", getResultFileBaseName());
 		root.addAttribute("configuration-name", this.configuration);
 		for (Stats stats : this.data) {
