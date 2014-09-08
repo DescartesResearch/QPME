@@ -1,0 +1,529 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+	ecore:package="edu.kit.ipd.descartes.qpme.model"
+	ecore:nsPrefix="qpme"
+	ecore:documentRoot="QpmeDocument"
+	attributeFormDefault="unqualified" elementFormDefault="unqualified">
+	
+	<!-- Common definitions -->	
+	<xs:complexType abstract="true" name="identifiable-element" ecore:name="IdentifiableElement">
+		<xs:attribute name="id" type="xs:ID" use="required" />
+	</xs:complexType>
+		
+	<xs:complexType abstract="true" name="place-transition-element" ecore:name="PlaceTransitionElement">
+		<xs:complexContent>
+			<xs:extension base="identifiable-element">
+				<!-- IGNORE FOLLOWING, JUST FOR EMF -->
+				<xs:attribute name="incoming-connections" type="xs:IDREFS" ecore:reference="place-transition-connection" ecore:opposite="target-id" ecore:derived="true" ecore:transient="true" use="optional" />
+				<xs:attribute name="outgoing-connections" type="xs:IDREFS" ecore:reference="place-transition-connection" ecore:opposite="source-id" ecore:derived="true" ecore:transient="true" use="optional" />
+				<!-- IGNORE FOLLOWING, JUST FOR EMF -->
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType abstract="true" name="incidence-function-element" ecore:name="IncidenceFunctionElement">
+		<xs:complexContent>
+			<xs:extension base="identifiable-element">
+				<!-- IGNORE FOLLOWING, JUST FOR EMF -->
+				<xs:attribute name="incoming-connections" type="xs:IDREFS" ecore:reference="incidence-function-connection" ecore:opposite="target-id" ecore:derived="true" ecore:transient="true" use="optional" />
+				<xs:attribute name="outgoing-connections" type="xs:IDREFS" ecore:reference="incidence-function-connection" ecore:opposite="source-id" ecore:derived="true" ecore:transient="true" use="optional" />
+				<!-- IGNORE FOLLOWING, JUST FOR EMF -->
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:simpleType name="rgb-value" ecore:name="RgbValue">
+		<xs:restriction base="xs:string"></xs:restriction>
+	</xs:simpleType>
+	
+	<!-- Net -->
+	<xs:element name="net" type="queueing-petri-net" />	
+	<xs:complexType name="queueing-petri-net" ecore:name="QueueingPetriNet">
+		<xs:sequence>
+			<xs:element minOccurs="0" name="colors" type="colors-container" />
+			<xs:element minOccurs="0" name="queues" type="queues-container" />
+			<xs:element minOccurs="0" name="places" type="places-container" />
+			<xs:element minOccurs="0" name="transitions" type="transitions-container" />
+			<xs:element minOccurs="0" name="connections" type="place-transition-connections-container" />
+			<xs:element minOccurs="0" name="probes" type="probes-container" />
+			<xs:element minOccurs="0" name="meta-attributes" type="net-meta-attributes-container" />
+		</xs:sequence>
+		<xs:attribute name="qpme-version" type="xs:string" use="required" />
+	</xs:complexType>
+	<xs:complexType name="net-meta-attributes-container" ecore:name="NetMetaAttributesContainer">
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" minOccurs="0"
+				name="meta-attribute" type="xs:anyType" ecore:type="net-meta-attribute" ecore:name="entries"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType abstract="true" name="net-meta-attribute" ecore:name="NetMetaAttribute" />
+	
+	<!-- Colors -->
+	<xs:complexType name="colors-container" ecore:name="ColorsContainer">
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="color" ecore:name="definitions"
+				type="color" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="color" ecore:name="Color">
+		<xs:complexContent>
+			<xs:extension base="identifiable-element">
+				<xs:attribute name="description" type="xs:string" use="optional" />
+				<xs:attribute name="name" type="xs:string" use="required" />
+				<xs:attribute name="real-color" type="rgb-value" use="required" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>	
+	
+	<!-- Queues -->
+	<xs:complexType name="queues-container" ecore:name="QueuesContainer">
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="queue"
+				type="queue" ecore:name="definitions" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="queue" ecore:name="Queue">
+		<xs:complexContent>
+			<xs:extension base="identifiable-element">
+				<xs:attribute name="name" type="xs:string" use="required" />
+				<xs:attribute name="number-of-servers" type="xs:int" use="required" />
+				<xs:attribute name="strategy" type="queueing-strategy" use="required" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="queueing-strategy"
+		ecore:name="QueueingStrategy">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="PRIO"></xs:enumeration>
+			<xs:enumeration value="PS"></xs:enumeration>
+			<xs:enumeration value="FCFS"></xs:enumeration>
+			<xs:enumeration value="IS"></xs:enumeration>
+			<xs:enumeration value="RANDOM"></xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+
+	<!-- Places -->
+	<xs:complexType name="places-container" ecore:name="PlacesContainer">
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="place"
+				type="place" ecore:name="definitions" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType abstract="true" name="place" ecore:name="Place">
+		<xs:complexContent>
+			<xs:extension base="place-transition-element">
+				<xs:sequence>
+					<xs:element minOccurs="0" name="color-refs" type="color-references-container" ecore:name="colorReferences"/>
+					<xs:element minOccurs="0" name="meta-attributes" type="place-meta-attributes-container" />
+				</xs:sequence>
+				<xs:attribute name="departure-discipline" type="departure-discipline" use="required" />
+				<xs:attribute name="locked" type="xs:boolean" use="optional" default="false"/>
+				<xs:attribute name="name" type="xs:string" use="required" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="departure-discipline"
+		ecore:name="DepartureDiscipline">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="NORMAL"></xs:enumeration>
+			<xs:enumeration value="FIFO"></xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="ordinary-place" ecore:name="OrdinaryPlace">
+		<xs:complexContent>
+			<xs:extension base="place">
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="queueing-place" ecore:name="QueueingPlace">
+		<xs:complexContent>
+			<xs:extension base="place">
+				<xs:attribute name="queue-ref" type="xs:IDREF" ecore:reference="queue" ecore:name="queue" use="required"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="subnet-place" ecore:name="SubnetPlace">
+		<xs:complexContent>
+			<xs:extension base="place">
+				<xs:sequence>
+					<xs:element minOccurs="0" name="subnet" type="subnet" />
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="place-meta-attributes-container" ecore:name="PlaceMetaAttributesContainer">
+		<xs:sequence>
+			<xs:element minOccurs="0" maxOccurs="unbounded" name="meta-attribute" type="xs:anyType" ecore:type="place-meta-attribute" ecore:name="entries" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType abstract="true" name="place-meta-attribute" ecore:name="PlaceMetaAttribute" />
+	
+	<!-- Subnets -->
+	<xs:complexType name="subnet" ecore:name="Subnet">
+		<xs:sequence>
+			<xs:element minOccurs="0" name="colors" type="colors-container" />
+			<xs:element minOccurs="0" name="places" type="places-container" />
+			<xs:element minOccurs="0" name="transitions" type="transitions-container" />
+			<xs:element minOccurs="0" name="connections" type="place-transition-connections-container" />
+		</xs:sequence>
+	</xs:complexType>
+	
+	<!-- Color references -->
+	<xs:complexType name="color-references-container" ecore:name="ColorReferencesContainer">
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="color-ref"
+				type="color-reference" ecore:name="definitions" />
+		</xs:sequence>
+	</xs:complexType>	
+	<xs:complexType name="color-reference" ecore:name="ColorReference" abstract="true">
+		<xs:complexContent>
+			<xs:extension base="incidence-function-element">
+				<xs:sequence>
+					<xs:element minOccurs="0" name="meta-attributes" type="color-reference-meta-attributes-container" />
+				</xs:sequence>
+				<xs:attribute name="color-id" type="xs:IDREF"
+					ecore:reference="color" ecore:name="color" use="required"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="probe-color-reference" ecore:name="ProbeColorReference">
+		<xs:complexContent>
+			<xs:extension base="color-reference">
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="place-color-reference" ecore:name="PlaceColorReference" abstract="true">
+		<xs:complexContent>
+			<xs:extension base="color-reference">
+				<xs:attribute name="initial-population" type="xs:unsignedInt" use="optional" default="0"/>
+				<xs:attribute name="maximum-capacity" type="xs:unsignedInt" use="optional" default="0"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>	
+	<xs:complexType name="ordinary-color-reference" ecore:name="OrdinaryColorReference">
+		<xs:complexContent>
+			<xs:extension base="place-color-reference">
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="queueing-color-reference" ecore:name="QueueingColorReference">
+		<xs:complexContent>
+			<xs:extension base="place-color-reference">
+				<xs:attribute name="priority" type="xs:unsignedInt" use="required" />
+				<xs:attribute name="ranking" type="xs:unsignedInt" use="required" />
+				<xs:attribute name="distribution-function" type="distribution-function" use="required" />
+				<xs:attribute name="alpha" type="xs:double" use="optional" />
+				<xs:attribute name="beta" type="xs:double" use="optional" />
+				<xs:attribute name="mean" type="xs:double" use="optional" />
+				<xs:attribute name="gamma" type="xs:double" use="optional" />
+				<xs:attribute name="cut" type="xs:double" use="optional" />
+				<xs:attribute name="freedom" type="xs:double" use="optional" />
+				<xs:attribute name="lambda" type="xs:double" use="optional" />
+				<xs:attribute name="tau" type="xs:double" use="optional" />
+				<xs:attribute name="p" type="xs:double" use="optional" />
+				<xs:attribute name="stdDev" type="xs:double" use="optional" />
+				<xs:attribute name="min" type="xs:double" use="optional" />
+				<xs:attribute name="max" type="xs:double" use="optional" />
+				<xs:attribute name="p1" type="xs:double" use="optional" />
+				<xs:attribute name="input-file" type="xs:string" use="optional" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="subnet-color-reference" ecore:name="SubnetColorReference">
+		<xs:complexContent>
+			<xs:extension base="place-color-reference">
+				<xs:attribute name="direction" type="flow-direction" use="required" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>	
+	<xs:simpleType name="flow-direction" ecore:name="FlowDirection">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="in" ecore:name="IN" />
+			<xs:enumeration value="out" ecore:name="OUT" />
+			<xs:enumeration value="both" ecore:name="BOTH" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="distribution-function" ecore:name="DistributionFunction">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Beta" ecore:name="BETA" />
+			<xs:enumeration value="BreitWigner" ecore:name="BREIT_WIGNER" />
+			<xs:enumeration value="BreitWignerMeanSquare" ecore:name="BREIT_WIGNER_SQUARE" />
+			<xs:enumeration value="ChiSquare" ecore:name="CHI_SQUARE" />
+			<xs:enumeration value="Gamma" ecore:name="GAMMA" />
+			<xs:enumeration value="Hyperbolic" ecore:name="HYPERBOLIC" />
+			<xs:enumeration value="Exponential" ecore:name="EXPONENTIAL" />
+			<xs:enumeration value="ExponentialPower" ecore:name="EXPONENTIAL_POWER" />
+			<xs:enumeration value="Logarithmic" ecore:name="LOGARITHMIC" />
+			<xs:enumeration value="Normal" ecore:name="NORMAL" />
+			<xs:enumeration value="StudentT" ecore:name="STUDENT_T" />
+			<xs:enumeration value="Uniform" ecore:name="UNIFORM" />
+			<xs:enumeration value="VonMises" ecore:name="VON_MISES" />
+			<xs:enumeration value="Empirical" ecore:name="EMPIRICAL" />
+			<xs:enumeration value="Deterministic" ecore:name="DETERMINISTIC" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="color-reference-meta-attributes-container" ecore:name="ColorReferencesMetaAttributesContainer">
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" minOccurs="0"
+				name="meta-attribute" type="xs:anyType" ecore:type="color-reference-meta-attribute" ecore:name="entries" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType abstract="true" name="color-reference-meta-attribute" ecore:name="ColorReferenceMetaAttribute" />
+	
+	<!-- Transitions -->
+	<xs:complexType name="transitions-container" ecore:name="TransitionsContainer">
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="transition"
+				type="transition" ecore:name="definitions" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType abstract="true" name="transition" ecore:name="Transition">
+		<xs:complexContent>
+			<xs:extension base="place-transition-element">
+				<xs:sequence>
+					<xs:element minOccurs="0" name="modes" type="modes-container" />
+					<xs:element minOccurs="0" name="connections" type="incidence-function-connections-container" />
+					<xs:element minOccurs="0" name="meta-attributes"
+						type="transition-meta-attributes-container" />
+				</xs:sequence>
+				<xs:attribute name="name" type="xs:string" use="required"/>
+				<xs:attribute name="priority" type="xs:unsignedInt" use="required"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="immediate-transition" ecore:name="ImmediateTransition">
+		<xs:complexContent>
+			<xs:extension base="transition">
+				<xs:attribute name="weight" type="xs:double" use="required"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="timed-transition" ecore:name="TimedTransition">
+		<xs:complexContent>
+			<xs:extension base="transition">
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>	
+	<xs:complexType name="transition-meta-attributes-container" ecore:name="TransitionMetaAttributesContainer">
+		<xs:sequence>
+			<xs:element minOccurs="0" maxOccurs="unbounded" name="meta-attribute"
+				type="xs:anyType" ecore:type="transition-meta-attribute" ecore:name="entries" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType abstract="true" name="transition-meta-attribute" ecore:name="TransitionMetaAttribute" />
+	
+	<!-- Modes -->
+	<xs:complexType name="modes-container" ecore:name="ModesContainer">
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="mode"
+				type="mode" ecore:name="definitions" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="mode" ecore:name="Mode">
+		<xs:complexContent>
+			<xs:extension base="incidence-function-element">
+				<xs:attribute name="firing-weight" type="xs:double" use="optional" />
+				<xs:attribute name="mean-firing-delay" type="xs:double" use="optional" />
+				<xs:attribute name="name" type="xs:string" use="required" />
+				<xs:attribute name="real-color" type="rgb-value" use="required" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	
+	<!-- Net Connections -->
+	<xs:complexType name="place-transition-connections-container" ecore:name="PlaceTransitionConnectionsContainer">
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="connection"
+				type="place-transition-connection" ecore:name="definitions" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="place-transition-connection" ecore:name="PlaceTransitionConnection">
+		<xs:complexContent>
+			<xs:extension base="identifiable-element">
+				<xs:attribute name="source-id" type="xs:IDREF"
+					ecore:reference="place-transition-element" ecore:name="source" use="required" />
+				<xs:attribute name="target-id" type="xs:IDREF"
+					ecore:reference="place-transition-element" ecore:name="target" use="required" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<!-- Incidence Function Connections -->
+	<xs:complexType name="incidence-function-connections-container" ecore:name="IncidenceFunctionConnectionsContainer">
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="connection"
+				type="incidence-function-connection" ecore:name="definitions" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="incidence-function-connection" ecore:name="IncidenceFunctionConnection">
+		<xs:complexContent>
+			<xs:extension base="identifiable-element">
+				<xs:attribute name="count" type="xs:unsignedInt" use="required"/>
+				<xs:attribute name="source-id" type="xs:IDREF"
+					ecore:reference="incidence-function-element" ecore:name="source" use="required" />
+				<xs:attribute name="target-id" type="xs:IDREF"
+					ecore:reference="incidence-function-element" ecore:name="target" use="required" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<!-- Probes -->
+	<xs:complexType name="probes-container" ecore:name="ProbesContainer">
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="probe"
+				type="probe" ecore:name="definitions" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="probe" ecore:name="Probe">
+		<xs:complexContent>
+			<xs:extension base="identifiable-element">
+				<xs:sequence>
+					<xs:element minOccurs="0" name="color-refs" type="color-references-container" ecore:name="colorReferences" />
+					<xs:element minOccurs="0" name="meta-attributes" type="probe-meta-attributes-container" />
+				</xs:sequence>
+				<xs:attribute name="end-place-id" type="xs:IDREF" use="required"
+					ecore:reference="place" ecore:name="endPlace" />
+				<xs:attribute name="end-trigger" type="probe-trigger" use="required" />
+				<xs:attribute name="name" type="xs:string" use="required" />
+				<xs:attribute name="start-place-id" type="xs:IDREF" use="required"
+					ecore:reference="place" ecore:name="startPlace" />
+				<xs:attribute name="start-trigger" type="probe-trigger" use="required" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="probe-trigger" ecore:name="ProbeTrigger">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="entry" ecore:name="ENTRY" />
+			<xs:enumeration value="exit" ecore:name="EXIT" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="probe-meta-attributes-container" ecore:name="ProbeMetaAttributesContainer">
+		<xs:sequence>
+			<xs:element minOccurs="0" maxOccurs="unbounded" name="meta-attribute" type="xs:anyType" ecore:type="probe-meta-attribute" ecore:name="entries" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType abstract="true" name="probe-meta-attribute" ecore:name="ProbeMetaAttribute" />
+
+	<!-- QPE meta attributes -->
+	<xs:complexType name="location-attribute" ecore:name="LocationAttribute" ecore:implements="place-meta-attribute transition-meta-attribute">
+		<xs:attribute name="location-x" type="xs:int" use="required"/>
+		<xs:attribute name="location-y" type="xs:int" use="required"/>
+	</xs:complexType>	
+
+	<!-- SimQPN meta attributes -->
+	
+	<xs:complexType abstract="true" name="simqpn-meta-attribute" ecore:name="SimqpnMetaAttribute">
+		<xs:complexContent>
+			<xs:extension base="identifiable-element">
+				<xs:attribute name="configuration-name" type="xs:string" use="required" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="simqpn-configuration" ecore:name="SimqpnConfiguration" ecore:implements="net-meta-attribute">
+		<xs:complexContent>
+			<xs:extension base="simqpn-meta-attribute">
+				<xs:attribute name="configuration-description" type="xs:string" use="optional" />
+				<xs:attribute name="number-of-runs" type="xs:int" use="optional" default="1" />
+				<xs:attribute name="output-directory" type="xs:string" use="required" />
+				<xs:attribute name="ramp-up-length" type="xs:double" use="required" />
+				<xs:attribute name="scenario" type="simqpn-simulation-scenario" use="required" />
+				<xs:attribute name="seconds-between-heart-beats" type="xs:double" use="required" />
+				<xs:attribute name="seconds-between-stop-checks" type="xs:double" use="required" />
+				<xs:attribute name="stopping-rule" type="simqpn-stopping-rule" use="required" />
+				<xs:attribute name="time-before-initial-heart-beat"
+					type="xs:double" use="required" />
+				<xs:attribute name="time-between-stop-checks" type="xs:double" use="required" />
+				<xs:attribute name="total-run-length" type="xs:double" use="required" />
+				<xs:attribute name="verbosity-level" type="xs:int" use="required" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="simqpn-simulation-scenario" ecore:name="SimqpnSimulationScenario">
+		<xs:restriction base="xs:int">
+			<xs:enumeration value="1" ecore:name="BATCH_MEANS" />
+			<xs:enumeration value="2" ecore:name="REPLICATION_DELETION" />
+			<xs:enumeration value="3" ecore:name="METHOD_OF_WELCH" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="simqpn-stopping-rule" ecore:name="SimqpnStoppingRule">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="ABSPRC" ecore:name="ABSOLUTE_PRECISION" />
+			<xs:enumeration value="RELPRC" ecore:name="RELATIVE_PRECISION" />
+			<xs:enumeration value="FIXEDLEN" ecore:name="FIXED_LENGTH" />
+		</xs:restriction>
+	</xs:simpleType>	
+	<xs:complexType name="simqpn-place-configuration" ecore:name="SimqpnPlaceConfiguration" ecore:implements="place-meta-attribute probe-meta-attribute">
+		<xs:complexContent>
+			<xs:extension base="simqpn-meta-attribute">
+				<xs:attribute name="statsLevel" type="xs:integer" use="required" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="simqpn-batch-means-color-configuration" ecore:name="SimqpnBatchMeansColorConfiguration" ecore:implements="color-reference-meta-attribute">
+		<xs:complexContent>
+			<xs:extension base="simqpn-meta-attribute">
+				<xs:attribute name="batchSize" type="xs:unsignedInt" use="required" />
+				<xs:attribute name="bucketSize" type="xs:double" use="required" />
+				<xs:attribute name="maxBuckets" type="xs:unsignedInt" use="required" />
+				<xs:attribute name="minBatches" type="xs:unsignedInt" use="required" />
+				<xs:attribute name="numBMeansCorlTested" type="xs:unsignedInt" use="required" />
+				<xs:attribute name="reqAbsPrc" type="xs:double" use="required" />
+				<xs:attribute name="reqRelPrc" type="xs:double" use="required" />
+				<xs:attribute name="signLev" type="xs:double" use="required" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="simqpn-batch-means-queueing-color-configuration" ecore:name="SimqpnBatchMeansQueueingColorConfiguration">
+		<xs:complexContent>
+			<xs:extension base="simqpn-batch-means-color-configuration">
+				<xs:attribute name="queueBatchSize" type="xs:unsignedInt" use="required" />
+				<xs:attribute name="queueBucketSize" type="xs:double" use="required" />
+				<xs:attribute name="queueMaxBuckets" type="xs:unsignedInt" use="required" />
+				<xs:attribute name="queueMinBatches" type="xs:unsignedInt" use="required" />
+				<xs:attribute name="queueNumBMeansCorlTested" type="xs:unsignedInt" use="required" />
+				<xs:attribute name="queueReqAbsPrc" type="xs:double" use="required" />
+				<xs:attribute name="queueReqRelPrc" type="xs:double" use="required" />
+				<xs:attribute name="queueSignLev" type="xs:double" use="required" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="simqpn-replication-delection-color-configuration" ecore:name="SimqpnReplDelColorConfiguration" ecore:implements="color-reference-meta-attribute">
+		<xs:complexContent>
+			<xs:extension base="simqpn-meta-attribute">
+				<xs:attribute name="signLevAvgST" type="xs:double" use="required" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="simqpn-replication-delection-queueing-color-configuration" ecore:name="SimqpnReplDelQueueingColorConfiguration">
+		<xs:complexContent>
+			<xs:extension base="simqpn-replication-delection-color-configuration">
+				<xs:attribute name="queueSignLevAvgST" type="xs:double" use="required" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="simqpn-welch-color-configuration" ecore:name="SimqpnWelchColorConfiguration" ecore:implements="color-reference-meta-attribute">
+		<xs:complexContent>
+			<xs:extension base="simqpn-meta-attribute">
+				<xs:attribute name="minObsrv" type="xs:unsignedInt" use="required" />
+				<xs:attribute name="maxObsrv" type="xs:unsignedInt" use="required" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:complexType name="simqpn-welch-queueing-color-configuration" ecore:name="SimqpnWelchQueueingColorConfiguration">
+		<xs:complexContent>
+			<xs:extension base="simqpn-welch-color-configuration">
+				<xs:attribute name="queueMinObsrv" type="xs:unsignedInt" use="required" />
+				<xs:attribute name="queueMaxObsrv" type="xs:unsignedInt" use="required" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>
