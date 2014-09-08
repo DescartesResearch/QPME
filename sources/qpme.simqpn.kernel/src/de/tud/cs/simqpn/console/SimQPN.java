@@ -71,6 +71,17 @@ import de.tud.cs.simqpn.kernel.Stats;
 import de.tud.cs.simqpn.kernel.StatsDocumentBuilder;
 
 public class SimQPN implements IApplication {
+	
+	public static void runSimulator(String inputFilename, String configuration, String outputFilename, 
+			String logConfigFilename, SimulatorProgress progress) {
+		try {
+			SAXReader xmlReader = new SAXReader();
+			Document inputDoc = xmlReader.read(inputFilename);
+			runSimulatorOnDocument(inputDoc, configuration, outputFilename, logConfigFilename, progress);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	private static void runSimulatorOnDocument(Document netDocument,
 			String configuration, String outputFilename, String logConfigFilename, SimulatorProgress progress) throws SimQPNException {
