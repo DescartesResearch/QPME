@@ -85,6 +85,9 @@ public class ConfigurationLoader {
 		} else {
 			configuration.setParallel(Boolean.parseBoolean(simulatorSettings
 					.attributeValue("is-parallel")));
+			if(simulatorSettings.attributeValue("decomposition-approach") != null){
+				configuration.setDecompositionApproach(simulatorSettings.attributeValue("decomposition-approach"));				
+			}
 		}
 	}
 

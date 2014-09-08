@@ -401,6 +401,8 @@
 				<xs:attribute name="seconds-between-stop-checks" type="xs:double" use="required" />
 				<xs:attribute name="stopping-rule" type="simqpn-stopping-rule" use="required" />
 				<xs:attribute name="is-parallel" type="xs:boolean" use="optional" default="false" />
+				<xs:attribute name="decomposition-approach" type="xs:string" use="optional" default="" />
+
 				<xs:attribute name="time-before-initial-heart-beat"
 					type="xs:double" use="required" />
 				<xs:attribute name="time-between-stop-checks" type="xs:double" use="required" />

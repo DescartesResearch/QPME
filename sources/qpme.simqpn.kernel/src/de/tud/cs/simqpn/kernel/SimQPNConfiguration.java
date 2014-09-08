@@ -146,6 +146,7 @@ public class SimQPNConfiguration {
 												//   progress updates are made once every secsBtwHeartBeats seconds.
 	public static double secsBtwHeartBeats;		// How often progress updates are made (heart beats).
 	*/
+	private String decompositionApproach;
 	
 	public static double runsBtwCvrgChks;		// CVRG_EST: Frequency of checking if enough data has been gathered
 												//   to provide conf. interval for true coverage with required relative precision.
@@ -234,5 +235,14 @@ public class SimQPNConfiguration {
 	public void setParallel(boolean isParallel) {
 		this.isParallel = isParallel;
 	}
+	
+	public void setDecompositionApproach(String decompositionApproach) {
+		this.decompositionApproach = decompositionApproach;
+	}
+	
+	public String getDecompositionApproach(){
+		return decompositionApproach;
+	}
+	
 
 }
