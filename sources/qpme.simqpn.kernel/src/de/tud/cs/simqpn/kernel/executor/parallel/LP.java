@@ -509,8 +509,10 @@ public class LP implements Executor {
 		if (clock < tkEvent.getTime()) {
 			clock = tkEvent.getTime();
 		} else if (clock > tkEvent.getTime()) {
-			log.warn("LP" + id + "clock >= time of incoming token clock "
-					+ clock + "| tkEvent " + tkEvent.getTime());
+			log.warn("LP" + id + ": Time of incoming token < simulation time at place: "+place.name
+					+ " \n\t" + tkEvent.getTime() + "(token time)\n\t" + clock
+					+ "(simulation time)\n\t" + getTimeSaveToProcess()
+					+ "(time save to process)");
 		}
 		place.addTokens(tkEvent.getColor(), tkEvent.getNumber(),
 				tkEvent.getTkCopyBuffer(), this);
@@ -726,6 +728,7 @@ public class LP implements Executor {
 
 		beginRunWallClock = System.currentTimeMillis();
 
+		/** Pick non-self-sorting queues whenever possible*/
 		if (predecessorList.size() <= 1) {
 			/*
 			 * If LP only have one predecessor, incoming events are ordered
