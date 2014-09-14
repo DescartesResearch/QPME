@@ -5,6 +5,7 @@ import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
 public class PredecessorBarrierAction extends BarrierAction {
 
+	@Deprecated
 	public PredecessorBarrierAction(LP[] lps, int verbosityLevel, SimulatorProgress progressMonitor) {
 		super(lps, verbosityLevel, progressMonitor);
 	}

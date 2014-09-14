@@ -30,7 +30,7 @@ public class BarrierFactory {
 	
 	
 	public static BarrierAction createBarrierAction(LP[] lps, int verbosityLevel, SimulatorProgress progressMonitor){
-		return new PredecessorClockBarrierAction(lps, verbosityLevel, progressMonitor);
+		return createPredecessorClockBarrierAction(lps, verbosityLevel, progressMonitor);
 	}
 	
 	public static BarrierAction createPredecessorBarrierAction(LP[] lps, int verbosityLevel, SimulatorProgress progressMonitor){
