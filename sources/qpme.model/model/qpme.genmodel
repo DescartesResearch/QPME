@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/qpme.model/src"
+    editDirectory="/qpme.model.edit/src" editorDirectory="/qpme.model.editor/src"
+    modelPluginID="qpme.model" modelName="qpme" importerID="org.eclipse.xsd.ecore.importer"
+    complianceLevel="6.0" copyrightFields="false" editPluginID="qpme.model.edit" editorPluginID="qpme.model.editor">
+  <foreignModel>../schema/qpme.xsd</foreignModel>
+  <genPackages prefix="Model" basePackage="edu.kit.ipd.descartes.qpme" resource="XML"
+      disposableProviderFactory="true" ecorePackage="qpme.ecore#/">
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="qpme.ecore#//DepartureDiscipline">
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DepartureDiscipline/NORMAL"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DepartureDiscipline/FIFO"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="qpme.ecore#//DistributionFunction">
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/BETA"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/BREIT_WIGNER"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/BREIT_WIGNER_SQUARE"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/CHI_SQUARE"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/GAMMA"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/HYPERBOLIC"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/EXPONENTIAL"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/EXPONENTIAL_POWER"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/LOGARITHMIC"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/NORMAL"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/STUDENT_T"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/UNIFORM"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/VON_MISES"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/EMPIRICAL"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/DETERMINISTIC"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="qpme.ecore#//FlowDirection">
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//FlowDirection/IN"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//FlowDirection/OUT"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//FlowDirection/BOTH"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="qpme.ecore#//ProbeTrigger">
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//ProbeTrigger/ENTRY"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//ProbeTrigger/EXIT"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="qpme.ecore#//QueueingStrategy">
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//QueueingStrategy/PRIO"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//QueueingStrategy/PS"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//QueueingStrategy/FCFS"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//QueueingStrategy/IS"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//QueueingStrategy/RANDOM"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="qpme.ecore#//SimqpnSimulationScenario">
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//SimqpnSimulationScenario/BATCH_MEANS"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//SimqpnSimulationScenario/REPLICATION_DELETION"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//SimqpnSimulationScenario/METHOD_OF_WELCH"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="qpme.ecore#//SimqpnStoppingRule">
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//SimqpnStoppingRule/ABSOLUTE_PRECISION"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//SimqpnStoppingRule/RELATIVE_PRECISION"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//SimqpnStoppingRule/FIXED_LENGTH"/>
+    </genEnums>
+    <genDataTypes ecoreDataType="qpme.ecore#//DepartureDisciplineObject"/>
+    <genDataTypes ecoreDataType="qpme.ecore#//DistributionFunctionObject"/>
+    <genDataTypes ecoreDataType="qpme.ecore#//FlowDirectionObject"/>
+    <genDataTypes ecoreDataType="qpme.ecore#//ProbeTriggerObject"/>
+    <genDataTypes ecoreDataType="qpme.ecore#//QueueingStrategyObject"/>
+    <genDataTypes ecoreDataType="qpme.ecore#//RgbValue"/>
+    <genDataTypes ecoreDataType="qpme.ecore#//SimqpnSimulationScenarioObject"/>
+    <genDataTypes ecoreDataType="qpme.ecore#//SimqpnStoppingRuleObject"/>
+    <genClasses ecoreClass="qpme.ecore#//Color">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//Color/description"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//Color/name"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//Color/realColor"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//ColorReference">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//ColorReference/metaAttributes"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference qpme.ecore#//ColorReference/color"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="qpme.ecore#//ColorReferenceMetaAttribute"/>
+    <genClasses ecoreClass="qpme.ecore#//ColorReferencesContainer">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//ColorReferencesContainer/definitions"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//ColorReferencesMetaAttributesContainer">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//ColorReferencesMetaAttributesContainer/entries"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//ColorsContainer">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//ColorsContainer/definitions"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="qpme.ecore#//IdentifiableElement">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//IdentifiableElement/id"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//ImmediateTransition">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//ImmediateTransition/weight"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//IncidenceFunctionConnection">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//IncidenceFunctionConnection/count"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference qpme.ecore#//IncidenceFunctionConnection/source"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference qpme.ecore#//IncidenceFunctionConnection/target"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//IncidenceFunctionConnectionsContainer">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//IncidenceFunctionConnectionsContainer/definitions"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="qpme.ecore#//IncidenceFunctionElement">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference qpme.ecore#//IncidenceFunctionElement/incomingConnections"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference qpme.ecore#//IncidenceFunctionElement/outgoingConnections"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//LocationAttribute">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//LocationAttribute/locationX"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//LocationAttribute/locationY"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//Mode">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//Mode/firingWeight"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//Mode/meanFiringDelay"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//Mode/name"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//Mode/realColor"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//ModesContainer">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//ModesContainer/definitions"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="qpme.ecore#//NetMetaAttribute"/>
+    <genClasses ecoreClass="qpme.ecore#//NetMetaAttributesContainer">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//NetMetaAttributesContainer/entries"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//OrdinaryColorReference"/>
+    <genClasses ecoreClass="qpme.ecore#//OrdinaryPlace"/>
+    <genClasses ecoreClass="qpme.ecore#//Place">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//Place/colorReferences"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//Place/metaAttributes"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//Place/departureDiscipline"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//Place/locked"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//Place/name"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//PlaceColorReference">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//PlaceColorReference/initialPopulation"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//PlaceColorReference/maximumCapacity"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="qpme.ecore#//PlaceMetaAttribute"/>
+    <genClasses ecoreClass="qpme.ecore#//PlaceMetaAttributesContainer">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//PlaceMetaAttributesContainer/entries"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//PlacesContainer">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//PlacesContainer/definitions"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//PlaceTransitionConnection">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference qpme.ecore#//PlaceTransitionConnection/source"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference qpme.ecore#//PlaceTransitionConnection/target"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//PlaceTransitionConnectionsContainer">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//PlaceTransitionConnectionsContainer/definitions"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="qpme.ecore#//PlaceTransitionElement">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference qpme.ecore#//PlaceTransitionElement/incomingConnections"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference qpme.ecore#//PlaceTransitionElement/outgoingConnections"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//Probe">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//Probe/colorReferences"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//Probe/metaAttributes"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference qpme.ecore#//Probe/endPlace"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//Probe/endTrigger"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//Probe/name"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference qpme.ecore#//Probe/startPlace"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//Probe/startTrigger"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//ProbeColorReference"/>
+    <genClasses image="false" ecoreClass="qpme.ecore#//ProbeMetaAttribute"/>
+    <genClasses ecoreClass="qpme.ecore#//ProbeMetaAttributesContainer">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//ProbeMetaAttributesContainer/entries"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//ProbesContainer">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//ProbesContainer/definitions"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//QpmeDocument">
+      <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QpmeDocument/mixed"/>
+      <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference qpme.ecore#//QpmeDocument/xMLNSPrefixMap"/>
+      <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference qpme.ecore#//QpmeDocument/xSISchemaLocation"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//QpmeDocument/net"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//Queue">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//Queue/name"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//Queue/numberOfServers"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//Queue/strategy"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//QueueingColorReference">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/alpha"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/beta"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/cut"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/distributionFunction"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/freedom"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/gamma"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/inputFile"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/lambda"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/max"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/mean"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/min"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/p"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/p1"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/priority"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/ranking"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/stdDev"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/tau"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//QueueingPetriNet">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//QueueingPetriNet/colors"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//QueueingPetriNet/queues"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//QueueingPetriNet/places"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//QueueingPetriNet/transitions"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//QueueingPetriNet/connections"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//QueueingPetriNet/probes"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//QueueingPetriNet/metaAttributes"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingPetriNet/qpmeVersion"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//QueueingPlace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference qpme.ecore#//QueueingPlace/queue"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//QueuesContainer">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//QueuesContainer/definitions"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//SimqpnBatchMeansColorConfiguration">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnBatchMeansColorConfiguration/batchSize"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnBatchMeansColorConfiguration/bucketSize"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnBatchMeansColorConfiguration/maxBuckets"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnBatchMeansColorConfiguration/minBatches"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnBatchMeansColorConfiguration/numBMeansCorlTested"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnBatchMeansColorConfiguration/reqAbsPrc"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnBatchMeansColorConfiguration/reqRelPrc"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnBatchMeansColorConfiguration/signLev"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//SimqpnBatchMeansQueueingColorConfiguration">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnBatchMeansQueueingColorConfiguration/queueBatchSize"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnBatchMeansQueueingColorConfiguration/queueBucketSize"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnBatchMeansQueueingColorConfiguration/queueMaxBuckets"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnBatchMeansQueueingColorConfiguration/queueMinBatches"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnBatchMeansQueueingColorConfiguration/queueNumBMeansCorlTested"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnBatchMeansQueueingColorConfiguration/queueReqAbsPrc"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnBatchMeansQueueingColorConfiguration/queueReqRelPrc"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnBatchMeansQueueingColorConfiguration/queueSignLev"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//SimqpnConfiguration">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnConfiguration/configurationDescription"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnConfiguration/numberOfRuns"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnConfiguration/outputDirectory"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnConfiguration/rampUpLength"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnConfiguration/scenario"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnConfiguration/secondsBetweenHeartBeats"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnConfiguration/secondsBetweenStopChecks"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnConfiguration/stoppingRule"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnConfiguration/timeBeforeInitialHeartBeat"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnConfiguration/timeBetweenStopChecks"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnConfiguration/totalRunLength"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnConfiguration/verbosityLevel"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="qpme.ecore#//SimqpnMetaAttribute">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnMetaAttribute/configurationName"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//SimqpnPlaceConfiguration">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnPlaceConfiguration/statsLevel"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//SimqpnReplDelColorConfiguration">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnReplDelColorConfiguration/signLevAvgST"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//SimqpnReplDelQueueingColorConfiguration">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnReplDelQueueingColorConfiguration/queueSignLevAvgST"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//SimqpnWelchColorConfiguration">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnWelchColorConfiguration/maxObsrv"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnWelchColorConfiguration/minObsrv"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//SimqpnWelchQueueingColorConfiguration">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnWelchQueueingColorConfiguration/queueMaxObsrv"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SimqpnWelchQueueingColorConfiguration/queueMinObsrv"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//Subnet">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//Subnet/colors"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//Subnet/places"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//Subnet/transitions"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//Subnet/connections"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//SubnetColorReference">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//SubnetColorReference/direction"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//SubnetPlace">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//SubnetPlace/subnet"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//TimedTransition"/>
+    <genClasses ecoreClass="qpme.ecore#//Transition">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//Transition/modes"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//Transition/connections"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//Transition/metaAttributes"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//Transition/name"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//Transition/priority"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="qpme.ecore#//TransitionMetaAttribute"/>
+    <genClasses ecoreClass="qpme.ecore#//TransitionMetaAttributesContainer">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//TransitionMetaAttributesContainer/entries"/>
+    </genClasses>
+    <genClasses ecoreClass="qpme.ecore#//TransitionsContainer">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//TransitionsContainer/definitions"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>

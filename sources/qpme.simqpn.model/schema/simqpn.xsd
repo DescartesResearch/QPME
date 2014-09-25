@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema attributeFormDefault="unqualified"
+	elementFormDefault="unqualified" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" ecore:package="edu.kit.ipd.descartes.qpme.simqpn.model"
+	ecore:nsPrefix="simqpn" ecore:documentRoot="SimqpnResultsDocument">
+	<xs:element name="simqpn-results" type="simqpn-results">
+	</xs:element>
+	<xs:complexType name="metric">
+		<xs:attribute name="type" type="xs:string" use="required" />
+		<xs:attribute name="value" type="xs:string" use="required" />
+	</xs:complexType>
+	<xs:complexType name="histogram">
+		<xs:all>
+			<xs:element name="mean" type="xs:double" />
+			<xs:element name="percentiles" type="percentiles" />
+			<xs:element name="buckets" type="buckets" />
+		</xs:all>
+		<xs:attribute name="type" type="xs:string" use="optional" />
+		<xs:attribute name="bucket-size" type="xs:double" use="optional" />
+		<xs:attribute name="num-buckets" type="xs:long" use="optional" />
+	</xs:complexType>
+	<xs:complexType name="percentiles">
+		<xs:sequence>
+			<xs:element minOccurs="0" maxOccurs="unbounded" name="percentile"
+				type="percentile" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="buckets">
+		<xs:sequence>
+			<xs:element minOccurs="0" maxOccurs="unbounded" name="bucket"
+				type="bucket" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="percentile">
+		<xs:simpleContent>
+			<xs:extension base="xs:double">
+				<xs:attribute name="for" type="xs:double" use="required" />
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="bucket">
+		<xs:simpleContent>
+			<xs:extension base="xs:int">
+				<xs:attribute name="index" type="xs:int" use="required" />
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="color">
+		<xs:sequence>
+			<xs:element minOccurs="0" maxOccurs="unbounded" name="metric"
+				type="metric">
+			</xs:element>
+			<xs:element minOccurs="0" maxOccurs="unbounded" name="histogram"
+				type="histogram" />
+		</xs:sequence>
+		<xs:attribute name="name" type="xs:string" use="required" />
+		<xs:attribute name="id" type="xs:string" use="required" />
+		<xs:attribute name="real-color" type="xs:string" use="required" />
+	</xs:complexType>
+	<xs:complexType name="observed-element">
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="metric"
+				type="metric" />
+			<xs:element minOccurs="0" maxOccurs="unbounded" name="color"
+				type="color" />
+		</xs:sequence>
+		<xs:attribute name="type" type="xs:string" use="required" />
+		<xs:attribute name="name" type="xs:string" use="required" />
+		<xs:attribute name="id" type="xs:string" use="required" />
+		<xs:attribute name="stats-level" type="xs:int" use="required" />
+	</xs:complexType>
+	<xs:complexType name="simqpn-results">
+		<xs:sequence>
+			<xs:element minOccurs="0" maxOccurs="unbounded" name="observed-element"
+				type="observed-element" />
+		</xs:sequence>
+		<xs:attribute name="qpme-version" type="xs:string" use="required" />
+		<xs:attribute name="model-file" type="xs:string" use="required" />
+		<xs:attribute name="date" type="xs:dateTime" use="required" />
+		<xs:attribute name="name" type="xs:string" use="required" />
+		<xs:attribute name="configuration-name" type="xs:string"
+			use="required" />
+	</xs:complexType>
+</xs:schema>

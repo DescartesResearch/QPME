@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="qpme.model.feature"
-      label="Feature"
+      label="Model Feature"
       version="2.1.0.qualifier"
       provider-name="qpme.sourceforge.net">
 
@@ -17,11 +17,30 @@
       [Enter License Description here.]
    </license>
 
+   <requires>
+      <import plugin="org.eclipse.osgi"/>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.emf.ecore"/>
+      <import plugin="org.eclipse.emf.ecore.xmi"/>
+   </requires>
+
    <plugin
          id="qpme.model.migration"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
+
+   <plugin
+         id="qpme.model"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="qpme.simqpn.model"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
 
 </feature>

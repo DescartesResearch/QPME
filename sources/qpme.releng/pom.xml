@@ -110,6 +110,8 @@
 		<module>../org.jfreechart</module>
 		<module>../org.rosuda.JRI</module>
 		<module>../qpme.model.migration</module>
+		<module>../qpme.model</module>
+		<module>../qpme.simqpn.model</module>
 		<module>../qpme.qpe.core</module>
 		<module>../qpme.simqpn.kernel</module>
 		<module>../qpme.simqpn.ui</module>

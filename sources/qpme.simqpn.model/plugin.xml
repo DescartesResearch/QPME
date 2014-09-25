@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+
+<!--
+-->
+
+<plugin>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <package
+            uri="http://www.descartes-research.net/simqpn/model/1.0"
+            class="edu.kit.ipd.descartes.qpme.simqpn.model.SimqpnPackage"
+            genModel="model/simqpn.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.extension_parser">
+      <parser
+            type="simqpn"
+            class="edu.kit.ipd.descartes.qpme.simqpn.model.util.SimqpnResourceFactoryImpl"/>
+   </extension>
+
+</plugin>

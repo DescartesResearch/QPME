@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/qpme.simqpn.model/src" modelPluginID="qpme.simqpn.model"
+    modelName="simqpn" editPluginClass="edu.kit.ipd.descartes.qpme.simqpn.model.provider.simqpnEditPlugin"
+    editorPluginClass="edu.kit.ipd.descartes.qpme.simqpn.model.presentation.simqpnEditorPlugin"
+    testSuiteClass="edu.kit.ipd.descartes.qpme.simqpn.model.tests.simqpnAllTests"
+    importerID="org.eclipse.xsd.ecore.importer" complianceLevel="6.0" copyrightFields="false">
+  <foreignModel>../schema/simqpn.xsd</foreignModel>
+  <genPackages prefix="Simqpn" basePackage="edu.kit.ipd.descartes.qpme.simqpn" resource="XML"
+      disposableProviderFactory="true" ecorePackage="simqpn.ecore#/">
+    <genClasses ecoreClass="simqpn.ecore#//Bucket">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute simqpn.ecore#//Bucket/value"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute simqpn.ecore#//Bucket/index"/>
+    </genClasses>
+    <genClasses ecoreClass="simqpn.ecore#//Buckets">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference simqpn.ecore#//Buckets/bucket"/>
+    </genClasses>
+    <genClasses ecoreClass="simqpn.ecore#//Color">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference simqpn.ecore#//Color/metric"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference simqpn.ecore#//Color/histogram"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute simqpn.ecore#//Color/id"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute simqpn.ecore#//Color/name"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute simqpn.ecore#//Color/realColor"/>
+    </genClasses>
+    <genClasses ecoreClass="simqpn.ecore#//Histogram">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute simqpn.ecore#//Histogram/mean"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference simqpn.ecore#//Histogram/percentiles"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference simqpn.ecore#//Histogram/buckets"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute simqpn.ecore#//Histogram/bucketSize"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute simqpn.ecore#//Histogram/numBuckets"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute simqpn.ecore#//Histogram/type"/>
+    </genClasses>
+    <genClasses ecoreClass="simqpn.ecore#//Metric">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute simqpn.ecore#//Metric/type"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute simqpn.ecore#//Metric/value"/>
+    </genClasses>
+    <genClasses ecoreClass="simqpn.ecore#//ObservedElement">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference simqpn.ecore#//ObservedElement/metric"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference simqpn.ecore#//ObservedElement/color"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute simqpn.ecore#//ObservedElement/id"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute simqpn.ecore#//ObservedElement/name"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute simqpn.ecore#//ObservedElement/statsLevel"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute simqpn.ecore#//ObservedElement/type"/>
+    </genClasses>
+    <genClasses ecoreClass="simqpn.ecore#//Percentile">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute simqpn.ecore#//Percentile/value"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute simqpn.ecore#//Percentile/for"/>
+    </genClasses>
+    <genClasses ecoreClass="simqpn.ecore#//Percentiles">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference simqpn.ecore#//Percentiles/percentile"/>
+    </genClasses>
+    <genClasses ecoreClass="simqpn.ecore#//SimqpnResults">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference simqpn.ecore#//SimqpnResults/observedElement"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute simqpn.ecore#//SimqpnResults/configurationName"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute simqpn.ecore#//SimqpnResults/date"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute simqpn.ecore#//SimqpnResults/modelFile"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute simqpn.ecore#//SimqpnResults/name"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute simqpn.ecore#//SimqpnResults/qpmeVersion"/>
+    </genClasses>
+    <genClasses ecoreClass="simqpn.ecore#//SimqpnResultsDocument">
+      <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EAttribute simqpn.ecore#//SimqpnResultsDocument/mixed"/>
+      <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference simqpn.ecore#//SimqpnResultsDocument/xMLNSPrefixMap"/>
+      <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference simqpn.ecore#//SimqpnResultsDocument/xSISchemaLocation"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference simqpn.ecore#//SimqpnResultsDocument/simqpnResults"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>
