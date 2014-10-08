@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Export-Package: edu.bonn.cs.net.jbarrier.barrier,edu.bonn.cs.net.jbarr
+ ier.examples,edu.bonn.cs.net.jbarrier.util
+Bundle-ClassPath: jbarrier-1.0.jar
+Bundle-Version: 1.0.0.201401300941
+Bundle-Name: Jbarrier
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: edu.bonn.cs.net.jbarrier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+

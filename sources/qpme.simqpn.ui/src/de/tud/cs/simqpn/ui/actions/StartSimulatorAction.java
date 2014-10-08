@@ -42,15 +42,11 @@
 package de.tud.cs.simqpn.ui.actions;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Date;
 
 import org.apache.log4j.Logger;
-import org.dom4j.Document;
 import org.dom4j.Element;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -69,8 +65,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -79,11 +73,10 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import de.tud.cs.qpe.editors.net.NetEditorInput;
 import de.tud.cs.qpe.editors.query.QueryEditorInput;
 import de.tud.cs.qpe.editors.query.SimpleQueryEditor;
+import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
+import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.SimQPNException;
-import de.tud.cs.simqpn.kernel.Simulator;
-import de.tud.cs.simqpn.kernel.SimulatorProgress;
-import de.tud.cs.simqpn.kernel.Stats;
-import de.tud.cs.simqpn.kernel.StatsDocumentBuilder;
+import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import de.tud.cs.simqpn.ui.wizard.RunSimulationWizard;
 
 public class StartSimulatorAction extends AbstractHandler {
@@ -99,7 +92,7 @@ public class StartSimulatorAction extends AbstractHandler {
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		Shell shell = HandlerUtil.getActiveShell(event);
-		if (Simulator.simRunning) {
+		if (SimQPNController.isSimRunning()) {
 			MessageDialog
 					.openWarning(
 							shell,
@@ -252,26 +245,18 @@ public class StartSimulatorAction extends AbstractHandler {
 			try {
 				monitor.subTask("Configure Simulator");
 
-				Simulator.configure(net, configuration, null);
-				net = Simulator.prepareNet(net, configuration);
-				Stats[] result = Simulator.execute(net, configuration, this);
+				Date date = null;
+				if(date == null){
+					date = new Date(); //set random date
+				}
+				SimQPNController sim = SimQPNController.getSimQPNController(net, configuration, null, date);
+				File resultFile = sim.execute(configuration, null, this);
+				net = sim.getXMLDescription();
 
-				// Skip stats document generation for WELCH and REPL_DEL since
-				// the
-				// document builder does not support these methods yet.
-				if ((result != null)
-						&& (Simulator.analMethod == Simulator.BATCH_MEANS)) {
-					monitor.subTask("Collect Results");
-					StatsDocumentBuilder builder = new StatsDocumentBuilder(
-							result, net, configuration);
-					Document statsDocument = builder.buildDocument();
-					File resultsFile = new File(Simulator.statsDir,
-							builder.getResultFileBaseName() + ".simqpn");
-					saveXmlToFile(statsDocument, resultsFile);
-
+				monitor.subTask("Collect Results");
+				if (resultFile != null){
 					IEditorInput simulationOutput = new QueryEditorInput(
-							new Path(resultsFile.getAbsolutePath()));
-
+							new Path(resultFile.getAbsolutePath()));
 					shell.getDisplay().asyncExec(
 							new EditorOpener(simulationOutput,
 									SimpleQueryEditor.ID, true));
@@ -302,24 +287,6 @@ public class StartSimulatorAction extends AbstractHandler {
 
 		}
 
-		private void saveXmlToFile(Document doc, File file) {
-			XMLWriter writer = null;
-			try {
-				writer = new XMLWriter(new FileOutputStream(file),
-						OutputFormat.createPrettyPrint());
-				writer.write(doc);
-			} catch (IOException e) {
-				e.printStackTrace();
-			} finally {
-				if (writer != null) {
-					try {
-						writer.close();
-					} catch (IOException e) {
-					}
-				}
-			}
-		}
-
 		/*
 		 * (non-Javadoc)
 		 * 
@@ -346,8 +313,9 @@ public class StartSimulatorAction extends AbstractHandler {
 		 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#finishWarmUp()
 		 */
 		@Override
-		public void finishWarmUp() {
-			updateStatusString();
+		public void finishWarmUp(int id, SimQPNConfiguration configuration) {
+			boolean inRampUp = false; // Proven to be false
+			updateStatusString(configuration, inRampUp);
 		}
 
 		/*
@@ -356,22 +324,22 @@ public class StartSimulatorAction extends AbstractHandler {
 		 * @see de.tud.cs.simqpn.kernel.SimulatorProgress#startSimulation()
 		 */
 		@Override
-		public void startSimulation() {
-			this.numRuns = (Simulator.analMethod == Simulator.BATCH_MEANS) ? 1
-					: Simulator.numRuns;
+		public void startSimulation(SimQPNConfiguration configuration) {
+			this.numRuns = (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.BATCH_MEANS) ? 1
+					: configuration.getNumRuns();
 			this.totalWork = numRuns * 100;
 			this.worked = 0;
 			this.totalTime = 0;
 			monitor.beginTask("Simulation", totalWork);
 
-			switch (Simulator.analMethod) {
-			case Simulator.BATCH_MEANS:
+			switch (configuration.getAnalMethod()) {
+			case BATCH_MEANS:
 				monitor.setTaskName("Simulation (Batch Means)");
 				break;
-			case Simulator.REPL_DEL:
+			case REPL_DEL:
 				monitor.setTaskName("Simulation (Replication/Deletion)");
 				break;
-			case Simulator.WELCH:
+			case WELCH:
 				monitor.setTaskName("Simulation (Method of Welch)");
 				break;
 			}
@@ -384,12 +352,12 @@ public class StartSimulatorAction extends AbstractHandler {
 		 * de.tud.cs.simqpn.kernel.SimulatorProgress#startSimulationRun(int)
 		 */
 		@Override
-		public void startSimulationRun(int number) {
+		public void startSimulationRun(int number, SimQPNConfiguration configuration) {
 			log.info("Simulation run " + number + "/" + numRuns + " started.");
 			this.currentRun = number;
 			this.lastProgress = 0;
 
-			updateStatusString();
+			updateStatusString(configuration, true);
 		}
 
 		/*
@@ -400,7 +368,7 @@ public class StartSimulatorAction extends AbstractHandler {
 		 * (double, long)
 		 */
 		@Override
-		public void updateSimulationProgress(double progress, long elapsedTime) {
+		public void updateSimulationProgress(int lpID, double progress, long elapsedTime, SimQPNConfiguration configuration, boolean inRampUp) {
 			totalTime += elapsedTime;
 			double totalProgress = (currentRun - 1) * 100 + progress;
 			remainingTime = ((long) ((totalTime / totalProgress) * (totalWork - totalProgress))) / 1000;
@@ -411,7 +379,7 @@ public class StartSimulatorAction extends AbstractHandler {
 				monitor.worked(progressDiff);
 				lastProgress = (int) progress;
 			}
-			updateStatusString();
+			updateStatusString(configuration, inRampUp);
 		}
 
 		/*
@@ -432,11 +400,11 @@ public class StartSimulatorAction extends AbstractHandler {
 		 * ()
 		 */
 		@Override
-		public double getMaxUpdateLogicalTimeInterval() {
+		public double getMaxUpdateLogicalTimeInterval(SimQPNConfiguration configuration) {
 			// if numRuns > 1 distribute the heartbeats approximately evenly
 			// over the simulation runs
 			int numberHeartbeats = (100 / numRuns) + 1;
-			return Simulator.totRunLen / numberHeartbeats;
+			return configuration.totRunLength / numberHeartbeats;
 		}
 
 		/*
@@ -447,14 +415,14 @@ public class StartSimulatorAction extends AbstractHandler {
 		 * java.lang.String)
 		 */
 		@Override
-		public void precisionCheck(boolean done, String failedPlaceName) {
+		public void precisionCheck(int lpID, boolean done, String failedPlaceName) {
 			if (!done) {
 				this.failedPlace = failedPlaceName;
 			}
 		}
 
 		@Override
-		public void warning(final String message) {
+		public void warning(int lpID, final String message) {
 			log.warn(message);
 			shell.getDisplay().syncExec(new Runnable() {
 				@Override
@@ -476,12 +444,12 @@ public class StartSimulatorAction extends AbstractHandler {
 			});
 		}
 
-		private void updateStatusString() {
+		private void updateStatusString(SimQPNConfiguration configuration, boolean inRampUp) {
 			StringBuilder status = new StringBuilder();
 
 			// Remaining time display
 			if (totalTime > 0) {
-				if (Simulator.stoppingRule == Simulator.FIXEDLEN) {
+				if (configuration.stoppingRule == SimQPNConfiguration.FIXEDLEN) {
 					status.append("Remaining Time: ");
 				} else {
 					status.append("Maximum Remaining Time: ");
@@ -503,17 +471,17 @@ public class StartSimulatorAction extends AbstractHandler {
 			}
 
 			// Number of run
-			if (Simulator.analMethod != Simulator.BATCH_MEANS) {
+			if (configuration.getAnalMethod() != SimQPNConfiguration.AnalysisMethod.BATCH_MEANS) {
 				status.append("Run: ").append(currentRun).append("/")
 						.append(numRuns).append("\n");
 			}
 
 			// Phase
 			status.append("Phase: ");
-			if (Simulator.analMethod == Simulator.WELCH) {
+			if (configuration.getAnalMethod() == SimQPNConfiguration.AnalysisMethod.WELCH) {
 				status.append("Determine Warm-up Period Length");
 			} else {
-				if (Simulator.inRampUp) {
+				if (inRampUp) {
 					status.append("Warm-Up Period");
 				} else {
 					status.append("Steady State Period");
@@ -522,7 +490,7 @@ public class StartSimulatorAction extends AbstractHandler {
 			status.append("\n");
 
 			// Failed place name
-			if (Simulator.stoppingRule != Simulator.FIXEDLEN
+			if (configuration.stoppingRule != SimQPNConfiguration.FIXEDLEN
 					&& (failedPlace != null)) {
 				status.append("There are not enough statistics for place ")
 						.append(failedPlace)
@@ -543,5 +511,6 @@ public class StartSimulatorAction extends AbstractHandler {
 		public long getMaxUpdateRealTimeInterval() {
 			return 30000; // 30 sec
 		}
+
 	}
 }

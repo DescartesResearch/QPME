@@ -48,6 +48,7 @@ import java.util.Map;
 
 import javax.xml.XMLConstants;
 
+import org.apache.log4j.Logger;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
@@ -68,6 +69,8 @@ import de.tud.cs.qpe.utils.IdGenerator;
  */
 
 public class DocumentManager {
+	private static Logger log = Logger.getLogger(DocumentManager.class);
+	
 	public static final String PROP_DOCUMENT_REGISTERD = "document.registered";
 
 	public static final String PROP_DOCUMENT_UNREGISTERD = "document.unregistered";
@@ -220,6 +223,8 @@ public class DocumentManager {
 		DocumentEventWrapper wrapper = getInstance().getDocumentEventWrapper(element);
 		if (wrapper != null) {
 			wrapper.addElement(element, child, createId);
+		}else{
+			throw new RuntimeException("No net specified. Call DocumentManager.registerInput(net.getDocument());");
 		}
 	}
 
