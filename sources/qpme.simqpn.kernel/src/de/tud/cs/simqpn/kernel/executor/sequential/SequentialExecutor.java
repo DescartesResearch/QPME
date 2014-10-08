@@ -442,12 +442,8 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 						progressMonitor.precisionCheck(getId(), done, null);
 						break; // exit while loop
 					} else {
-						progressMonitor.precisionCheck(getId(), done, probe.name); // TODO:
-																			// distinguish
-																			// between
-																			// places
-																			// and
-																			// probes.
+						// TODO: distinguish between places and probes.
+						progressMonitor.precisionCheck(getId(), done, probe.name); 
 					}
 				}
 
