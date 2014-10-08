@@ -107,26 +107,30 @@ public class QPlace extends Place {
 									// Note that for queueing places
 									// Place.tokenPop
 									// contains tokens in the depository.
+
 	public AbstractDoubleList[] getQueueTokResidServTimes() {
 		return queueTokenResidualServiceTimes;
 	}
-	
-	/** Priorities of each color for {@link PSQueue}*/
-	private int[] priorities; 
 
-	/** {@link PSQueue}: expPS==false: Residual service times of the tokens in the queueing station (queue).*/
-	private AbstractDoubleList[] queueTokenResidualServiceTimes; 
-	
+	/** Priorities of each color for {@link PSQueue} */
+	private int[] priorities;
+
+	/**
+	 * {@link PSQueue}: expPS==false: Residual service times of the tokens in the
+	 * queueing station (queue).
+	 */
+	private AbstractDoubleList[] queueTokenResidualServiceTimes;
+
 	/**
 	 * Saves random numbers for future queue-service-times for this QPlace
 	 */
 	private List<List<Double>> futureList;
 
 	/** {@link PSQueue}: tokens in queueing station. */
-	public ArrayList<Token>[] queueTokens; 
+	public ArrayList<Token>[] queueTokens;
 
-	/** Random number generators for generating service times.*/
-	public AbstractContinousDistribution[] randServTimeGen; 
+	/** Random number generators for generating service times. */
+	public AbstractContinousDistribution[] randServTimeGen;
 
 	public QPlaceQueueStats qPlaceQueueStats;
 
@@ -187,10 +191,12 @@ public class QPlace extends Place {
 					double lambda = Double.parseDouble(lambdaString);
 					this.randServTimeGen[c] = new Exponential(lambda,
 							RandomNumberGenerator.nextRandNumGen());
-				} else if(((QPlace) original).randServTimeGen[c].getClass().equals(Deterministic.class)){
-					double value = ((QPlace) original).randServTimeGen[c].nextDouble();
+				} else if (((QPlace) original).randServTimeGen[c].getClass()
+						.equals(Deterministic.class)) {
+					double value = ((QPlace) original).randServTimeGen[c]
+							.nextDouble();
 					this.randServTimeGen[c] = new Deterministic(value);
-				}else {
+				} else {
 					// TODO implement copy of other distributions
 					log.error("Copy of distribution" + distribution.getClass()
 							+ " not implemented");
@@ -247,10 +253,10 @@ public class QPlace extends Place {
 				depDiscip, element, configuration);
 
 		futureList = new ArrayList<List<Double>>(numColors);
-		for(int i=0; i< colors.length; i++){
+		for (int i = 0; i < colors.length; i++) {
 			futureList.add(new LinkedList<Double>());
 		}
-		
+
 		this.queue = queue;
 		this.meanServTimes = new double[numColors];
 		this.tokenCopyBuffer = new Token[1];
@@ -261,10 +267,10 @@ public class QPlace extends Place {
 		for (int c = 0; c < numColors; c++)
 			this.queueTokenPop[c] = 0;
 
-		if (queue != null && statsLevel > 0){
+		if (queue != null && statsLevel > 0) {
 			qPlaceQueueStats = new QPlaceQueueStats(id, name, colors,
 					statsLevel, queue.queueDiscip, queue.numServers,
-						meanServTimes, configuration);
+					meanServTimes, configuration);
 		}
 	}
 
@@ -301,56 +307,27 @@ public class QPlace extends Place {
 		}
 
 		// PS Queues
-		this.queueTokens = new ArrayList[numColors]; // TODO: replace with more
-														// efficient data
-														// structures.
+		// TODO: replace with more efficient data structures.
+		this.queueTokens = new ArrayList[numColors];
+
 		for (int c = 0; c < numColors; c++) {
 			if (individualTokens[c]
 					|| (queue.queueDiscip == QueuingDiscipline.PS && statsLevel >= 3))
-				this.queueTokens[c] = new ArrayList(100); // SDK-TODO: See if
-															// 100 is optimal
-															// initial capacity.
-															// Note: The list is
-															// auto-expanding.
+				// SDK-TODO: See if 100 is optimal initial capacity.
+				// Note: The list is auto-expanding.
+				this.queueTokens[c] = new ArrayList(100); 
 		}
 
 		// PS Queues
 		if (queue.queueDiscip == QueuingDiscipline.PS
 				&& (!isExponentialPSQueue)) {
-			queueTokenResidualServiceTimes = new DoubleArrayList[numColors]; // NOTE:
-																		// Note
-																		// that
-																		// given
-																		// that
-																		// queueTokResidServTimes
-																		// is
-																		// updated
-																		// frequently,
-																		// it is
-																		// more
-																		// efficient
-																		// to
-																		// use
-																		// an
-																		// array
-																		// here
-																		// than
-																		// a
-																		// LinkedList!
+			// NOTE: Note that given that queueTokResidServTimes is updated frequently,
+			// it is more efficient to use an array here than a LinkedList!
+			queueTokenResidualServiceTimes = new DoubleArrayList[numColors];
 			for (int c = 0; c < numColors; c++)
-				queueTokenResidualServiceTimes[c] = new DoubleArrayList(100); // SDK-TODO:
-																		// See
-																		// if
-																		// 100
-																		// is
-																		// optimal
-																		// initial
-																		// capacity.
-																		// Note:
-																		// The
-																		// list
-																		// is
-																		// auto-expanding.
+				// SDK-TODO: // See if 100 is optimal initial capacity.
+				// Note: The list is auto-expanding.
+				queueTokenResidualServiceTimes[c] = new DoubleArrayList(100); 
 		}
 	}
 
@@ -477,58 +454,68 @@ public class QPlace extends Place {
 			queue.report();
 		}
 	}
-	
+
 	/**
 	 * Returns the minimum of lookahead over all colors.
+	 * 
 	 * @return the minimum of lookahead over all colors.
 	 */
-	public double getLookahead(){
+	public double getLookahead() {
 		List<Double> lookaheads = new ArrayList<Double>();
 		for (int i = 0; i < colors.length; i++) {
 			lookaheads.add(getLookahead(i));
 		}
-		//return Collections.min(lookaheads);
+		// return Collections.min(lookaheads);
 		return Collections.max(lookaheads);
 	}
 
 	/**
 	 * Returns the lookahead for a special colors.
-	 * @param color		the color for which lookahead is returned
+	 * 
+	 * @param color
+	 *            the color for which lookahead is returned
 	 * @return the lookahead for a special colors.
 	 */
 	@Override
-	public double getLookahead(int color){
+	public double getLookahead(int color) {
 		return queue.getLookahead(this, color);
 	}
-	
+
 	/**
 	 * Returns the head of future service time list.
-	 * @param color the color for which a service time is calculated
+	 * 
+	 * @param color
+	 *            the color for which a service time is calculated
 	 * @return the value of next service time
 	 */
-	public synchronized double getNextServiceTime(int color){
+	public synchronized double getNextServiceTime(int color) {
 		calculateServiceTimeIfFutureListIsEmpty(color);
-		return futureList.get(color).get(0);		
+		return futureList.get(color).get(0);
 	}
-	
+
 	/**
 	 * Removes the head of future service time list and returns it.
-	 * @param color the color which specifies the future list
+	 * 
+	 * @param color
+	 *            the color which specifies the future list
 	 * @return the next service time
 	 */
-	public synchronized double removeNextServiceTime(int color){
+	public synchronized double removeNextServiceTime(int color) {
 		calculateServiceTimeIfFutureListIsEmpty(color);
 		return futureList.get(color).remove(0);
 	}
-	
+
 	/**
-	 * Adds a new element to the future list of the chosen color if list is empty.
-	 * @param color	the color for which a service time is computed
+	 * Adds a new element to the future list of the chosen color if list is
+	 * empty.
+	 * 
+	 * @param color
+	 *            the color for which a service time is computed
 	 */
-	private void calculateServiceTimeIfFutureListIsEmpty(int color){
-		if(futureList.get(color).isEmpty()){
+	private void calculateServiceTimeIfFutureListIsEmpty(int color) {
+		if (futureList.get(color).isEmpty()) {
 			double serviceTime = randServTimeGen[color].nextDouble();
-			if (serviceTime < 0){
+			if (serviceTime < 0) {
 				serviceTime = 0;
 			}
 			futureList.get(color).add(serviceTime);
@@ -538,6 +525,7 @@ public class QPlace extends Place {
 	public boolean hasQueuedTokens(int color) {
 		return queueTokenPop[color] > 0;
 	}
+
 	public int[] getQueueTokenPop() {
 		return queueTokenPop;
 	}
