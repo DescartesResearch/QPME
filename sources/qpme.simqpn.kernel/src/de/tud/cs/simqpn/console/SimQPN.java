@@ -71,7 +71,13 @@ import de.tud.cs.simqpn.kernel.Stats;
 import de.tud.cs.simqpn.kernel.StatsDocumentBuilder;
 
 public class SimQPN implements IApplication {
-	
+
+    /*
+     * This method is a helper to run the simulation with a file on the hard disk.
+     *
+     * ATTENTION: This method is used by the DML solvers to trigger the simulation.
+     * If the signature is changed, you will also need to adapt the DML tooling.
+     */
 	public static void runSimulator(String inputFilename, String configuration, String outputFilename, 
 			String logConfigFilename, SimulatorProgress progress) {
 		try {
