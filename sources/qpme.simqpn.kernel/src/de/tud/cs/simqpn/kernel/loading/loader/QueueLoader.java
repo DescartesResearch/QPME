@@ -95,7 +95,7 @@ public class QueueLoader {
 						"queue-num", Integer.toString(i), "queue.id",
 						xmlReferenceQueue.attributeValue("id"), "queue.name", name,
 						"queue.strategy", xmlReferenceQueue.attributeValue("strategy")));
-				// throw new SimQPNException(); //TODO uncomment
+				throw new SimQPNException();
 			}
 			queueToIndexMap.put(xmlReferenceQueue, i);
 			if (log.isDebugEnabled()) {
