@@ -144,43 +144,36 @@ public class SimQPNController {
 	 * @return
 	 * @throws SimQPNException
 	 */
-	public static SimQPNController getSimQPNController(Element XMLDescription,
-			String configurationName, String logConfigFilename, Date date)
+	public static SimQPNController createSimQPNController(Element XMLDescription,
+			String configurationName, String logConfigFilename, Date randomSeed)
 			throws SimQPNException {
 		XMLValidator.validateInputNet(XMLDescription);
 
 		SimQPNController sim = new SimQPNController();
-		if(date == null){
-			sim.initialize(XMLDescription, configurationName, logConfigFilename);			
+		if(randomSeed == null){
+			Date currentTime = new Date(); // User current time as random seed
+			sim.initialize(XMLDescription, configurationName, logConfigFilename, currentTime);			
 		}else{
-			sim.initialize(XMLDescription, configurationName, logConfigFilename, date);						
+			sim.initialize(XMLDescription, configurationName, logConfigFilename, randomSeed);						
 		}
 		return sim;
 	}
 	
-	public static SimQPNController getSimQPNController(Element XMLDescription,
+	public static SimQPNController createSimQPNController(Element XMLDescription,
 			String configurationName, String logConfigFilename)
 			throws SimQPNException {
-		Date date = new Date();
-		return getSimQPNController(XMLDescription, configurationName, logConfigFilename, date);
+		return createSimQPNController(XMLDescription, configurationName, logConfigFilename, null);
 	}
 
 	/**
 	 * Instead of this constructor use
-	 * {@link #getSimQPNController(Element, String, String)} for object creation.
+	 * {@link #createSimQPNController(Element, String, String)} for object creation.
 	 * 
 	 * @param XMLDescription
 	 * @param configurationName
 	 * @throws SimQPNException
 	 */
 	private SimQPNController() {};
-
-	
-	private void initialize(Element XMLDescription, String configurationName, String logConfigFilename)
-			throws SimQPNException {
-		Date date = new Date(); //random date
-		initialize(XMLDescription, configurationName, logConfigFilename, date);
-	}
 
 	/**
 	 * Loads net and configuration from XML description.

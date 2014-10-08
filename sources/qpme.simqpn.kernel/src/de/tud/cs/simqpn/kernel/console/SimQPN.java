@@ -92,7 +92,7 @@ public class SimQPN implements IApplication {
 	private static void runSimulatorOnDocument(Document netDocument,
 			String configurationName, String outputFilename, String logConfigFilename, SimulatorProgress progress, Date date) throws SimQPNException {
 		Element net = netDocument.getRootElement();
-		SimQPNController sim =  SimQPNController.getSimQPNController(net, configurationName, logConfigFilename, date);
+		SimQPNController sim =  SimQPNController.createSimQPNController(net, configurationName, logConfigFilename, date);
 		sim.execute(configurationName, outputFilename, progress);
 		net = sim.getXMLDescription();
 	}

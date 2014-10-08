@@ -249,7 +249,7 @@ public class StartSimulatorAction extends AbstractHandler {
 				if(date == null){
 					date = new Date(); //set random date
 				}
-				SimQPNController sim = SimQPNController.getSimQPNController(net, configuration, null, date);
+				SimQPNController sim = SimQPNController.createSimQPNController(net, configuration, null, date);
 				File resultFile = sim.execute(configuration, null, this);
 				net = sim.getXMLDescription();
 
