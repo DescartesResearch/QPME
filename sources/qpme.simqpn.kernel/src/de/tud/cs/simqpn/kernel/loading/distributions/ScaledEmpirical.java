@@ -11,7 +11,7 @@ package de.tud.cs.simqpn.kernel.loading.distributions;
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
-�* http://www.eclipse.org/legal/epl-v10.html
+ �* http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -46,35 +46,34 @@ import edu.cornell.lassp.houle.RngPack.RandomElement;
 
 /**
  * An empirical distribution that adds a scaling factor and an offset to the
- * empirical distribution {@link cern.jet.random.Empirical} which only ranges from 0 to 1.
+ * empirical distribution {@link cern.jet.random.Empirical} which only ranges
+ * from 0 to 1.
  * 
  * @author Fabian Brosig
  * 
  */
-public class ScaledEmpirical extends Empirical {
+public class ScaledEmpirical extends Empirical {	
 
-@Override
-public double cdf(int arg0) {
-	throw new UnsupportedOperationException("CDF not available for " + this.getClass().getCanonicalName());
-}
+	private static final long serialVersionUID = 1L;
+	private double offset;
+	private double scale;
+	
+	public ScaledEmpirical(double offset, double scale, double[] pdf,
+			int interpolationType, RandomElement randomElement) {
+		super(pdf, interpolationType, randomElement);
+		this.offset = offset;
+		this.scale = scale;
+	}
 
-private double offset;
-private double scale;
+	@Override
+	public double cdf(int arg0) {
+		throw new UnsupportedOperationException("CDF not available for "
+				+ this.getClass().getCanonicalName());
+	}
 
-public ScaledEmpirical(double offset, double scale, double[] pdf, int interpolationType, RandomElement randomElement) {
-	super(pdf, interpolationType, randomElement);
-	this.offset = offset;
-	this.scale = scale;
-}
-
-/**
- * 
- */
-private static final long serialVersionUID = 1l;
-
-@Override
-public double nextDouble() {
-	return super.nextDouble() * scale + offset;
-}
+	@Override
+	public double nextDouble() {
+		return super.nextDouble() * scale + offset;
+	}
 
 }
