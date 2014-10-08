@@ -70,6 +70,7 @@ public class SimQPN implements IApplication {
 	
 	public static void main(String[] args) {
 		startSimQPNWithCommandLine(args);
+	}
 
     /*
      * This method is a helper to run the simulation with a file on the hard disk.
@@ -82,7 +83,7 @@ public class SimQPN implements IApplication {
 		try {
 			SAXReader xmlReader = new SAXReader();
 			Document inputDoc = xmlReader.read(inputFilename);
-			runSimulatorOnDocument(inputDoc, configuration, outputFilename, logConfigFilename, progress);
+			runSimulatorOnDocument(inputDoc, configuration, outputFilename, logConfigFilename, progress, null);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
