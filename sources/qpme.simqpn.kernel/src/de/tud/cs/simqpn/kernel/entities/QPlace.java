@@ -465,8 +465,7 @@ public class QPlace extends Place {
 		for (int i = 0; i < colors.length; i++) {
 			lookaheads.add(getLookahead(i));
 		}
-		// return Collections.min(lookaheads);
-		return Collections.max(lookaheads);
+		return Collections.min(lookaheads);
 	}
 
 	/**
