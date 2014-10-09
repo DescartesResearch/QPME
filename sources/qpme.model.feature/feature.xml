@@ -20,8 +20,6 @@
    <requires>
       <import plugin="org.eclipse.osgi"/>
       <import plugin="org.eclipse.core.runtime"/>
-      <import plugin="org.eclipse.emf.ecore"/>
-      <import plugin="org.eclipse.emf.ecore.xmi"/>
    </requires>
 
    <plugin
@@ -30,17 +28,5 @@
          install-size="0"
          version="0.0.0"
          unpack="false"/>
-
-   <plugin
-         id="qpme.model"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
-         id="qpme.simqpn.model"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
 
 </feature>
