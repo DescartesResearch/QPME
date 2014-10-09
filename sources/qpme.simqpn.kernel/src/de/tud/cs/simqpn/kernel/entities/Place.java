@@ -65,6 +65,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.dom4j.Element;
 
+import cern.jet.random.engine.RandomEngine;
 import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
@@ -73,7 +74,6 @@ import de.tud.cs.simqpn.kernel.entities.stats.PlaceStats;
 import de.tud.cs.simqpn.kernel.entities.stats.Stats;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.executor.parallel.LP;
-import edu.cornell.lassp.houle.RngPack.RandomElement;
 
 /**
  * Class Place
@@ -159,7 +159,7 @@ public class Place extends Node {
 	public Element element;
 
 	/** RANDOM departure discipline */
-	private RandomElement randomElement;
+	private RandomEngine randomElement;
 
 	/**
 	 * 
@@ -516,8 +516,8 @@ public class Place extends Node {
 				outTrans[i].updateState(id, color, availTokens[color], (-1)*count);			
 			}
 			if (departureQueue.size() > 0) {
-				int nextCol = ((Integer) departureQueue.remove(
-						randomElement.choose(departureQueue.size())));
+				int queueIdx = (int)(departureQueue.size() * randomElement.raw());
+				int nextCol = (Integer) departureQueue.remove(queueIdx);
 				availTokens[nextCol]++;
 				departureReady = true; // Left for clarity. Actually redundant since depReady should already be true.
 				for (int i = 0; i < outTrans.length; i++)
