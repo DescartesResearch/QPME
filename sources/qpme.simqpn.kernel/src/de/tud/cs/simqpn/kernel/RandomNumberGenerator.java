@@ -7,9 +7,9 @@ import org.apache.log4j.Logger;
 import cern.jet.random.Uniform;
 import cern.jet.random.engine.DRand;
 import cern.jet.random.engine.MersenneTwister;
+import cern.jet.random.engine.RandomEngine;
 import cern.jet.random.engine.RandomSeedGenerator;
 import cern.jet.random.engine.RandomSeedTable;
-import edu.cornell.lassp.houle.RngPack.RandomElement;
 
 /**
  * Creates random numbers. 
@@ -69,8 +69,8 @@ public class RandomNumberGenerator {
 	 * @return int
 	 * @exception
 	 */
-	public static RandomElement nextRandNumGen() throws SimQPNException {
-		RandomElement randomElement = null;
+	public static RandomEngine nextRandNumGen() throws SimQPNException {
+		RandomEngine randomElement = null;
 		int nextSeed = 0;
 
 		if (randGenClass == RandomGeneratorCategory.DRand) {

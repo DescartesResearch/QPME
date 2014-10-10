@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 
 import cern.jet.random.Empirical;
 import cern.jet.random.EmpiricalWalker;
+import cern.jet.random.engine.RandomEngine;
 import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
@@ -23,7 +24,6 @@ import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.executor.QueueEvent;
 import de.tud.cs.simqpn.kernel.executor.TokenEvent;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
-import edu.cornell.lassp.houle.RngPack.RandomElement;
 
 public class SequentialExecutor implements Executor, Callable<Net>{
 
@@ -81,7 +81,7 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 	
 	private int runID;
 	
-	RandomElement randomElement;
+	RandomEngine randomEngine;
 
 	public SequentialExecutor(Net net, SimQPNConfiguration configuration,
 			SimulatorProgress progressMonitor, int runID) {
@@ -91,13 +91,13 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 		this.runID = runID;
 	}
 
-	public SequentialExecutor(Net net, SimQPNConfiguration configuration, RandomElement randomElement,
+	public SequentialExecutor(Net net, SimQPNConfiguration configuration, RandomEngine randomElement,
 			SimulatorProgress progressMonitor, int runID) {
 		this.net = net;
 		this.configuration = configuration;
 		this.progressMonitor = progressMonitor;
 		this.runID = runID;
-		this.randomElement = randomElement;
+		this.randomEngine = randomElement;
 	}
 
 	
@@ -148,12 +148,12 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 		for (int t = 0; t < net.getNumTrans(); t++)
 			pdf[t] = 1;
 
-		if(randomElement == null){
+		if(randomEngine == null){
 			randTransGen = new EmpiricalWalker(pdf, Empirical.NO_INTERPOLATION,
 					RandomNumberGenerator.nextRandNumGen());			
 		}else{
 			randTransGen = new EmpiricalWalker(pdf, Empirical.NO_INTERPOLATION,
-					randomElement);
+					randomEngine);
 			//randomElement == null; 
 		}
 		// Note: Here we use a default distribution. The actual distribution

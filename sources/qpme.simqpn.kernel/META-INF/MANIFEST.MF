@@ -13,9 +13,9 @@ Export-Package: de.tud.cs.simqpn.kernel,
  de.tud.cs.simqpn.kernel.util
 Bundle-Vendor: Descartes Research Group
 Require-Bundle: org.dom4j;bundle-version="1.6.1",
- cern.colt;bundle-version="1.2.0",
  org.apache.log4j;bundle-version="1.2.15",
  org.eclipse.equinox.app,
  org.eclipse.core.runtime;bundle-version="3.7.0",
+ cern.colt;bundle-version="1.2.0",
  edu.bonn.cs.net.jbarrier;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

@@ -12,7 +12,6 @@ import org.dom4j.Element;
 
 import cern.jet.random.AbstractContinousDistribution;
 import de.tud.cs.simqpn.kernel.SimQPNException;
-import edu.cornell.lassp.houle.RngPack.RandomElement;
 
 public abstract class DistributionCreator {
 	

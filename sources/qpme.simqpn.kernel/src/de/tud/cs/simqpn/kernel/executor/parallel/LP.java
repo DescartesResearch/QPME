@@ -43,7 +43,6 @@ package de.tud.cs.simqpn.kernel.executor.parallel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -55,6 +54,7 @@ import org.apache.log4j.Logger;
 
 import cern.jet.random.Empirical;
 import cern.jet.random.EmpiricalWalker;
+import cern.jet.random.engine.RandomEngine;
 import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
@@ -70,7 +70,6 @@ import de.tud.cs.simqpn.kernel.executor.TokenEvent;
 import de.tud.cs.simqpn.kernel.executor.parallel.barrier.termination.StopController;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import edu.bonn.cs.net.jbarrier.barrier.Barrier;
-import edu.cornell.lassp.houle.RngPack.RandomElement;
 
 /**
  * This class represents a logical process (LP) which simulates a part of a net.
@@ -755,7 +754,7 @@ public class LP implements Executor {
 
 	}
 
-	private void createRandomTransGen(RandomElement randomElement)
+	private void createRandomTransGen(RandomEngine randomElement)
 			throws SimQPNException {
 		// Create randTransGen
 		double[] pdf = new double[transitions.length];
@@ -769,7 +768,7 @@ public class LP implements Executor {
 	}
 
 	private void createRandomTransGen() throws SimQPNException {
-		RandomElement randomElement = RandomNumberGenerator.nextRandNumGen();
+		RandomEngine randomElement = RandomNumberGenerator.nextRandNumGen();
 		createRandomTransGen(randomElement);
 	}
 

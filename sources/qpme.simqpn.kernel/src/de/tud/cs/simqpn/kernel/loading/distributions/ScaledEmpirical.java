@@ -42,7 +42,7 @@ package de.tud.cs.simqpn.kernel.loading.distributions;
  */
 
 import cern.jet.random.Empirical;
-import edu.cornell.lassp.houle.RngPack.RandomElement;
+import cern.jet.random.engine.RandomEngine;
 
 /**
  * An empirical distribution that adds a scaling factor and an offset to the
@@ -59,8 +59,8 @@ public class ScaledEmpirical extends Empirical {
 	private double scale;
 	
 	public ScaledEmpirical(double offset, double scale, double[] pdf,
-			int interpolationType, RandomElement randomElement) {
-		super(pdf, interpolationType, randomElement);
+			int interpolationType, RandomEngine randomEngine) {
+		super(pdf, interpolationType, randomEngine);
 		this.offset = offset;
 		this.scale = scale;
 	}

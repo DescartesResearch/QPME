@@ -8,8 +8,8 @@ Bundle-Vendor: Descartes Research Group
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: de.tud.cs.simqpn.ui.QPESimQPNPlugin
 Require-Bundle: qpme.simqpn.kernel,
- org.dom4j;bundle-version="1.6.1",
  org.eclipse.core.runtime,
  org.eclipse.ui,
  qpme.qpe.core;bundle-version="2.1.0",
- org.apache.log4j;bundle-version="1.2.15"
+ org.apache.log4j;bundle-version="1.2.15",
+ org.dom4j;bundle-version="1.6.1"
