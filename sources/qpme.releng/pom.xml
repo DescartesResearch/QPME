@@ -23,7 +23,7 @@
 	</scm>
 
 	<properties>
-		<tycho-version>0.20.0</tycho-version>
+		<tycho-version>0.21.0</tycho-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -105,11 +105,6 @@
 	</build>
 
 	<modules>
-		<module>../edu.bonn.cs.net.jbarrier</module>
-		<module>../cern.colt</module>
-		<module>../org.dom4j</module>
-		<module>../org.jfreechart</module>
-		<module>../org.rosuda.JRI</module>
 		<module>../qpme.model.migration</module>
 		<module>../qpme.model</module>
 		<module>../qpme.simqpn.model</module>
