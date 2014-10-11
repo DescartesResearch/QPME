@@ -19,14 +19,14 @@
     <queue id="_q2" name="Q2" number-of-servers="1" strategy="PS"/>  
     <queue id="_q3" name="Q3" number-of-servers="1" strategy="PS"/>  
     <queue id="_q4" name="Q4" number-of-servers="1" strategy="PS"/>  
-    <queue id="_q5" name="Q4" number-of-servers="1" strategy="PS"/>  
-    <queue id="_q6" name="Q4" number-of-servers="1" strategy="FCFS"/>  
-    <queue id="_q7" name="Q4" number-of-servers="1" strategy="IS"/>  
-    <queue id="_q8" name="Q4" number-of-servers="1" strategy="IS"/>  
-    <queue id="_q9" name="Q4" number-of-servers="1" strategy="PS"/>  
-    <queue id="_q10" name="Q4" number-of-servers="1" strategy="PS"/>  
-    <queue id="_q11" name="Q4" number-of-servers="1" strategy="PS"/>  
-    <queue id="_q12" name="Q4" number-of-servers="1" strategy="PS"/> 
+    <queue id="_q5" name="Q5" number-of-servers="1" strategy="PS"/>  
+    <queue id="_q6" name="Q6" number-of-servers="1" strategy="FCFS"/>  
+    <queue id="_q7" name="Q7" number-of-servers="1" strategy="IS"/>  
+    <queue id="_q8" name="Q8" number-of-servers="1" strategy="IS"/>  
+    <queue id="_q9" name="Q9" number-of-servers="1" strategy="PS"/>  
+    <queue id="_q10" name="Q10" number-of-servers="1" strategy="PS"/>  
+    <queue id="_q11" name="Q11" number-of-servers="1" strategy="PS"/>  
+    <queue id="_q12" name="Q12" number-of-servers="1" strategy="PS"/> 
   </queues>
   <places> 
     <place xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" departure-discipline="NORMAL" id="_1156606473674" name="C1" queue-ref="_q0" xsi:type="queueing-place">
