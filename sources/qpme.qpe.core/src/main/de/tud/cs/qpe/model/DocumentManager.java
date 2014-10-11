@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
-�* http://www.eclipse.org/legal/epl-v10.html
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -48,6 +48,7 @@ import java.util.Map;
 
 import javax.xml.XMLConstants;
 
+import org.apache.log4j.Logger;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
@@ -68,6 +69,8 @@ import de.tud.cs.qpe.utils.IdGenerator;
  */
 
 public class DocumentManager {
+	private static Logger log = Logger.getLogger(DocumentManager.class);
+	
 	public static final String PROP_DOCUMENT_REGISTERD = "document.registered";
 
 	public static final String PROP_DOCUMENT_UNREGISTERD = "document.unregistered";
@@ -220,6 +223,8 @@ public class DocumentManager {
 		DocumentEventWrapper wrapper = getInstance().getDocumentEventWrapper(element);
 		if (wrapper != null) {
 			wrapper.addElement(element, child, createId);
+		}else{
+			throw new RuntimeException("No net specified. Call DocumentManager.registerInput(net.getDocument());");
 		}
 	}
 

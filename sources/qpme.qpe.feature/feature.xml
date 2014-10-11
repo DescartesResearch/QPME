@@ -25,23 +25,28 @@
          id="org.eclipse.gef"
          version="0.0.0"/>
 
+   <includes
+         id="org.eclipse.emf.ecore"
+         version="0.0.0"/>
+
+   <includes
+         id="org.eclipse.emf.common"
+         version="0.0.0"/>
+
    <requires>
-      <import plugin="org.eclipse.swt" version="3.6.1" match="greaterOrEqual"/>
       <import plugin="qpme.simqpn.kernel"/>
-      <import plugin="org.dom4j" version="1.6.1" match="greaterOrEqual"/>
       <import plugin="org.eclipse.core.runtime"/>
       <import plugin="org.eclipse.ui"/>
       <import plugin="qpme.qpe.core" version="2.1.0" match="greaterOrEqual"/>
+      <import plugin="org.apache.log4j" version="1.2.15" match="greaterOrEqual"/>
+      <import plugin="org.dom4j" version="1.6.1" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.swt" version="3.6.1" match="greaterOrEqual"/>
       <import plugin="org.eclipse.gef"/>
-      <import plugin="org.jfreechart" version="1.0.12" match="greaterOrEqual"/>
-      <import plugin="org.rosuda.JRI" version="1.0.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.ui" version="3.5.0" match="compatible"/>
       <import plugin="org.eclipse.jface.text" version="3.5.0" match="compatible"/>
       <import plugin="org.eclipse.ui.workbench.texteditor" version="3.5.0" match="compatible"/>
       <import plugin="org.eclipse.core.runtime" version="3.5.0" match="compatible"/>
       <import plugin="org.eclipse.core.expressions" version="3.4.0" match="compatible"/>
-      <import plugin="org.eclipse.core.variables" version="3.2.0" match="compatible"/>
-      <import plugin="com.ibm.icu"/>
       <import plugin="org.eclipse.core.runtime" version="3.2.0" match="compatible"/>
       <import plugin="org.eclipse.help" version="3.2.0" match="compatible"/>
       <import plugin="org.eclipse.core.runtime" version="3.6.0" match="compatible"/>
@@ -49,25 +54,27 @@
       <import plugin="org.eclipse.ui" version="3.6.0" match="compatible"/>
       <import plugin="org.eclipse.ui.forms" version="3.5.0" match="compatible"/>
       <import plugin="org.eclipse.core.expressions" version="3.4.200" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.osgi"/>
       <import plugin="org.eclipse.jface" version="3.6.0" match="compatible"/>
-      <import plugin="org.apache.log4j" version="1.2.15" match="greaterOrEqual"/>
+      <import plugin="qpme.model.migration" version="2.1.0" match="greaterOrEqual"/>
+      <import plugin="org.jfreechart.core" version="1.0.12" match="greaterOrEqual"/>
+      <import plugin="org.jfreechart.jcommon" version="1.0.15" match="greaterOrEqual"/>
+      <import plugin="org.jfreechart.swt" version="1.0.12" match="greaterOrEqual"/>
+      <import plugin="org.rosuda.JRI" version="0.5.0" match="greaterOrEqual"/>
+      <import plugin="org.jaxen" version="1.1.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.core.variables" version="3.2.800" match="compatible"/>
+      <import plugin="org.eclipse.text" version="3.5.0" match="compatible"/>
+      <import plugin="org.eclipse.swt" version="3.103.0" match="compatible"/>
+      <import plugin="org.eclipse.jface" version="3.5.0" match="compatible"/>
+      <import plugin="org.eclipse.core.commands" version="3.5.0" match="compatible"/>
+      <import plugin="org.eclipse.equinox.common" version="3.5.0" match="compatible"/>
+      <import plugin="org.eclipse.core.runtime" version="3.3.0" match="compatible"/>
+      <import plugin="org.eclipse.compare.core" version="3.5.0" match="compatible"/>
+      <import plugin="org.eclipse.core.expressions" version="3.4.100" match="compatible"/>
+      <import plugin="org.eclipse.jface.text" version="3.8.0" match="compatible"/>
    </requires>
 
    <plugin
          id="org.dom4j"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
-         id="org.jfreechart"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
-         id="org.rosuda.JRI"
          download-size="0"
          install-size="0"
          version="0.0.0"/>
@@ -150,6 +157,41 @@
 
    <plugin
          id="org.eclipse.compare.core"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.jaxen"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.jfreechart.core"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.jfreechart.jcommon"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.jfreechart.swt"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.rosuda.JRI"
          download-size="0"
          install-size="0"
          version="0.0.0"

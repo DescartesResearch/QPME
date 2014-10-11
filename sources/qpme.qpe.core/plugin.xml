@@ -206,7 +206,7 @@
                allPopups="false"
                locationURI="toolbar:org.eclipse.ui.main.toolbar">
             <toolbar
-                  id="qpme.qpe.core.toolbar.main">
+                  id="org.eclipse.ui.workbench.file">
                <command
                      commandId="org.eclipse.ui.newWizard"
                      style="push">

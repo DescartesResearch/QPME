@@ -9,7 +9,7 @@
             thread="main"
             visible="true">
          <run
-               class="de.tud.cs.simqpn.console.SimQPN">
+               class="de.tud.cs.simqpn.kernel.console.SimQPN">
          </run>
       </application>
    </extension>

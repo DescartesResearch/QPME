@@ -393,7 +393,7 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 				"StudentT", "Uniform", "VonMises", "Empirical", "Deterministic" };
 
 		protected final int numParams[] = { 2, 3, 3, 1, 2, 2, 1, 1, 1, 2, 1, 2,
-				1, 0, 1 };
+				1, 2, 1 };
 
 		protected final String paramNames[][] = { { "alpha", "beta", null },
 				{ "mean", "gamma", "cut" }, { "mean", "gamma", "cut" },
@@ -402,14 +402,14 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 				{ "tau", null, null }, { "p", null, null },
 				{ "mean", "stdDev", null }, { "freedom", null, null },
 				{ "min", "max", null }, { "freedom", null, null },
-				{ null, null, null }, { "p1", null, null } };
+				{ "scale", "offset", null }, { "p1", null, null } };
 
 		protected final String defaultValues[][] = { { "1", "1", null },
 				{ "1", "1", "1" }, { "1", "1", "1" }, { "1", null, null },
 				{ "1", "1", null }, { "1", "1", null }, { "1", null, null },
 				{ "1", null, null }, { "1", null, null }, { "1", "1", null },
 				{ "1", null, null }, { "1", "1", null }, { "1", null, null },
-				{ null, null, null }, { "1", null, null } };
+				{ "1", "0", null }, { "1", null, null } };
 
 		public String[] getItems() {
 			return items;
@@ -456,22 +456,22 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 			case 0:
 				removeAttributes(colorRef, new String[] { "cut", "freedom",
 						"gamma", "lambda", "max", "mean", "min", "p", "p1",
-						"p2", "p3", "pdf_filename", "stdDev", "tau" });
+						"p2", "p3", "pdf_filename", "stdDev", "tau", "scale", "offset" });
 				break;
 			case 1:
 				removeAttributes(colorRef, new String[] { "alpha", "beta",
 						"freedom", "lambda", "max", "min", "p", "p1", "p2",
-						"p3", "pdf_filename", "stdDev", "tau" });
+						"p3", "pdf_filename", "stdDev", "tau", "scale", "offset" });
 				break;
 			case 2:
 				removeAttributes(colorRef, new String[] { "alpha", "beta",
 						"freedom", "lambda", "max", "min", "p", "p1", "p2",
-						"p3", "pdf_filename", "stdDev", "tau" });
+						"p3", "pdf_filename", "stdDev", "tau", "scale", "offset" });
 				break;
 			case 3:
 				removeAttributes(colorRef, new String[] { "alpha", "beta",
 						"cut", "gamma", "lambda", "max", "mean", "min", "p",
-						"p1", "p2", "p3", "pdf_filename", "stdDev", "tau" });
+						"p1", "p2", "p3", "pdf_filename", "stdDev", "tau", "scale", "offset" });
 				break;
 			case 4:
 				removeAttributes(colorRef, new String[] { "beta", "cut",
@@ -481,54 +481,54 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 			case 5:
 				removeAttributes(colorRef, new String[] { "cut", "freedom",
 						"gamma", "lambda", "max", "mean", "min", "p", "p1",
-						"p2", "p3", "pdf_filename", "stdDev", "tau" });
+						"p2", "p3", "pdf_filename", "stdDev", "tau", "scale", "offset" });
 				break;
 			case 6:
 				removeAttributes(colorRef, new String[] { "alpha", "beta",
 						"cut", "freedom", "gamma", "max", "mean", "min", "p",
-						"p1", "p2", "p3", "pdf_filename", "stdDev", "tau" });
+						"p1", "p2", "p3", "pdf_filename", "stdDev", "tau", "scale", "offset" });
 				break;
 			case 7:
 				removeAttributes(colorRef,
 						new String[] { "alpha", "beta", "cut", "freedom",
 								"gamma", "lambda", "max", "mean", "min", "p",
-								"p1", "p2", "p3", "pdf_filename", "stdDev" });
+								"p1", "p2", "p3", "pdf_filename", "stdDev", "scale", "offset" });
 				break;
 			case 8:
 				removeAttributes(colorRef, new String[] { "alpha", "beta",
 						"cut", "freedom", "gamma", "lambda", "max", "mean",
 						"min", "p1", "p2", "p3", "pdf_filename", "stdDev",
-						"tau" });
+						"tau", "scale", "offset" });
 				break;
 			case 9:
 				removeAttributes(colorRef, new String[] { "alpha", "beta",
 						"cut", "freedom", "gamma", "lambda", "max", "min", "p",
-						"p1", "p2", "p3", "pdf_filename", "tau" });
+						"p1", "p2", "p3", "pdf_filename", "tau", "scale", "offset" });
 				break;
 			case 10:
 				removeAttributes(colorRef, new String[] { "alpha", "beta",
 						"cut", "gamma", "lambda", "max", "mean", "min", "p",
-						"p1", "p2", "p3", "pdf_filename", "stdDev", "tau" });
+						"p1", "p2", "p3", "pdf_filename", "stdDev", "tau", "scale", "offset" });
 				break;
 			case 11:
 				removeAttributes(colorRef, new String[] { "alpha", "beta",
 						"cut", "freedom", "gamma", "lambda", "mean", "p", "p1",
-						"p2", "p3", "pdf_filename", "stdDev", "tau" });
+						"p2", "p3", "pdf_filename", "stdDev", "tau", "scale", "offset" });
 				break;
 			case 12:
 				removeAttributes(colorRef, new String[] { "alpha", "beta",
 						"cut", "gamma", "lambda", "max", "mean", "min", "p",
-						"p1", "p2", "p3", "pdf_filename", "stdDev", "tau" });
+						"p1", "p2", "p3", "pdf_filename", "stdDev", "tau", "scale", "offset" });
 				break;
 			case 13:
 				removeAttributes(colorRef, new String[] { "alpha", "beta",
 						"cut", "freedom", "gamma", "lambda", "max", "mean",
-						"min", "p", "p1", "p2", "p3", "stdDev", "tau" });
+						"min", "p", "p1", "p2", "p3", "stdDev", "tau", "scale", "offset" });
 				break;
 			case 14:
 				removeAttributes(colorRef, new String[] { "alpha", "beta",
 						"cut", "freedom", "gamma", "lambda", "max", "mean",
-						"min", "p", "pdf_filename", "stdDev", "tau" });
+						"min", "p", "pdf_filename", "stdDev", "tau", "scale", "offset" });
 				break;
 			}
 		}

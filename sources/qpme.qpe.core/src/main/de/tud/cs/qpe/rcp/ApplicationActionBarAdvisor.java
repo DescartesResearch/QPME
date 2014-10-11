@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
-�* http://www.eclipse.org/legal/epl-v10.html
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -46,7 +46,11 @@ import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.ICoolBarManager;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.ToolBarContributionItem;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -89,7 +93,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		}
 		menuBar.add(windowMenu);
 
-		menuBar.add(new MenuManager("&Help", IWorkbenchActionConstants.M_HELP));
+		MenuManager helpMenu = new MenuManager("&Help", IWorkbenchActionConstants.M_HELP);
+		helpMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+        helpMenu.add(new Separator());
+		menuBar.add(helpMenu);
 
 		// Activate qpme context so that certain standard commands are overriden
 		IContextService contextService = (IContextService) PlatformUI
@@ -98,6 +105,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	}
 
 	protected void fillCoolBar(ICoolBarManager coolBar) {
+		coolBar.setLockLayout(false);
+		//IToolBarManager fileBar = new ToolBarManager();
+		//coolBar.add(new ToolBarContributionItem(fileBar, IWorkbenchActionConstants.TOOLBAR_FILE));
+		//fileBar.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 		// coolBar.setLockLayout(true);
 		// IToolBarManager fileBar = new ToolBarManager();
 		// coolBar.add(new ToolBarContributionItem(fileBar, "file"));

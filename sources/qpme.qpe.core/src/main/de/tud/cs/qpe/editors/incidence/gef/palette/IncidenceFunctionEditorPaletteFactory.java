@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
-�* http://www.eclipse.org/legal/epl-v10.html
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -68,6 +68,7 @@ import org.eclipse.gef.palette.PaletteRoot;
 import org.eclipse.gef.palette.PanningSelectionToolEntry;
 import org.eclipse.gef.palette.ToolEntry;
 import org.eclipse.gef.requests.CreationFactory;
+import org.eclipse.gef.ui.palette.FlyoutPaletteComposite;
 import org.eclipse.gef.ui.palette.FlyoutPaletteComposite.FlyoutPreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -145,6 +146,9 @@ public final class IncidenceFunctionEditorPaletteFactory {
 			}
 
 			public int getPaletteState() {
+				if (!getPreferenceStore().contains(PALETTE_STATE)) {
+					getPreferenceStore().setDefault(PALETTE_STATE, FlyoutPaletteComposite.STATE_PINNED_OPEN);
+				}
 				return getPreferenceStore().getInt(PALETTE_STATE);
 			}
 

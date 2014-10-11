@@ -48,4 +48,24 @@
          version="0.0.0"
          unpack="false"/>
 
+   <plugin
+         id="edu.bonn.cs.net.jbarrier"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.jaxen"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="edu.oswego.cs.dl.util.concurrent"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
 </feature>

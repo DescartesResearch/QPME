@@ -1,4 +1,6 @@
 instructions.configure=\
 org.eclipse.equinox.p2.touchpoint.natives.remove(path:${installFolder}/eclipsec.exe);\
 org.eclipse.equinox.p2.touchpoint.natives.remove(path:${installFolder}/notice.html);\
-org.eclipse.equinox.p2.touchpoint.natives.remove(path:${installFolder}/epl-v10.html);
+org.eclipse.equinox.p2.touchpoint.natives.remove(path:${installFolder}/epl-v10.html);\
+addRepository(type:0,location:http${#58}//www.eclipse.org/equinox/p2/testing/updateSite);\
+addRepository(type:1,location:http${#58}//www.eclipse.org/equinox/p2/testing/updateSite);

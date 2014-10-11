@@ -61,7 +61,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 		configurer.setInitialSize(new Point(700, 550));
 		configurer.setShowCoolBar(true);
-		configurer.setShowStatusLine(false);
+		configurer.setShowStatusLine(true);
+		configurer.setShowProgressIndicator(true);
 //		configurer.setTitle("QPME - Queueing Petri net Modeling Environment"); 
 		// The title is set in plugin.xml:
 		// <product application="QPE_Base.qpe.application" name="QPME - Queueing Petri net Modeling Environment">...

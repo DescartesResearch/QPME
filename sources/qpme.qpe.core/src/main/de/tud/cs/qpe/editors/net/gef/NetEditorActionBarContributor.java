@@ -214,7 +214,7 @@ public class NetEditorActionBarContributor extends MultiPageEditorActionBarContr
 
 	public void contributeToToolBar(IToolBarManager toolBar) {
 		IToolBarManager netEditBar = new ToolBarManager();
-		toolBar.add(new ToolBarContributionItem(netEditBar, "file")); //$NON-NLS-1$
+		toolBar.add(new ToolBarContributionItem(netEditBar, "qpme.qpe.core.toolbar.main")); //$NON-NLS-1$
 
 		toolBar.add(getAction(ActionFactory.UNDO.getId()));
 		toolBar.add(getAction(ActionFactory.REDO.getId()));
