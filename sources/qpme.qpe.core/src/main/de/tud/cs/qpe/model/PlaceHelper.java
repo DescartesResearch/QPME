@@ -9,7 +9,7 @@
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
-�* http://www.eclipse.org/legal/epl-v10.html
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -26,7 +26,7 @@
  *                                
  * =============================================
  *
- * Original Author(s):  Samuel Kounev and Christofer Dutz
+ * Original Author(s):  Samuel Kounev and Simon Spinner
  * Contributor(s):  
  * 
  * NOTE: The above list of contributors lists only the people that have
