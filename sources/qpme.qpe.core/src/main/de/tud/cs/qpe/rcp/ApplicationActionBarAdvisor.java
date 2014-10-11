@@ -46,8 +46,11 @@ import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.ICoolBarManager;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.ToolBarContributionItem;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -102,6 +105,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	}
 
 	protected void fillCoolBar(ICoolBarManager coolBar) {
+		coolBar.setLockLayout(false);
+		//IToolBarManager fileBar = new ToolBarManager();
+		//coolBar.add(new ToolBarContributionItem(fileBar, IWorkbenchActionConstants.TOOLBAR_FILE));
+		//fileBar.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 		// coolBar.setLockLayout(true);
 		// IToolBarManager fileBar = new ToolBarManager();
 		// coolBar.add(new ToolBarContributionItem(fileBar, "file"));
