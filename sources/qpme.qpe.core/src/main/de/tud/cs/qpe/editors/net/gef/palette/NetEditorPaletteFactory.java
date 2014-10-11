@@ -64,6 +64,7 @@ import org.eclipse.gef.palette.PaletteRoot;
 import org.eclipse.gef.palette.PanningSelectionToolEntry;
 import org.eclipse.gef.palette.ToolEntry;
 import org.eclipse.gef.requests.CreationFactory;
+import org.eclipse.gef.ui.palette.FlyoutPaletteComposite;
 import org.eclipse.gef.ui.palette.FlyoutPaletteComposite.FlyoutPreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 
@@ -183,6 +184,7 @@ public final class NetEditorPaletteFactory {
 	 */
 	public static FlyoutPreferences createPalettePreferences() {
 		return new FlyoutPreferences() {
+			
 			private IPreferenceStore getPreferenceStore() {
 				return QPEBasePlugin.getDefault().getPreferenceStore();
 			}
@@ -192,6 +194,9 @@ public final class NetEditorPaletteFactory {
 			}
 
 			public int getPaletteState() {
+				if (!getPreferenceStore().contains(PALETTE_STATE)) {
+					getPreferenceStore().setDefault(PALETTE_STATE, FlyoutPaletteComposite.STATE_PINNED_OPEN);
+				}
 				return getPreferenceStore().getInt(PALETTE_STATE);
 			}
 
