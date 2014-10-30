@@ -69,11 +69,13 @@ import cern.jet.random.engine.RandomEngine;
 import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
+import de.tud.cs.simqpn.kernel.SimQPNConfiguration.AnalysisMethod;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 import de.tud.cs.simqpn.kernel.entities.stats.PlaceStats;
 import de.tud.cs.simqpn.kernel.entities.stats.Stats;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.executor.parallel.LP;
+import de.tud.cs.simqpn.kernel.loading.XMLWelch;
 
 /**
  * Class Place
@@ -243,6 +245,17 @@ public class Place extends Node {
 		Place clone = new Place(id, name, colors, this.inTrans.length,
 				this.outTrans.length, probeActions[0].length, statsLevel,
 				departureDiscipline, element, configuration);
+		/*
+		 * NOTE: Cloning assumes that placeStats have NOT been edited before
+		 * cloning. Otherwise, the whole placeStats object would have to be
+		 * cloned. Now we just modify the necessary elements.
+		 */
+		if(XMLWelch.isMeasuringSojurnTimes(this, configuration.getAnalMethod())){
+			for(int c=0; c < this.numColors; c++){
+				clone.placeStats.minObsrvST[c]	= this.placeStats.minObsrvST[c]; 
+				clone.placeStats.maxObsrvST[c]	= this.placeStats.maxObsrvST[c]; 
+			}
+		}
 		clone.finishCloning(this, queues, transitions, configuration);
 		return clone;
 	}

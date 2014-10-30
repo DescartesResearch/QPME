@@ -80,6 +80,7 @@ import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 import de.tud.cs.simqpn.kernel.entities.queue.QueuingDiscipline;
 import de.tud.cs.simqpn.kernel.entities.stats.QPlaceQueueStats;
 import de.tud.cs.simqpn.kernel.executor.Executor;
+import de.tud.cs.simqpn.kernel.loading.XMLWelch;
 import de.tud.cs.simqpn.kernel.loading.distributions.Deterministic;
 
 /**
@@ -147,6 +148,17 @@ public class QPlace extends Place {
 		QPlace clone = new QPlace(id, name, colors, this.inTrans.length,
 				this.outTrans.length, probeActions[0].length, statsLevel,
 				departureDiscipline, queues[queue.id], element, configuration);
+		/*
+		 * NOTE: This cloning assumes that qPlaceQueueStats have NOT been edited
+		 * before cloning. Otherwise, the whole qPlaceQueueStats object would
+		 * have to be cloned. Now we just modify the necessary elements.
+		 */
+		if(XMLWelch.isMeasuringSojurnTimes(this, configuration.getAnalMethod())){
+			for(int c=0; c < this.numColors; c++){
+				clone.qPlaceQueueStats.minObsrvST[c]	= this.qPlaceQueueStats.minObsrvST[c]; 
+				clone.qPlaceQueueStats.maxObsrvST[c]	= this.qPlaceQueueStats.maxObsrvST[c]; 
+			}
+		}
 		clone.finishCloning(this, queues, transitions, configuration);
 		return clone;
 	}

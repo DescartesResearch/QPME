@@ -130,6 +130,8 @@ public class NetLoader {
 		createProbes(netXML, net, configuration);
 		net.configureProbes();
 		configureInitialMarking(net);
+		XMLWelch.configurePlaceStats(net.getPlaces(), netXML, configurationName);
+
 		return net;
 	}
 

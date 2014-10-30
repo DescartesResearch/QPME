@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.dom4j.Element;
 import org.dom4j.XPath;
 
+import de.tud.cs.simqpn.kernel.SimQPNConfiguration.AnalysisMethod;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
@@ -59,7 +60,7 @@ public class XMLWelch {
 			// maxObsrvST for each
 			// color-ref of the current place (depository and queue).
 			// These values are used in WELCH method.
-			if (pl.statsLevel >= 3) {
+			if (isMeasuringSojurnTimes(pl)) {
 				xpathSelector = XMLHelper.createXPath("color-refs/color-ref");
 				Iterator<Element> colorRefIterator = xpathSelector.selectNodes(
 						place).iterator();
@@ -119,6 +120,14 @@ public class XMLWelch {
 		}
 		// END-CONFIG
 		// -----------------------------------------------------------------------------------------
+	}
+	private static boolean isMeasuringSojurnTimes(Place pl) {
+		return isMeasuringSojurnTimes(pl, AnalysisMethod.WELCH);
+	}
+
+	/** Returns is storing sojourn time observations is enabled for the place */
+	public static boolean isMeasuringSojurnTimes(Place pl, AnalysisMethod analysisMethod) {
+		return analysisMethod.equals(AnalysisMethod.WELCH) && pl.statsLevel >= 3;
 	}
 
 

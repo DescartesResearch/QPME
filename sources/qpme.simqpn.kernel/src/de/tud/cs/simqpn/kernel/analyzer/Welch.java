@@ -88,8 +88,6 @@ public class Welch extends Analyzer {
 		List<Callable<Net>> listOfRuns = new ArrayList<Callable<Net>>();
 		for (int i = 0; i < configuration.getNumRuns(); i++) {
 			Net netCopy = net.clone(configuration);
-			//TODO clone parameters
-			//XMLWelch.configurePlaceStats(netCopy.getPlaces(), placeList, configurationName);
 
 			Callable<Net> run = new SequentialExecutor(netCopy, configuration,
 					monitor, i + 1);
