@@ -108,9 +108,6 @@ public class QPlace extends Place {
 									// Place.tokenPop
 									// contains tokens in the depository.
 
-	public AbstractDoubleList[] getQueueTokResidServTimes() {
-		return queueTokenResidualServiceTimes;
-	}
 
 	/** Priorities of each color for {@link PSQueue} */
 	private int[] priorities;
@@ -120,6 +117,10 @@ public class QPlace extends Place {
 	 * queueing station (queue).
 	 */
 	private AbstractDoubleList[] queueTokenResidualServiceTimes;
+
+	public AbstractDoubleList[] getQueueTokResidServTimes() {
+		return queueTokenResidualServiceTimes;
+	}
 
 	/**
 	 * Saves random numbers for future queue-service-times for this QPlace
@@ -139,7 +140,7 @@ public class QPlace extends Place {
 	private Token[] tokenCopyBuffer;
 
 	/**
-	 * Clones
+	 * Clones this place.
 	 */
 	public Place clone(Queue[] queues, Transition[] transitions,
 			SimQPNConfiguration configuration) throws SimQPNException {
@@ -162,27 +163,17 @@ public class QPlace extends Place {
 			Transition[] transitions, SimQPNConfiguration configuration)
 			throws SimQPNException {
 		super.finishCloning(original, queues, transitions, configuration);
-		// this.queue = queues[((QPlace)original).queue.id];
 
 		this.meanServTimes = ((QPlace) original).meanServTimes.clone();
-		this.tokenCopyBuffer = new Token[((QPlace) original).tokenCopyBuffer.length];// new
-		// Token[1];
-		// // TODO
-		for (int c = 0; c < numColors; c++)
-			this.meanServTimes[c] = ((QPlace) original).meanServTimes[c];// -1;
-																			// //
-																			// -1
-																			// means
-		// 'uninitialized'
+		this.tokenCopyBuffer = new Token[((QPlace) original).tokenCopyBuffer.length];
+		for (int c = 0; c < numColors; c++){
+			this.meanServTimes[c] = ((QPlace) original).meanServTimes[c];
+		}
 		this.queueTokenPop = ((QPlace) original).queueTokenPop.clone();
-		// this.queueTokenPop = new int[numColors];
-		// for (int c = 0; c < numColors; c++)
-		// this.queueTokenPop[c] = qPlace.queueTokenPop[c];
 
 		if (!(queues[((QPlace) original).queue.id].queueDiscip == QueuingDiscipline.PS && ((PSQueue) queues[((QPlace) original).queue.id]).expPS)) {
 			this.randServTimeGen = new AbstractContinousDistribution[this.numColors];
 			for (int c = 0; c < numColors; c++) {
-				// qPlace.randServTimeGen[c].getClass()
 				AbstractContinousDistribution distribution = ((QPlace) original).randServTimeGen[c];
 				if (((QPlace) original).randServTimeGen[c].getClass().equals(
 						Exponential.class)) {

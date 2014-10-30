@@ -136,7 +136,7 @@ public class ISQueue extends Queue {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * No actions necessary for IS queue. Empty method body.
+	 * For infinite server scheduling strategy leaving or entering of new services has no effect on the queuing time of the queued events.
 	 */
 	@Override
 	public void updateEvents(Executor executor) {};

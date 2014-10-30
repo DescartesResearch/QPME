@@ -109,7 +109,7 @@ public abstract class Queue {
 	/** Object containing statistics for this queue. */
 	private QueueStats queueStats;
 	/** The current number of tokens residing in the queue. */
-	private long tkPopulation;
+	private long tokenPopulation;
 	/**
 	 * The maximum token population in the current epoch. Used for Overflow
 	 * Detection
@@ -194,7 +194,7 @@ public abstract class Queue {
 			SimQPNConfiguration configuration, Place[] places) {
 		this.totNumColors = queue.totNumColors;
 		this.statsLevel = queue.statsLevel;
-		this.tkPopulation = queue.tkPopulation;
+		this.tokenPopulation = queue.tokenPopulation;
 		this.maxEpochPopulation = queue.maxEpochPopulation;
 		this.totalMaxPopulation = queue.totalMaxPopulation; //
 		this.epochMsrmCnt = queue.epochMsrmCnt;
@@ -311,11 +311,11 @@ public abstract class Queue {
 	}
 
 	/**
-	 * Schedules next service completion event (if any) according to current
-	 * token population.
+	 * Updates residual times of current token population.
 	 * 
 	 * @param executor
 	 *            the executor to schedule event
+	 *            
 	 */
 	public abstract void updateEvents(Executor executor);
 
@@ -340,7 +340,7 @@ public abstract class Queue {
 	public void addTokens(QPlace qPl, int color, int count,
 			Token[] tokensToBeAdded, Executor executor) throws SimQPNException{
 
-		tkPopulation += count;
+		tokenPopulation += count;
 
 		/*
 		 * Overflow detection mechanism: The following algorithm tries to
@@ -350,8 +350,8 @@ public abstract class Queue {
 		 * If the maximum total population increases in several consecutive
 		 * epochs a warning is printed out.
 		 */
-		if (tkPopulation > maxEpochPopulation) {
-			maxEpochPopulation = tkPopulation;
+		if (tokenPopulation > maxEpochPopulation) {
+			maxEpochPopulation = tokenPopulation;
 		}
 		epochMsrmCnt++;
 
@@ -435,7 +435,7 @@ public abstract class Queue {
 	 */
 	public void completeService(Token token, Executor executor)
 			throws SimQPNException {
-		tkPopulation--;
+		tokenPopulation--;
 		if (statsLevel >= 2) {
 			/*
 			 * NOTE: For statsLevel=1, we don't need to do anything since
@@ -491,8 +491,8 @@ public abstract class Queue {
 	/**
 	 * @return the tkPopulation
 	 */
-	public long getTkPopulation() {
-		return tkPopulation;
+	public long getTokenPopulation() {
+		return tokenPopulation;
 	}
 
 }

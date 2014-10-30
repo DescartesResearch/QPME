@@ -43,8 +43,6 @@ package de.tud.cs.simqpn.kernel.entities.queue;
 
 import java.util.LinkedList;
 
-import org.apache.log4j.Logger;
-
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Place;
@@ -58,9 +56,9 @@ import de.tud.cs.simqpn.kernel.executor.Executor;
  */
 public class FCFSQueue extends Queue {
 
-	private static Logger log = Logger.getLogger(FCFSQueue.class);
 	/** Number of currently busy servers. */
 	private int numBusyServers;
+
 	/** List of tokens waiting for service (waiting area of the queue). */
 	private LinkedList<Token> waitingLine;
 
@@ -128,7 +126,8 @@ public class FCFSQueue extends Queue {
 	 *            individual tokens (if tracking = true)
 	 * @param executor
 	 *            the executor
-	 * @throws SimQPNException	if error during place stats update
+	 * @throws SimQPNException
+	 *             if error during place stats update
 	 */
 	@Override
 	public void addTokens(QPlace queuingPlace, int color, int count,
@@ -170,12 +169,14 @@ public class FCFSQueue extends Queue {
 		if (waitingLine.size() > 0) {
 			Token nextToken = waitingLine.removeFirst();
 			QPlace queuingPlace = (QPlace) nextToken.place;
-			double serviceTime = queuingPlace.removeNextServiceTime(nextToken.color);
+			double serviceTime = queuingPlace
+					.removeNextServiceTime(nextToken.color);
 			executor.scheduleEvent(serviceTime, this, nextToken);
 			// Update stats
 			if (queuingPlace.statsLevel >= 3)
-				queuingPlace.qPlaceQueueStats.updateDelayTimeStats(nextToken.color,
-						executor.getClock() - nextToken.arrivTS,
+				queuingPlace.qPlaceQueueStats.updateDelayTimeStats(
+						nextToken.color, executor.getClock()
+								- nextToken.arrivTS,
 						executor.getConfiguration());
 		} else {
 			numBusyServers--;
@@ -193,7 +194,7 @@ public class FCFSQueue extends Queue {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * No actions necessary for FCFS queue. Empty method body.
+	 * For FCFS leaving or entering of new services has no effect on the queuing time of the queued events.
 	 */
 	@Override
 	public void updateEvents(Executor executor) {

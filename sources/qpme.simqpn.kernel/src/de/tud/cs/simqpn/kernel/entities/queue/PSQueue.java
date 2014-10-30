@@ -168,11 +168,12 @@ public class PSQueue extends Queue {
 			clone.eventsUpToDate = this.eventsUpToDate;
 			clone.eventScheduled = this.eventScheduled;
 
-			// TODO fix this and following line
-			// TODO Copy event into LP
 			clone.nextEvent = this.nextEvent;
 			if (this.nextEvent != null) {
-				log.error("copy mistake in queue");
+				log.error("Copy error for PS queue: Queue to clone has already scheduled next event");
+				// Note: This appears only trying to clone queue that has been
+				// simulated. If this error is thrown we could add event cloning
+				// in the future.
 				throw new SimQPNException();
 			}
 			clone.expPS = this.expPS;
@@ -183,10 +184,9 @@ public class PSQueue extends Queue {
 				clone.lastEventClock = this.lastEventClock;
 				clone.lastEventTkCnt = this.lastEventTkCnt;
 			} else {
-				// TODO JUERGEN Check if random is right
-				clone.expRandServTimeGen = this.expRandServTimeGen;
-				// TODO JUERGEN Check if random is right
-				clone.randColorGen = this.randColorGen;
+				clone.expRandServTimeGen = this.expRandServTimeGen.clone();
+				clone.randColorGen = (EmpiricalWalker) this.randColorGen
+						.clone();
 			}
 		} catch (SimQPNException e) {
 			log.error("Error during PSQueue cloning", e);
@@ -226,7 +226,7 @@ public class PSQueue extends Queue {
 		int totalQueueTokenCnt = 0;
 		for (int placeID = 0, numColors = 0; placeID < qPlaces.length; placeID++) {
 			numColors = qPlaces[placeID].numColors;
-			for (int c = 0; c < numColors; c++){
+			for (int c = 0; c < numColors; c++) {
 				totalQueueTokenCnt += qPlaces[placeID].getQueueTokenPop()[c];
 			}
 		}
@@ -235,7 +235,8 @@ public class PSQueue extends Queue {
 			if (expPS) { // Exponential service times
 				double[] meanServRates = new double[totNumColors];
 				double conc = 1;
-				if (numServers > 1 && totalQueueTokenCnt > 1) // "-/M/n-PS" queues
+				if (numServers > 1 && totalQueueTokenCnt > 1) // "-/M/n-PS"
+																// queues
 					conc = (totalQueueTokenCnt <= numServers) ? totalQueueTokenCnt
 							: numServers;
 				for (int p = 0, nC = 0, i = 0; p < qPlaces.length; p++) {
@@ -307,8 +308,10 @@ public class PSQueue extends Queue {
 					log.error("Illegal state in queue " + name);
 				}
 				double servTime = minRST * totalQueueTokenCnt; // Default for
-															// "-/G/1-PS" queue
-				if (numServers > 1 && totalQueueTokenCnt > 1) // "-/G/n-PS" queues
+																// "-/G/1-PS"
+																// queue
+				if (numServers > 1 && totalQueueTokenCnt > 1) // "-/G/n-PS"
+																// queues
 					servTime /= ((totalQueueTokenCnt <= numServers) ? totalQueueTokenCnt
 							: numServers);
 				if (qPlaces[tkSchedPl].queueTokens[tkSchedCol] != null) {
@@ -326,7 +329,6 @@ public class PSQueue extends Queue {
 		}
 		eventsUpToDate = true;
 	}
-
 
 	/**
 	 * Deposits N tokens of particular color.
@@ -374,8 +376,9 @@ public class PSQueue extends Queue {
 			}
 		}
 		if (eventScheduled) {
-			removeScheduledEvent(executor); // NOTE: clearEvents() resets eventScheduled
-									// to false;
+			removeScheduledEvent(executor); // NOTE: clearEvents() resets
+											// eventScheduled
+			// to false;
 		}
 		eventsUpToDate = false;
 	}
@@ -395,11 +398,11 @@ public class PSQueue extends Queue {
 			qPlaces[tkSchedPl].getQueueTokResidServTimes()[tkSchedCol]
 					.remove(tkSchedPos);
 			updateResidualServiceTimes(executor.getClock()); // NOTE: WATCH OUT!
-														// Method should be
-														// called after served
-														// token has been
-														// removed from
-														// queueTokResidServTimes!
+			// Method should be
+			// called after served
+			// token has been
+			// removed from
+			// queueTokResidServTimes!
 		} else if (qPl.queueTokens[token.color] != null)
 			qPl.queueTokens[token.color].remove(0);
 		eventScheduled = false;
@@ -421,9 +424,10 @@ public class PSQueue extends Queue {
 	public double getLookahead(QPlace queuingPlace, int color) {
 		return queuingPlace.getNextServiceTime(color);
 	}
-	
+
 	/**
 	 * Clears scheduled service completion event.
+	 * 
 	 * @param executor
 	 */
 	private void removeScheduledEvent(Executor executor) {
@@ -488,6 +492,5 @@ public class PSQueue extends Queue {
 			}
 		}
 	}
-
 
 }
