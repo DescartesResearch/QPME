@@ -1,3 +1,44 @@
+/* ==============================================
+ * QPME : Queueing Petri net Modeling Environment
+ * ==============================================
+ *
+ * (c) Copyright 2003-2011, by Samuel Kounev and Contributors.
+ * 
+ * Project Info:   http://descartes.ipd.kit.edu/projects/qpme/
+ *                 http://www.descartes-research.net/
+ *    
+ * All rights reserved. This software is made available under the terms of the 
+ * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * This software is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the Eclipse Public License (EPL)
+ * for more details.
+ *
+ * You should have received a copy of the Eclipse Public License (EPL)
+ * along with this software; if not visit http://www.eclipse.org or write to
+ * Eclipse Foundation, Inc., 308 SW First Avenue, Suite 110, Portland, 97204 USA
+ * Email: license (at) eclipse.org 
+ *  
+ * [Java is a trademark or registered trademark of Sun Microsystems, Inc.
+ * in the United States and other countries.]
+ *                                
+ * =============================================
+ *
+ * Original Author(s):  Jürgen Walter
+ * Contributor(s):   
+ * 
+ * NOTE: The above list of contributors lists only the people that have
+ * contributed to this source file - for a list of ALL contributors to 
+ * the project, please see the README.txt file.
+ * 
+ *  History:
+ *  Date        ID                Description
+ *  ----------  ----------------  ------------------------------------------------------------------  
+ *  2013/??/??  Jürgen Walter     Created.
+ * 
+ */
 package de.tud.cs.simqpn.kernel.analyzer;
 
 import static de.tud.cs.simqpn.kernel.util.LogUtil.formatMultilineMessage;
@@ -17,41 +58,22 @@ import org.dom4j.XPath;
 
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
-import de.tud.cs.simqpn.kernel.SimQPNConfiguration.AnalysisMethod;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.stats.AggregateStats;
 import de.tud.cs.simqpn.kernel.entities.stats.Stats;
 import de.tud.cs.simqpn.kernel.executor.sequential.SequentialExecutor;
-import de.tud.cs.simqpn.kernel.loading.XMLHelper;
-import de.tud.cs.simqpn.kernel.loading.XMLWelch;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
 public class Welch extends Analyzer {
 	private static Logger log = Logger.getLogger(Welch.class);
 	private static SimulatorProgress progressMonitor;
 
-	List<Element> placeList;
-	String configurationName;
-	Element XMLDescription;
-	
-	public Welch(Element XMLDescription, String configurationName) {
-		this.XMLDescription = XMLDescription;
-		XPath xpathSelector = XMLHelper.createXPath("//place");
-		placeList = xpathSelector.selectNodes(XMLDescription);
-		this.configurationName = configurationName;
-	}
-	
-	public Welch(List<Element> placeList, String configurationName) {
-		this.placeList = placeList;
-		this.configurationName = configurationName;
-	}
-	
 	public Stats[] analyze(Net net, SimQPNConfiguration configuration,
 			SimulatorProgress monitor, int verbosityLevel) throws SimQPNException {
-		XMLWelch.configurePlaceStats(net.getPlaces(), XMLDescription,
-					configurationName);
+//		XMLWelch.configurePlaceStats(net.getPlaces(), XMLDescription,
+//					configurationName);
 
 		return runWelchMtd(net, configuration, monitor);
 	}

@@ -229,8 +229,7 @@ public class SimQPNController {
 		setSimRunning(true);
 		Analyzer analyzer = null;
 		Stats[] result = null;
-		analyzer = Analyzer.getAnalyzer(configuration, aggregateStats,
-				XMLDescription, configurationName);
+		analyzer = Analyzer.getAnalyzer(configuration, aggregateStats);
 		int verbosityLevel = 1;
 		result = analyzer.analyze(net, configuration, monitor, verbosityLevel);
 		setSimRunning(false);
