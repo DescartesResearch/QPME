@@ -12,7 +12,7 @@
   <property name="severity" value="warning"/>
   <module name="Header">
     <property name="severity" value="error"/>
-    <property name="headerFile" value="C:\Users\Simon\Git\qpme-core\sources\qpme.qpe.core\header-template.txt"/>
+    <property name="headerFile" value="${config_loc}header-template.txt"/>
     <property name="ignoreLines" value="29,30,39,40"/>
     <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="error"/>
   </module>
