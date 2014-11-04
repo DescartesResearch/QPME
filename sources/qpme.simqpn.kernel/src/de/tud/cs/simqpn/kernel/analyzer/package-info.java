@@ -36,18 +36,10 @@
  *  History:
  *  Date        ID                Description
  *  ----------  ----------------  ------------------------------------------------------------------  
- *  2014/??/??  Jürgen Walter     Created.
+ *  2014/11/04  Jürgen Walter     Created.
  * 
  */
-package de.tud.cs.simqpn.kernel.entities;
-
-public class ColorReference {
-	public Place place;
-	public int colorID;
-	
-	public ColorReference(Place place, int colorID){
-		this.place = place;
-		this.colorID = colorID;
-	}
-}
-
+/**
+ * This package offers various analysis methods for QPNs.
+ */
+package de.tud.cs.simqpn.kernel.analyzer;

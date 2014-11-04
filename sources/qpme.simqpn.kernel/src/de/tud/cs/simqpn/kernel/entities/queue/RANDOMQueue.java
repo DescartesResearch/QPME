@@ -66,7 +66,7 @@ public class RANDOMQueue extends Queue {
 	private LinkedList<Token> waitingLine;
 
 	public RANDOMQueue(int id, String xmlID, String name,
-			QueuingDiscipline queueDiscipline, int numServers) {
+			QueueingDiscipline queueDiscipline, int numServers) {
 		super(id, xmlID, name, queueDiscipline, numServers);
 		this.numBusyServers = 0;
 		this.waitingLine = new LinkedList<Token>();

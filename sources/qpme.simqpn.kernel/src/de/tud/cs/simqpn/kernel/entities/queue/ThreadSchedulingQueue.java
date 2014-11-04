@@ -86,7 +86,7 @@ public class ThreadSchedulingQueue extends Queue {
 	double contextSwitchCost = 0;
 
 	public ThreadSchedulingQueue(int id, String xmlId, String name,
-			QueuingDiscipline queueDiscip, int numServers,
+			QueueingDiscipline queueDiscip, int numServers,
 			double threadQuantum, double contextSwitchCost)
 			throws SimQPNException {
 		super(id, xmlId, name, queueDiscip, numServers);

@@ -46,7 +46,7 @@ import org.apache.log4j.Logger;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
-import de.tud.cs.simqpn.kernel.entities.queue.QueuingDiscipline;
+import de.tud.cs.simqpn.kernel.entities.queue.QueueingDiscipline;
 import de.tud.cs.simqpn.kernel.util.LogUtil.ReportLevel;
 
 /**
@@ -62,7 +62,7 @@ public class QueueStats extends Stats implements java.io.Serializable {
 	
 	private static Logger log = Logger.getLogger(QueueStats.class);
 
-	public QueuingDiscipline queueDiscip;	// Queueing discipline.
+	public QueueingDiscipline queueDiscip;	// Queueing discipline.
 	public int		numServers;		// FCFS queues: Number of servers in queueing station.			
 	public Queue	queue;			// Associated Queue object.
 	
@@ -100,7 +100,7 @@ public class QueueStats extends Stats implements java.io.Serializable {
 	 * @param MyQueue			- reference to respective Queue object
 	 * 
 	 */	
-	public QueueStats(int id, String name, int numColors, int statsLevel, QueuingDiscipline queueDiscip, int numServers, Queue queue, SimQPNConfiguration configuration) throws SimQPNException  {
+	public QueueStats(int id, String name, int numColors, int statsLevel, QueueingDiscipline queueDiscip, int numServers, Queue queue, SimQPNConfiguration configuration) throws SimQPNException  {
 		super(id, name, QUEUE, numColors, statsLevel, configuration);
 		this.queueDiscip	= queueDiscip;
 		this.numServers		= numServers;	

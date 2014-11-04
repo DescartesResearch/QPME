@@ -61,8 +61,8 @@ import cern.jet.random.EmpiricalWalker;
 import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.executor.Executor;
-import de.tud.cs.simqpn.kernel.executor.TokenEvent;
 import de.tud.cs.simqpn.kernel.executor.parallel.LP;
+import de.tud.cs.simqpn.kernel.executor.parallel.TokenEvent;
 
 /**
  * Class Transition

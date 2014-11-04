@@ -77,7 +77,7 @@ import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.queue.PSQueue;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
-import de.tud.cs.simqpn.kernel.entities.queue.QueuingDiscipline;
+import de.tud.cs.simqpn.kernel.entities.queue.QueueingDiscipline;
 import de.tud.cs.simqpn.kernel.entities.stats.QPlaceQueueStats;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.loading.XMLWelch;
@@ -183,7 +183,7 @@ public class QPlace extends Place {
 		}
 		this.queueTokenPop = ((QPlace) original).queueTokenPop.clone();
 
-		if (!(queues[((QPlace) original).queue.id].queueDiscip == QueuingDiscipline.PS && ((PSQueue) queues[((QPlace) original).queue.id]).expPS)) {
+		if (!(queues[((QPlace) original).queue.id].queueDiscip == QueueingDiscipline.PS && ((PSQueue) queues[((QPlace) original).queue.id]).expPS)) {
 			this.randServTimeGen = new AbstractContinousDistribution[this.numColors];
 			for (int c = 0; c < numColors; c++) {
 				AbstractContinousDistribution distribution = ((QPlace) original).randServTimeGen[c];
@@ -315,14 +315,14 @@ public class QPlace extends Place {
 
 		for (int c = 0; c < numColors; c++) {
 			if (individualTokens[c]
-					|| (queue.queueDiscip == QueuingDiscipline.PS && statsLevel >= 3))
+					|| (queue.queueDiscip == QueueingDiscipline.PS && statsLevel >= 3))
 				// SDK-TODO: See if 100 is optimal initial capacity.
 				// Note: The list is auto-expanding.
 				this.queueTokens[c] = new ArrayList(100); 
 		}
 
 		// PS Queues
-		if (queue.queueDiscip == QueuingDiscipline.PS
+		if (queue.queueDiscip == QueueingDiscipline.PS
 				&& (!isExponentialPSQueue)) {
 			// NOTE: Note that given that queueTokResidServTimes is updated frequently,
 			// it is more efficient to use an array here than a LinkedList!

@@ -27,7 +27,7 @@
  * =============================================
  *
  * Original Author(s):  Jürgen Walter
- * Contributor(s):        
+ * Contributor(s):   
  * 
  * NOTE: The above list of contributors lists only the people that have
  * contributed to this source file - for a list of ALL contributors to 
@@ -36,28 +36,10 @@
  *  History:
  *  Date        ID                Description
  *  ----------  ----------------  ------------------------------------------------------------------  
- *  2013/??/??	Jürgen Walter	  Created
+ *  2014/11/04  Jürgen Walter     Created.
  * 
  */
-package de.tud.cs.simqpn.kernel.entities.queue;
-
 /**
- *  Supported queuing disciplines for queues.
+ * This package provides an option to start SimQPN from console.
  */
-public enum QueuingDiscipline {
-	IS(false),
-	FCFS(true),
-	PS(true),
-	RANDOM(true),
-	PRIO(true);
-
-	private boolean hasServers;
-	
-	private QueuingDiscipline(boolean hasServers) {
-		this.hasServers = hasServers;
-	}
-	
-	public boolean hasServers() {
-		return hasServers;
-	}
-}
+package de.tud.cs.simqpn.kernel.console;

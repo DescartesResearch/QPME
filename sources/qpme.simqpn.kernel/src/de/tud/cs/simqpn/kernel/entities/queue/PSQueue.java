@@ -147,7 +147,7 @@ public class PSQueue extends Queue {
 	 *            number of servers in queue
 	 */
 	public PSQueue(int id, String xmlId, String name,
-			QueuingDiscipline queueDiscip, int numServers) {
+			QueueingDiscipline queueDiscip, int numServers) {
 
 		super(id, xmlId, name, queueDiscip, numServers);
 

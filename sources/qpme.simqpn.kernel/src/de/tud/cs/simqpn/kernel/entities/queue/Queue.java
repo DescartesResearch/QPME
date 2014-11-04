@@ -87,7 +87,7 @@ public abstract class Queue {
 	/** Name of the queue. */
 	public final String name;
 	/** Queueing discipline of the queue. */
-	public final QueuingDiscipline queueDiscip;
+	public final QueueingDiscipline queueDiscip;
 	/** Number of servers in queuing station. */
 	public final int numServers;
 	/** Queueing places this queue is part of. */
@@ -157,7 +157,7 @@ public abstract class Queue {
 	 *            number of servers in queue
 	 */
 	public Queue(int id, String xmlID, String name,
-			QueuingDiscipline queueDiscipline, int numServers) {
+			QueueingDiscipline queueDiscipline, int numServers) {
 		this.id = id;
 		this.xmlId = xmlID;
 		this.name = name;

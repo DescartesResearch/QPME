@@ -77,7 +77,7 @@ public class FCFSQueue extends Queue {
 	 *            number of servers in queue
 	 */
 	public FCFSQueue(int id, String xmlId, String name,
-			QueuingDiscipline queueDiscip, int numServers) {
+			QueueingDiscipline queueDiscip, int numServers) {
 
 		super(id, xmlId, name, queueDiscip, numServers);
 
