@@ -1,3 +1,44 @@
+/* ==============================================
+ * QPME : Queueing Petri net Modeling Environment
+ * ==============================================
+ *
+ * (c) Copyright 2003-2011, by Samuel Kounev and Contributors.
+ * 
+ * Project Info:   http://descartes.ipd.kit.edu/projects/qpme/
+ *                 http://www.descartes-research.net/
+ *    
+ * All rights reserved. This software is made available under the terms of the 
+ * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * This software is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the Eclipse Public License (EPL)
+ * for more details.
+ *
+ * You should have received a copy of the Eclipse Public License (EPL)
+ * along with this software; if not visit http://www.eclipse.org or write to
+ * Eclipse Foundation, Inc., 308 SW First Avenue, Suite 110, Portland, 97204 USA
+ * Email: license (at) eclipse.org 
+ *  
+ * [Java is a trademark or registered trademark of Sun Microsystems, Inc.
+ * in the United States and other countries.]
+ *                                
+ * =============================================
+ *
+ * Original Author(s):  Jürgen Walter
+ * Contributor(s):   
+ * 
+ * NOTE: The above list of contributors lists only the people that have
+ * contributed to this source file - for a list of ALL contributors to 
+ * the project, please see the README.txt file.
+ * 
+ *  History:
+ *  Date        ID                Description
+ *  ----------  ----------------  ------------------------------------------------------------------  
+ *  2013/??/??  Jürgen Walter     Extracted form simulation good class.
+ * 
+ */
 package de.tud.cs.simqpn.kernel.executor.sequential;
 
 import java.util.Comparator;
@@ -19,10 +60,10 @@ import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.Token;
 import de.tud.cs.simqpn.kernel.entities.Transition;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
-import de.tud.cs.simqpn.kernel.entities.queue.QueuingDiscipline;
+import de.tud.cs.simqpn.kernel.entities.queue.QueueingDiscipline;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.executor.QueueEvent;
-import de.tud.cs.simqpn.kernel.executor.TokenEvent;
+import de.tud.cs.simqpn.kernel.executor.parallel.TokenEvent;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
 public class SequentialExecutor implements Executor, Callable<Net>{
@@ -308,7 +349,7 @@ public class SequentialExecutor implements Executor, Callable<Net>{
 			// Step 2: Make sure all service completion events in PS QPlaces
 			// have been scheduled
 			for (int q = 0; q < net.getNumQueues(); q++)
-				if (net.getQueue(q).queueDiscip == QueuingDiscipline.PS)
+				if (net.getQueue(q).queueDiscip == QueueingDiscipline.PS)
 					net.getQueue(q).updateEvents(this);
 			/*
 			 * Alternative Code for (int p = 0; p < numPlaces; p++) if

@@ -1,5 +1,3 @@
-package de.tud.cs.simqpn.kernel.loading.distributions;
-
 /* ==============================================
  * QPME : Queueing Petri net Modeling Environment
  * ==============================================
@@ -11,7 +9,7 @@ package de.tud.cs.simqpn.kernel.loading.distributions;
  *    
  * All rights reserved. This software is made available under the terms of the 
  * Eclipse Public License (EPL) v1.0 as published by the Eclipse Foundation
- ï¿½* http://www.eclipse.org/legal/epl-v10.html
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * This software is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -40,6 +38,7 @@ package de.tud.cs.simqpn.kernel.loading.distributions;
  *  ----------  ----------------  ------------------------------------------------------------------  
  *  2013	    Fabian Brosig     Created.
  */
+package de.tud.cs.simqpn.kernel.loading.distributions;
 
 import cern.jet.random.Empirical;
 import cern.jet.random.engine.RandomEngine;

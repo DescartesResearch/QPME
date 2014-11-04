@@ -45,6 +45,7 @@ package de.tud.cs.simqpn.kernel.executor;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.entities.Token;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
+import de.tud.cs.simqpn.kernel.executor.parallel.TokenEvent;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 /**
  * Interface to communicate with the net entities during simulation.
