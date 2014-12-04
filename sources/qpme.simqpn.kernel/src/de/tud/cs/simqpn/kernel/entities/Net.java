@@ -155,7 +155,7 @@ public class Net {
 					this.places);
 		}
 		
-		this.configureProbes();
+		this.initializeProbes();
 	}
 
 	/**
@@ -309,7 +309,7 @@ public class Net {
 	 * @throws SimQPNException
 	 *             if instrumentation of a probe fails
 	 */
-	public void configureProbes() throws SimQPNException {
+	public void initializeProbes() throws SimQPNException {
 		for (int pr = 0; pr < getNumProbes(); pr++) {
 			probes[pr].instrument();
 		}

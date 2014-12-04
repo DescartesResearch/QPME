@@ -59,26 +59,21 @@ import org.dom4j.Namespace;
 import org.dom4j.QName;
 import org.dom4j.XPath;
 
-import cern.jet.random.AbstractContinousDistribution;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.ColorReference;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.Place;
-import de.tud.cs.simqpn.kernel.entities.Probe;
-import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.Transition;
-import de.tud.cs.simqpn.kernel.entities.queue.*;
-import de.tud.cs.simqpn.kernel.loading.distributions.DistributionCreator;
+import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 import de.tud.cs.simqpn.kernel.loading.loader.PlaceLoader;
+import de.tud.cs.simqpn.kernel.loading.loader.ProbeLoader;
 import de.tud.cs.simqpn.kernel.loading.loader.QueueLoader;
 
 public class NetLoader {
 
 	private List<Element> placeList;
 	private List<Element> transitionList;
-	private List<Element> queueList;
-	private List<Element> probeList;
 
 	// hashmaps to allow fast lookup of array index for a given element
 	public Map<Element, Integer> placeToIndexMap;
@@ -141,10 +136,6 @@ public class NetLoader {
 		placeList = xpathSelector.selectNodes(netXML);
 		xpathSelector = XMLHelper.createXPath("//transition");
 		transitionList = xpathSelector.selectNodes(netXML);
-		xpathSelector = XMLHelper.createXPath("//queue");
-		queueList = xpathSelector.selectNodes(netXML);
-		xpathSelector = XMLHelper.createXPath("//probe");
-		probeList = xpathSelector.selectNodes(netXML);
 	}
 
 	/**
@@ -157,19 +148,18 @@ public class NetLoader {
 	private Net loadNet() throws SimQPNException {
 		net = new Net();
 		net.setConfigurationName(configurationName);
-		net.setNumProbes(probeList.size());
+		net.setNumProbes(ProbeLoader.getNumberOfProbes(netXML));
 
 		extractConnections(netXML);
 		checkColorDefinitions(netXML);
-		net.setQueues(QueueLoader.createQueues(queueList));
+		net.setQueues(QueueLoader.createQueues(netXML));
 		net.setPlaces(PlaceLoader.createPlaces(this)); // TODO placeList
 		net.setTransitions(createTransitions());
 		configureInputOutputRelationships(netXML, net);
 		configureTransitionModeWeights(net);
 		configureTransitionInputOutputFunctions(net);
-		configureQueueServiceTimeDistributions(net);
-		createProbes(netXML, net, configuration);
-		net.configureProbes();
+		QueueLoader.configureQueueServiceTimeDistributions(net, placeList);
+		ProbeLoader.configureProbes(netXML, placeList, net, configuration);
 		configureInitialMarking(net);
 		XMLWelch.configurePlaceStats(net.getPlaces(), netXML, configurationName);
 
@@ -331,7 +321,7 @@ public class NetLoader {
 					numModes, // # modes
 					numIncomingConnections, // # incoming connections
 					numOutgoingConnections, // # outgoing connections
-					probeList.size(), transitionWeight); // transition weight
+					net.getNumProbes(), transitionWeight); // transition weight
 			transitionToIndexMap.put(transition, i);
 			if (log.isDebugEnabled()) {
 				log.debug("trans[" + i + "] = new Transition(" + i + ", '"
@@ -345,154 +335,6 @@ public class NetLoader {
 		return transitions;
 	}
 
-	private Net createProbes(Element netXML, Net net,
-			SimQPNConfiguration configuration) throws SimQPNException {
-		XPath xpathSelector;
-		log.debug("/////////////////////////////////////////////");
-		log.debug("// Create probes");
-		// Allocate an array able to contain the places.
-		int numProbes = net.getNumProbes();
-		log.debug("probes = new Probe[" + numProbes + "];");
-		Probe[] probes = new Probe[numProbes];
-
-		for (int i = 0; i < numProbes; i++) {
-			Element probe = this.probeList.get(i);
-
-			// Extract the names of the colors that are tracked by this probe
-			Element colorRefsElem = probe.element("color-refs");
-			if (colorRefsElem == null) {
-				log.error(formatDetailMessage("Missing color references!",
-						"probe-num", Integer.toString(i), "probe.id",
-						probe.attributeValue("id"), "probe.name",
-						probe.attributeValue("name")));
-				throw new SimQPNException();
-			}
-			@SuppressWarnings("unchecked")
-			List<Element> colorRefs = colorRefsElem.elements("color-ref");
-			if (colorRefs.size() == 0) {
-				log.error(formatDetailMessage("Missing color references!",
-						"probe-num", Integer.toString(i), "probe.id",
-						probe.attributeValue("id"), "probe.name",
-						probe.attributeValue("name")));
-				throw new SimQPNException();
-			}
-			String[] colors = new String[colorRefs.size()];
-			Iterator<Element> colorRefIterator = colorRefs.iterator();
-			for (int c = 0; colorRefIterator.hasNext(); c++) {
-				Element colorRef = colorRefIterator.next();
-				xpathSelector = XMLHelper.createXPath("colors/color[(@id='"
-						+ colorRef.attributeValue("color-id") + "')]");
-				Element color = (Element) xpathSelector
-						.selectSingleNode(netXML);
-				colors[c] = color.attributeValue("name");
-			}
-
-			// Extract start place of probe
-			xpathSelector = XMLHelper.createXPath("//place[@id = '"
-					+ probe.attributeValue("start-place-id") + "']");
-			Element startElement = (Element) xpathSelector
-					.selectSingleNode(netXML);
-			if (startElement == null) {
-				log.error(formatDetailMessage("Start place reference invalid!",
-						"probe-num", Integer.toString(i), "probe.id",
-						probe.attributeValue("id"), "probe.name",
-						probe.attributeValue("name")));
-				throw new SimQPNException();
-			}
-			Place startPlace = null;
-			for (int p = 0; p < net.getNumPlaces(); p++) {
-				if (placeList.get(p).equals(startElement)) {
-					startPlace = net.getPlace(p);
-				}
-			}
-			int startTrigger = Probe.ON_ENTRY;
-			if ("entry".equals(probe.attributeValue("start-trigger"))) {
-				startTrigger = Probe.ON_ENTRY;
-			} else if ("exit".equals(probe.attributeValue("start-trigger"))) {
-				startTrigger = Probe.ON_EXIT;
-			} else {
-				log.error(formatDetailMessage(
-						"Invalid or missing 'start-trigger' setting!",
-						"probe-num", Integer.toString(i), "probe.id",
-						probe.attributeValue("id"), "probe.name",
-						probe.attributeValue("name"), "probe.start-trigger",
-						probe.attributeValue("start-trigger")));
-				throw new SimQPNException();
-			}
-
-			// Extract end place of probe
-			xpathSelector = XMLHelper.createXPath("//place[@id = '"
-					+ probe.attributeValue("end-place-id") + "']");
-			Element endElement = (Element) xpathSelector
-					.selectSingleNode(netXML);
-			if (endElement == null) {
-				log.error(formatDetailMessage("End place reference invalid!",
-						"probe-num", Integer.toString(i), "probe.id",
-						probe.attributeValue("id"), "probe.name",
-						probe.attributeValue("name")));
-				throw new SimQPNException();
-			}
-			Place endPlace = null;
-			for (int p = 0; p < net.getNumPlaces(); p++) {
-				if (placeList.get(p).equals(endElement)) {
-					endPlace = net.getPlace(p);
-				}
-			}
-			int endTrigger = Probe.ON_ENTRY;
-			if ("entry".equals(probe.attributeValue("end-trigger"))) {
-				endTrigger = Probe.ON_ENTRY;
-			} else if ("exit".equals(probe.attributeValue("end-trigger"))) {
-				endTrigger = Probe.ON_EXIT;
-			} else {
-				log.error(formatDetailMessage(
-						"Invalid or missing \"end-trigger\" setting!",
-						"probe-num", Integer.toString(i), "probe.id",
-						probe.attributeValue("id"), "probe.name",
-						probe.attributeValue("name"), "probe.end-trigger",
-						probe.attributeValue("end-trigger")));
-				throw new SimQPNException();
-			}
-
-			Element metaAttribute = XMLHelper.getSettings(probe,
-					net.getConfigurationName());
-			int statsLevel = 0;
-			if (metaAttribute != null) {
-				if (metaAttribute.attributeValue("statsLevel") == null) {
-					log.error(formatDetailMessage(
-							"statsLevel parameter not set!", "probe-num",
-							Integer.toString(i), "probe.id",
-							probe.attributeValue("id"), "probe.name",
-							probe.attributeValue("name")));
-					throw new SimQPNException();
-				}
-				statsLevel = Integer.parseInt(metaAttribute
-						.attributeValue("statsLevel"));
-			} else {
-				log.error(formatDetailMessage(
-						"meta-attribute element not set!", "probe-num",
-						Integer.toString(i), "probe.id",
-						probe.attributeValue("id"), "probe.name",
-						probe.attributeValue("name")));
-				throw new SimQPNException();
-			}
-
-			probes[i] = new Probe(
-					i, // index
-					probe.attributeValue("id"), // xml id
-					probe.attributeValue("name"), // name
-					colors, startPlace, startTrigger, endPlace, endTrigger,
-					statsLevel, probe, configuration);
-			if (log.isDebugEnabled()) {
-				log.debug("probes[" + i + "] = new Probe(" + i + ", '"
-						+ probe.attributeValue("name") + "', " + colors + ", "
-						+ startPlace.name + ", " + startTrigger + ", "
-						+ endPlace.name + ", " + endTrigger + ", " + statsLevel
-						+ ", " + probe + ")");
-			}
-		}
-		net.setProbes(probes);
-		return net;
-	}
 
 	private void configureInputOutputRelationships(Element netXML, Net net)
 			throws SimQPNException {
@@ -873,160 +715,6 @@ public class NetLoader {
 		}
 	}
 
-	private void configureQueueServiceTimeDistributions(Net net)
-			throws SimQPNException {
-		/*
-		 * TODO: make the editor display the real names of the expected
-		 * parameters after the user has chosen the distribution, e.g. for
-		 * Exponential a single field labeled "lambda" should be displayed.
-		 */
-
-		log.debug("/////////////////////////////////////////////");
-		log.debug("// Configure Queue Service Time Distributions (times in milliseconds)");
-		Iterator<Element> placeIterator = placeList.iterator();
-		for (int i = 0; placeIterator.hasNext(); i++) {
-			Element place = placeIterator.next();
-			if ("queueing-place".equals(place
-					.attributeValue(XSI_TYPE_ATTRIBUTE))) {
-				QPlace qPl = (QPlace) net.getPlace(i);
-
-				if (qPl.queue.queueDiscip == QueueingDiscipline.PS) {
-					((PSQueue) qPl.queue).expPS = false;
-				}
-
-				if (!(qPl.queue.queueDiscip == QueueingDiscipline.PS && ((PSQueue) qPl.queue).expPS)) {
-					qPl.randServTimeGen = new AbstractContinousDistribution[qPl.numColors];
-				}
-
-				XPath xpathSelector = XMLHelper
-						.createXPath("color-refs/color-ref");
-				Iterator<Element> colorRefIterator = xpathSelector.selectNodes(
-						place).iterator();
-				for (int j = 0; colorRefIterator.hasNext(); j++) {
-					Element colorRef = colorRefIterator.next();
-
-					if (colorRef.attributeValue("distribution-function") == null) {
-						log.error(formatDetailMessage(
-								"Queueing place' \"distribution-function\" parameter not set!",
-								"place-num", Integer.toString(i), "place.id",
-								place.attributeValue("id"), "place.name",
-								place.attributeValue("name"), "colorRef-num",
-								Integer.toString(j), "colorRef.id",
-								colorRef.attributeValue("id"),
-								"colorRef.color-id",
-								colorRef.attributeValue("color-id")));
-						throw new SimQPNException();
-					}
-					String distributionFunction = colorRef
-							.attributeValue("distribution-function");
-
-					if (qPl.queue.queueDiscip == QueueingDiscipline.PS
-							&& ((PSQueue) qPl.queue).expPS) {
-						log.info("expPS parameter of a queueing place with PS scheduling strategy set to true!");
-						if (!"Exponential".equals(distributionFunction)) {
-							log.error(formatDetailMessage(
-									"Distribution function is configured as \""
-											+ distributionFunction
-											+ "\". "
-											+ "Distribution function must be set to \"Exponential\" since (expPS == true) !",
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-
-						if (colorRef.attributeValue("lambda") == null) {
-							log.error(formatDetailMessage(
-									"Parameter \"lambda\" of Exponential distribution function not set!",
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-						double lambda = Double.parseDouble(colorRef
-								.attributeValue("lambda"));
-						// Validate input parameters
-						if (!(lambda > 0)) {
-							log.error(formatDetailMessage(
-									"Invalid \"lambda\" parameter of Exponential distribution!",
-									"lambda", Double.toString(lambda),
-									"place-num", Integer.toString(i),
-									"place.id", place.attributeValue("id"),
-									"place.name", place.attributeValue("name"),
-									"colorRef-num", Integer.toString(j),
-									"colorRef.id",
-									colorRef.attributeValue("id"),
-									"colorRef.color-id",
-									colorRef.attributeValue("color-id")));
-							throw new SimQPNException();
-						}
-
-						qPl.meanServTimes[j] = (double) 1 / lambda;
-						log.debug("((QPlace) places[" + i + "]).meanServTimes["
-								+ j + "] = 1 / lambda = "
-								+ qPl.meanServTimes[j]);
-					}
-
-					/*
-					 * The code below does the following: - checks the chosen
-					 * distribution function - checks that all required
-					 * distribution input parameters have been set - validates
-					 * the values of the distribution input parameters -
-					 * initializes the random number generators for service
-					 * times - initializes the meanServTimes array based on the
-					 * chosen distribution
-					 * 
-					 * The actual values in the meanServTimes array are
-					 * currently only used in three cases 1. QPlace.expPS ==
-					 * true (Exponential distribution) 2.
-					 * QPlace.qPlaceQueueStats.indrStats == true 3.
-					 * distribution-function == Deterministic
-					 * 
-					 * Note: Service time distributions are truncated at 0 to
-					 * avoid negative values for service times, i.e.
-					 * "if (servTime < 0) servTime = 0;"
-					 */
-
-					try {
-						DistributionCreator distribution = DistributionCreator
-								.constructCreator(distributionFunction,
-										colorRef);
-						qPl.randServTimeGen[j] = distribution.getDistribution();
-						log.debug("((QPlace) places[" + i
-								+ "]).randServTimeGen[" + j + "] = new "
-								+ distribution.getClass().getName()
-								+ distribution.getConstructionText());
-						qPl.meanServTimes[j] = distribution.getMean();
-						log.debug("((QPlace) places[" + i + "]).meanServTimes["
-								+ j + "] = "
-								+ distribution.getMeanComputationText() + " = "
-								+ qPl.meanServTimes[j]);
-					} catch (SimQPNException e) {
-						log.error(formatDetailMessage(e.getMessage(),
-								"place-num", Integer.toString(i), "place.id",
-								place.attributeValue("id"), "place.name",
-								place.attributeValue("name"), "colorRef-num",
-								Integer.toString(j), "colorRef.id",
-								colorRef.attributeValue("id"),
-								"colorRef.color-id",
-								colorRef.attributeValue("color-id")));
-
-						throw e;
-					}
-				}
-			}
-		}
-	}
 
 	private void configureInitialMarking(Net net) throws SimQPNException {
 		// Note: All initial tokens should be in ordianary places or
