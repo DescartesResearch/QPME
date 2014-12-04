@@ -58,8 +58,11 @@ import de.tud.cs.simqpn.kernel.entities.QPlace;
 public class XMLWelch {
 	private static Logger log = Logger.getLogger(XMLWelch.class);
 
-	public static void configurePlaceStats(Place[] places, Element netXML,
+	public static void configurePlaceStats(Place[] places, Element netXML, AnalysisMethod analysisMethod,
 			String configurationName) throws SimQPNException {
+		if(!analysisMethod.equals(AnalysisMethod.WELCH)){
+			return;
+		}
 		Place pl;
 		XPath xpathSelector = XMLHelper.createXPath("//place");
 		List<Element> placeList = xpathSelector.selectNodes(netXML);
@@ -101,7 +104,7 @@ public class XMLWelch {
 			// maxObsrvST for each
 			// color-ref of the current place (depository and queue).
 			// These values are used in WELCH method.
-			if (isMeasuringSojurnTimes(pl)) {
+			if (isMeasuringSojurnTimes(pl, analysisMethod)) {
 				xpathSelector = XMLHelper.createXPath("color-refs/color-ref");
 				Iterator<Element> colorRefIterator = xpathSelector.selectNodes(
 						place).iterator();
@@ -161,9 +164,6 @@ public class XMLWelch {
 		}
 		// END-CONFIG
 		// -----------------------------------------------------------------------------------------
-	}
-	private static boolean isMeasuringSojurnTimes(Place pl) {
-		return isMeasuringSojurnTimes(pl, AnalysisMethod.WELCH);
 	}
 
 	/** Returns is storing sojourn time observations is enabled for the place */

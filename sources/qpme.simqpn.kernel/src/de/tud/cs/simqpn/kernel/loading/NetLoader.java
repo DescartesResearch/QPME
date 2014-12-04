@@ -161,7 +161,7 @@ public class NetLoader {
 		QueueLoader.configureQueueServiceTimeDistributions(net, placeList);
 		ProbeLoader.configureProbes(netXML, placeList, net, configuration);
 		configureInitialMarking(net);
-		XMLWelch.configurePlaceStats(net.getPlaces(), netXML, configurationName);
+		XMLWelch.configurePlaceStats(net.getPlaces(), netXML, configuration.getAnalMethod(), configurationName);
 
 		return net;
 	}
