@@ -17,5 +17,6 @@ Require-Bundle: org.dom4j;bundle-version="1.6.1",
  org.eclipse.equinox.app,
  org.eclipse.core.runtime;bundle-version="3.7.0",
  cern.colt;bundle-version="1.2.0",
- edu.bonn.cs.net.jbarrier;bundle-version="1.0.0"
+ edu.bonn.cs.net.jbarrier;bundle-version="1.0.0",
+ org.eclipse.equinox.concurrent;bundle-version="1.1.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
