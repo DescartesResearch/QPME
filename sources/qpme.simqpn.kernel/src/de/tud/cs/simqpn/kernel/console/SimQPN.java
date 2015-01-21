@@ -43,6 +43,7 @@
 
 package de.tud.cs.simqpn.kernel.console;
 
+import java.io.File;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -132,8 +133,9 @@ public class SimQPN implements IApplication {
 				} else if ("-v".equals(args[x])) { 
 					logConfigFilename = args[++x];
 				} else {
+					File qpnFile = new File(args[x]);
 					SAXReader xmlReader = new SAXReader();
-					netDocument = xmlReader.read(args[x]);
+					netDocument = xmlReader.read(qpnFile);
 				}
 			}
 
