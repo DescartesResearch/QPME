@@ -54,6 +54,7 @@ import javax.xml.XMLConstants;
 import org.apache.log4j.BasicConfigurator;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.XPath;
@@ -82,8 +83,7 @@ public class SimQPN implements IApplication {
 	public static void runSimulator(String inputFilename, String configuration, String outputFilename, 
 			String logConfigFilename, SimulatorProgress progress) {
 		try {
-			SAXReader xmlReader = new SAXReader();
-			Document inputDoc = xmlReader.read(inputFilename);
+			Document inputDoc = loadXMLFile(inputFilename);
 			runSimulatorOnDocument(inputDoc, configuration, outputFilename, logConfigFilename, progress, null);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -103,6 +103,12 @@ public class SimQPN implements IApplication {
 		String[] args = Platform.getApplicationArgs();
 		startSimQPNWithCommandLine(args);
 		return IApplication.EXIT_OK;
+	}
+	
+	private static Document loadXMLFile(String path) throws DocumentException{
+		File xmlFile = new File(path);
+		SAXReader xmlReader = new SAXReader();
+		return xmlReader.read(xmlFile);
 	}
 
 
@@ -133,9 +139,7 @@ public class SimQPN implements IApplication {
 				} else if ("-v".equals(args[x])) { 
 					logConfigFilename = args[++x];
 				} else {
-					File qpnFile = new File(args[x]);
-					SAXReader xmlReader = new SAXReader();
-					netDocument = xmlReader.read(qpnFile);
+					netDocument = loadXMLFile(args[x]);
 				}
 			}
 
