@@ -157,4 +157,8 @@ This Agreement is governed by the laws of the State of New York and the intellec
       <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
    </configurations>
 
+   <repositories>
+      <repository location="http://veger.github.com/eclipse-batik" enabled="true" />
+   </repositories>
+
 </product>
