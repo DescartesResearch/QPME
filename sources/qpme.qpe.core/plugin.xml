@@ -182,6 +182,14 @@
                   visible="true">
             </separator>
             <command
+                  commandId="org.eclipse.ui.file.export"
+                  style="push">
+            </command>
+            <separator
+                  name="export.ext"
+                  visible="true">
+            </separator>
+            <command
                   commandId="org.eclipse.ui.file.exit"
                   style="push">
             </command>
@@ -197,6 +205,14 @@
                   commandId="org.eclipse.ui.help.quickStartAction"
                   style="push">
             </command>
+            <separator
+                  name="additions"
+                  visible="true">
+            </separator>
+            <separator
+                  name="about.sep"
+                  visible="true">
+            </separator>
             <command
                   commandId="org.eclipse.ui.help.aboutAction"
                   style="push">

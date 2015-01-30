@@ -54,6 +54,7 @@ import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.actions.ContributionItemFactory;
 import org.eclipse.ui.application.ActionBarAdvisor;
@@ -93,10 +94,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		}
 		menuBar.add(windowMenu);
 
-		MenuManager helpMenu = new MenuManager("&Help", IWorkbenchActionConstants.M_HELP);
-		helpMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-        helpMenu.add(new Separator());
-		menuBar.add(helpMenu);
+		menuBar.add(new MenuManager("&Help", IWorkbenchActionConstants.M_HELP));
 
 		// Activate qpme context so that certain standard commands are overriden
 		IContextService contextService = (IContextService) PlatformUI
