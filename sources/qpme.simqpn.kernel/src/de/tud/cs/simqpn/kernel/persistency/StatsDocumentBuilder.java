@@ -97,17 +97,7 @@ public class StatsDocumentBuilder {
 		root.addAttribute("qpme-version", SimQPNController.QPME_VERSION);
 		root.addAttribute("model-file", net.attributeValue("path"));
 		
-		// Boilerplate code to produce a timestamp conforming to XML DateTime
-		XMLGregorianCalendar xmlGregCal = null;
-		GregorianCalendar gregCal = new GregorianCalendar();
-		gregCal.setTime(new Date());
-		String datetime = "";
-		try {
-			xmlGregCal = DatatypeFactory.newInstance().newXMLGregorianCalendar(gregCal);
-			datetime = xmlGregCal.toString();
-		} catch (DatatypeConfigurationException e) {
-			log.warn(e.getMessage(), e);
-		}
+		String datetime = TIMESTAMP_FORMAT.format(new Date());
 		root.addAttribute("date", datetime);
 		
 		root.addAttribute("name", getResultFileBaseName());
