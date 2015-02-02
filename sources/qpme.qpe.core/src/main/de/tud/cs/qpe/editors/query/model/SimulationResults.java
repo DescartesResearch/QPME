@@ -54,11 +54,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.dom4j.Element;
-
 
 public class SimulationResults {
 
+	private static Logger log = Logger.getLogger(SimulationResults.class);
 	private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HHmmssS");
 
 	private File modelFile;
@@ -74,7 +75,7 @@ public class SimulationResults {
 		try {
 			this.date = TIMESTAMP_FORMAT.parse(data.attributeValue("date"));
 		} catch (ParseException e) {
-			e.printStackTrace();
+			log.error("Could not parse date: "+ data.attributeValue("date"));
 		}
 		this.name = data.attributeValue("name");
 		this.configurationName = data.attributeValue("configuration-name");
