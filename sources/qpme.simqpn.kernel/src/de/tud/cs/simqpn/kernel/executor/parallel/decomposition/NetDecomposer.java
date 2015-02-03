@@ -60,9 +60,17 @@ public class NetDecomposer {
 						progressMonitor, verbosityLevel);
 		LPMerger merger = new LPMerger(net, minimumRegions, verbosityLevel);
 
-		if (configuration.getDecompositionApproach().equals("specjenterprise")) {
-			log.info("Merging optimized for SPECj Enterprise model");
-			merger.mergeSPECjEnterpriseSpecific();
+		if (configuration.getDecompositionApproach() != null){
+			if(configuration.getDecompositionApproach().equals("specjenterprise")) {
+				log.info("Merging optimized for SPECj Enterprise model");
+				merger.mergeSPECjEnterpriseSpecific();
+			}else{
+				log.info("Could not find specialized decomposition approach");
+				merger.mergeNoQueueLPs();
+				merger.mergeLanes();
+				merger.mergeIntoWorkloadGenerators();
+				merger.mergeNonWorkloadGenerators();		
+			}
 		} else {
 			merger.mergeNoQueueLPs();
 			merger.mergeLanes();

@@ -132,7 +132,8 @@ public class LPMerger {
 			LP lp = lps.get(i);
 			if (lp.getPlaces().length < net.getNumPlaces()
 					/ cores) {
-				for(LP lpToMerge:lps){
+				for(int j=0; j<lps.size(); j++){
+					LP lpToMerge = lps.get(j);
 					if(lp != lpToMerge){
 						if (lpToMerge.getPlaces().length < net.getNumPlaces()
 								/ cores) {
