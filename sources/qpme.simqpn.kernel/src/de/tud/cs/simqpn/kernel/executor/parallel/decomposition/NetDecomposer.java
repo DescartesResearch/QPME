@@ -42,7 +42,9 @@
 package de.tud.cs.simqpn.kernel.executor.parallel.decomposition;
 
 import java.util.List;
+
 import org.apache.log4j.Logger;
+
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.executor.parallel.LP;
@@ -58,7 +60,13 @@ public class NetDecomposer {
 		List<LP> minimumRegions = MinimumRegionDecomposer
 				.decomposeNetIntoMinimumRegions(net, configuration,
 						progressMonitor, verbosityLevel);
-		LPMerger merger = new LPMerger(net, minimumRegions, verbosityLevel);
+		
+		int cores = configuration.getNumerOfLPs();
+		if(cores <= 1){
+		 cores = Runtime.getRuntime().availableProcessors();
+		}
+		LPMerger merger = new LPMerger(net, minimumRegions, verbosityLevel, cores);
+		
 
 		if (configuration.getDecompositionApproach() != null){
 			if(configuration.getDecompositionApproach().equals("specjenterprise")) {

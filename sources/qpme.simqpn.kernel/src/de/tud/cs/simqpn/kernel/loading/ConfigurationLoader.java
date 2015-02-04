@@ -129,6 +129,11 @@ public class ConfigurationLoader {
 			if(simulatorSettings.attributeValue("decomposition-approach") != null){
 				configuration.setDecompositionApproach(simulatorSettings.attributeValue("decomposition-approach"));				
 			}
+			if(simulatorSettings.attributeValue("number-cores") != null){
+				configuration.setNumerOfLPs(Integer.parseInt(simulatorSettings.attributeValue("number-cores")));				
+			}else{
+				configuration.setNumerOfLPs(0);				
+			}
 		}
 	}
 

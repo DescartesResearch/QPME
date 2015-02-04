@@ -63,12 +63,16 @@ public class LPMerger {
 	private final int cores;
 	
 	LPMerger(Net net, List<LP> minimumRegions, int verbosityLevel) {
+		this(net, minimumRegions, verbosityLevel,  Runtime.getRuntime().availableProcessors());
+	}
+
+	LPMerger(Net net, List<LP> minimumRegions, int verbosityLevel, int cores) {
 		this.net = net;
 		this.lps = minimumRegions;
 		this.verbosityLevel = 5;//verbosityLevel;
-		this.cores = Runtime.getRuntime().availableProcessors();
+		this.cores = cores;
 	}
-
+	
 	public LP[] getLPsAsArray(){
 		return lps.toArray(new LP[lps.size()]);
 	}
@@ -240,10 +244,6 @@ public class LPMerger {
 		}
 	}
 
-	private static void setModelSpecificMetaInformations(List<LP> lps) {
-		//lps.get(0).addPredecessor(lps.get(3));
-	}
-	
 	/**
 	 * Returns a decomposition of the (internal) {@link Net} into a logical
 	 * process ({@link LP}) array
