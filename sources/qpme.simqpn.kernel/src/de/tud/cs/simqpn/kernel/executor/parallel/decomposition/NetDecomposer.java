@@ -67,27 +67,30 @@ public class NetDecomposer {
 		}
 		LPMerger merger = new LPMerger(net, minimumRegions, verbosityLevel, cores);
 		
-
 		if (configuration.getDecompositionApproach() != null){
 			if(configuration.getDecompositionApproach().equals("specjenterprise")) {
 				log.info("Merging optimized for SPECj Enterprise model");
 				merger.mergeSPECjEnterpriseSpecific();
+			} else if (configuration.getDecompositionApproach().equals("generated")){
+				merger.mergeNoQueueLPsIntoPredecessor();
+				merger.mergeLanes();
+				merger.mergeIntoWorkloadGenerators();
+				//merger.mergeNonWorkloadGenerators();		
 			}else{
 				log.info("Could not find specialized decomposition approach");
-				merger.mergeNoQueueLPs();
+				merger.mergeNoQueueLPsIntoPredecessor();
 				merger.mergeLanes();
 				merger.mergeIntoWorkloadGenerators();
 				merger.mergeNonWorkloadGenerators();		
 			}
 		} else {
-			merger.mergeNoQueueLPs();
-			merger.mergeLanes();
-			merger.mergeIntoWorkloadGenerators();
-			merger.mergeNonWorkloadGenerators();		
+			//merger.mergeWorkloadGenerators();
+			//merger.mergeIntoWorkloadGenerators();
+			merger.mergeCyclicConnected();
+			//merger.mergeNoQueueLPsIntoPredecessor();
+			//merger.mergeNonWorkloadGenerators();
 		}
-		merger.setNewLPidentifiers();
-		merger.setMetaInformation();
-		return merger.getLPsAsArray();
+		return merger.getLPs();
 	}
 
 	

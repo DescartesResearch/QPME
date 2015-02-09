@@ -977,6 +977,10 @@ public class LP implements Executor {
 		this.predecessorList = new ArrayList<LP>();
 	}
 
+	public void resetSuccessorList() {
+		this.successorList = new ArrayList<LP>();
+	}
+
 	public void resetInPlaces() {
 		this.inPlaces = null;
 	}
@@ -1042,13 +1046,13 @@ public class LP implements Executor {
 		}
 		sb.append("\n");
 
-		sb.append("\tinPlaces: ");
-		if (getInPlaces() != null) {
-			for (Place inPlace : getInPlaces()) {
-				sb.append(inPlace.name + " ");
-			}
-		}
-		sb.append("\n");
+//		sb.append("\tinPlaces: ");
+//		if (getInPlaces() != null) {
+//			for (Place inPlace : getInPlaces()) {
+//				sb.append(inPlace.name + " ");
+//			}
+//		}
+//		sb.append("\n");
 
 		return sb.toString();
 	}
@@ -1114,11 +1118,14 @@ public class LP implements Executor {
 	}
 
 	public boolean isWorkloadGenerator() {
-		if (this.getInPlaces() == null) {
-			log.warn("inPlaces not set");
-			return true;
+//		if (this.getInPlaces() == null) {
+//			log.warn("inPlaces not set");
+//			return true;
+//		}
+		if(this.predecessorList == null){
+			log.warn("predecessors not set");
 		}
-		if (this.getInPlaces().length == 0) {
+		if (this.predecessorList.size() == 0) {
 			return true;
 		} else {
 			return false;
@@ -1185,6 +1192,14 @@ public class LP implements Executor {
 
 	public boolean isCountingEmittedTokens() {
 		return isCountingEmittedTokens;
+	}
+
+	public Object getPlacesString() {
+		StringBuffer sb = new StringBuffer();
+		for(Place place: places){
+			sb.append(place.name + " ");
+		}
+		return sb.toString();
 	}
 
 }
