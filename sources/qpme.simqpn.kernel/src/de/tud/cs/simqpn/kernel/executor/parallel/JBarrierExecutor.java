@@ -72,6 +72,7 @@ public class JBarrierExecutor implements Callable<Net> {
 		this.lps = lps;
 		this.progressMonitor = progressMonitor;
 		this.verbosityLevel = verbosityLevel;
+		BarrierFactory.createBarrier(lps, verbosityLevel, progressMonitor);
 	}
 
 	/**
@@ -80,14 +81,11 @@ public class JBarrierExecutor implements Callable<Net> {
 	 * @throws SimQPNException
 	 */
 	public Net call() throws SimQPNException {
-
-		BarrierFactory.createBarrier(lps, verbosityLevel, progressMonitor);
 		
 		Thread[] threads = new Thread[lps.length];
-		//RandomElement randomElement = RandomNumberGenerator.nextRandNumGen();
+		
 		for (int i = 0; i < lps.length; i++) {
-			InternalLP newLP = new InternalLP(lps[i]);
-			//lps[i].createRandomTransGen(randomElement); //random
+			LPRunnable newLP = new LPRunnable(lps[i]);
 			threads[i] = new Thread(newLP);
 			threads[i].start();
 		}
@@ -102,10 +100,10 @@ public class JBarrierExecutor implements Callable<Net> {
 		return this.net;
 	}
 
-	private class InternalLP implements Runnable {
+	private class LPRunnable implements Runnable {
 		final LP lp;
 		
-		public InternalLP(final LP lp) {
+		public LPRunnable(final LP lp) {
 			this.lp = lp;
 		}
 

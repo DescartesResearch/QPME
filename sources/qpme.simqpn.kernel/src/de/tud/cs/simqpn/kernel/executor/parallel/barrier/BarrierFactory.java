@@ -74,20 +74,21 @@ public class BarrierFactory {
 		return createPredecessorClockBarrierAction(lps, verbosityLevel, progressMonitor);
 	}
 	
-	public static BarrierAction createPredecessorBarrierAction(LP[] lps, int verbosityLevel, SimulatorProgress progressMonitor){
-		return new PredecessorBarrierAction(lps, verbosityLevel, progressMonitor);
-	}
-	
 	public static BarrierAction createPredecessorClockBarrierAction(LP[] lps, int verbosityLevel, SimulatorProgress progressMonitor){
 		return new PredecessorClockBarrierAction(lps, verbosityLevel, progressMonitor);
-	}
-
-	public static BarrierAction createMinBarrierAction(LP[] lps, int verbosityLevel, SimulatorProgress progressMonitor){
-		return new MinBarrierAction(lps, verbosityLevel, progressMonitor);
 	}
 
 	private static boolean isPowerOfTwo(int number) {
 		return (number & -number) == number;
 	}
+
+	public static BarrierAction createMinBarrierAction(LP[] lps, int verbosityLevel, SimulatorProgress progressMonitor){
+		return new MinBarrierAction(lps, verbosityLevel, progressMonitor);
+	}
+	
+	public static BarrierAction createPredecessorBarrierAction(LP[] lps, int verbosityLevel, SimulatorProgress progressMonitor){
+		return new PredecessorBarrierAction(lps, verbosityLevel, progressMonitor);
+	}
+
 
 }

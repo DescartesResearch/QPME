@@ -111,7 +111,7 @@ public class LP implements Executor {
 
 	/**
 	 * List of queue events scheduled for processing at specified points in
-	 * time.
+	 * time.s
 	 */
 	private PriorityQueue<QueueEvent> eventList = new PriorityQueue<QueueEvent>(
 			10, new Comparator<QueueEvent>() {
@@ -958,11 +958,15 @@ public class LP implements Executor {
 	}
 
 	public List<LP> getSuccessors() {
-		return getSuccessorList();
+		return successorList;
 	}
 
 	public void addSuccessor(LP successor) {
-		this.getSuccessorList().add(successor);
+		if(!this.equals(successor)){
+			if (!successorList.contains(successor)) {
+				this.successorList.add(successor);
+			}
+		}
 	}
 
 	public List<LP> getPredecessors() {
@@ -970,7 +974,11 @@ public class LP implements Executor {
 	}
 
 	public void addPredecessor(LP predecessor) {
-		this.predecessorList.add(predecessor);
+		if(!this.equals(predecessor)){
+			if(!predecessorList.contains(predecessor)){
+				this.predecessorList.add(predecessor);
+			}
+		}
 	}
 
 	public void resetPredecessors() {
@@ -1133,7 +1141,11 @@ public class LP implements Executor {
 	}
 
 	public boolean hasSuccessor() {
-		return (successorList.size() != 0);
+		if(successorList == null){
+			return false;
+		}else{
+			return (successorList.size() != 0);
+		}
 	}
 	
 	public double getMinimumClockOfPredecessors(){
@@ -1145,13 +1157,6 @@ public class LP implements Executor {
 			minimumClockOfPredecessors = (pred.getClock() < minimumClockOfPredecessors) ? pred.getClock() : minimumClockOfPredecessors;
 		}
 		return minimumClockOfPredecessors;
-	}
-
-	/**
-	 * @return the successorList
-	 */
-	public List<LP> getSuccessorList() {
-		return successorList;
 	}
 
 	/**

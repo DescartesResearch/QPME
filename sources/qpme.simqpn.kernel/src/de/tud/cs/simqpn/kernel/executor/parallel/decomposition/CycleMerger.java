@@ -42,6 +42,7 @@
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -69,6 +70,9 @@ public class CycleMerger {
 	private List<LP> visitedLPs;
 	private Stack<LP> stack;
 
+	private CycleMerger(){
+	};
+	
 	/**
 	 * Merges LPs that are cyclic connected and thereby forms an acyclic graph.
 	 * 
@@ -76,20 +80,21 @@ public class CycleMerger {
 	 *            List of LPs
 	 * @return List of LPs that form an acyclic graph
 	 */
-	public List<LP> mergeCyclicConnected(List<LP> lps, int verbosityLevel) {
-		lps = findCycles(lps);
-		lps.equals(visitedLPs);
-		
-		for(LP lp: lps){
-			log.info("\t"+lp.getPlacesString() +" | "+ depthFirstSearchIndexes.get(lp) + " , "+lowLinks.get(lp));
-		}
-		List<LP> merged = mergeCycles(verbosityLevel);
-		return merged;
+	public static void mergeCycles(List<LP> lps, int verbosityLevel) {
+		CycleMerger merger = new CycleMerger();
+		merger.findCycles(lps);
+//		for (LP lp : lps) {
+//			log.info("\t" + lp.getPlacesString() + " | "
+//					+ merger.depthFirstSearchIndexes.get(lp) + " , "
+//					+ merger.lowLinks.get(lp));
+//		}
+		merger.mergeCyclesInternal(lps, verbosityLevel);
 	}
 
-	private List<LP> findCycles(List<LP> lps) {
+	private void findCycles(List<LP> lps) {
 		depthFirstSearchIndex = 0;
-		unvisitedLPs = lps;
+		unvisitedLPs = new ArrayList<LP>(lps);
+		//Collections.copy(lps, unvisitedLPs);
 		visitedLPs = new ArrayList<LP>();
 		stack = new Stack<LP>();
 		lowLinks = new HashMap<LP, Integer>();
@@ -100,37 +105,10 @@ public class CycleMerger {
 				doTarjanProcedure(lp);
 			}
 		}
-		return visitedLPs;
-	}
-
-	private List<LP> mergeCycles(int verbosityLevel) {
-		Collection<Integer> lowLinkSet = lowLinks.values();
-		Collection<Integer> cycleIdentifiers = findDuplicates(lowLinkSet);
-		for (Integer cycleIdentifier : cycleIdentifiers) {
-			log.info("Found cycle:");
-			StringBuffer sb = new StringBuffer();
-			LP merge = null;
-			for (int i = 0; i < visitedLPs.size(); i++) {
-				LP lp = visitedLPs.get(i);
-				if (lowLinks.containsKey(lp)) {	//merged LPs do not have keys
-					if (lowLinks.get(lp).equals(cycleIdentifier)) {
-						if (merge == null) {
-							merge = lp;
-						} else {
-							LPSetModifier.merge(visitedLPs, lp,
-									merge, verbosityLevel);
-						}
-						sb.append(" " + lp.getPlacesString());
-					}
-				}
-			}
-			log.info("Cycle " + sb.toString() + "merged!");
-		}
-		return visitedLPs;
 	}
 
 	private void doTarjanProcedure(LP lp) {
-		// Set the depth index for v to the smallest unused index
+		// Set the depth index for LP to the smallest unused index
 		depthFirstSearchIndexes.put(lp, depthFirstSearchIndex);
 		lowLinks.put(lp, depthFirstSearchIndex);
 		depthFirstSearchIndex++;
@@ -157,7 +135,36 @@ public class CycleMerger {
 			LP lp2;
 			do {
 				lp2 = stack.pop();
+				// merge lp2 and lp2'
 			} while (!lp.equals(lp2));
+		}
+	}
+
+	private void mergeCyclesInternal(List<LP> lps, int verbosityLevel) {
+		Collection<Integer> lowLinkSet = lowLinks.values();
+		Collection<Integer> cycleIdentifiers = findDuplicates(lowLinkSet);
+		if (cycleIdentifiers.size() > 0) {
+			log.info("Merging Cycles ...");
+			for (Integer cycleIdentifier : cycleIdentifiers) {
+				StringBuffer sb = new StringBuffer();
+				LP merge = null;
+				for (int i = 0; i < visitedLPs.size(); i++) {
+					LP lp = visitedLPs.get(i);
+					if (lowLinks.containsKey(lp)) { // merged LPs do not have
+													// keys
+						if (lowLinks.get(lp).equals(cycleIdentifier)) {
+							if (merge == null) {
+								merge = lp;
+							} else {
+								LPSetModifier.merge(lps, lp, merge,
+										verbosityLevel);
+							}
+							sb.append(" " + lp.getPlacesString());
+						}
+					}
+				}
+				log.info("Cycle " + sb.toString() + "merged!");
+			}
 		}
 	}
 

@@ -70,6 +70,30 @@ public class LPMerger {
 		this.cores = cores;
 		LPSetModifier.setPredecessorsAndSuccessors(lps);
 	}
+	
+	/**
+	 * Merges until number of LPs is less than the number of cores
+	 */
+	public void mergeFinal(){
+		LP current = getWorkloadGenerators().get(0);
+		List<LP> reachable = new ArrayList<LP>(); 
+		for(int j = 0;lps.size() > cores && j < 50; j++){
+			reachable.addAll(current.getSuccessors());
+			while(reachable.size() > 0){
+			//for(int i=0; i< reachable.size(); i++){
+				LP suc = reachable.remove(0);
+				if(current.getPlaces().length < net.getNumPlaces()
+						/ cores) {
+					current = LPSetModifier.merge(lps, current, suc, verbosityLevel);
+					//break;
+				}else{
+					current = suc;
+				}
+				
+			}
+
+		}
+	}
 
 	public void mergeWorkloadGenerators() {
 		log.info("Merge workload generators");
@@ -99,8 +123,7 @@ public class LPMerger {
 	}
 
 	public void mergeCyclicConnected() {
-		CycleMerger merger = new CycleMerger();
-		lps = merger.mergeCyclicConnected(lps,verbosityLevel);
+		CycleMerger.mergeCycles(lps, verbosityLevel);
 	}
 
 	/**

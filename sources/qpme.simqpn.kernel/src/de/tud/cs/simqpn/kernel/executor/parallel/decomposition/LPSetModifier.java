@@ -21,16 +21,9 @@ public class LPSetModifier {
 		lps.remove(lp2);
 		LP merged = LP.merge(lp1, lp2);
 		lps.add(merged);
-		setPredecessorAndSuccessor(merged);
-		for(LP pred: merged.getPredecessors()){
-			setPredecessorAndSuccessor(pred);
-		}
-		for(int i=0; i< merged.getSuccessors().size(); i++){
-			LP suc = merged.getSuccessors().get(i);
-			setPredecessorAndSuccessor(suc);
-		}
-				
-		lps.remove(null);
+		rewire(lp1,merged);
+		rewire(lp2, merged);
+
 		if (verbosityLevel > 1) {
 			String txt = "";		
 			for(Place place: lp1.getPlaces()){
@@ -43,6 +36,28 @@ public class LPSetModifier {
 			log.info("merged logical partitions "+txt);
 		}
 		return merged;
+	}
+	
+	/**
+	 * Sets predecessor and successor from old to merged LP
+	 * @param old
+	 * @param merged
+	 */
+	private static void rewire(LP old, LP merged){
+		for(LP pre : old.getPredecessors()){
+			pre.getSuccessors().remove(old);
+			pre.addSuccessor(merged);
+			merged.addPredecessor(pre);
+		}
+		for(LP suc : old.getSuccessors()){
+			suc.getPredecessors().remove(old);
+			suc.addPredecessor(merged);
+			merged.addSuccessor(suc);
+		}
+		merged.getPredecessors().remove(old);
+		merged.getSuccessors().remove(old);
+
+
 	}
 	
 	public static void setNewLPidentifiers(List<LP> lps) {
@@ -102,7 +117,7 @@ public class LPSetModifier {
 	 * 
 	 * @param listLPs
 	 */
-	private static void setPredecessorsAndSuccessors(List<LP> listLPs) {
+	public static void setPredecessorsAndSuccessors(List<LP> listLPs) {
 		for (LP lp: listLPs) {
 			setPredecessorAndSuccessor(lp);
 		}
@@ -110,8 +125,8 @@ public class LPSetModifier {
 
 	public static void setPredecessorAndSuccessor(LP lp) {
 		//lp.resetInPlaces();
-		lp.resetPredecessors();
-		lp.resetSuccessorList();
+//		lp.resetPredecessors();
+//		lp.resetSuccessorList();
 		for (Place place : lp.getPlaces()) {
 			for (Transition inTrans : place.inTrans) {
 				for (Place prePlace : inTrans.inPlaces) {
@@ -123,8 +138,10 @@ public class LPSetModifier {
 				}
 			}
 		}
-		removeDuplicateWithOrder((ArrayList<LP>) lp.getPredecessors());
-		removeDuplicateWithOrder((ArrayList<LP>) lp.getSuccessors());
+//		removeDuplicateWithOrder((ArrayList<LP>) lp.getPredecessors());
+//		removeDuplicateWithOrder((ArrayList<LP>) lp.getSuccessors());
+//		removeDuplicateWithOrder((ArrayList<LP>) lp.getSuccessors());
+//		removeDuplicateWithOrder((ArrayList<LP>) lp.getSuccessors());
 	}
 
 	/**

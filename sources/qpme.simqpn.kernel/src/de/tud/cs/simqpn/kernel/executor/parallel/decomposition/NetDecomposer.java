@@ -84,11 +84,12 @@ public class NetDecomposer {
 				merger.mergeNonWorkloadGenerators();		
 			}
 		} else {
-			//merger.mergeWorkloadGenerators();
+			merger.mergeWorkloadGenerators();
 			//merger.mergeIntoWorkloadGenerators();
 			merger.mergeCyclicConnected();
 			//merger.mergeNoQueueLPsIntoPredecessor();
 			//merger.mergeNonWorkloadGenerators();
+			merger.mergeFinal();
 		}
 		return merger.getLPs();
 	}
