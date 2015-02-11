@@ -41,6 +41,8 @@
  */
 package de.tud.cs.simqpn.kernel.executor.parallel.barrier.action;
 
+import java.util.List;
+
 import de.tud.cs.simqpn.kernel.executor.parallel.LP;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
@@ -63,7 +65,16 @@ public class PredecessorClockBarrierAction extends BarrierAction {
 
 	@Override
 	void setTimeSaveToProcess(LP lp) {
-		lp.setTimeSaveToProcess(lp.getMinimumClockOfPredecessors());
+		double time;
+		List<LP> predecessors = lp.getPredecessors();
+		double min = predecessors.get(0).getClock();
+		for(int i=1; i<lp.getPredecessors().size(); i++){
+			time = predecessors.get(i).getClock();//pred.getNextEventTime();
+			if (min > time) {
+				min = time;
+			}
+		}
+		lp.setTimeSaveToProcess(min);
 	}
 	
 	private static LP[] getLPsWithPredecessors(LP[] lps){

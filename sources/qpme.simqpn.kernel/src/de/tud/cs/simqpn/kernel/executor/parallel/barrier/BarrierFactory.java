@@ -43,8 +43,6 @@ package de.tud.cs.simqpn.kernel.executor.parallel.barrier;
 
 import de.tud.cs.simqpn.kernel.executor.parallel.LP;
 import de.tud.cs.simqpn.kernel.executor.parallel.barrier.action.BarrierAction;
-import de.tud.cs.simqpn.kernel.executor.parallel.barrier.action.MinBarrierAction;
-import de.tud.cs.simqpn.kernel.executor.parallel.barrier.action.PredecessorBarrierAction;
 import de.tud.cs.simqpn.kernel.executor.parallel.barrier.action.PredecessorClockBarrierAction;
 import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 import edu.bonn.cs.net.jbarrier.barrier.Barrier;
@@ -81,14 +79,5 @@ public class BarrierFactory {
 	private static boolean isPowerOfTwo(int number) {
 		return (number & -number) == number;
 	}
-
-	public static BarrierAction createMinBarrierAction(LP[] lps, int verbosityLevel, SimulatorProgress progressMonitor){
-		return new MinBarrierAction(lps, verbosityLevel, progressMonitor);
-	}
-	
-	public static BarrierAction createPredecessorBarrierAction(LP[] lps, int verbosityLevel, SimulatorProgress progressMonitor){
-		return new PredecessorBarrierAction(lps, verbosityLevel, progressMonitor);
-	}
-
 
 }

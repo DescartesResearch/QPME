@@ -191,7 +191,7 @@ public class LP implements Executor {
 
 	private long barrierWaitingTime = 0;
 	private int emittedTokenCounter = 0;
-	private boolean isCountingEmittedTokens = false;
+	private boolean isCountingEmittedTokens;
 
 	/**
 	 * Constructor.
@@ -755,6 +755,8 @@ public class LP implements Executor {
 		if(isWorkloadGenerator()){
 			isCountingEmittedTokens = true;
 			emittedTokenCounter = 0;
+		}else{
+			isCountingEmittedTokens = false;
 		}
 
 	}
@@ -1109,48 +1111,21 @@ public class LP implements Executor {
 	}
 
 	public boolean isWorkloadGenerator() {
-		// if (this.getInPlaces() == null) {
-		// log.warn("inPlaces not set");
-		// return true;
-		// }
 		if (this.predecessorList == null) {
 			log.warn("predecessors not set");
-		}
-		if (this.predecessorList.size() == 0) {
-			return true;
-		} else {
 			return false;
+		}else{
+			return !predecessorList.isEmpty();
 		}
 	}
 
 	public boolean hasSuccessor() {
-		if (successorList == null) {
-			return false;
-		} else {
-			return (successorList.size() != 0);
+		if (this.successorList == null) {
+			log.warn("successors not set");
 		}
+		return !successorList.isEmpty();
 	}
 
-	public double getMinimumClockOfPredecessors() {
-		double minimumClockOfPredecessors = 0;
-		if (getPredecessors().isEmpty()) {
-			return Double.MAX_VALUE;
-		} else {
-			for (LP pred : getPredecessors()) {
-				if (minimumClockOfPredecessors == 0) {
-					minimumClockOfPredecessors = pred.getClock();
-				}
-				minimumClockOfPredecessors = (pred.getClock() < minimumClockOfPredecessors) ? pred
-						.getClock() : minimumClockOfPredecessors;
-			}
-			return minimumClockOfPredecessors;
-		}
-	}
-
-	/**
-	 * @param successorList
-	 *            the successorList to set
-	 */
 	public void setSuccessorList(List<LP> successorList) {
 		this.successorList = successorList;
 	}

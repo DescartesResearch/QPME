@@ -459,31 +459,6 @@ public class QPlace extends Place {
 	}
 
 	/**
-	 * Returns the minimum of lookahead over all colors.
-	 * 
-	 * @return the minimum of lookahead over all colors.
-	 */
-	public double getLookahead() {
-		List<Double> lookaheads = new ArrayList<Double>();
-		for (int i = 0; i < colors.length; i++) {
-			lookaheads.add(getLookahead(i));
-		}
-		return Collections.min(lookaheads);
-	}
-
-	/**
-	 * Returns the lookahead for a special colors.
-	 * 
-	 * @param color
-	 *            the color for which lookahead is returned
-	 * @return the lookahead for a special colors.
-	 */
-	@Override
-	public double getLookahead(int color) {
-		return queue.getLookahead(this, color);
-	}
-
-	/**
 	 * Returns the head of future service time list.
 	 * 
 	 * @param color

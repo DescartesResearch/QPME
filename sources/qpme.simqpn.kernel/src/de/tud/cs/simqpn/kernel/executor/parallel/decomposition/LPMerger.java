@@ -266,7 +266,6 @@ public class LPMerger {
 
 		for (int i = 0; i < lps.size(); i++) {
 			lps.get(i).resetPredecessors();
-			lps.get(i).resetInPlaces();
 		}
 	}
 
