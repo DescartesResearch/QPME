@@ -59,7 +59,6 @@ public class PredecessorClockBarrierAction extends BarrierAction {
 		for (LP lp : lpsWithPredecessors) {
 			setTimeSaveToProcess(lp);
 		}
-
 	}
 
 	@Override

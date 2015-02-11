@@ -111,7 +111,7 @@ public class LP implements Executor {
 
 	/**
 	 * List of queue events scheduled for processing at specified points in
-	 * time.s
+	 * time.
 	 */
 	private PriorityQueue<QueueEvent> eventList = new PriorityQueue<QueueEvent>(
 			10, new Comparator<QueueEvent>() {
@@ -131,8 +131,6 @@ public class LP implements Executor {
 	// private Probe[] probes;
 	/** The places of the QPN this LP simulates. */
 	private final Place[] places;
-	/** The places through-out tokens can enter this LP */
-	private Place[] inPlaces;
 	/** The transitions of the QPN this LP simulates. */
 	private final Transition[] transitions;
 	/** The queues of the QPN this LP simulates. */
@@ -190,7 +188,7 @@ public class LP implements Executor {
 	private final double maxProgressUpdateInterval;
 	/** Time in milliseconds between progress updates */
 	private final long progressUpdateRate;
-	
+
 	private long barrierWaitingTime = 0;
 	private int emittedTokenCounter = 0;
 	private boolean isCountingEmittedTokens = false;
@@ -233,22 +231,22 @@ public class LP implements Executor {
 
 	public void processSaveEvents() throws SimQPNException {
 		boolean hasCompleted = false;
-		if(isCountingEmittedTokens){
+		if (isCountingEmittedTokens) {
 			while (emittedTokenCounter < 100 && !hasCompleted) {
 				hasCompleted = performActions();
 			}
 			emittedTokenCounter = 0;
-		}else{
-			while(!hasCompleted){
-				hasCompleted = performActions();		
+		} else {
+			while (!hasCompleted) {
+				hasCompleted = performActions();
 			}
 		}
-		
+
 		if (beforeInitHeartBeat) {
 			determineMonitorUpdateRate();
 		} else {
 			updateProgressMonitor();
-			if(verbosityLevel > 1){
+			if (verbosityLevel > 1) {
 				log.info("LP" + id + " updating progress at monitor");
 			}
 		}
@@ -257,7 +255,7 @@ public class LP implements Executor {
 			stopController.setReadyToFinish();
 		}
 	}
-	
+
 	private boolean performActions() throws SimQPNException {
 		QueueEvent nextQueueEvent;
 		TokenEvent nextTokenEvent;
@@ -398,12 +396,12 @@ public class LP implements Executor {
 	 * Waits until all LPs have entered the barrier.
 	 */
 	public void waitForBarrier() {
-		if(verbosityLevel > 0 ){
+		if (verbosityLevel > 0) {
 			long nanos = System.nanoTime();
 			barrier.await(this.id);
 			barrierWaitingTime += System.nanoTime() - nanos;
-		}else{
-			barrier.await(this.id);			
+		} else {
+			barrier.await(this.id);
 		}
 	}
 
@@ -421,27 +419,29 @@ public class LP implements Executor {
 		if (verbosityLevel > 0) {
 			log.info("LP" + id + ": " + "msrmPrdLen= " + msrmPrdLen
 					+ " totalRunLen= " + endRunClock + " runWallClockTime="
-					+ (int) (runWallClockTime / 60) + " min (=" + runWallClockTime
-					+ " sec)"+ " barrierWait= " + (barrierWaitingTime/(1000000000.0))+" sec");
-		}else{
+					+ (int) (runWallClockTime / 60) + " min (="
+					+ runWallClockTime + " sec)" + " barrierWait= "
+					+ (barrierWaitingTime / (1000000000.0)) + " sec");
+		} else {
 			log.info("LP" + id + ": " + "msrmPrdLen= " + msrmPrdLen
 					+ " totalRunLen= " + endRunClock + " runWallClockTime="
-					+ (int) (runWallClockTime / 60) + " min (=" + runWallClockTime
-					+ " sec)");
+					+ (int) (runWallClockTime / 60) + " min (="
+					+ runWallClockTime + " sec)");
 		}
-
 
 		// Complete statistics collection (make sure this is done AFTER the
 		// above statements)
 		if (configuration.getAnalMethod() != SimQPNConfiguration.AnalysisMethod.WELCH) {
 			try {
 				for (int p = 0; p < places.length; p++) {
-					places[p].finish(configuration, runWallClockTime, endRunClock);
+					places[p].finish(configuration, runWallClockTime,
+							endRunClock);
 				}
 				for (int q = 0; q < queues.length; q++) {
 					// NOTE: queues[*].finish() should be called after
 					// places[*].finish()!
-					queues[q].finish(configuration, runWallClockTime, endRunClock);
+					queues[q].finish(configuration, runWallClockTime,
+							endRunClock);
 				}
 				// for (int pr = 0; pr < probes.length; pr++)
 				// probes[pr].finish(configuration, clock);
@@ -507,10 +507,11 @@ public class LP implements Executor {
 		if (clock < tkEvent.getTime()) {
 			clock = tkEvent.getTime();
 		} else if (clock > tkEvent.getTime()) {
-			log.warn("LP" + id + ": Time of incoming token < simulation time at place: "+place.name
-					+ " \n\t" + tkEvent.getTime() + "(token time)\n\t" + clock
-					+ "(simulation time)\n\t" + getTimeSaveToProcess()
-					+ "(time save to process)");
+			log.warn("LP" + id
+					+ ": Time of incoming token < simulation time at place: "
+					+ place.name + " \n\t" + tkEvent.getTime()
+					+ "(token time)\n\t" + clock + "(simulation time)\n\t"
+					+ getTimeSaveToProcess() + "(time save to process)");
 		}
 		place.addTokens(tkEvent.getColor(), tkEvent.getNumber(),
 				tkEvent.getTkCopyBuffer(), this);
@@ -726,7 +727,7 @@ public class LP implements Executor {
 
 		beginRunWallClock = System.currentTimeMillis();
 
-		/** Pick non-self-sorting queues whenever possible*/
+		/** Pick non-self-sorting queues whenever possible */
 		if (predecessorList.size() <= 1) {
 			/*
 			 * If LP only have one predecessor, incoming events are ordered
@@ -750,6 +751,11 @@ public class LP implements Executor {
 						}
 					});
 		}
+		
+		if(isWorkloadGenerator()){
+			isCountingEmittedTokens = true;
+			emittedTokenCounter = 0;
+		}
 
 	}
 
@@ -770,8 +776,6 @@ public class LP implements Executor {
 		RandomEngine randomElement = RandomNumberGenerator.nextRandNumGen();
 		createRandomTransGen(randomElement);
 	}
-
-
 
 	/**
 	 * Updates progress monitor if the simulation progressed far enough since
@@ -962,7 +966,7 @@ public class LP implements Executor {
 	}
 
 	public void addSuccessor(LP successor) {
-		if(!this.equals(successor)){
+		if (!this.equals(successor)) {
 			if (!successorList.contains(successor)) {
 				this.successorList.add(successor);
 			}
@@ -974,8 +978,8 @@ public class LP implements Executor {
 	}
 
 	public void addPredecessor(LP predecessor) {
-		if(!this.equals(predecessor)){
-			if(!predecessorList.contains(predecessor)){
+		if (!this.equals(predecessor)) {
+			if (!predecessorList.contains(predecessor)) {
 				this.predecessorList.add(predecessor);
 			}
 		}
@@ -987,18 +991,6 @@ public class LP implements Executor {
 
 	public void resetSuccessorList() {
 		this.successorList = new ArrayList<LP>();
-	}
-
-	public void resetInPlaces() {
-		this.inPlaces = null;
-	}
-	
-	public void setInPlaces(Place[] inPlaces) {
-		this.inPlaces = inPlaces;
-		if(inPlaces.length == 0){
-			isCountingEmittedTokens = true;			
-			emittedTokenCounter = 0;
-		}
 	}
 
 	public String toShortString() {
@@ -1053,15 +1045,6 @@ public class LP implements Executor {
 			sb.append("LP" + pred.getId() + " ");
 		}
 		sb.append("\n");
-
-//		sb.append("\tinPlaces: ");
-//		if (getInPlaces() != null) {
-//			for (Place inPlace : getInPlaces()) {
-//				sb.append(inPlace.name + " ");
-//			}
-//		}
-//		sb.append("\n");
-
 		return sb.toString();
 	}
 
@@ -1126,11 +1109,11 @@ public class LP implements Executor {
 	}
 
 	public boolean isWorkloadGenerator() {
-//		if (this.getInPlaces() == null) {
-//			log.warn("inPlaces not set");
-//			return true;
-//		}
-		if(this.predecessorList == null){
+		// if (this.getInPlaces() == null) {
+		// log.warn("inPlaces not set");
+		// return true;
+		// }
+		if (this.predecessorList == null) {
 			log.warn("predecessors not set");
 		}
 		if (this.predecessorList.size() == 0) {
@@ -1141,22 +1124,27 @@ public class LP implements Executor {
 	}
 
 	public boolean hasSuccessor() {
-		if(successorList == null){
+		if (successorList == null) {
 			return false;
-		}else{
+		} else {
 			return (successorList.size() != 0);
 		}
 	}
-	
-	public double getMinimumClockOfPredecessors(){
-		double minimumClockOfPredecessors = 0; 
-		for (LP pred : getPredecessors()) {
-			if(minimumClockOfPredecessors == 0){
-				minimumClockOfPredecessors = pred.getClock();
+
+	public double getMinimumClockOfPredecessors() {
+		double minimumClockOfPredecessors = 0;
+		if (getPredecessors().isEmpty()) {
+			return Double.MAX_VALUE;
+		} else {
+			for (LP pred : getPredecessors()) {
+				if (minimumClockOfPredecessors == 0) {
+					minimumClockOfPredecessors = pred.getClock();
+				}
+				minimumClockOfPredecessors = (pred.getClock() < minimumClockOfPredecessors) ? pred
+						.getClock() : minimumClockOfPredecessors;
 			}
-			minimumClockOfPredecessors = (pred.getClock() < minimumClockOfPredecessors) ? pred.getClock() : minimumClockOfPredecessors;
+			return minimumClockOfPredecessors;
 		}
-		return minimumClockOfPredecessors;
 	}
 
 	/**
@@ -1179,10 +1167,6 @@ public class LP implements Executor {
 		this.clock = clock;
 	}
 
-	public Place[] getInPlaces() {
-		return inPlaces;
-	}
-
 	public void setTimeSaveToProcess(double timeSaveToProcess) {
 		this.timeSaveToProcess = timeSaveToProcess;
 	}
@@ -1190,8 +1174,8 @@ public class LP implements Executor {
 	public double getTimeSaveToProcess() {
 		return timeSaveToProcess;
 	}
-	
-	public void incrementEmittedTokenCounter(){
+
+	public void incrementEmittedTokenCounter() {
 		emittedTokenCounter++;
 	}
 
@@ -1201,7 +1185,7 @@ public class LP implements Executor {
 
 	public Object getPlacesString() {
 		StringBuffer sb = new StringBuffer();
-		for(Place place: places){
+		for (Place place : places) {
 			sb.append(place.name + " ");
 		}
 		return sb.toString();

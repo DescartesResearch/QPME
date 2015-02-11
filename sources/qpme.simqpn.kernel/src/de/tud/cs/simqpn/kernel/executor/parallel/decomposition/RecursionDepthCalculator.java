@@ -70,7 +70,7 @@ public class RecursionDepthCalculator {
 	private static int getRecursionDepth(LP lp) {
 		List<Integer> pathLengths = new ArrayList<Integer>();
 		if (!lp.hasSuccessor()) {
-			return 1;
+			return 0;
 		} else {
 			for (LP successor : lp.getSuccessors()) {
 				pathLengths.add(1 + getRecursionDepth(successor));

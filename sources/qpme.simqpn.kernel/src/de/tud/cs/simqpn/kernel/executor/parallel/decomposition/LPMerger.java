@@ -70,28 +70,27 @@ public class LPMerger {
 		this.cores = cores;
 		LPSetModifier.setPredecessorsAndSuccessors(lps);
 	}
-	
+
 	/**
 	 * Merges until number of LPs is less than the number of cores
 	 */
-	public void mergeFinal(){
+	public void mergeFinal() {
 		LP current = getWorkloadGenerators().get(0);
-		List<LP> reachable = new ArrayList<LP>(); 
-		for(int j = 0;lps.size() > cores && j < 50; j++){
+		List<LP> reachable = new ArrayList<LP>();
+		for (int j = 0; lps.size() > cores && j < 50; j++) {
 			reachable.addAll(current.getSuccessors());
-			while(reachable.size() > 0){
-			//for(int i=0; i< reachable.size(); i++){
+			while (!reachable.isEmpty()) {
+				// for(int i=0; i< reachable.size(); i++){
 				LP suc = reachable.remove(0);
-				if(current.getPlaces().length < net.getNumPlaces()
-						/ cores) {
-					current = LPSetModifier.merge(lps, current, suc, verbosityLevel);
-					//break;
-				}else{
+				if (current.getPlaces().length < net.getNumPlaces() / cores
+						|| lps.size() <= cores + 1) {
+					current = LPSetModifier.merge(lps, current, suc,
+							verbosityLevel);
+					// break;
+				} else {
 					current = suc;
 				}
-				
 			}
-
 		}
 	}
 
