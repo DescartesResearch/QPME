@@ -1087,29 +1087,6 @@ public class LP implements Executor {
 		}
 	}
 
-	public double getNextEventTime() {
-		QueueEvent queueEvent = eventList.peek();
-		TokenEvent tokenEvent = incomingTokenList.peek();
-		if (queueEvent != null) {
-			if (tokenEvent != null && tokenEvent.getTime() < queueEvent.time) {
-				return tokenEvent.getTime();
-			}
-			return queueEvent.time;
-		} else {
-			if (tokenEvent != null) {
-				if (verbosityLevel > 0) {
-					log.info("LP" + id + ": lookahead" + getLookahead());
-				}
-				return tokenEvent.getTime(); // + getLookahead();
-			}
-			return 0.0;
-		}
-	}
-
-	private int getLookahead() {
-		return 0;
-	}
-
 	public boolean isWorkloadGenerator() {
 		if (this.predecessorList == null) {
 			log.warn("predecessors not set");
