@@ -20,6 +20,7 @@ Contributors
      Samuel Kounev
      Philipp Meier
      Simon Spinner
+     Jürgen Walter
      Frederik Zipp
 
 -------------------
