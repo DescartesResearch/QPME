@@ -1092,7 +1092,7 @@ public class LP implements Executor {
 			log.warn("predecessors not set");
 			return false;
 		}else{
-			return !predecessorList.isEmpty();
+			return predecessorList.isEmpty();
 		}
 	}
 
@@ -1100,7 +1100,7 @@ public class LP implements Executor {
 		if (this.successorList == null) {
 			log.warn("successors not set");
 		}
-		return !successorList.isEmpty();
+		return successorList.isEmpty();
 	}
 
 	public void setSuccessorList(List<LP> successorList) {

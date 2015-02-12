@@ -67,14 +67,18 @@ public class PredecessorClockBarrierAction extends BarrierAction {
 	void setTimeSaveToProcess(LP lp) {
 		double time;
 		List<LP> predecessors = lp.getPredecessors();
-		double min = predecessors.get(0).getClock();
-		for(int i=1; i<lp.getPredecessors().size(); i++){
-			time = predecessors.get(i).getClock();//pred.getNextEventTime();
-			if (min > time) {
-				min = time;
+		if(predecessors.isEmpty()){
+			lp.setTimeSaveToProcess(Double.MAX_VALUE);
+		}else{
+			double min = predecessors.get(0).getClock();
+			for(int i=1; i<lp.getPredecessors().size(); i++){
+				time = predecessors.get(i).getClock();//pred.getNextEventTime();
+				if (min > time) {
+					min = time;
+				}
 			}
+			lp.setTimeSaveToProcess(min);
 		}
-		lp.setTimeSaveToProcess(min);
 	}
 	
 	private static LP[] getLPsWithPredecessors(LP[] lps){
