@@ -80,7 +80,6 @@ public class LPMerger {
 		for (int j = 0; lps.size() > cores && j < 50; j++) {
 			reachable.addAll(current.getSuccessors());
 			while (!reachable.isEmpty()) {
-				// for(int i=0; i< reachable.size(); i++){
 				LP suc = reachable.remove(0);
 				if (current.getPlaces().length < net.getNumPlaces() / cores
 						|| lps.size() <= cores + 1) {

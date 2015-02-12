@@ -260,9 +260,9 @@ public class LP implements Executor {
 		QueueEvent nextQueueEvent;
 		TokenEvent nextTokenEvent;
 		if ((nextQueueEvent = eventList.peek()) != null
-				&& nextQueueEvent.time <= timeSaveToProcess) {
+				&& nextQueueEvent.time < timeSaveToProcess) {
 			while ((nextTokenEvent = incomingTokenList.peek()) != null
-					&& nextTokenEvent.getTime() < (nextQueueEvent = eventList
+					&& nextTokenEvent.getTime() <= (nextQueueEvent = eventList
 							.peek()).time) {
 				processNextTokenEvent();
 				updateQueueEvents();
@@ -270,7 +270,7 @@ public class LP implements Executor {
 			processNextQueueEvent();
 			updateQueueEvents();
 		} else if ((nextTokenEvent = incomingTokenList.peek()) != null
-				&& nextTokenEvent.getTime() <= timeSaveToProcess) {
+				&& nextTokenEvent.getTime() < timeSaveToProcess) {
 			processNextTokenEvent();
 			updateQueueEvents();
 		} else {
@@ -312,7 +312,7 @@ public class LP implements Executor {
 
 			progressMonitor.finishWarmUp(id, configuration);
 		} else {
-			log.warn("error startup data collection");
+			log.warn("LP"+id+" error startup data collection");
 		}
 	}
 
@@ -1100,7 +1100,7 @@ public class LP implements Executor {
 		if (this.successorList == null) {
 			log.warn("successors not set");
 		}
-		return successorList.isEmpty();
+		return !successorList.isEmpty();
 	}
 
 	public void setSuccessorList(List<LP> successorList) {

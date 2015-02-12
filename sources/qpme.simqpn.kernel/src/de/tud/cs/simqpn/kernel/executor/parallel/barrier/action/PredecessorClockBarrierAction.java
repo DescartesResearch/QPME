@@ -57,14 +57,14 @@ public class PredecessorClockBarrierAction extends BarrierAction {
 	}
 
 	@Override
-	void setTimesSaveToProcess() {
+	protected void setTimesSaveToProcess() {
 		for (LP lp : lpsWithPredecessors) {
 			setTimeSaveToProcess(lp);
 		}
 	}
 
 	@Override
-	void setTimeSaveToProcess(LP lp) {
+	public void setTimeSaveToProcess(LP lp) {
 		double time;
 		List<LP> predecessors = lp.getPredecessors();
 		if(predecessors.isEmpty()){

@@ -65,7 +65,9 @@ public abstract class BarrierAction implements Runnable {
 	private int consistencyCounter;
 	private SimulatorProgress progressMonitor;
 	private double endRunClock = 0;
-
+	private enum State {rampUp, towardsConsistency, steady};
+	private State state;
+	
 	public BarrierAction(LP[] lps, int verbosityLevel,
 			SimulatorProgress progressMonitor) {
 		this.stopController = new SimpleStopCriterionController(lps.length,
@@ -79,62 +81,73 @@ public abstract class BarrierAction implements Runnable {
 		this.progressMonitor = progressMonitor;
 		this.consistencyCounter = 0;
 		this.endRunClock = 0;
+		this.state = State.rampUp;
 	}
+
+	protected abstract void setTimeSaveToProcess(LP lp);
+	protected abstract void setTimesSaveToProcess();
+
 	
 	@Override
 	public void run() {
 		if (stopController.isReadyToFinish()) {
 			makeConsistentAndFinish();
-		} else if (inRampUp) {
-			if (consistencyCounter == 0) {
-				double clock = getMaximumClockOfAllLP();
-				if (clock > rampUpLength) {
-					endRampUpClock = clock;
-					consistencyCounter++;
-				} else {
-					setTimesSaveToProcess();
-				}
-			} else if (consistencyCounter > recursionDepth) {
-				log.info("RampUp done at " + endRampUpClock);
-				startDataCollection(endRampUpClock);
-				inRampUp = false;
-				consistencyCounter = 0;
-				for(LP lp: lps){
-					if(lp.isWorkloadGenerator()){
-						lp.setTimeSaveToProcess(Double.MAX_VALUE);
-					}
-				}
-				setTimesSaveToProcess();
-			} else {
-				setTimesSaveToProcessTowardsConsistency(endRampUpClock);
-			}
-		} else {
+		}else if (state.equals(State.rampUp)){//	(consistencyCounter == 0) {
+			doRampUpTimes();
+		} else if (state.equals(State.towardsConsistency)) {	//on the way to consistency
+			doConsistencyTimes(endRampUpClock);
+		} else if (state.equals(State.steady)){
 			setTimesSaveToProcess();
 		}
 	}
 
-	public StopController getStopController() {
-		return stopController;
+	private void doRampUpTimes() {
+		double clock = getMaximumClockOfAllLP();
+		if (clock <= rampUpLength) {
+			setTimesSaveToProcess();
+		}else{ 	//Rampup condition fullfilled
+			endRampUpClock = clock; 
+			doConsistencyTimes(endRampUpClock);
+			state = State.towardsConsistency;
+		}
+	}
+
+	/**
+	 * Increases all times save to process except for workload generators
+	 * @param clock
+	 * @return
+	 */
+	private void doConsistencyTimes(double clock) {
+		if(isNetInConsistantState()){
+			log.info("RampUp done at " + endRampUpClock);
+			setTimesSaveToProcess();
+			for(LP lp: lps){
+				if(lp.isWorkloadGenerator()){
+					lp.setTimeSaveToProcess(Double.MAX_VALUE);
+				}
+			}
+			startDataCollection(endRampUpClock);
+			state = State.steady;
+
+		}else{
+			consistencyCounter++;
+			for (LP lp : lps) {
+				if (lp.isWorkloadGenerator()) {
+					lp.setTimeSaveToProcess(0);	//clock	
+				} else {
+					setTimeSaveToProcess(lp);
+				}
+			}
+		}
 	}
 	
-	abstract void setTimeSaveToProcess(LP lp);
-	
-	void setTimesSaveToProcess() {
-		if (verbosityLevel > 1) {
-			log.info("------- Barrier --------");
-		}
-		for(LP lp:lps){
-			setTimeSaveToProcess(lp);
-		}
-	};
-	
 	private void makeConsistentAndFinish() {
-		 endRunClock = (endRunClock == 0) ? getMaximumClockOfAllLP(): endRunClock;
+		endRunClock = (endRunClock == 0) ? getMaximumClockOfAllLP(): endRunClock;
 		
-		if (consistencyCounter >= recursionDepth) {
+		if (isNetInConsistantState()) {
 			finishSimulation(endRunClock);
 		} else {
-			setTimesSaveToProcessTowardsConsistency(endRunClock);
+			doConsistencyTimes(endRunClock);
 		}
 	}
 
@@ -168,23 +181,24 @@ public abstract class BarrierAction implements Runnable {
 		}
 	}
 
-	private boolean setTimesSaveToProcessTowardsConsistency(double clock) {
-		consistencyCounter++;
-		for (LP lp : lps) {
-			if (lp.isWorkloadGenerator()) {
-				lp.setTimeSaveToProcess(clock);
-			} else {
-				setTimeSaveToProcess(lp);
-			}
-		}
-		return true;
-	}
+
 
 	private void startDataCollection(double endRampUpClock) {
 		for (LP lp : lps) {
 			lp.startDataCollection(endRampUpClock);
 		}
+		inRampUp = false;
+		consistencyCounter = 0;
 	}
+	
+	public boolean isNetInConsistantState() {
+		return consistencyCounter > recursionDepth;
+	}
+	
+	public StopController getStopController() {
+		return stopController;
+	}
+
 
 	private double getMaximumClockOfAllLP() {
 		double maxClock = 0;
