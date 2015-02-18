@@ -80,17 +80,37 @@ public class LPMerger {
 		for (int j = 0; lps.size() > cores && j < 50; j++) {
 			reachable.addAll(current.getSuccessors());
 			while (!reachable.isEmpty()) {
-				LP suc = reachable.remove(0);
-				if (current.getPlaces().length < net.getNumPlaces() / cores
-						|| lps.size() <= cores + 1) {
-					current = LPSetModifier.merge(lps, current, suc,
+				LP successor = reachable.remove(0);
+				if(successor.getQueues().length == 0 || lps.size() <= cores + 1){
+					log.info("Merged LP ["+successor.getPlacesString()+"] which has no queue into predecessor");
+					current = LPSetModifier.merge(lps, current, successor,
 							verbosityLevel);
-					// break;
-				} else {
-					current = suc;
+				}else{
+					if (!hasAdequateSize(current)) {
+						current = LPSetModifier.merge(lps, current, successor,
+								verbosityLevel);
+						// break;
+					} else {
+						current = successor;
+						log.info("-----------------------------");
+						log.info("Started new LP "+current.getPlacesString());
+					}
 				}
 			}
 		}
+		while (!reachable.isEmpty()) {
+			LP suc = reachable.remove(0);
+			current = LPSetModifier.merge(lps, current, suc,
+						verbosityLevel);
+			if(reachable.isEmpty()){
+				reachable.addAll(current.getSuccessors());
+			}	
+		}
+	}
+
+	public boolean hasAdequateSize(LP current) {
+		return current.getQueues().length >= net.getQueues().length / cores;
+		//return current.getPlaces().length < net.getNumPlaces() / cores;	//trivial places
 	}
 
 	public void mergeWorkloadGenerators() {
