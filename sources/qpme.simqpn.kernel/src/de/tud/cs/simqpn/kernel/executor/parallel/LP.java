@@ -978,7 +978,15 @@ public class LP implements Executor {
 	public List<LP> getPredecessors() {
 		return predecessorList;
 	}
+	
+	public void removePredecessor(LP predecesssor){
+		predecessorList.remove(predecesssor);
+	}
 
+	public void removeSuccessor(LP successor){
+		successorList.remove(successor);
+	}
+	
 	public void addPredecessor(LP predecessor) {
 		if (!this.equals(predecessor)) {
 			if (!predecessorList.contains(predecessor)) {
@@ -1101,10 +1109,6 @@ public class LP implements Executor {
 			log.warn("successors not set");
 		}
 		return !successorList.isEmpty();
-	}
-
-	public void setSuccessorList(List<LP> successorList) {
-		this.successorList = successorList;
 	}
 
 	public double getRampUpLength() {

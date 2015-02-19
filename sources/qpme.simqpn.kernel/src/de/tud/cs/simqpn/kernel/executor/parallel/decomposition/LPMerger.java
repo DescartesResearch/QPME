@@ -77,40 +77,82 @@ public class LPMerger {
 	public void mergeFinal() {
 		LP current = getWorkloadGenerators().get(0);
 		List<LP> reachable = new ArrayList<LP>();
-		for (int j = 0; lps.size() > cores && j < 50; j++) {
+
+		for (int numLPs = 1; numLPs < cores;) {
 			reachable.addAll(current.getSuccessors());
 			while (!reachable.isEmpty()) {
 				LP successor = reachable.remove(0);
-				if(successor.getQueues().length == 0 || lps.size() <= cores + 1){
-					log.info("Merged LP ["+successor.getPlacesString()+"] which has no queue into predecessor");
+				if (successor.getQueues().length == 0) {
+					log.info("Merged LP [" + successor.getPlacesString()
+							+ "] which has no queue into predecessor");
 					current = LPSetModifier.merge(lps, current, successor,
 							verbosityLevel);
-				}else{
+				} else {
 					if (!hasAdequateSize(current)) {
 						current = LPSetModifier.merge(lps, current, successor,
 								verbosityLevel);
-						// break;
-					} else {
+					} else if (numLPs < cores) {
+						numLPs++;
 						current = successor;
 						log.info("-----------------------------");
-						log.info("Started new LP "+current.getPlacesString());
+						log.info("Started new LP " + current.getPlacesString());
+					} else {
+						if (reachable.isEmpty()) {
+							reachable.addAll(current.getSuccessors());
+						}
+						break;
 					}
+				}
+				if (reachable.isEmpty()) {
+					reachable.addAll(current.getSuccessors());
 				}
 			}
 		}
 		while (!reachable.isEmpty()) {
 			LP suc = reachable.remove(0);
-			current = LPSetModifier.merge(lps, current, suc,
-						verbosityLevel);
-			if(reachable.isEmpty()){
+			current = LPSetModifier.merge(lps, current, suc, verbosityLevel);
+			if (reachable.isEmpty()) {
 				reachable.addAll(current.getSuccessors());
-			}	
+			}
+		}
+
+		consistencyCheck();
+	}
+
+	void consistencyCheck() {
+		for (LP lp : lps) {
+			for (LP pred : lp.getPredecessors()) {
+				int id = pred.getId();
+				boolean stillInSet = false;
+				for (LP lp2 : lps) {
+					if (id == lp2.getId()) {
+						stillInSet = true;
+					}
+				}
+				if (!stillInSet){
+					log.warn("Predecessor LP"+pred.getId()+"("+pred.getPlacesString()+ ") of LP"+lp.getId()+" not found!");
+				}
+			}
+
+			for (LP suc : lp.getSuccessors()) {
+				int id = suc.getId();
+				boolean stillInSet = false;
+				for (LP lp2 : lps) {
+					if (id == lp2.getId()) {
+						stillInSet = true;
+					}
+				}
+				if (!stillInSet) {
+					log.warn("Successor LP"+suc.getId()+"("+suc.getPlacesString()+ ") of LP"+lp.getId()+" not found!");
+				}
+			}
 		}
 	}
 
 	public boolean hasAdequateSize(LP current) {
 		return current.getQueues().length >= net.getQueues().length / cores;
-		//return current.getPlaces().length < net.getNumPlaces() / cores;	//trivial places
+		// return current.getPlaces().length < net.getNumPlaces() / cores;
+		// //trivial places
 	}
 
 	public void mergeWorkloadGenerators() {

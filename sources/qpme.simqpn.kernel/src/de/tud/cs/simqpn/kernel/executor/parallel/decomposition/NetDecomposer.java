@@ -84,9 +84,9 @@ public class NetDecomposer {
 				merger.mergeNonWorkloadGenerators();		
 			}
 		} else {
-			merger.mergeWorkloadGenerators();
 			//merger.mergeIntoWorkloadGenerators();
 			merger.mergeCyclicConnected();
+			merger.mergeWorkloadGenerators();
 			//merger.mergeNoQueueLPsIntoPredecessor();
 			//merger.mergeNonWorkloadGenerators();
 			merger.mergeFinal();
@@ -122,6 +122,7 @@ public class NetDecomposer {
 			}
 			if (!hasOpenWorkload) {
 				log.info("Could not identify open workloads.");
+				log.info(NetDecomposer.lpDecompositionToString(lps));
 				return false;
 			} else {
 				if (hasOpenWorkloadWithQueue) {

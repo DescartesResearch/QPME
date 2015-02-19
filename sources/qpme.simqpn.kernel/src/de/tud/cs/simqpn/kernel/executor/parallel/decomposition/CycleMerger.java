@@ -83,11 +83,6 @@ public class CycleMerger {
 	public static void mergeCycles(List<LP> lps, int verbosityLevel) {
 		CycleMerger merger = new CycleMerger();
 		merger.findCycles(lps);
-//		for (LP lp : lps) {
-//			log.info("\t" + lp.getPlacesString() + " | "
-//					+ merger.depthFirstSearchIndexes.get(lp) + " , "
-//					+ merger.lowLinks.get(lp));
-//		}
 		merger.mergeCyclesInternal(lps, verbosityLevel);
 	}
 
@@ -148,15 +143,16 @@ public class CycleMerger {
 			for (Integer cycleIdentifier : cycleIdentifiers) {
 				StringBuffer sb = new StringBuffer();
 				LP merge = null;
-				for (int i = 0; i < visitedLPs.size(); i++) {
-					LP lp = visitedLPs.get(i);
+				for(int i=0; i<lps.size(); i++){
+//				for (int i = 0; i < visitedLPs.size(); i++) {
+					LP lp = lps.get(i);				//visitedLPs.get(i);
 					if (lowLinks.containsKey(lp)) { // merged LPs do not have
 													// keys
 						if (lowLinks.get(lp).equals(cycleIdentifier)) {
 							if (merge == null) {
 								merge = lp;
 							} else {
-								LPSetModifier.merge(lps, lp, merge,
+								merge = LPSetModifier.merge(lps, merge,lp,
 										verbosityLevel);
 							}
 							sb.append(" " + lp.getPlacesString());
