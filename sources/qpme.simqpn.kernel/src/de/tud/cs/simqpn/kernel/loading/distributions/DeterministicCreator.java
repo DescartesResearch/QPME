@@ -50,10 +50,10 @@ public class DeterministicCreator extends DistributionCreator {
 	
 	@Override
 	protected void loadParams() throws SimQPNException {
-		p1 = this.loadDoubleParam("p1");
+		p1 = this.loadDoubleParam("c");
 
 		if (p1 < 0) {
-			throw new SimQPNException("Invalid \"" + "p1" + "\" parameter (" + p1 + ") for " + this.getClass().getName() + "!");
+			throw new SimQPNException("Invalid \"" + "c" + "\" parameter (" + p1 + ") for " + this.getClass().getName() + "!");
 		}
 	}
 
@@ -75,7 +75,7 @@ public class DeterministicCreator extends DistributionCreator {
 
 	@Override
 	public String getMeanComputationText() {
-		return "p1";
+		return "c";
 	}
 
 }

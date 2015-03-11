@@ -402,7 +402,7 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 				{ "tau", null, null }, { "p", null, null },
 				{ "mean", "stdDev", null }, { "freedom", null, null },
 				{ "min", "max", null }, { "freedom", null, null },
-				{ "scale", "offset", null }, { "p1", null, null } };
+				{ "scale", "offset", null }, { "c", null, null } };
 
 		protected final String defaultValues[][] = { { "1", "1", null },
 				{ "1", "1", "1" }, { "1", "1", "1" }, { "1", null, null },
