@@ -1,0 +1,25 @@
+---------------------------------------------------------------------------------------------------------------------
+QPME ChangeLog
+---------------------------------------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------------------------------------
+Version 2.1
+---------------------------------------------------------------------------------------------------------------------
+
+ - Parallelization of simulation when using Replication/Deletion 
+
+ - Major refactoring of SimQPN to improve extensibility
+ 
+ - Added scaling parameter to empirical distribution
+ 
+ - Added support for new scheduling strategies in SimQPN:
+ 		- RANDOM
+ 		- PRIO(rity)
+
+ - Added support for RANDOM departure discipline 
+ 
+ - Support for loading qpe files with EMF
+ 
+ - Automatic model migration for models created with version 2.0 
+ 
+ - Various bug fixes
