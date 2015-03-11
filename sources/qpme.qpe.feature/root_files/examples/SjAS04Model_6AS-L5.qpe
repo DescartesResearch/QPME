@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<net qpme-version="2.1.0.qualifier">
+<net qpme-version="2.1.0">
   <colors> 
     <color description="Browse transaction." id="_1156606473736" name="B" real-color="#bf02a9"/>  
     <color description="Purchase transaction." id="_1156606473737" name="P" real-color="#363c46"/>  

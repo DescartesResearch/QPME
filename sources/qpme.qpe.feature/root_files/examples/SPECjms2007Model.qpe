@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<net qpme-version="2.1.0.qualifier">
+<net qpme-version="2.1.0">
   <colors> 
     <color description="" id="_1220013687769" name="helperSM" real-color="#6f9176"/>  
     <color id="_1220013687770" name="helperHQ" real-color="#0b9513"/>  

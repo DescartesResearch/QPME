@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<net qpme-version="2.1.0.qualifier">
+<net qpme-version="2.1.0">
   <colors> 
     <color description="NewOrder Request" id="_1156184916275" name="x1" real-color="#8f780b"/>  
     <color description="ChangeOrder Request" id="_1156184916276" name="x2" real-color="#df0a03"/>  

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<net qpme-version="2.1.0.qualifier">
+<net qpme-version="2.1.0">
   <colors> 
     <color id="_1156337226576" name="class 1" real-color="#c1574f"/>  
     <color id="_1156337226577" name="class 2" real-color="#4e474f"/> 
