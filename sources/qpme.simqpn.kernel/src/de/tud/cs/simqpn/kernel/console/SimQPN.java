@@ -114,7 +114,9 @@ public class SimQPN implements IApplication {
 		try {
 			URL url = new URL(path);
 			xmlFile = new File(url.toURI());
-		} catch(MalformedURLException | URISyntaxException ex) {
+		} catch(MalformedURLException ex) {
+			xmlFile = new File(path);
+		} catch(URISyntaxException ex) {
 			xmlFile = new File(path);
 		}
 		SAXReader xmlReader = new SAXReader();
