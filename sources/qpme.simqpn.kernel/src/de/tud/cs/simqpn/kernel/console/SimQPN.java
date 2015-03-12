@@ -44,6 +44,9 @@
 package de.tud.cs.simqpn.kernel.console;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -106,7 +109,14 @@ public class SimQPN implements IApplication {
 	}
 	
 	private static Document loadXMLFile(String path) throws DocumentException{
-		File xmlFile = new File(path);
+		// check if path is a URL
+		File xmlFile = null;
+		try {
+			URL url = new URL(path);
+			xmlFile = new File(url.toURI());
+		} catch(MalformedURLException | URISyntaxException ex) {
+			xmlFile = new File(path);
+		}
 		SAXReader xmlReader = new SAXReader();
 		return xmlReader.read(xmlFile);
 	}
