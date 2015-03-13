@@ -74,7 +74,7 @@ import de.tud.cs.simqpn.kernel.entities.stats.TimeHistogram;
 */
 public class StatsDocumentBuilder {
 
-	private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HHmmssS");
+	private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-ddTHH:mm:ss");
 	
 	private static Logger log = Logger.getLogger(StatsDocumentBuilder.class);
 	
