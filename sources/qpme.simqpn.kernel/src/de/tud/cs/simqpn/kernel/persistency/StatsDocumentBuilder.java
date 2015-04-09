@@ -66,6 +66,7 @@ import de.tud.cs.simqpn.kernel.entities.stats.QPlaceQueueStats;
 import de.tud.cs.simqpn.kernel.entities.stats.QueueStats;
 import de.tud.cs.simqpn.kernel.entities.stats.Stats;
 import de.tud.cs.simqpn.kernel.entities.stats.TimeHistogram;
+import de.tud.cs.simqpn.kernel.util.TimeStampUtil;
 
 
 
@@ -74,8 +75,6 @@ import de.tud.cs.simqpn.kernel.entities.stats.TimeHistogram;
 */
 public class StatsDocumentBuilder {
 
-	private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-	
 	private static Logger log = Logger.getLogger(StatsDocumentBuilder.class);
 	
 	private final Stats[] data;
@@ -97,7 +96,7 @@ public class StatsDocumentBuilder {
 		root.addAttribute("qpme-version", SimQPNController.QPME_VERSION);
 		root.addAttribute("model-file", net.attributeValue("path"));
 		
-		String datetime = TIMESTAMP_FORMAT.format(new Date());
+		String datetime = TimeStampUtil.format(new Date());
 		root.addAttribute("date", datetime);
 		
 		root.addAttribute("name", getResultFileBaseName());
@@ -115,7 +114,7 @@ public class StatsDocumentBuilder {
 	}
 
 	public String getResultFileBaseName() {
-		return "SimQPN_Output_" + this.configurationName + "_" + TIMESTAMP_FORMAT.format(new Date());
+		return "SimQPN_Output_" + this.configurationName + "_" + TimeStampUtil.format(new Date());
 	}
 	
 	private void addStats(Stats stats, Element parent, SimQPNConfiguration configuration) {

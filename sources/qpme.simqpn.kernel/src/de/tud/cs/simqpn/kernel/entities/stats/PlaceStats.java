@@ -262,8 +262,11 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 						fileName = statsDir + fileSep + "RunStats-ord_place" + id + "-col" + c + "-ST.txt";
 					else if (type == QUE_PLACE_DEP)
 						fileName = statsDir + fileSep + "RunStats-que_place_dep" + id + "-col" + c + "-ST.txt";
-					else {
-						log.error("Internal error in PlaceStats of place " + name);						
+					else if (type == PROBE){
+						fileName = statsDir + fileSep + "RunStats-probe" + id + "-col" + c + "-ST.txt";
+					}else {
+						log.error("Internal error in PlaceStats of place " + name + " during stats creation");						
+						log.error("Type " + type);						
 						throw new SimQPNException();						
 					}
 					this.fileST[c] = new PrintStream(new FileOutputStream(
@@ -918,6 +921,8 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			report.append("for Ordinary Place : ").append(name).append("----------------------------------------\n");
 		else if (type == QUE_PLACE_DEP)
 			report.append("for Depository of Queueing Place : ").append(name).append("----------------------------------------\n");
+		else if (type == PROBE)
+			report.append("for Probe : ").append(name).append("----------------------------------------\n");
 		else {
 			log.error("Internal error in PlaceStats of place " + name);
 			throw new SimQPNException();			
@@ -1022,8 +1027,10 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			return "queue of place";
 		else if (type == QUE_PLACE_DEP)
 			return "depository of place";
+		else if (type == PROBE)
+			return "probe";
 		else {
-			log.error("Internal error in PlaceStats of place " + name);
+			log.error("Internal error in PlaceStats of place " + name + " getting type description");
 			throw new SimQPNException();
 		}
 	}

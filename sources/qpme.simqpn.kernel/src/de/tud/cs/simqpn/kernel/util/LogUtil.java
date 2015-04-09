@@ -115,12 +115,9 @@ public class LogUtil {
 		ConsoleAppender appender = new ConsoleAppender(layout);
 		BasicConfigurator.configure(appender);
 
-		// Configure file output
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HHmmssS");
-
-		File outputDirectoryFile = new File(outputDirectory);
+				File outputDirectoryFile = new File(outputDirectory);
 		File logFileName = new File(outputDirectoryFile, filePrefix + "_"
-				+ dateFormat.format(new Date()) + ".log");
+				+ TimeStampUtil.format(new Date()) + ".log");
 
 		BasicConfigurator.configure(new FileAppender(layout, logFileName
 				.getAbsolutePath()));

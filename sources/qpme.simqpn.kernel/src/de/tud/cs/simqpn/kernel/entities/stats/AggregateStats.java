@@ -295,6 +295,8 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 						fileName = statsDir + fileSep + "ReplicationStats-que_place_dep" + id + "-col" + c + "-ST.txt";
 					else if (type == QUE_PLACE_QUEUE)
 						fileName = statsDir + fileSep + "ReplicationStats-que_place_queue" + id + "-col" + c + "-ST.txt";
+					else if (type == PROBE)
+						fileName = statsDir + fileSep + "ReplicationStats-probe" + id + "-col" + c + "-ST.txt";
 					else {
 						log.error("Internal error in AggregateStats of place " + name);
 						throw new SimQPNException();
@@ -336,6 +338,12 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 								"In depository of place " + name + " only " + numObsrv + " observations collected for color " + c + "!",
 								"Need at least " + stats.minObsrvST[c] + ". Please increase Simulator.rampUpLen or lower minObsrvST[c]."
 								));
+					else if (type == PROBE)
+						log.error(formatMultilineMessage(
+								"In probe " + name + " only " + numObsrv + " observations collected for color " + c + "!",
+								"Need at least " + stats.minObsrvST[c] + ". Please increase Simulator.rampUpLen or lower minObsrvST[c]."
+								));
+
 					else {
 						log.error("Internal error in AggregateStats of place " + name);
 					}					
@@ -602,6 +610,8 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 				fileName = statsDir + fileSep + "WelchMovAvgST-que_place_queue" + name + "-col" + color + "-win" + win + ".txt";
 			else if (type == QUE_PLACE_DEP)
 				fileName = statsDir + fileSep + "WelchMovAvgST-que_place_dep" + name + "-col" + color + "-win" + win + ".txt";
+			else if (type == PROBE)
+				fileName = statsDir + fileSep + "WelchMovAvgST-probe" + name + "-col" + color + "-win" + win + ".txt";
 			else {
 				log.error("Internal error in AggregateStats of place " + name);
 				throw new SimQPNException();
@@ -727,6 +737,8 @@ public class AggregateStats extends Stats implements java.io.Serializable {
 			report.append("for Depository of Queueing Place: ").append(name).append("----------------------------------------\n");
 		else if (type == QUE_PLACE_QUEUE)
 			report.append("for Queue of Queueing Place: ").append(name).append("----------------------------------------\n");
+		else if (type == PROBE)
+			report.append("for Probe: ").append(name).append("----------------------------------------\n");
 		else {
 			log.error("Internal error in AggregateStats of place " + name);
 			throw new SimQPNException();
