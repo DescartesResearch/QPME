@@ -43,6 +43,8 @@ package de.tud.cs.simqpn.kernel.loading;
 
 import static de.tud.cs.simqpn.kernel.util.LogUtil.formatDetailMessage;
 
+import java.io.File;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.dom4j.Element;
@@ -84,8 +86,15 @@ public class ConfigurationLoader {
 		loadDebugLevel(configurationName, simulatorSettings);
 		loadAnalysisMethod(configuration, simulatorSettings);
 
-		configuration.setStatsDir(simulatorSettings
-				.attributeValue("output-directory"));
+		if(simulatorSettings
+				.attributeValue("output-directory").equals(".")){
+			File outputDirectory = new File("");
+			configuration.setStatsDir(outputDirectory.getAbsolutePath());
+		}else {
+			configuration.setStatsDir(simulatorSettings
+					.attributeValue("output-directory"));
+		}
+
 		log.debug("statsDir = " + configuration.getStatsDir());
 
 		log.debug("/////////////////////////////////////////////");

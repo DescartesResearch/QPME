@@ -115,7 +115,7 @@ public class LogUtil {
 		ConsoleAppender appender = new ConsoleAppender(layout);
 		BasicConfigurator.configure(appender);
 
-				File outputDirectoryFile = new File(outputDirectory);
+		File outputDirectoryFile = new File(outputDirectory);
 		File logFileName = new File(outputDirectoryFile, filePrefix + "_"
 				+ TimeStampUtil.format(new Date()) + ".log");
 
