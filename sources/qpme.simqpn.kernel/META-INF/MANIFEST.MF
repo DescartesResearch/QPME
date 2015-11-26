@@ -6,8 +6,22 @@ Bundle-Version: 2.1.0.qualifier
 Bundle-Localization: plugin
 Eclipse-AutoStart: true
 Export-Package: de.tud.cs.simqpn.kernel,
+ de.tud.cs.simqpn.kernel.analyzer,
  de.tud.cs.simqpn.kernel.console,
+ de.tud.cs.simqpn.kernel.entities,
+ de.tud.cs.simqpn.kernel.entities.queue,
  de.tud.cs.simqpn.kernel.entities.stats,
+ de.tud.cs.simqpn.kernel.executor,
+ de.tud.cs.simqpn.kernel.executor.parallel,
+ de.tud.cs.simqpn.kernel.executor.parallel.barrier,
+ de.tud.cs.simqpn.kernel.executor.parallel.barrier.action,
+ de.tud.cs.simqpn.kernel.executor.parallel.barrier.termination,
+ de.tud.cs.simqpn.kernel.executor.parallel.decomposition,
+ de.tud.cs.simqpn.kernel.executor.sequential,
+ de.tud.cs.simqpn.kernel.loading,
+ de.tud.cs.simqpn.kernel.loading.distributions,
+ de.tud.cs.simqpn.kernel.loading.flatten,
+ de.tud.cs.simqpn.kernel.loading.loader,
  de.tud.cs.simqpn.kernel.monitor,
  de.tud.cs.simqpn.kernel.persistency,
  de.tud.cs.simqpn.kernel.util
