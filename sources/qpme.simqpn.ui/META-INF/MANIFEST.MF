@@ -13,3 +13,9 @@ Require-Bundle: qpme.simqpn.kernel,
  qpme.qpe.core;bundle-version="2.1.0",
  org.apache.log4j;bundle-version="1.2.15",
  org.dom4j;bundle-version="1.6.1"
+Export-Package: de.tud.cs.simqpn.ui,
+ de.tud.cs.simqpn.ui.actions,
+ de.tud.cs.simqpn.ui.dialog,
+ de.tud.cs.simqpn.ui.model,
+ de.tud.cs.simqpn.ui.wizard,
+ de.tud.cs.simqpn.ui.wizard.page
