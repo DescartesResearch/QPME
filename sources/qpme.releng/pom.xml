@@ -10,37 +10,12 @@
 	<artifactId>qpme.releng</artifactId>
 	<version>2.1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
-
-	<organization>
-		<url>http://qpme.sourceforge.net</url>
-		<name>Karlsruhe Institute of Technology (KIT)</name>
-	</organization>
 	
-	<scm>
-		<connection>scm:svn:https://svnserver.informatik.kit.edu/i43/svn/descartes/code/qpme/eclipse-src/trunk/sources/qpme</connection>
-		<developerConnection>scm:svn:https://svnserver.informatik.kit.edu/i43/svn/descartes/code/qpme/eclipse-src/trunk/sources/qpme</developerConnection>
-		<url>https://svnserver.informatik.kit.edu/i43/svn/descartes/code/qpme/eclipse-src/trunk/sources/qpme</url>
-	</scm>
-
-	<properties>
-		<tycho-version>0.21.0</tycho-version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
-
-	<distributionManagement>
-		<repository>
-			<id>se-uw-nexus</id>
-			<name>Releases</name>
-			<url>http://win2007.informatik.uni-wuerzburg.de:8081/nexus/content/repositories/releases/</url>
-		</repository>
-
-		<snapshotRepository>
-			<id>se-uw-nexus</id>
-			<name>Snapshots</name>
-			<url>http://win2007.informatik.uni-wuerzburg.de:8081/nexus/content/repositories/snapshots/</url>
-		</snapshotRepository>
-	</distributionManagement>
-
+    <properties>
+      <tycho-version>0.24.0</tycho-version>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+  
 	<repositories>
 		<repository>
 			<id>se-uw-nexus</id>
@@ -96,30 +71,11 @@
 						<environment>
 							<os>macosx</os>
 							<ws>cocoa</ws>
-							<arch>x86</arch>
+							<arch>x86_64</arch>
 						</environment>
 					</environments>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
-
-	<modules>
-		<module>../qpme.model.migration</module>
-		<module>../qpme.model</module>
-		<module>../qpme.simqpn.model</module>
-		<module>../qpme.qpe.core</module>
-		<module>../qpme.simqpn.kernel</module>
-		<module>../qpme.simqpn.ui</module>
-		
-		<module>../qpme.model.migration.tests</module>
-
-		<module>../qpme.model.feature</module>
-		<module>../qpme.qpe.feature</module>
-		<module>../qpme.simqpn.feature</module>
-
-		<module>../qpme.releng.targetplatform</module>
-		<module>../qpme.releng.product</module>
-		<module>../qpme.releng.p2</module>
-	</modules>
 </project>

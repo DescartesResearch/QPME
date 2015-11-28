@@ -5,9 +5,8 @@
 	<packaging>eclipse-repository</packaging>
 	<parent>
 		<groupId>qpme</groupId>
-		<artifactId>qpme.releng</artifactId>
+		<artifactId>qpme-parent</artifactId>
 		<version>2.1.0-SNAPSHOT</version>
-		<relativePath>../qpme.releng</relativePath>
 	</parent>
 
 	<build>

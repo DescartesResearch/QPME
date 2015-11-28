@@ -1,0 +1,58 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>qpme</groupId>
+  <artifactId>qpme-parent</artifactId>
+  <version>2.1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <parent>
+    <groupId>qpme</groupId>
+    <artifactId>qpme.releng</artifactId>
+    <version>2.1.0-SNAPSHOT</version>
+    <relativePath>qpme.releng</relativePath>
+  </parent>
+
+  <organization>
+    <url>http://qpme.sourceforge.net</url>
+    <name>University of Wuerzburg</name>
+  </organization>
+
+  <scm>
+    <connection>scm:git:https://se3.informatik.uni-wuerzburg.de/descartes/qpme-core.git</connection>
+    <developerConnection>scm:git:https://se3.informatik.uni-wuerzburg.de/descartes/qpme-core.git</developerConnection>
+    <url>https://se3.informatik.uni-wuerzburg.de/descartes/qpme-core.git</url>
+  </scm>
+  
+  <distributionManagement>
+  <repository>
+    <id>se-uw-nexus</id>
+    <name>Releases</name>
+    <url>https://se4.informatik.uni-wuerzburg.de/nexus/content/repositories/releases/</url>
+  </repository>
+  <snapshotRepository>
+    <id>se-uw-nexus</id>
+    <name>Snapshots</name>
+    <url>https://se4.informatik.uni-wuerzburg.de/nexus/content/repositories/snapshots/</url>
+  </snapshotRepository>
+  </distributionManagement>
+
+  <modules>
+    <module>qpme.model.migration</module>
+    <module>qpme.model</module>
+    <module>qpme.simqpn.model</module>
+    <module>qpme.qpe.core</module>
+    <module>qpme.simqpn.kernel</module>
+    <module>qpme.simqpn.ui</module>
+    
+    <module>qpme.model.migration.tests</module>
+
+    <module>qpme.model.feature</module>
+    <module>qpme.qpe.feature</module>
+    <module>qpme.simqpn.feature</module>
+
+    <module>qpme.releng</module>
+    <module>qpme.releng.targetplatform</module>
+    <module>qpme.releng.product</module>
+    <module>qpme.releng.p2</module>
+  </modules>
+</project>
