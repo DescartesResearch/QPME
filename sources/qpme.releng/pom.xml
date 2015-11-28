@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<prerequisites>
 		<maven>3.0</maven>
 	</prerequisites>
@@ -10,12 +10,12 @@
 	<artifactId>qpme.releng</artifactId>
 	<version>2.1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	
-    <properties>
-      <tycho-version>0.24.0</tycho-version>
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-  
+
+	<properties>
+		<tycho-version>0.24.0</tycho-version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
 	<repositories>
 		<repository>
 			<id>se-uw-nexus</id>
@@ -29,6 +29,19 @@
 			</snapshots>
 		</repository>
 	</repositories>
+
+	<distributionManagement>
+		<repository>
+			<id>se-uw-nexus</id>
+			<name>Releases</name>
+			<url>https://se4.informatik.uni-wuerzburg.de/nexus/content/repositories/releases/</url>
+		</repository>
+		<snapshotRepository>
+			<id>se-uw-nexus</id>
+			<name>Snapshots</name>
+			<url>https://se4.informatik.uni-wuerzburg.de/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
 
 	<build>
 		<plugins>

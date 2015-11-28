@@ -22,19 +22,6 @@
     <developerConnection>scm:git:https://se3.informatik.uni-wuerzburg.de/descartes/qpme-core.git</developerConnection>
     <url>https://se3.informatik.uni-wuerzburg.de/descartes/qpme-core.git</url>
   </scm>
-  
-  <distributionManagement>
-  <repository>
-    <id>se-uw-nexus</id>
-    <name>Releases</name>
-    <url>https://se4.informatik.uni-wuerzburg.de/nexus/content/repositories/releases/</url>
-  </repository>
-  <snapshotRepository>
-    <id>se-uw-nexus</id>
-    <name>Snapshots</name>
-    <url>https://se4.informatik.uni-wuerzburg.de/nexus/content/repositories/snapshots/</url>
-  </snapshotRepository>
-  </distributionManagement>
 
   <modules>
     <module>qpme.model.migration</module>
