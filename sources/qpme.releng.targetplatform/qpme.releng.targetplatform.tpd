@@ -1,0 +1,29 @@
+target "QPME Target Platform"
+
+with source requirements
+
+location "http://download.eclipse.org/releases/mars" {
+	org.eclipse.equinox.executable.feature.group
+	org.eclipse.platform.feature.group
+	org.eclipse.rcp.feature.group
+	org.eclipse.emf.feature.group
+	org.eclipse.gef.feature.group	
+}
+
+location "http://download.eclipse.org/tools/orbit/downloads/drops/R20150821153341/repository/" {
+	org.apache.log4j
+	org.junit
+}
+
+location "https://se4.informatik.uni-wuerzburg.de/thirdparty/repository/" {
+	cern.colt
+	edu.oswego.cs.dl.util.concurrent
+	edu.bonn.cs.net.jbarrier
+	org.dom4j
+	org.jaxen
+	org.jfreechart.core
+	org.jfreechart.experimental
+	org.jfreechart.jcommon
+	org.jfreechart.swt
+	org.rosuda.JRI
+}
