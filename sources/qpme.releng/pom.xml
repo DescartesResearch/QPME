@@ -20,7 +20,7 @@
 		<repository>
 			<id>se-uw-nexus</id>
 			<name>Public Repositories</name>
-			<url>http://win2007.informatik.uni-wuerzburg.de:8081/nexus/content/groups/public/</url>
+			<url>https://se4.informatik.uni-wuerzburg.de/nexus/content/groups/public/</url>
 			<releases>
 				<enabled>true</enabled>
 			</releases>
