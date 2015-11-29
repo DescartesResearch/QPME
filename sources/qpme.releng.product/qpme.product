@@ -131,9 +131,9 @@ This Agreement is governed by the laws of the State of New York and the intellec
    </plugins>
 
    <features>
-      <feature id="qpme.qpe.feature" version="2.1.0.qualifier"/>
-      <feature id="qpme.simqpn.feature" version="2.1.0.qualifier"/>
-      <feature id="qpme.model.feature" version="2.1.0.qualifier"/>
+      <feature id="qpme.qpe.feature"/>
+      <feature id="qpme.simqpn.feature"/>
+      <feature id="qpme.model.feature"/>
       <feature id="org.eclipse.draw2d"/>
       <feature id="org.eclipse.rcp"/>
       <feature id="org.eclipse.gef"/>
