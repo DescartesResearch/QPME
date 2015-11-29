@@ -121,7 +121,7 @@ public class SimQPNController {
 	// the version attribute in .simqpn files
 	// is correct
 	//
-	public static final String QPME_VERSION = "2.1.0";
+	public static final String QPME_VERSION = "2.2.0";
 	private static Logger log = Logger.getLogger(SimQPNController.class);
 	private SimQPNConfiguration configuration;
 	private Net net;
