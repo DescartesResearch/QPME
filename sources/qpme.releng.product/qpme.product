@@ -159,7 +159,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
 
    <repositories>
       <repository location="http://veger.github.com/eclipse-batik" enabled="true" />
-      <repository location="http://https://se4.informatik.uni-wuerzburg.de/qpme/downloads/release/2.1" enabled="true" />
+      <repository location="https://se4.informatik.uni-wuerzburg.de/qpme/downloads/release/2.1" enabled="true" />
    </repositories>
 
    <preferencesInfo>
