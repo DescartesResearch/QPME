@@ -2,7 +2,7 @@
 <feature
       id="qpme.model.feature"
       label="Model Feature"
-      version="2.1.0.qualifier"
+      version="2.2.0.qualifier"
       provider-name="qpme.sourceforge.net">
 
    <description url="http://qpme.sourceforge.net/">

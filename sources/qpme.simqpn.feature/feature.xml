@@ -2,7 +2,7 @@
 <feature
       id="qpme.simqpn.feature"
       label="SimQPN Feature"
-      version="2.1.0.qualifier"
+      version="2.2.0.qualifier"
       provider-name="Descartes Research Group">
 
    <description url="http://qpme.sourceforge.net/">

@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: QPME Model Migration Tests
 Bundle-SymbolicName: qpme.model.migration.tests
-Bundle-Version: 2.1.0.qualifier
+Bundle-Version: 2.2.0.qualifier
 Bundle-Vendor: QPME
-Fragment-Host: qpme.model.migration;bundle-version="2.1.0"
+Fragment-Host: qpme.model.migration;bundle-version="2.2.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.junit;bundle-version="4.8.2"

@@ -2,7 +2,7 @@
 <feature
       id="qpme.qpe.feature"
       label="QPE Feature"
-      version="2.1.0.qualifier"
+      version="2.2.0.qualifier"
       provider-name="Descartes Research Group">
 
    <description url="http://qpme.sourceforge.net">
