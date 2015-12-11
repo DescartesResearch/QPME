@@ -117,7 +117,7 @@ public class LogUtil {
 
 		File outputDirectoryFile = new File(outputDirectory);
 		File logFileName = new File(outputDirectoryFile, filePrefix + "_"
-				+ TimeStampUtil.format(new Date()) + ".log");
+				+ TimeStampUtil.formatTimestamp(new Date()) + ".log");
 
 		BasicConfigurator.configure(new FileAppender(layout, logFileName
 				.getAbsolutePath()));
