@@ -60,7 +60,7 @@ import org.dom4j.Element;
 public class SimulationResults {
 
 	private static Logger log = Logger.getLogger(SimulationResults.class);
-	private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HHmmssS");
+	private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
 	private File modelFile;
 	private Date date;
