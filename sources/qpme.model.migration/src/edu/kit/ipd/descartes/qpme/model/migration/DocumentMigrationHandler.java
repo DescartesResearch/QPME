@@ -15,7 +15,7 @@ import org.w3c.dom.Document;
 
 public class DocumentMigrationHandler {
 	
-	private static Version CURRENT_VERSION = new Version(2, 1, 0);
+	private static Version CURRENT_VERSION = new Version(2, 2, 0);
 	private static Version VERSION_2_0 = new Version(2, 0, 0);
 	private static Version VERSION_1_5_2 = new Version(1, 5, 2);
 	
