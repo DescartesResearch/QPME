@@ -23,7 +23,7 @@ public class DocumentMigrationHandlerTest {
 		DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 		doc = builder.newDocument();
 		Element element = doc.createElement("net");
-		element.setAttribute("qpme-version", "2.1");
+		element.setAttribute("qpme-version", "2.2");
 		doc.appendChild(element);
 		handler = new DocumentMigrationHandler();
 	}
@@ -38,6 +38,8 @@ public class DocumentMigrationHandlerTest {
 		root.setAttribute("qpme-version", "2.0.1");
 		assertTrue(handler.canMigrate(doc));
 		root.setAttribute("qpme-version", "2.1");
+		assertTrue(handler.canMigrate(doc));
+		root.setAttribute("qpme-version", "2.2");
 		assertTrue(handler.canMigrate(doc));
 	}
 	
