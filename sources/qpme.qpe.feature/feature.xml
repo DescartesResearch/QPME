@@ -164,7 +164,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
       <import plugin="org.jfreechart.jcommon" version="1.0.15" match="greaterOrEqual"/>
       <import plugin="org.jfreechart.swt" version="1.0.12" match="greaterOrEqual"/>
       <import plugin="org.rosuda.JRI" version="0.5.0" match="greaterOrEqual"/>
-      <import plugin="org.jaxen" version="1.1.2" match="greaterOrEqual"/>
+      <import plugin="org.jaxen" version="1.1.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.core.variables" version="3.2.800" match="compatible"/>
       <import plugin="org.eclipse.text" version="3.5.0" match="compatible"/>
       <import plugin="org.eclipse.swt" version="3.103.0" match="compatible"/>

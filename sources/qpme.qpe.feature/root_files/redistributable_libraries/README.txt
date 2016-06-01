@@ -12,7 +12,7 @@ under the ./redistributable_libraries/licenses subdirectory.
 Package Name                          Location                 License Type   License File
 ---------------------------------------------------------------------------------------------------
 dom4j-1.6.1.jar                      BSD            dom4j-license.txt
-jaxen-1.1....jar            	     BSD            jaxen-license.txt
+jaxen-1.1-beta-6.jar                 BSD            jaxen-license.txt
 jcommon-1.0.15.jar                   LGPL           jcommon-licence.txt
 jfreechart-1.0.12.jar                LGPL           jfreechart-licence.txt
 jfreechart-1.0.12-experimental.jar   LGPL           jfreechart-licence.txt 

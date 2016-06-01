@@ -19,7 +19,7 @@ Require-Bundle: org.eclipse.ui,
  org.jfreechart.jcommon;bundle-version="1.0.15",
  org.jfreechart.swt;bundle-version="1.0.12",
  org.rosuda.JRI;bundle-version="0.5.0",
- org.jaxen
+ org.jaxen;bundle-version="1.1.0"
 Bundle-ActivationPolicy: lazy
 Export-Package: de.tud.cs.qpe,
  de.tud.cs.qpe.editors.incidence,
