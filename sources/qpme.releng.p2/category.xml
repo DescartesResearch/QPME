@@ -9,6 +9,5 @@
    <feature url="features/qpme.simqpn.feature_2.2.0.qualifier.jar" id="qpme.simqpn.feature" version="2.2.0.qualifier">
       <category name="qpme.category"/>
    </feature>
-   <bundle id="org.jaxen" version="1.1.6.v02"/>
    <category-def name="qpme.category" label="QPME (Queueing Petri net Modeling Environment)"/>
 </site>
