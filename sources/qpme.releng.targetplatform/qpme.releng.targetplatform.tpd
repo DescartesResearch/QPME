@@ -8,6 +8,7 @@ location "http://download.eclipse.org/releases/neon" {
 	org.eclipse.rcp.feature.group
 	org.eclipse.emf.feature.group
 	org.eclipse.gef.feature.group	
+	org.eclipse.ui.console
 }
 
 location "http://download.eclipse.org/tools/orbit/downloads/drops/R20150821153341/repository/" {
