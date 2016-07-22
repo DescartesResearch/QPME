@@ -141,7 +141,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
       <import plugin="qpme.simqpn.kernel"/>
       <import plugin="org.eclipse.core.runtime"/>
       <import plugin="org.eclipse.ui"/>
-      <import plugin="qpme.qpe.core" version="2.1.0" match="greaterOrEqual"/>
+      <import plugin="qpme.qpe.core" version="2.2.0" match="greaterOrEqual"/>
       <import plugin="org.apache.log4j" version="1.2.15" match="greaterOrEqual"/>
       <import plugin="org.dom4j" version="1.6.1" match="greaterOrEqual"/>
       <import plugin="org.eclipse.swt" version="3.6.1" match="greaterOrEqual"/>
@@ -159,7 +159,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
       <import plugin="org.eclipse.ui.forms" version="3.5.0" match="compatible"/>
       <import plugin="org.eclipse.core.expressions" version="3.4.200" match="greaterOrEqual"/>
       <import plugin="org.eclipse.jface" version="3.6.0" match="compatible"/>
-      <import plugin="qpme.model.migration" version="2.1.0" match="greaterOrEqual"/>
+      <import plugin="qpme.model.migration" version="2.2.0" match="greaterOrEqual"/>
       <import plugin="org.jfreechart.core" version="1.0.12" match="greaterOrEqual"/>
       <import plugin="org.jfreechart.jcommon" version="1.0.15" match="greaterOrEqual"/>
       <import plugin="org.jfreechart.swt" version="1.0.12" match="greaterOrEqual"/>
