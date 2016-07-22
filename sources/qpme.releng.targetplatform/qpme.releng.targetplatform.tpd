@@ -21,7 +21,7 @@ location "https://se4.informatik.uni-wuerzburg.de/thirdparty/repository/" {
 	edu.oswego.cs.dl.util.concurrent
 	edu.bonn.cs.net.jbarrier
 	org.dom4j
-	org.jaxen
+	org.jaxen [1.1.6,2.0.0)
 	org.jfreechart.core
 	org.jfreechart.experimental
 	org.jfreechart.jcommon
