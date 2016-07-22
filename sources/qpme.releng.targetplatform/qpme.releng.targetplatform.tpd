@@ -2,7 +2,7 @@ target "QPME Target Platform"
 
 with source requirements
 
-location "http://download.eclipse.org/releases/neon" {
+location "http://download.eclipse.org/releases/mars" {
 	org.eclipse.equinox.executable.feature.group
 	org.eclipse.platform.feature.group
 	org.eclipse.rcp.feature.group
