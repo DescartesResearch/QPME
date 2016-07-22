@@ -8,7 +8,13 @@
 		<artifactId>qpme-parent</artifactId>
 		<version>2.1.0-SNAPSHOT</version>
 	</parent>
-
+	<repositories>
+	    <repository>
+	      <id>eclipse-project-mars</id>
+	      <url>http://download.eclipse.org/releases/neon</url>
+	      <layout>p2</layout>
+	    </repository>
+    </repositories>
 	<build>
 		<plugins>
 			 <plugin>
