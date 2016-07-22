@@ -28,6 +28,11 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
+	    <repository>
+	      <id>eclipse-project-mars</id>
+	      <url>http://download.eclipse.org/releases/neon</url>
+	      <layout>p2</layout>
+	    </repository>
 	</repositories>
 
 	<distributionManagement>
