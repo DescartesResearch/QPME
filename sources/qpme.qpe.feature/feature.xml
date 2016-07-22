@@ -173,131 +173,131 @@ This Agreement is governed by the laws of the State of New York and the intellec
          id="org.dom4j"
          download-size="0"
          install-size="0"
-         version="1.6.1.v02"/>
+         version="0.0.0"/>
 
    <plugin
          id="qpme.simqpn.ui"
          download-size="0"
          install-size="0"
-         version="2.2.0.qualifier"
+         version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="qpme.qpe.core"
          download-size="0"
          install-size="0"
-         version="2.2.0.qualifier"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.ui.console"
          download-size="0"
          install-size="0"
-         version="3.6.200.v20160518-1858"
+         version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.ui.views"
          download-size="0"
          install-size="0"
-         version="3.8.100.v20160518-1929"
+         version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.ui.intro"
          download-size="0"
          install-size="0"
-         version="3.5.0.v20160509-1548"
+         version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.ui.forms"
          download-size="0"
          install-size="0"
-         version="3.7.0.v20160518-1929"
+         version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.apache.log4j"
          download-size="0"
          install-size="0"
-         version="1.2.15.v201012070815"
+         version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.jface.text"
          download-size="0"
          install-size="0"
-         version="3.11.0.v20160505-1301"
+         version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.text"
          download-size="0"
          install-size="0"
-         version="3.6.0.v20160503-1849"
+         version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.core.variables"
          download-size="0"
          install-size="0"
-         version="3.3.0.v20160419-1720"
+         version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.ui.workbench.texteditor"
          download-size="0"
          install-size="0"
-         version="3.10.0.v20160530-2011"
+         version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.compare.core"
          download-size="0"
          install-size="0"
-         version="3.6.0.v20160418-1534"
+         version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.jaxen"
          download-size="0"
          install-size="0"
-         version="1.1.6.v02"
+         version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.jfreechart.core"
          download-size="0"
          install-size="0"
-         version="1.0.19.v00"
+         version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.jfreechart.jcommon"
          download-size="0"
          install-size="0"
-         version="1.0.19.v00"
+         version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.jfreechart.swt"
          download-size="0"
          install-size="0"
-         version="1.0.12.v02"
+         version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.rosuda.JRI"
          download-size="0"
          install-size="0"
-         version="0.5.0.v01"
+         version="0.0.0"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.equinox.concurrent"
          download-size="0"
          install-size="0"
-         version="1.1.0.v20130327-1442"
+         version="0.0.0"
          unpack="false"/>
 
 </feature>
