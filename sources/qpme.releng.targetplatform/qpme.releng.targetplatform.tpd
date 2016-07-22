@@ -2,13 +2,12 @@ target "QPME Target Platform"
 
 with source requirements
 
-location "http://download.eclipse.org/releases/neon" {
+location "http://download.eclipse.org/releases/mars" {
 	org.eclipse.equinox.executable.feature.group
 	org.eclipse.platform.feature.group
 	org.eclipse.rcp.feature.group
 	org.eclipse.emf.feature.group
-	org.eclipse.gef.feature.group	
-	org.eclipse.ui.console
+	org.eclipse.gef.feature.group
 }
 
 location "http://download.eclipse.org/tools/orbit/downloads/drops/R20150821153341/repository/" {
