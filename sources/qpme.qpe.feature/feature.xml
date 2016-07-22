@@ -122,6 +122,10 @@ This Agreement is governed by the laws of the State of New York and the intellec
    </license>
 
    <includes
+         id="org.eclipse.rcp"
+         version="0.0.0"/>
+
+   <includes
          id="org.eclipse.gef"
          version="0.0.0"/>
 
@@ -171,7 +175,6 @@ This Agreement is governed by the laws of the State of New York and the intellec
       <import plugin="org.eclipse.compare.core" version="3.5.0" match="compatible"/>
       <import plugin="org.eclipse.core.expressions" version="3.4.100" match="compatible"/>
       <import plugin="org.eclipse.jface.text" version="3.8.0" match="compatible"/>
-      <import plugin="org.eclipse.rcp"/>
    </requires>
 
    <plugin
