@@ -19,7 +19,7 @@
 	                        <id>tree</id>
 	                        <phase>generate-sources</phase>
 	                        <goals>
-	                            <goal>tree</goal>
+	                            <goal>list-repositories</goal>
 	                        </goals>
 	                    </execution>
 	                </executions>
