@@ -179,7 +179,8 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 	 * @param statsLevel	- determines the amount of statistics to be gathered during the run
 	 *            
 	 */
-	public PlaceStats(int id, String name, int type, String[] colors, int statsLevel, SimQPNConfiguration configuration) throws SimQPNException {
+	public PlaceStats(int id, String name, int type, String[] colors, int statsLevel, SimQPNConfiguration configuration,
+			String identifier, String[] colorIdentifiers) throws SimQPNException {
 		super(id, name, type, colors.length, statsLevel, configuration);
 		this.colors = colors;
 		
@@ -259,11 +260,15 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			for (int c = 0; c < numColors; c++) {
 				try {
 					if (type == ORD_PLACE)
-						fileName = statsDir + fileSep + "RunStats-ord_place" + id + "-col" + c + "-ST.txt";
+						fileName = statsDir + fileSep + "RunStats-ord_place" + identifier + "-col" + colorIdentifiers[c]
+								+ "-ST.txt";
 					else if (type == QUE_PLACE_DEP)
-						fileName = statsDir + fileSep + "RunStats-que_place_dep" + id + "-col" + c + "-ST.txt";
+						fileName = statsDir + fileSep + "RunStats-que_place_dep" + identifier + "-col"
+								+ colorIdentifiers[c]
+								+ "-ST.txt";
 					else if (type == PROBE){
-						fileName = statsDir + fileSep + "RunStats-probe" + id + "-col" + c + "-ST.txt";
+						fileName = statsDir + fileSep + "RunStats-probe" + identifier + "-col" + colorIdentifiers[c]
+								+ "-ST.txt";
 					}else {
 						log.error("Internal error in PlaceStats of place " + name + " during stats creation");						
 						log.error("Type " + type);						

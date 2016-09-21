@@ -67,8 +67,9 @@ public class ProbeStats extends PlaceStats {
 	 * @param statsLevel	- determines the amount of statistics to be gathered during the run
 	 *            
 	 */
-	public ProbeStats(int id, String name, String[] colors, int statsLevel, SimQPNConfiguration configuration) throws SimQPNException {
-		super(id, name, PROBE, colors, statsLevel, configuration);
+	public ProbeStats(int id, String name, String[] colors, int statsLevel, SimQPNConfiguration configuration,
+			String identifier, String[] colorIdentifiers) throws SimQPNException {
+		super(id, name, PROBE, colors, statsLevel, configuration, identifier, colorIdentifiers);
 	}
 
 	/* (non-Javadoc)

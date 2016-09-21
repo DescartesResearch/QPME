@@ -61,7 +61,6 @@
 package de.tud.cs.simqpn.kernel.entities;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -214,10 +213,12 @@ public class QPlace extends Place {
 			}
 		}
 
-		if (statsLevel > 0)
+		if (statsLevel > 0) {
+			String identifier = element.attributeValue(new org.dom4j.QName("id"));
 			qPlaceQueueStats = new QPlaceQueueStats(id, name, colors,
 					statsLevel, queue.queueDiscip, queue.numServers,
-					meanServTimes, configuration);
+					meanServTimes, configuration, identifier, colorIdentifiers);
+		}
 
 	}
 
@@ -271,9 +272,10 @@ public class QPlace extends Place {
 			this.queueTokenPop[c] = 0;
 
 		if (queue != null && statsLevel > 0) {
+			String identifier = element.attributeValue(new org.dom4j.QName("id"));
 			qPlaceQueueStats = new QPlaceQueueStats(id, name, colors,
 					statsLevel, queue.queueDiscip, queue.numServers,
-					meanServTimes, configuration);
+					meanServTimes, configuration, identifier, colorIdentifiers);
 		}
 	}
 

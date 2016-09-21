@@ -86,6 +86,7 @@ public class Probe {
 
 	public int statsLevel;
 	public ProbeStats probeStats;
+	private String[] colorIdentifiers;
 
 	public Element element;
 
@@ -107,8 +108,9 @@ public class Probe {
 		this.statsLevel = probe.statsLevel;
 		this.element = probe.element;
 		if (statsLevel > 0) {
+			String identifier = element.attributeValue(new org.dom4j.QName("id"));
 			probeStats = new ProbeStats(id, name, colors, statsLevel,
-					configuration);
+					configuration, identifier, colorIdentifiers);
 		}
 	}
 
@@ -126,10 +128,12 @@ public class Probe {
 		this.endTrigger = endTrigger;
 		this.statsLevel = statsLevel;
 		this.element = element;
+		this.colorIdentifiers = Place.getColorIdentifiers(colors, element);
 
 		if (statsLevel > 0) {
+			String identifier = element.attributeValue(new org.dom4j.QName("id"));
 			probeStats = new ProbeStats(id, name, colors, statsLevel,
-					configuration);
+					configuration, identifier, colorIdentifiers);
 		}
 	}
 

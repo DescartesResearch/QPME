@@ -129,8 +129,11 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 	 * @param numServers    - FCFS queues: number of servers in queueing station 
 	 * @param meanServTimes - mean service times of tokens
 	 */	
-	public QPlaceQueueStats(int id, String name, String[] colors, int statsLevel, QueueingDiscipline queueDiscip, int numServers, double[] meanServTimes, SimQPNConfiguration configuration) throws SimQPNException {
-		super(id, name, QUE_PLACE_QUEUE, colors, statsLevel, configuration);
+	public QPlaceQueueStats(int id, String name, String[] colors, int statsLevel, QueueingDiscipline queueDiscip,
+			int numServers, double[] meanServTimes, SimQPNConfiguration configuration, String identifier,
+			String[] colorIdentifiers)
+			throws SimQPNException {
+		super(id, name, QUE_PLACE_QUEUE, colors, statsLevel, configuration, identifier, colorIdentifiers);
 		this.queueDiscip	= queueDiscip;
 		this.numServers		= numServers;			
 		this.meanServTimes  = meanServTimes;
@@ -156,9 +159,11 @@ public class QPlaceQueueStats extends PlaceStats implements java.io.Serializable
 			for (int c = 0; c < numColors; c++) {					
 				try {
 					if (indrStats) 
-						fileName = statsDir + fileSep + "RunStats-queue" + id + "-col" + c + "-DT.txt"; 
+						fileName = statsDir + fileSep + "RunStats-queue" + identifier + "-col" + colorIdentifiers[c]
+								+ "-DT.txt";
 					else																		
-						fileName = statsDir + fileSep + "RunStats-queue" + id + "-col" + c + "-ST.txt";											
+						fileName = statsDir + fileSep + "RunStats-queue" + identifier + "-col" + colorIdentifiers[c]
+								+ "-ST.txt";
 					this.fileST[c] = new PrintStream(new FileOutputStream(fileName));
 				}				
 				catch (FileNotFoundException ex) {

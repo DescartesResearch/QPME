@@ -56,25 +56,26 @@
  */
 package de.tud.cs.simqpn.kernel.entities;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.dom4j.XPath;
 
 import cern.jet.random.engine.RandomEngine;
 import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
 import de.tud.cs.simqpn.kernel.SimQPNException;
-import de.tud.cs.simqpn.kernel.SimQPNConfiguration.AnalysisMethod;
 import de.tud.cs.simqpn.kernel.entities.queue.Queue;
 import de.tud.cs.simqpn.kernel.entities.stats.PlaceStats;
 import de.tud.cs.simqpn.kernel.entities.stats.Stats;
 import de.tud.cs.simqpn.kernel.executor.Executor;
-import de.tud.cs.simqpn.kernel.executor.parallel.LP;
 import de.tud.cs.simqpn.kernel.loading.XMLWelch;
 
 /**
@@ -122,6 +123,8 @@ public class Place extends Node {
 	public int numColors;
 	/** Names of the colors that can reside in this Place. **/
 	public String[] colors;
+	public String[] colorIdentifiers;
+
 	/** Determines the amount of statistics to be gathered during the run. */
 	public int statsLevel;
 	protected DepartureDiscipline departureDiscipline;
@@ -206,6 +209,7 @@ public class Place extends Node {
 		this.probeActions = new ProbeAction[numColors][numProbes];
 		this.probeInstrumentations = new Probe[numColors][];
 		this.element = element;
+		this.colorIdentifiers = getColorIdentifiers(colors, element);
 
 		for (int c = 0; c < numColors; c++) {
 			this.tokenPop[c] = 0;
@@ -219,12 +223,13 @@ public class Place extends Node {
 			randomElement = RandomNumberGenerator.nextRandNumGen();
 		}
 		if (statsLevel > 0) {
+			String identifier = element.attributeValue(new org.dom4j.QName("id"));
 			if (this instanceof QPlace)
 				placeStats = new PlaceStats(id, name, Stats.QUE_PLACE_DEP,
-						colors, statsLevel, configuration);
+						colors, statsLevel, configuration, identifier, colorIdentifiers);
 			else
 				placeStats = new PlaceStats(id, name, Stats.ORD_PLACE, colors,
-						statsLevel, configuration);
+						statsLevel, configuration, identifier, colorIdentifiers);
 			if (statsLevel >= 3) {
 				this.tokArrivTS = new LinkedList[numColors];
 				for (int c = 0; c < numColors; c++)
@@ -238,6 +243,39 @@ public class Place extends Node {
 			Arrays.fill(probeActions[c], ProbeAction.PROBE_ACTION_NONE);
 			probeInstrumentations[c] = new Probe[0];
 		}
+	}
+
+	public static String[] getColorIdentifiers(String[] colors2, Element element2) {
+		Element net = element2;
+		while (!net.getQName().getName().equals("net"))
+			net = net.getParent();
+		List<Element> colors = listAllColors(net);
+		String[] colorIdentifiers = new String[colors2.length];
+		for (Element color : colors) {
+			String name = color.attributeValue(new org.dom4j.QName("name"));
+			String id = color.attributeValue(new org.dom4j.QName("id"));
+			for (int i = 0; i < colors2.length; i++) {
+				if (colors2[i].equals(name))
+					colorIdentifiers[i] = id;
+			}
+		}
+
+		return colorIdentifiers;
+	}
+
+	private static List<Element> listAllColors(Element net) {
+		return queryElements(net, "//colors/color");
+	}
+
+	private static List<Element> queryElements(Element elem, String xpath) {
+		XPath xpathSelector = DocumentHelper.createXPath(xpath);
+		Map<String, String> namespaceUris = new HashMap<String, String>();
+		namespaceUris.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+		xpathSelector.setNamespaceURIs(namespaceUris);
+		List<Element> ret = new ArrayList<Element>();
+		for (Object o : xpathSelector.selectNodes(elem))
+			ret.add((Element) o);
+		return ret;
 	}
 
 	public Place clone(Queue[] queues, Transition[] transitions,
