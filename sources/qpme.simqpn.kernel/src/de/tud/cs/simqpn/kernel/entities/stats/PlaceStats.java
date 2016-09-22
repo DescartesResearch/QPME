@@ -183,7 +183,7 @@ public class PlaceStats extends Stats implements java.io.Serializable {
 			String identifier, String[] colorIdentifiers) throws SimQPNException {
 		super(id, name, type, colors.length, statsLevel, configuration);
 		this.colors = colors;
-		System.out.println("Silly Test - Please remove me");
+		
 		// statsLevel >= 1
 		this.arrivCnt 								= new long[numColors];
 		this.deptCnt 								= new long[numColors];
