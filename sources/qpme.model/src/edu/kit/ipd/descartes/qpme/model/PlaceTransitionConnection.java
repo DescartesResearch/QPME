@@ -14,11 +14,11 @@ package edu.kit.ipd.descartes.qpme.model;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.PlaceTransitionConnection#getSource <em>Source</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.PlaceTransitionConnection#getTarget <em>Target</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getPlaceTransitionConnection()
  * @model extendedMetaData="name='place-transition-connection' kind='empty'"

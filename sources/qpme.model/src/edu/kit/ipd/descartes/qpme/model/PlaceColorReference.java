@@ -14,11 +14,11 @@ package edu.kit.ipd.descartes.qpme.model;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.PlaceColorReference#getInitialPopulation <em>Initial Population</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.PlaceColorReference#getMaximumCapacity <em>Maximum Capacity</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getPlaceColorReference()
  * @model abstract="true"

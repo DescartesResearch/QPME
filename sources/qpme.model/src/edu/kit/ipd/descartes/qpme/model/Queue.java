@@ -14,12 +14,12 @@ package edu.kit.ipd.descartes.qpme.model;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.Queue#getName <em>Name</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.Queue#getNumberOfServers <em>Number Of Servers</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.Queue#getStrategy <em>Strategy</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getQueue()
  * @model extendedMetaData="name='queue' kind='empty'"

@@ -16,10 +16,10 @@ import org.eclipse.emf.ecore.EObject;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.ProbesContainer#getDefinitions <em>Definitions</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getProbesContainer()
  * @model extendedMetaData="name='probes-container' kind='elementOnly'"

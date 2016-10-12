@@ -14,11 +14,11 @@ package edu.kit.ipd.descartes.qpme.model;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.SimqpnWelchQueueingColorConfiguration#getQueueMaxObsrv <em>Queue Max Obsrv</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.SimqpnWelchQueueingColorConfiguration#getQueueMinObsrv <em>Queue Min Obsrv</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getSimqpnWelchQueueingColorConfiguration()
  * @model extendedMetaData="name='simqpn-welch-queueing-color-configuration' kind='empty'"

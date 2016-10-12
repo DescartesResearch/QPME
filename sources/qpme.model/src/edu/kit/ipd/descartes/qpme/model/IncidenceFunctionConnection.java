@@ -14,12 +14,12 @@ package edu.kit.ipd.descartes.qpme.model;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.IncidenceFunctionConnection#getCount <em>Count</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.IncidenceFunctionConnection#getSource <em>Source</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.IncidenceFunctionConnection#getTarget <em>Target</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getIncidenceFunctionConnection()
  * @model extendedMetaData="name='incidence-function-connection' kind='empty'"

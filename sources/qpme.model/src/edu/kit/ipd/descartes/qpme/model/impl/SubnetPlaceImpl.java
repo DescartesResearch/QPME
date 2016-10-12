@@ -22,10 +22,10 @@ import edu.kit.ipd.descartes.qpme.model.SubnetPlace;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.SubnetPlaceImpl#getSubnet <em>Subnet</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

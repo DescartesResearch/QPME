@@ -20,10 +20,10 @@ import edu.kit.ipd.descartes.qpme.model.QueueingPlace;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingPlaceImpl#getQueue <em>Queue</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

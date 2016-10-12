@@ -16,10 +16,10 @@ import org.eclipse.emf.ecore.EObject;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.ColorReferencesContainer#getDefinitions <em>Definitions</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getColorReferencesContainer()
  * @model extendedMetaData="name='color-references-container' kind='elementOnly'"

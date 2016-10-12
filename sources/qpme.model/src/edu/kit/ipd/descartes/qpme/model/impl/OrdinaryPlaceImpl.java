@@ -15,8 +15,6 @@ import edu.kit.ipd.descartes.qpme.model.OrdinaryPlace;
  * <!-- begin-user-doc -->
  * An implementation of the model object '<em><b>Ordinary Place</b></em>'.
  * <!-- end-user-doc -->
- * <p>
- * </p>
  *
  * @generated
  */

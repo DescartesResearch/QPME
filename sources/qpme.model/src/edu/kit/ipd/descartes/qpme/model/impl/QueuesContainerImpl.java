@@ -26,10 +26,10 @@ import edu.kit.ipd.descartes.qpme.model.QueuesContainer;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueuesContainerImpl#getDefinitions <em>Definitions</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

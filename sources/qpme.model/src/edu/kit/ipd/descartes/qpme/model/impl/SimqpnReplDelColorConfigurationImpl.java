@@ -19,10 +19,10 @@ import edu.kit.ipd.descartes.qpme.model.SimqpnReplDelColorConfiguration;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.SimqpnReplDelColorConfigurationImpl#getSignLevAvgST <em>Sign Lev Avg ST</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

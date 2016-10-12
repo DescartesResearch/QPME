@@ -19,10 +19,10 @@ import edu.kit.ipd.descartes.qpme.model.SimqpnMetaAttribute;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.SimqpnMetaAttributeImpl#getConfigurationName <em>Configuration Name</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

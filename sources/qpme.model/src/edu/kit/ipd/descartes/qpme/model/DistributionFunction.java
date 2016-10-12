@@ -170,7 +170,15 @@ public enum DistributionFunction implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	DETERMINISTIC(14, "DETERMINISTIC", "Deterministic");
+	DETERMINISTIC(14, "DETERMINISTIC", "Deterministic"), /**
+	 * The '<em><b>SCALED EMPIRICAL</b></em>' literal object.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #SCALED_EMPIRICAL_VALUE
+	 * @generated
+	 * @ordered
+	 */
+	SCALED_EMPIRICAL(15, "SCALED_EMPIRICAL", "ScaledEmpirical");
 
 	/**
 	 * The '<em><b>BETA</b></em>' literal value.
@@ -398,6 +406,21 @@ public enum DistributionFunction implements Enumerator {
 	public static final int DETERMINISTIC_VALUE = 14;
 
 	/**
+	 * The '<em><b>SCALED EMPIRICAL</b></em>' literal value.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of '<em><b>SCALED EMPIRICAL</b></em>' literal object isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @see #SCALED_EMPIRICAL
+	 * @model literal="ScaledEmpirical"
+	 * @generated
+	 * @ordered
+	 */
+	public static final int SCALED_EMPIRICAL_VALUE = 15;
+
+	/**
 	 * An array of all the '<em><b>Distribution Function</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -420,6 +443,7 @@ public enum DistributionFunction implements Enumerator {
 			VON_MISES,
 			EMPIRICAL,
 			DETERMINISTIC,
+			SCALED_EMPIRICAL,
 		};
 
 	/**
@@ -434,6 +458,8 @@ public enum DistributionFunction implements Enumerator {
 	 * Returns the '<em><b>Distribution Function</b></em>' literal with the specified literal value.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * @param literal the literal.
+	 * @return the matching enumerator or <code>null</code>.
 	 * @generated
 	 */
 	public static DistributionFunction get(String literal) {
@@ -450,6 +476,8 @@ public enum DistributionFunction implements Enumerator {
 	 * Returns the '<em><b>Distribution Function</b></em>' literal with the specified name.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * @param name the name.
+	 * @return the matching enumerator or <code>null</code>.
 	 * @generated
 	 */
 	public static DistributionFunction getByName(String name) {
@@ -466,6 +494,8 @@ public enum DistributionFunction implements Enumerator {
 	 * Returns the '<em><b>Distribution Function</b></em>' literal with the specified integer value.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * @param value the integer value.
+	 * @return the matching enumerator or <code>null</code>.
 	 * @generated
 	 */
 	public static DistributionFunction get(int value) {
@@ -485,6 +515,7 @@ public enum DistributionFunction implements Enumerator {
 			case VON_MISES_VALUE: return VON_MISES;
 			case EMPIRICAL_VALUE: return EMPIRICAL;
 			case DETERMINISTIC_VALUE: return DETERMINISTIC;
+			case SCALED_EMPIRICAL_VALUE: return SCALED_EMPIRICAL;
 		}
 		return null;
 	}

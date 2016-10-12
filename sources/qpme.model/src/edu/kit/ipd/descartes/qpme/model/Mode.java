@@ -14,13 +14,13 @@ package edu.kit.ipd.descartes.qpme.model;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.Mode#getFiringWeight <em>Firing Weight</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.Mode#getMeanFiringDelay <em>Mean Firing Delay</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.Mode#getName <em>Name</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.Mode#getRealColor <em>Real Color</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getMode()
  * @model extendedMetaData="name='mode' kind='empty'"

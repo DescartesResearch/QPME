@@ -14,10 +14,10 @@ package edu.kit.ipd.descartes.qpme.model;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.SubnetPlace#getSubnet <em>Subnet</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getSubnetPlace()
  * @model extendedMetaData="name='subnet-place' kind='elementOnly'"

@@ -16,8 +16,6 @@ import edu.kit.ipd.descartes.qpme.model.TransitionMetaAttribute;
  * <!-- begin-user-doc -->
  * An implementation of the model object '<em><b>Transition Meta Attribute</b></em>'.
  * <!-- end-user-doc -->
- * <p>
- * </p>
  *
  * @generated
  */

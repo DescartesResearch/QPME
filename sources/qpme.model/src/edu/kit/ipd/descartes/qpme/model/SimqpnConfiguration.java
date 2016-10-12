@@ -14,6 +14,7 @@ package edu.kit.ipd.descartes.qpme.model;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.SimqpnConfiguration#getConfigurationDescription <em>Configuration Description</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.SimqpnConfiguration#getNumberOfRuns <em>Number Of Runs</em>}</li>
@@ -28,7 +29,6 @@ package edu.kit.ipd.descartes.qpme.model;
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.SimqpnConfiguration#getTotalRunLength <em>Total Run Length</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.SimqpnConfiguration#getVerbosityLevel <em>Verbosity Level</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getSimqpnConfiguration()
  * @model extendedMetaData="name='simqpn-configuration' kind='empty'"

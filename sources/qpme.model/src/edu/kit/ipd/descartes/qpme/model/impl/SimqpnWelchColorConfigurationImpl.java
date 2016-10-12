@@ -19,11 +19,11 @@ import edu.kit.ipd.descartes.qpme.model.SimqpnWelchColorConfiguration;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.SimqpnWelchColorConfigurationImpl#getMaxObsrv <em>Max Obsrv</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.SimqpnWelchColorConfigurationImpl#getMinObsrv <em>Min Obsrv</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

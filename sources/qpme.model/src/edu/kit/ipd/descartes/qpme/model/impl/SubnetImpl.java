@@ -26,13 +26,13 @@ import edu.kit.ipd.descartes.qpme.model.TransitionsContainer;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.SubnetImpl#getColors <em>Colors</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.SubnetImpl#getPlaces <em>Places</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.SubnetImpl#getTransitions <em>Transitions</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.SubnetImpl#getConnections <em>Connections</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

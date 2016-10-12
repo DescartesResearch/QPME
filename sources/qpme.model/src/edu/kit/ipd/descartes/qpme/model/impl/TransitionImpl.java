@@ -24,6 +24,7 @@ import edu.kit.ipd.descartes.qpme.model.TransitionMetaAttributesContainer;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.TransitionImpl#getModes <em>Modes</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.TransitionImpl#getConnections <em>Connections</em>}</li>
@@ -31,7 +32,6 @@ import edu.kit.ipd.descartes.qpme.model.TransitionMetaAttributesContainer;
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.TransitionImpl#getName <em>Name</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.TransitionImpl#getPriority <em>Priority</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

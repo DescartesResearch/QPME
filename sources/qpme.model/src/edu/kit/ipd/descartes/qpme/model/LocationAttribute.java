@@ -14,11 +14,11 @@ package edu.kit.ipd.descartes.qpme.model;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.LocationAttribute#getLocationX <em>Location X</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.LocationAttribute#getLocationY <em>Location Y</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getLocationAttribute()
  * @model extendedMetaData="name='location-attribute' kind='empty'"

@@ -16,10 +16,10 @@ import org.eclipse.emf.ecore.EObject;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.NetMetaAttributesContainer#getEntries <em>Entries</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getNetMetaAttributesContainer()
  * @model extendedMetaData="name='net-meta-attributes-container' kind='elementOnly'"

@@ -15,13 +15,13 @@ import org.eclipse.emf.ecore.EObject;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.Subnet#getColors <em>Colors</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.Subnet#getPlaces <em>Places</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.Subnet#getTransitions <em>Transitions</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.Subnet#getConnections <em>Connections</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getSubnet()
  * @model extendedMetaData="name='subnet' kind='elementOnly'"

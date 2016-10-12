@@ -14,10 +14,10 @@ package edu.kit.ipd.descartes.qpme.model;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.SubnetColorReference#getDirection <em>Direction</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getSubnetColorReference()
  * @model extendedMetaData="name='subnet-color-reference' kind='elementOnly'"

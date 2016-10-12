@@ -14,11 +14,11 @@ package edu.kit.ipd.descartes.qpme.model;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.SimqpnWelchColorConfiguration#getMaxObsrv <em>Max Obsrv</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.SimqpnWelchColorConfiguration#getMinObsrv <em>Min Obsrv</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getSimqpnWelchColorConfiguration()
  * @model extendedMetaData="name='simqpn-welch-color-configuration' kind='empty'"

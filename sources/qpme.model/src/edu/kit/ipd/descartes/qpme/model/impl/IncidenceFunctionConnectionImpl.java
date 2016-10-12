@@ -22,12 +22,12 @@ import edu.kit.ipd.descartes.qpme.model.ModelPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.IncidenceFunctionConnectionImpl#getCount <em>Count</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.IncidenceFunctionConnectionImpl#getSource <em>Source</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.IncidenceFunctionConnectionImpl#getTarget <em>Target</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

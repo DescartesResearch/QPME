@@ -16,8 +16,6 @@ import edu.kit.ipd.descartes.qpme.model.NetMetaAttribute;
  * <!-- begin-user-doc -->
  * An implementation of the model object '<em><b>Net Meta Attribute</b></em>'.
  * <!-- end-user-doc -->
- * <p>
- * </p>
  *
  * @generated
  */

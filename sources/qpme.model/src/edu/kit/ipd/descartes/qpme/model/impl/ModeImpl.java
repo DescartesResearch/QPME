@@ -19,13 +19,13 @@ import edu.kit.ipd.descartes.qpme.model.ModelPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.ModeImpl#getFiringWeight <em>Firing Weight</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.ModeImpl#getMeanFiringDelay <em>Mean Firing Delay</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.ModeImpl#getName <em>Name</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.ModeImpl#getRealColor <em>Real Color</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
