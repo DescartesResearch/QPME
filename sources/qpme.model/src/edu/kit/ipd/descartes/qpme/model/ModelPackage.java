@@ -1952,13 +1952,22 @@ public interface ModelPackage extends EPackage {
 	int QUEUEING_COLOR_REFERENCE__SCALE = PLACE_COLOR_REFERENCE_FEATURE_COUNT + 18;
 
 	/**
+	 * The feature id for the '<em><b>Replay File</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int QUEUEING_COLOR_REFERENCE__REPLAY_FILE = PLACE_COLOR_REFERENCE_FEATURE_COUNT + 19;
+
+	/**
 	 * The number of structural features of the '<em>Queueing Color Reference</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int QUEUEING_COLOR_REFERENCE_FEATURE_COUNT = PLACE_COLOR_REFERENCE_FEATURE_COUNT + 19;
+	int QUEUEING_COLOR_REFERENCE_FEATURE_COUNT = PLACE_COLOR_REFERENCE_FEATURE_COUNT + 20;
 
 	/**
 	 * The meta object id for the '{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingPetriNetImpl <em>Queueing Petri Net</em>}' class.
@@ -4633,6 +4642,17 @@ public interface ModelPackage extends EPackage {
 	EAttribute getQueueingColorReference_Scale();
 
 	/**
+	 * Returns the meta object for the attribute '{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getReplayFile <em>Replay File</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Replay File</em>'.
+	 * @see edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getReplayFile()
+	 * @see #getQueueingColorReference()
+	 * @generated
+	 */
+	EAttribute getQueueingColorReference_ReplayFile();
+
+	/**
 	 * Returns the meta object for class '{@link edu.kit.ipd.descartes.qpme.model.QueueingPetriNet <em>Queueing Petri Net</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -6592,6 +6612,14 @@ public interface ModelPackage extends EPackage {
 		 * @generated
 		 */
 		EAttribute QUEUEING_COLOR_REFERENCE__SCALE = eINSTANCE.getQueueingColorReference_Scale();
+
+		/**
+		 * The meta object literal for the '<em><b>Replay File</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute QUEUEING_COLOR_REFERENCE__REPLAY_FILE = eINSTANCE.getQueueingColorReference_ReplayFile();
 
 		/**
 		 * The meta object literal for the '{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingPetriNetImpl <em>Queueing Petri Net</em>}' class.

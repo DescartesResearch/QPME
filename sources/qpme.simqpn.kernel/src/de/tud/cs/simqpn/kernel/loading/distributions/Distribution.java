@@ -66,6 +66,8 @@ public enum Distribution {
 
 	EMPIRICAL("Empirical", new EmpiricalCreator(), new String[] { "scale" }, new String[] { "1" }, true),
 	
+	REPLAY("Replay", new ReplayCreator(), new String[] {}, new String[] {}, true),
+
 	EXPONENTIAL("Exponential", new ExponentialCreator(), new String[] { "lambda" }, new String[] { "1" }, false),
 	
 	EXPONENTIAL_POWER("ExponentialPower", new ExponentialPowerCreator(), new String[] { "tau" }, new String[] { "1" }, false),

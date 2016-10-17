@@ -1601,6 +1601,15 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EAttribute getQueueingColorReference_ReplayFile() {
+		return (EAttribute)queueingColorReferenceEClass.getEStructuralFeatures().get(19);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public EClass getQueueingPetriNet() {
 		return queueingPetriNetEClass;
 	}
@@ -2610,6 +2619,7 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__TAU);
 		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__OFFSET);
 		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__SCALE);
+		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__REPLAY_FILE);
 
 		queueingPetriNetEClass = createEClass(QUEUEING_PETRI_NET);
 		createEReference(queueingPetriNetEClass, QUEUEING_PETRI_NET__COLORS);
@@ -2941,6 +2951,7 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 		initEAttribute(getQueueingColorReference_Tau(), theXMLTypePackage.getDouble(), "tau", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getQueueingColorReference_Offset(), theXMLTypePackage.getDouble(), "offset", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getQueueingColorReference_Scale(), theXMLTypePackage.getDouble(), "scale", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getQueueingColorReference_ReplayFile(), theXMLTypePackage.getString(), "replayFile", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(queueingPetriNetEClass, QueueingPetriNet.class, "QueueingPetriNet", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEReference(getQueueingPetriNet_Colors(), this.getColorsContainer(), null, "colors", null, 0, 1, QueueingPetriNet.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -3063,6 +3074,7 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.EMPIRICAL);
 		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.DETERMINISTIC);
 		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.SCALED_EMPIRICAL);
+		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.REPLAY);
 
 		initEEnum(flowDirectionEEnum, FlowDirection.class, "FlowDirection");
 		addEEnumLiteral(flowDirectionEEnum, FlowDirection.IN);
@@ -3991,6 +4003,23 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 		   new String[] {
 			 "kind", "attribute",
 			 "name", "scale",
+			 "namespace", "##targetNamespace"
+		   });	
+		addAnnotation
+		  (getQueueingColorReference_ReplayFile(), 
+		   source, 
+		   new String[] {
+			 "kind", "attribute",
+			 "name", "replay_filename",
+			 "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingColorReference_ReplayFile(), 
+		   new boolean[] { true },
+		   "http:///org/eclipse/emf/ecore/util/ExtendedMetaData",
+		   new String[] {
+			 "kind", "attribute",
+			 "name", "replay_filename",
 			 "namespace", "##targetNamespace"
 		   });	
 		addAnnotation

@@ -41,6 +41,7 @@ import edu.kit.ipd.descartes.qpme.model.QueueingColorReference;
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getTau <em>Tau</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getOffset <em>Offset</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getScale <em>Scale</em>}</li>
+ *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getReplayFile <em>Replay File</em>}</li>
  * </ul>
  *
  * @generated
@@ -587,6 +588,26 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 	 * @ordered
 	 */
 	protected boolean scaleESet;
+
+	/**
+	 * The default value of the '{@link #getReplayFile() <em>Replay File</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getReplayFile()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final String REPLAY_FILE_EDEFAULT = null;
+
+	/**
+	 * The cached value of the '{@link #getReplayFile() <em>Replay File</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getReplayFile()
+	 * @generated
+	 * @ordered
+	 */
+	protected String replayFile = REPLAY_FILE_EDEFAULT;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -1461,6 +1482,27 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public String getReplayFile() {
+		return replayFile;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setReplayFile(String newReplayFile) {
+		String oldReplayFile = replayFile;
+		replayFile = newReplayFile;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET, ModelPackage.QUEUEING_COLOR_REFERENCE__REPLAY_FILE, oldReplayFile, replayFile));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	@Override
 	public Object eGet(int featureID, boolean resolve, boolean coreType) {
 		switch (featureID) {
@@ -1502,6 +1544,8 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 				return getOffset();
 			case ModelPackage.QUEUEING_COLOR_REFERENCE__SCALE:
 				return getScale();
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__REPLAY_FILE:
+				return getReplayFile();
 		}
 		return super.eGet(featureID, resolve, coreType);
 	}
@@ -1570,6 +1614,9 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 				return;
 			case ModelPackage.QUEUEING_COLOR_REFERENCE__SCALE:
 				setScale((Double)newValue);
+				return;
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__REPLAY_FILE:
+				setReplayFile((String)newValue);
 				return;
 		}
 		super.eSet(featureID, newValue);
@@ -1640,6 +1687,9 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 			case ModelPackage.QUEUEING_COLOR_REFERENCE__SCALE:
 				unsetScale();
 				return;
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__REPLAY_FILE:
+				setReplayFile(REPLAY_FILE_EDEFAULT);
+				return;
 		}
 		super.eUnset(featureID);
 	}
@@ -1690,6 +1740,8 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 				return isSetOffset();
 			case ModelPackage.QUEUEING_COLOR_REFERENCE__SCALE:
 				return isSetScale();
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__REPLAY_FILE:
+				return REPLAY_FILE_EDEFAULT == null ? replayFile != null : !REPLAY_FILE_EDEFAULT.equals(replayFile);
 		}
 		return super.eIsSet(featureID);
 	}
@@ -1742,6 +1794,8 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 		if (offsetESet) result.append(offset); else result.append("<unset>");
 		result.append(", scale: ");
 		if (scaleESet) result.append(scale); else result.append("<unset>");
+		result.append(", replayFile: ");
+		result.append(replayFile);
 		result.append(')');
 		return result.toString();
 	}

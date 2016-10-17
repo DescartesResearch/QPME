@@ -35,6 +35,7 @@ package edu.kit.ipd.descartes.qpme.model;
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getTau <em>Tau</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getOffset <em>Offset</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getScale <em>Scale</em>}</li>
+ *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getReplayFile <em>Replay File</em>}</li>
  * </ul>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getQueueingColorReference()
@@ -1043,5 +1044,32 @@ public interface QueueingColorReference extends PlaceColorReference {
 	 * @generated
 	 */
 	boolean isSetScale();
+
+	/**
+	 * Returns the value of the '<em><b>Replay File</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Replay File</em>' attribute isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Replay File</em>' attribute.
+	 * @see #setReplayFile(String)
+	 * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getQueueingColorReference_ReplayFile()
+	 * @model dataType="org.eclipse.emf.ecore.xml.type.String"
+	 *        extendedMetaData="kind='attribute' name='replay_filename' namespace='##targetNamespace'"
+	 * @generated
+	 */
+	String getReplayFile();
+
+	/**
+	 * Sets the value of the '{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getReplayFile <em>Replay File</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Replay File</em>' attribute.
+	 * @see #getReplayFile()
+	 * @generated
+	 */
+	void setReplayFile(String value);
 
 } // QueueingColorReference

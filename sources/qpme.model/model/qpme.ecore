@@ -136,6 +136,7 @@
     <eLiterals name="EMPIRICAL" value="13" literal="Empirical"/>
     <eLiterals name="DETERMINISTIC" value="14" literal="Deterministic"/>
     <eLiterals name="SCALED_EMPIRICAL" value="15" literal="ScaledEmpirical"/>
+    <eLiterals name="REPLAY" value="16" literal="Replay"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EDataType" name="DistributionFunctionObject" instanceClassName="org.eclipse.emf.common.util.Enumerator">
     <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
@@ -857,6 +858,18 @@
       <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
         <details key="kind" value="attribute"/>
         <details key="name" value="scale"/>
+        <details key="namespace" value="##targetNamespace"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="replayFile" eType="ecore:EDataType http://www.eclipse.org/emf/2003/XMLType#//String">
+      <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+        <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+          <details key="kind" value="attribute"/>
+          <details key="name" value="replay_filename"/>
+          <details key="namespace" value="##targetNamespace"/>
+        </eAnnotations>
+        <details key="kind" value="attribute"/>
+        <details key="name" value="replay_filename"/>
         <details key="namespace" value="##targetNamespace"/>
       </eAnnotations>
     </eStructuralFeatures>
