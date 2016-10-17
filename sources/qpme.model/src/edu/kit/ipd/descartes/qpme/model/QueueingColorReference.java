@@ -14,6 +14,7 @@ package edu.kit.ipd.descartes.qpme.model;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getAlpha <em>Alpha</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getBeta <em>Beta</em>}</li>
@@ -32,8 +33,9 @@ package edu.kit.ipd.descartes.qpme.model;
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getRanking <em>Ranking</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getStdDev <em>Std Dev</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getTau <em>Tau</em>}</li>
+ *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getOffset <em>Offset</em>}</li>
+ *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getScale <em>Scale</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getQueueingColorReference()
  * @model extendedMetaData="name='queueing-color-reference' kind='elementOnly'"
@@ -379,7 +381,7 @@ public interface QueueingColorReference extends PlaceColorReference {
 	 * @see #setInputFile(String)
 	 * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getQueueingColorReference_InputFile()
 	 * @model dataType="org.eclipse.emf.ecore.xml.type.String"
-	 *        extendedMetaData="kind='attribute' name='input-file' namespace='##targetNamespace'"
+	 *        extendedMetaData="kind='attribute' name='pdf_filename' namespace='##targetNamespace'"
 	 * @generated
 	 */
 	String getInputFile();
@@ -933,5 +935,113 @@ public interface QueueingColorReference extends PlaceColorReference {
 	 * @generated
 	 */
 	boolean isSetTau();
+
+	/**
+	 * Returns the value of the '<em><b>Offset</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Offset</em>' attribute isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Offset</em>' attribute.
+	 * @see #isSetOffset()
+	 * @see #unsetOffset()
+	 * @see #setOffset(double)
+	 * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getQueueingColorReference_Offset()
+	 * @model unsettable="true" dataType="org.eclipse.emf.ecore.xml.type.Double"
+	 *        extendedMetaData="kind='attribute' name='offset' namespace='##targetNamespace'"
+	 * @generated
+	 */
+	double getOffset();
+
+	/**
+	 * Sets the value of the '{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getOffset <em>Offset</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Offset</em>' attribute.
+	 * @see #isSetOffset()
+	 * @see #unsetOffset()
+	 * @see #getOffset()
+	 * @generated
+	 */
+	void setOffset(double value);
+
+	/**
+	 * Unsets the value of the '{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getOffset <em>Offset</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #isSetOffset()
+	 * @see #getOffset()
+	 * @see #setOffset(double)
+	 * @generated
+	 */
+	void unsetOffset();
+
+	/**
+	 * Returns whether the value of the '{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getOffset <em>Offset</em>}' attribute is set.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return whether the value of the '<em>Offset</em>' attribute is set.
+	 * @see #unsetOffset()
+	 * @see #getOffset()
+	 * @see #setOffset(double)
+	 * @generated
+	 */
+	boolean isSetOffset();
+
+	/**
+	 * Returns the value of the '<em><b>Scale</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Scale</em>' attribute isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Scale</em>' attribute.
+	 * @see #isSetScale()
+	 * @see #unsetScale()
+	 * @see #setScale(double)
+	 * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getQueueingColorReference_Scale()
+	 * @model unsettable="true" dataType="org.eclipse.emf.ecore.xml.type.Double"
+	 *        extendedMetaData="kind='attribute' name='scale' namespace='##targetNamespace'"
+	 * @generated
+	 */
+	double getScale();
+
+	/**
+	 * Sets the value of the '{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getScale <em>Scale</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Scale</em>' attribute.
+	 * @see #isSetScale()
+	 * @see #unsetScale()
+	 * @see #getScale()
+	 * @generated
+	 */
+	void setScale(double value);
+
+	/**
+	 * Unsets the value of the '{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getScale <em>Scale</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #isSetScale()
+	 * @see #getScale()
+	 * @see #setScale(double)
+	 * @generated
+	 */
+	void unsetScale();
+
+	/**
+	 * Returns whether the value of the '{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getScale <em>Scale</em>}' attribute is set.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return whether the value of the '<em>Scale</em>' attribute is set.
+	 * @see #unsetScale()
+	 * @see #getScale()
+	 * @see #setScale(double)
+	 * @generated
+	 */
+	boolean isSetScale();
 
 } // QueueingColorReference

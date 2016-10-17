@@ -16,8 +16,6 @@ import edu.kit.ipd.descartes.qpme.model.ModelPackage;
  * <!-- begin-user-doc -->
  * An implementation of the model object '<em><b>Color Reference Meta Attribute</b></em>'.
  * <!-- end-user-doc -->
- * <p>
- * </p>
  *
  * @generated
  */

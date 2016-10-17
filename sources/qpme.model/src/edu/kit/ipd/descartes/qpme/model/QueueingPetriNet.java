@@ -15,6 +15,7 @@ import org.eclipse.emf.ecore.EObject;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingPetriNet#getColors <em>Colors</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingPetriNet#getQueues <em>Queues</em>}</li>
@@ -25,7 +26,6 @@ import org.eclipse.emf.ecore.EObject;
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingPetriNet#getMetaAttributes <em>Meta Attributes</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingPetriNet#getQpmeVersion <em>Qpme Version</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getQueueingPetriNet()
  * @model extendedMetaData="name='queueing-petri-net' kind='elementOnly'"

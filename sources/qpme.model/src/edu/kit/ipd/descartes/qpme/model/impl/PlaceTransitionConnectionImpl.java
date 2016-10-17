@@ -22,11 +22,11 @@ import edu.kit.ipd.descartes.qpme.model.PlaceTransitionElement;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.PlaceTransitionConnectionImpl#getSource <em>Source</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.PlaceTransitionConnectionImpl#getTarget <em>Target</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

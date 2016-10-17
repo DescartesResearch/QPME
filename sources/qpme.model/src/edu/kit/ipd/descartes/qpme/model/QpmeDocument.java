@@ -18,13 +18,13 @@ import org.eclipse.emf.ecore.util.FeatureMap;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QpmeDocument#getMixed <em>Mixed</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QpmeDocument#getXMLNSPrefixMap <em>XMLNS Prefix Map</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QpmeDocument#getXSISchemaLocation <em>XSI Schema Location</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QpmeDocument#getNet <em>Net</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getQpmeDocument()
  * @model extendedMetaData="name='' kind='mixed'"

@@ -25,11 +25,11 @@ import edu.kit.ipd.descartes.qpme.model.ModelPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.IncidenceFunctionElementImpl#getIncomingConnections <em>Incoming Connections</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.IncidenceFunctionElementImpl#getOutgoingConnections <em>Outgoing Connections</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

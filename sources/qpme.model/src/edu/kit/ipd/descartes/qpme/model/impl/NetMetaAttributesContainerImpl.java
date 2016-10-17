@@ -26,10 +26,10 @@ import edu.kit.ipd.descartes.qpme.model.NetMetaAttributesContainer;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.NetMetaAttributesContainerImpl#getEntries <em>Entries</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

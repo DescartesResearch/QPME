@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<genmodel:GenModel xmi:version="2.0"
-    xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
-    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/qpme.model/src"
-    editDirectory="/qpme.model.edit/src" editorDirectory="/qpme.model.editor/src"
-    modelPluginID="qpme.model" modelName="qpme" importerID="org.eclipse.xsd.ecore.importer"
-    complianceLevel="6.0" copyrightFields="false" editPluginID="qpme.model.edit" editorPluginID="qpme.model.editor">
-  <foreignModel>../schema/qpme.xsd</foreignModel>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/qpme.model/src" editDirectory="/qpme.model.edit/src"
+    editorDirectory="/qpme.model.editor/src" modelPluginID="qpme.model" modelName="qpme"
+    importerID="org.eclipse.emf.importer.ecore" complianceLevel="6.0" copyrightFields="false"
+    editPluginID="qpme.model.edit" editorPluginID="qpme.model.editor">
+  <foreignModel>qpme.ecore</foreignModel>
   <genPackages prefix="Model" basePackage="edu.kit.ipd.descartes.qpme" resource="XML"
       disposableProviderFactory="true" ecorePackage="qpme.ecore#/">
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="qpme.ecore#//DepartureDiscipline">
@@ -28,6 +27,7 @@
       <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/VON_MISES"/>
       <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/EMPIRICAL"/>
       <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/DETERMINISTIC"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/SCALED_EMPIRICAL"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="qpme.ecore#//FlowDirection">
       <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//FlowDirection/IN"/>
@@ -189,11 +189,13 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/mean"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/min"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/p"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/p1"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/c"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/priority"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/ranking"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/stdDev"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/tau"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/offset"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/scale"/>
     </genClasses>
     <genClasses ecoreClass="qpme.ecore#//QueueingPetriNet">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//QueueingPetriNet/colors"/>

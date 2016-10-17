@@ -19,6 +19,7 @@ import edu.kit.ipd.descartes.qpme.model.SimqpnBatchMeansColorConfiguration;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.SimqpnBatchMeansColorConfigurationImpl#getBatchSize <em>Batch Size</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.SimqpnBatchMeansColorConfigurationImpl#getBucketSize <em>Bucket Size</em>}</li>
@@ -29,7 +30,6 @@ import edu.kit.ipd.descartes.qpme.model.SimqpnBatchMeansColorConfiguration;
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.SimqpnBatchMeansColorConfigurationImpl#getReqRelPrc <em>Req Rel Prc</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.SimqpnBatchMeansColorConfigurationImpl#getSignLev <em>Sign Lev</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

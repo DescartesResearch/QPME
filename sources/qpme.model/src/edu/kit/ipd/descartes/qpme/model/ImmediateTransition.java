@@ -14,10 +14,10 @@ package edu.kit.ipd.descartes.qpme.model;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.ImmediateTransition#getWeight <em>Weight</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getImmediateTransition()
  * @model extendedMetaData="name='immediate-transition' kind='elementOnly'"

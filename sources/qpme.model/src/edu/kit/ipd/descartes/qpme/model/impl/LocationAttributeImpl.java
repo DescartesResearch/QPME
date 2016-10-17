@@ -19,11 +19,11 @@ import edu.kit.ipd.descartes.qpme.model.ModelPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.LocationAttributeImpl#getLocationX <em>Location X</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.LocationAttributeImpl#getLocationY <em>Location Y</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

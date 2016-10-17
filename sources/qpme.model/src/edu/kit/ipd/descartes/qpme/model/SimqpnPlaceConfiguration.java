@@ -15,10 +15,10 @@ import java.math.BigInteger;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.SimqpnPlaceConfiguration#getStatsLevel <em>Stats Level</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getSimqpnPlaceConfiguration()
  * @model extendedMetaData="name='simqpn-place-configuration' kind='empty'"

@@ -14,10 +14,10 @@ package edu.kit.ipd.descartes.qpme.model;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.SimqpnReplDelColorConfiguration#getSignLevAvgST <em>Sign Lev Avg ST</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getSimqpnReplDelColorConfiguration()
  * @model extendedMetaData="name='simqpn-replication-delection-color-configuration' kind='empty'"

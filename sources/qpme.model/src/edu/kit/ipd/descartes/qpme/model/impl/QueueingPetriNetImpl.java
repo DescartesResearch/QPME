@@ -29,6 +29,7 @@ import edu.kit.ipd.descartes.qpme.model.TransitionsContainer;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingPetriNetImpl#getColors <em>Colors</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingPetriNetImpl#getQueues <em>Queues</em>}</li>
@@ -39,7 +40,6 @@ import edu.kit.ipd.descartes.qpme.model.TransitionsContainer;
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingPetriNetImpl#getMetaAttributes <em>Meta Attributes</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingPetriNetImpl#getQpmeVersion <em>Qpme Version</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

@@ -25,6 +25,7 @@ import edu.kit.ipd.descartes.qpme.model.ProbeTrigger;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.ProbeImpl#getColorReferences <em>Color References</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.ProbeImpl#getMetaAttributes <em>Meta Attributes</em>}</li>
@@ -34,7 +35,6 @@ import edu.kit.ipd.descartes.qpme.model.ProbeTrigger;
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.ProbeImpl#getStartPlace <em>Start Place</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.ProbeImpl#getStartTrigger <em>Start Trigger</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

@@ -19,10 +19,10 @@ import edu.kit.ipd.descartes.qpme.model.SimqpnReplDelQueueingColorConfiguration;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.SimqpnReplDelQueueingColorConfigurationImpl#getQueueSignLevAvgST <em>Queue Sign Lev Avg ST</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

@@ -19,11 +19,11 @@ import edu.kit.ipd.descartes.qpme.model.PlaceColorReference;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.PlaceColorReferenceImpl#getInitialPopulation <em>Initial Population</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.PlaceColorReferenceImpl#getMaximumCapacity <em>Maximum Capacity</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

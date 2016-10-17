@@ -14,6 +14,7 @@ package edu.kit.ipd.descartes.qpme.model;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.Transition#getModes <em>Modes</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.Transition#getConnections <em>Connections</em>}</li>
@@ -21,7 +22,6 @@ package edu.kit.ipd.descartes.qpme.model;
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.Transition#getName <em>Name</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.Transition#getPriority <em>Priority</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getTransition()
  * @model abstract="true"

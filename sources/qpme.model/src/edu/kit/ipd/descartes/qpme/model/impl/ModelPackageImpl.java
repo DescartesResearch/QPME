@@ -1583,6 +1583,24 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EAttribute getQueueingColorReference_Offset() {
+		return (EAttribute)queueingColorReferenceEClass.getEStructuralFeatures().get(17);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getQueueingColorReference_Scale() {
+		return (EAttribute)queueingColorReferenceEClass.getEStructuralFeatures().get(18);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public EClass getQueueingPetriNet() {
 		return queueingPetriNetEClass;
 	}
@@ -2590,6 +2608,8 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__RANKING);
 		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__STD_DEV);
 		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__TAU);
+		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__OFFSET);
+		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__SCALE);
 
 		queueingPetriNetEClass = createEClass(QUEUEING_PETRI_NET);
 		createEReference(queueingPetriNetEClass, QUEUEING_PETRI_NET__COLORS);
@@ -2919,6 +2939,8 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 		initEAttribute(getQueueingColorReference_Ranking(), theXMLTypePackage.getUnsignedInt(), "ranking", null, 1, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getQueueingColorReference_StdDev(), theXMLTypePackage.getDouble(), "stdDev", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getQueueingColorReference_Tau(), theXMLTypePackage.getDouble(), "tau", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getQueueingColorReference_Offset(), theXMLTypePackage.getDouble(), "offset", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getQueueingColorReference_Scale(), theXMLTypePackage.getDouble(), "scale", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(queueingPetriNetEClass, QueueingPetriNet.class, "QueueingPetriNet", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEReference(getQueueingPetriNet_Colors(), this.getColorsContainer(), null, "colors", null, 0, 1, QueueingPetriNet.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -3040,6 +3062,7 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.VON_MISES);
 		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.EMPIRICAL);
 		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.DETERMINISTIC);
+		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.SCALED_EMPIRICAL);
 
 		initEEnum(flowDirectionEEnum, FlowDirection.class, "FlowDirection");
 		addEEnumLiteral(flowDirectionEEnum, FlowDirection.IN);
@@ -3871,7 +3894,7 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 		   source, 
 		   new String[] {
 			 "kind", "attribute",
-			 "name", "input-file",
+			 "name", "pdf_filename",
 			 "namespace", "##targetNamespace"
 		   });	
 		addAnnotation
@@ -3952,6 +3975,22 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 		   new String[] {
 			 "kind", "attribute",
 			 "name", "tau",
+			 "namespace", "##targetNamespace"
+		   });	
+		addAnnotation
+		  (getQueueingColorReference_Offset(), 
+		   source, 
+		   new String[] {
+			 "kind", "attribute",
+			 "name", "offset",
+			 "namespace", "##targetNamespace"
+		   });	
+		addAnnotation
+		  (getQueueingColorReference_Scale(), 
+		   source, 
+		   new String[] {
+			 "kind", "attribute",
+			 "name", "scale",
 			 "namespace", "##targetNamespace"
 		   });	
 		addAnnotation

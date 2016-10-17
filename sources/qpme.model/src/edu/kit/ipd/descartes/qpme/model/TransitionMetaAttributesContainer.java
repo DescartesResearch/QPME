@@ -16,10 +16,10 @@ import org.eclipse.emf.ecore.EObject;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.TransitionMetaAttributesContainer#getEntries <em>Entries</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getTransitionMetaAttributesContainer()
  * @model extendedMetaData="name='transition-meta-attributes-container' kind='elementOnly'"

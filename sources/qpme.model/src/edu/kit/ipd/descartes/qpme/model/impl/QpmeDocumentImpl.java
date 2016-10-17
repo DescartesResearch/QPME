@@ -31,13 +31,13 @@ import java.util.Collection;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QpmeDocumentImpl#getMixed <em>Mixed</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QpmeDocumentImpl#getXMLNSPrefixMap <em>XMLNS Prefix Map</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QpmeDocumentImpl#getXSISchemaLocation <em>XSI Schema Location</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QpmeDocumentImpl#getNet <em>Net</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

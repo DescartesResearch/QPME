@@ -14,6 +14,7 @@ package edu.kit.ipd.descartes.qpme.model;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.SimqpnBatchMeansQueueingColorConfiguration#getQueueBatchSize <em>Queue Batch Size</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.SimqpnBatchMeansQueueingColorConfiguration#getQueueBucketSize <em>Queue Bucket Size</em>}</li>
@@ -24,7 +25,6 @@ package edu.kit.ipd.descartes.qpme.model;
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.SimqpnBatchMeansQueueingColorConfiguration#getQueueReqRelPrc <em>Queue Req Rel Prc</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.SimqpnBatchMeansQueueingColorConfiguration#getQueueSignLev <em>Queue Sign Lev</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getSimqpnBatchMeansQueueingColorConfiguration()
  * @model extendedMetaData="name='simqpn-batch-means-queueing-color-configuration' kind='empty'"

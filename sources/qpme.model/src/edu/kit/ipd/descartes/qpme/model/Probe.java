@@ -14,6 +14,7 @@ package edu.kit.ipd.descartes.qpme.model;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.Probe#getColorReferences <em>Color References</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.Probe#getMetaAttributes <em>Meta Attributes</em>}</li>
@@ -23,7 +24,6 @@ package edu.kit.ipd.descartes.qpme.model;
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.Probe#getStartPlace <em>Start Place</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.Probe#getStartTrigger <em>Start Trigger</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getProbe()
  * @model extendedMetaData="name='probe' kind='elementOnly'"

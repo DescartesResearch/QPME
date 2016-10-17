@@ -16,8 +16,6 @@ import edu.kit.ipd.descartes.qpme.model.PlaceMetaAttribute;
  * <!-- begin-user-doc -->
  * An implementation of the model object '<em><b>Place Meta Attribute</b></em>'.
  * <!-- end-user-doc -->
- * <p>
- * </p>
  *
  * @generated
  */

@@ -14,12 +14,12 @@ package edu.kit.ipd.descartes.qpme.model;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.Color#getDescription <em>Description</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.Color#getName <em>Name</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.Color#getRealColor <em>Real Color</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getColor()
  * @model extendedMetaData="name='color' kind='empty'"

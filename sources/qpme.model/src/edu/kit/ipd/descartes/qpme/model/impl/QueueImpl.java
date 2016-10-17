@@ -20,12 +20,12 @@ import edu.kit.ipd.descartes.qpme.model.QueueingStrategy;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueImpl#getName <em>Name</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueImpl#getNumberOfServers <em>Number Of Servers</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueImpl#getStrategy <em>Strategy</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

@@ -26,10 +26,10 @@ import edu.kit.ipd.descartes.qpme.model.TransitionMetaAttributesContainer;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.TransitionMetaAttributesContainerImpl#getEntries <em>Entries</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

@@ -1934,13 +1934,31 @@ public interface ModelPackage extends EPackage {
 	int QUEUEING_COLOR_REFERENCE__TAU = PLACE_COLOR_REFERENCE_FEATURE_COUNT + 16;
 
 	/**
+	 * The feature id for the '<em><b>Offset</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int QUEUEING_COLOR_REFERENCE__OFFSET = PLACE_COLOR_REFERENCE_FEATURE_COUNT + 17;
+
+	/**
+	 * The feature id for the '<em><b>Scale</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int QUEUEING_COLOR_REFERENCE__SCALE = PLACE_COLOR_REFERENCE_FEATURE_COUNT + 18;
+
+	/**
 	 * The number of structural features of the '<em>Queueing Color Reference</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int QUEUEING_COLOR_REFERENCE_FEATURE_COUNT = PLACE_COLOR_REFERENCE_FEATURE_COUNT + 17;
+	int QUEUEING_COLOR_REFERENCE_FEATURE_COUNT = PLACE_COLOR_REFERENCE_FEATURE_COUNT + 19;
 
 	/**
 	 * The meta object id for the '{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingPetriNetImpl <em>Queueing Petri Net</em>}' class.
@@ -4593,6 +4611,28 @@ public interface ModelPackage extends EPackage {
 	EAttribute getQueueingColorReference_Tau();
 
 	/**
+	 * Returns the meta object for the attribute '{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getOffset <em>Offset</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Offset</em>'.
+	 * @see edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getOffset()
+	 * @see #getQueueingColorReference()
+	 * @generated
+	 */
+	EAttribute getQueueingColorReference_Offset();
+
+	/**
+	 * Returns the meta object for the attribute '{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getScale <em>Scale</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Scale</em>'.
+	 * @see edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getScale()
+	 * @see #getQueueingColorReference()
+	 * @generated
+	 */
+	EAttribute getQueueingColorReference_Scale();
+
+	/**
 	 * Returns the meta object for class '{@link edu.kit.ipd.descartes.qpme.model.QueueingPetriNet <em>Queueing Petri Net</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -6536,6 +6576,22 @@ public interface ModelPackage extends EPackage {
 		 * @generated
 		 */
 		EAttribute QUEUEING_COLOR_REFERENCE__TAU = eINSTANCE.getQueueingColorReference_Tau();
+
+		/**
+		 * The meta object literal for the '<em><b>Offset</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute QUEUEING_COLOR_REFERENCE__OFFSET = eINSTANCE.getQueueingColorReference_Offset();
+
+		/**
+		 * The meta object literal for the '<em><b>Scale</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute QUEUEING_COLOR_REFERENCE__SCALE = eINSTANCE.getQueueingColorReference_Scale();
 
 		/**
 		 * The meta object literal for the '{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingPetriNetImpl <em>Queueing Petri Net</em>}' class.

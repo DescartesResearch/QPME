@@ -21,6 +21,7 @@ import edu.kit.ipd.descartes.qpme.model.SimqpnStoppingRule;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.SimqpnConfigurationImpl#getConfigurationDescription <em>Configuration Description</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.SimqpnConfigurationImpl#getNumberOfRuns <em>Number Of Runs</em>}</li>
@@ -35,7 +36,6 @@ import edu.kit.ipd.descartes.qpme.model.SimqpnStoppingRule;
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.SimqpnConfigurationImpl#getTotalRunLength <em>Total Run Length</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.SimqpnConfigurationImpl#getVerbosityLevel <em>Verbosity Level</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

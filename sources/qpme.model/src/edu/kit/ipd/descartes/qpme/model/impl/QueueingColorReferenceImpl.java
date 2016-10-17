@@ -20,6 +20,7 @@ import edu.kit.ipd.descartes.qpme.model.QueueingColorReference;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getAlpha <em>Alpha</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getBeta <em>Beta</em>}</li>
@@ -38,8 +39,9 @@ import edu.kit.ipd.descartes.qpme.model.QueueingColorReference;
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getRanking <em>Ranking</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getStdDev <em>Std Dev</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getTau <em>Tau</em>}</li>
+ *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getOffset <em>Offset</em>}</li>
+ *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getScale <em>Scale</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
@@ -527,6 +529,64 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 	 * @ordered
 	 */
 	protected boolean tauESet;
+
+	/**
+	 * The default value of the '{@link #getOffset() <em>Offset</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getOffset()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final double OFFSET_EDEFAULT = 0.0;
+
+	/**
+	 * The cached value of the '{@link #getOffset() <em>Offset</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getOffset()
+	 * @generated
+	 * @ordered
+	 */
+	protected double offset = OFFSET_EDEFAULT;
+
+	/**
+	 * This is true if the Offset attribute has been set.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	protected boolean offsetESet;
+
+	/**
+	 * The default value of the '{@link #getScale() <em>Scale</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getScale()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final double SCALE_EDEFAULT = 0.0;
+
+	/**
+	 * The cached value of the '{@link #getScale() <em>Scale</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getScale()
+	 * @generated
+	 * @ordered
+	 */
+	protected double scale = SCALE_EDEFAULT;
+
+	/**
+	 * This is true if the Scale attribute has been set.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	protected boolean scaleESet;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -1309,6 +1369,98 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public double getOffset() {
+		return offset;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setOffset(double newOffset) {
+		double oldOffset = offset;
+		offset = newOffset;
+		boolean oldOffsetESet = offsetESet;
+		offsetESet = true;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET, ModelPackage.QUEUEING_COLOR_REFERENCE__OFFSET, oldOffset, offset, !oldOffsetESet));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void unsetOffset() {
+		double oldOffset = offset;
+		boolean oldOffsetESet = offsetESet;
+		offset = OFFSET_EDEFAULT;
+		offsetESet = false;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.UNSET, ModelPackage.QUEUEING_COLOR_REFERENCE__OFFSET, oldOffset, OFFSET_EDEFAULT, oldOffsetESet));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public boolean isSetOffset() {
+		return offsetESet;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public double getScale() {
+		return scale;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setScale(double newScale) {
+		double oldScale = scale;
+		scale = newScale;
+		boolean oldScaleESet = scaleESet;
+		scaleESet = true;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET, ModelPackage.QUEUEING_COLOR_REFERENCE__SCALE, oldScale, scale, !oldScaleESet));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void unsetScale() {
+		double oldScale = scale;
+		boolean oldScaleESet = scaleESet;
+		scale = SCALE_EDEFAULT;
+		scaleESet = false;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.UNSET, ModelPackage.QUEUEING_COLOR_REFERENCE__SCALE, oldScale, SCALE_EDEFAULT, oldScaleESet));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public boolean isSetScale() {
+		return scaleESet;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	@Override
 	public Object eGet(int featureID, boolean resolve, boolean coreType) {
 		switch (featureID) {
@@ -1346,6 +1498,10 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 				return getStdDev();
 			case ModelPackage.QUEUEING_COLOR_REFERENCE__TAU:
 				return getTau();
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__OFFSET:
+				return getOffset();
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__SCALE:
+				return getScale();
 		}
 		return super.eGet(featureID, resolve, coreType);
 	}
@@ -1408,6 +1564,12 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 				return;
 			case ModelPackage.QUEUEING_COLOR_REFERENCE__TAU:
 				setTau((Double)newValue);
+				return;
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__OFFSET:
+				setOffset((Double)newValue);
+				return;
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__SCALE:
+				setScale((Double)newValue);
 				return;
 		}
 		super.eSet(featureID, newValue);
@@ -1472,6 +1634,12 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 			case ModelPackage.QUEUEING_COLOR_REFERENCE__TAU:
 				unsetTau();
 				return;
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__OFFSET:
+				unsetOffset();
+				return;
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__SCALE:
+				unsetScale();
+				return;
 		}
 		super.eUnset(featureID);
 	}
@@ -1518,6 +1686,10 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 				return isSetStdDev();
 			case ModelPackage.QUEUEING_COLOR_REFERENCE__TAU:
 				return isSetTau();
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__OFFSET:
+				return isSetOffset();
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__SCALE:
+				return isSetScale();
 		}
 		return super.eIsSet(featureID);
 	}
@@ -1566,6 +1738,10 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 		if (stdDevESet) result.append(stdDev); else result.append("<unset>");
 		result.append(", tau: ");
 		if (tauESet) result.append(tau); else result.append("<unset>");
+		result.append(", offset: ");
+		if (offsetESet) result.append(offset); else result.append("<unset>");
+		result.append(", scale: ");
+		if (scaleESet) result.append(scale); else result.append("<unset>");
 		result.append(')');
 		return result.toString();
 	}

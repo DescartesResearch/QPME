@@ -24,6 +24,7 @@ import edu.kit.ipd.descartes.qpme.model.PlaceMetaAttributesContainer;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.PlaceImpl#getColorReferences <em>Color References</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.PlaceImpl#getMetaAttributes <em>Meta Attributes</em>}</li>
@@ -31,7 +32,6 @@ import edu.kit.ipd.descartes.qpme.model.PlaceMetaAttributesContainer;
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.PlaceImpl#isLocked <em>Locked</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.PlaceImpl#getName <em>Name</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

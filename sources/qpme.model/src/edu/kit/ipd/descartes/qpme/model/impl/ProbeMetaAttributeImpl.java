@@ -16,8 +16,6 @@ import edu.kit.ipd.descartes.qpme.model.ProbeMetaAttribute;
  * <!-- begin-user-doc -->
  * An implementation of the model object '<em><b>Probe Meta Attribute</b></em>'.
  * <!-- end-user-doc -->
- * <p>
- * </p>
  *
  * @generated
  */

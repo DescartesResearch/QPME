@@ -19,11 +19,11 @@ import edu.kit.ipd.descartes.qpme.model.SimqpnWelchQueueingColorConfiguration;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.SimqpnWelchQueueingColorConfigurationImpl#getQueueMaxObsrv <em>Queue Max Obsrv</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.SimqpnWelchQueueingColorConfigurationImpl#getQueueMinObsrv <em>Queue Min Obsrv</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

@@ -15,11 +15,11 @@ import org.eclipse.emf.common.util.EList;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.PlaceTransitionElement#getIncomingConnections <em>Incoming Connections</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.PlaceTransitionElement#getOutgoingConnections <em>Outgoing Connections</em>}</li>
  * </ul>
- * </p>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getPlaceTransitionElement()
  * @model abstract="true"
