@@ -3,7 +3,6 @@ package edu.kit.ipd.descartes.qpme.model.migration;
 import java.io.InputStream;
 
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMResult;
@@ -37,8 +36,10 @@ public class DocumentMigrationHandler {
 		Version docVersion = getDocumentVersion(qpe);
 		if (isCompliant(docVersion, CURRENT_VERSION)) {
 			return qpe;
-		} else if (isCompliant(docVersion, VERSION_2_0) 
-				|| isCompliant(docVersion, VERSION_2_1)
+		} else if (isCompliant(docVersion, VERSION_2_1)) {
+			qpe.getDocumentElement().setAttribute("qpme-version", CURRENT_VERSION.toString());
+			return qpe;
+		} else if (isCompliant(docVersion, VERSION_2_0)
 				|| VERSION_1_5_2.equals(docVersion)) {
 			InputStream xslt = getClass().getClassLoader().getResourceAsStream("edu/kit/ipd/descartes/qpme/model/migration/transforms/v2_1_migration.xsl");
 			TransformerFactory transformFactory = TransformerFactory.newInstance();
