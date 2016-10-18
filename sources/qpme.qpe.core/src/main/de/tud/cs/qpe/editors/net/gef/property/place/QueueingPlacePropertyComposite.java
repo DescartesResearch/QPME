@@ -264,6 +264,8 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 						"distribution-function", "Exponential");
 				if("Empirical".equals(curDistFkt)) {
 					cell.setText(colorRef.attributeValue("pdf_filename", ""));
+				} else if ("Replay".equals(curDistFkt)) {
+					cell.setText(colorRef.attributeValue("replay_filename", ""));
 				} else {
 					cell.setText("");
 				}
@@ -281,7 +283,28 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 				Element colorRef = (Element)element;
 				String curDistFkt = colorRef.attributeValue(
 						"distribution-function", "Exponential");
-				return "Empirical".equals(curDistFkt);
+				return ("Empirical".equals(curDistFkt) || "Replay".equals(curDistFkt));
+			}
+
+			@Override
+			protected void setValue(Object element, Object value) {
+				updateInternalAttribute(element);
+				super.setValue(element, value);
+			}
+
+			@Override
+			protected Object getValue(Object element) {
+				updateInternalAttribute(element);
+				return ((Element) element).attributeValue(attribute, "");
+			}
+
+			private void updateInternalAttribute(Object element) {
+				Element colorRef = (Element) element;
+				String curDistFkt = colorRef.attributeValue("distribution-function", "Exponential");
+				if ("Empirical".equals(curDistFkt))
+					this.attribute = "pdf_filename";
+				else if ("Replay".equals(curDistFkt))
+					this.attribute = "replay_filename";
 			}
 			
 		});
@@ -390,10 +413,10 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 		protected final String[] items = { "Beta", "BreitWigner",
 				"BreitWignerMeanSquare", "ChiSquare", "Gamma", "Hyperbolic",
 				"Exponential", "ExponentialPower", "Logarithmic", "Normal",
-				"StudentT", "Uniform", "VonMises", "Empirical", "Deterministic" };
+				"StudentT", "Uniform", "VonMises", "Empirical", "Deterministic", "Replay" };
 
 		protected final int numParams[] = { 2, 3, 3, 1, 2, 2, 1, 1, 1, 2, 1, 2,
-				1, 2, 1 };
+				1, 2, 1, 0 };
 
 		protected final String paramNames[][] = { { "alpha", "beta", null },
 				{ "mean", "gamma", "cut" }, { "mean", "gamma", "cut" },
@@ -402,14 +425,14 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 				{ "tau", null, null }, { "p", null, null },
 				{ "mean", "stdDev", null }, { "freedom", null, null },
 				{ "min", "max", null }, { "freedom", null, null },
-				{ "scale", "offset", null }, { "c", null, null } };
+				{ "scale", "offset", null }, { "c", null, null }, {} };
 
 		protected final String defaultValues[][] = { { "1", "1", null },
 				{ "1", "1", "1" }, { "1", "1", "1" }, { "1", null, null },
 				{ "1", "1", null }, { "1", "1", null }, { "1", null, null },
 				{ "1", null, null }, { "1", null, null }, { "1", "1", null },
 				{ "1", null, null }, { "1", "1", null }, { "1", null, null },
-				{ "1", "0", null }, { "1", null, null } };
+				{ "1", "0", null }, { "1", null, null }, {} };
 
 		public String[] getItems() {
 			return items;
