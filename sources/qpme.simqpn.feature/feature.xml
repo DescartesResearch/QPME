@@ -123,8 +123,12 @@ This Agreement is governed by the laws of the State of New York and the intellec
 
    <requires>
       <import plugin="org.dom4j" version="1.6.1" match="greaterOrEqual"/>
-      <import plugin="cern.colt" version="1.2.0" match="greaterOrEqual"/>
       <import plugin="org.apache.log4j" version="1.2.15" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.equinox.app"/>
+      <import plugin="org.eclipse.core.runtime" version="3.7.0" match="greaterOrEqual"/>
+      <import plugin="cern.colt" version="1.2.0" match="greaterOrEqual"/>
+      <import plugin="edu.bonn.cs.net.jbarrier" version="1.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.equinox.concurrent" version="1.1.0" match="greaterOrEqual"/>
    </requires>
 
    <plugin
@@ -162,8 +166,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
          id="org.jaxen"
          download-size="0"
          install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="edu.oswego.cs.dl.util.concurrent"
