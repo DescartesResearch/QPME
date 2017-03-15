@@ -40,31 +40,34 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import cern.jet.random.AbstractContinousDistribution;
+import cern.jet.random.EmpiricalWalker;
+import cern.jet.random.engine.RandomEngine;
 
+/**
+ * An empirical distribution that maps discrete probabilites to entities.
+ * 
+ * @author Johannes
+ *
+ */
+public class DiscreteEmpirical extends EmpiricalWalker {
 
-public class Replay extends AbstractContinousDistribution {
+	private static final long serialVersionUID = -2393973131060840418L;
 
-	private static final long serialVersionUID = 1L;
-	private double[] replayValues;
-	private int nextValue;
-	private String colorRefId;
-	
-	public Replay(double[] replayValues, String colorRefId) {
-		this.nextValue = 0;
-		this.replayValues = replayValues;
-		this.colorRefId = colorRefId;
+	private double[] values;
+
+	public DiscreteEmpirical(double[] values, double[] pdf, int interpolationType, RandomEngine randomEngine) {
+		super(pdf, interpolationType, randomEngine);
+		this.values = values;
+	}
+
+	@Override
+	public double cdf(int arg0) {
+		throw new UnsupportedOperationException("CDF not available for " + this.getClass().getCanonicalName());
 	}
 
 	@Override
 	public double nextDouble() {
-		if (nextValue == replayValues.length)
-			throw new IllegalStateException("There are only " + replayValues.length
-					+ " values in the replayfile for the colorRef " + colorRefId
-							+ ", but more were requested");
-		double next = replayValues[nextValue];
-		nextValue++;
-		return next;
+		return values[super.nextInt()];
 	}
 
 }

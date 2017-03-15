@@ -186,7 +186,15 @@ public enum DistributionFunction implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	REPLAY(16, "REPLAY", "Replay");
+	REPLAY(16, "REPLAY", "Replay"), /**
+	 * The '<em><b>DISCRETE EMPIRICAL</b></em>' literal object.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #DISCRETE_EMPIRICAL_VALUE
+	 * @generated
+	 * @ordered
+	 */
+	DISCRETE_EMPIRICAL(17, "DISCRETE_EMPIRICAL", "DISCRETE_EMPIRICAL");
 
 	/**
 	 * The '<em><b>BETA</b></em>' literal value.
@@ -444,6 +452,21 @@ public enum DistributionFunction implements Enumerator {
 	public static final int REPLAY_VALUE = 16;
 
 	/**
+	 * The '<em><b>DISCRETE EMPIRICAL</b></em>' literal value.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of '<em><b>DISCRETE EMPIRICAL</b></em>' literal object isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @see #DISCRETE_EMPIRICAL
+	 * @model
+	 * @generated
+	 * @ordered
+	 */
+	public static final int DISCRETE_EMPIRICAL_VALUE = 17;
+
+	/**
 	 * An array of all the '<em><b>Distribution Function</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -468,6 +491,7 @@ public enum DistributionFunction implements Enumerator {
 			DETERMINISTIC,
 			SCALED_EMPIRICAL,
 			REPLAY,
+			DISCRETE_EMPIRICAL,
 		};
 
 	/**
@@ -541,6 +565,7 @@ public enum DistributionFunction implements Enumerator {
 			case DETERMINISTIC_VALUE: return DETERMINISTIC;
 			case SCALED_EMPIRICAL_VALUE: return SCALED_EMPIRICAL;
 			case REPLAY_VALUE: return REPLAY;
+			case DISCRETE_EMPIRICAL_VALUE: return DISCRETE_EMPIRICAL;
 		}
 		return null;
 	}

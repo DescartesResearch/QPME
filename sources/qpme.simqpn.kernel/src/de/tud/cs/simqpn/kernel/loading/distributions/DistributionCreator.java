@@ -51,7 +51,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.dom4j.Element;
 
-import cern.jet.random.AbstractContinousDistribution;
+import cern.jet.random.AbstractDistribution;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 
 public abstract class DistributionCreator {
@@ -76,7 +76,7 @@ public abstract class DistributionCreator {
 	
 	protected abstract void loadParams() throws SimQPNException;
 	
-	public abstract AbstractContinousDistribution getDistribution() throws SimQPNException;
+	public abstract AbstractDistribution getDistribution() throws SimQPNException;
 
 	public abstract double getMean();
 	

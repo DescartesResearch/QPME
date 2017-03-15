@@ -53,7 +53,7 @@ import org.apache.log4j.Logger;
 import org.dom4j.Element;
 import org.dom4j.XPath;
 
-import cern.jet.random.AbstractContinousDistribution;
+import cern.jet.random.AbstractDistribution;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
@@ -200,7 +200,7 @@ public class QueueLoader {
 				}
 
 				if (!(qPl.queue.queueDiscip == QueueingDiscipline.PS && ((PSQueue) qPl.queue).expPS)) {
-					qPl.randServTimeGen = new AbstractContinousDistribution[qPl.numColors];
+					qPl.randServTimeGen = new AbstractDistribution[qPl.numColors];
 				}
 
 				XPath xpathSelector = XMLHelper

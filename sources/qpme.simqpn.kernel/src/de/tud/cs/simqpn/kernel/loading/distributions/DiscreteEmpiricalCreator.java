@@ -26,8 +26,8 @@
  *                                
  * =============================================
  *
- * Original Author(s):  Fabian Brosig
- * Contributor(s):      
+ * Original Author(s):  Jürgen Walter
+ * Contributor(s):   
  * 
  * NOTE: The above list of contributors lists only the people that have
  * contributed to this source file - for a list of ALL contributors to 
@@ -36,35 +36,57 @@
  *  History:
  *  Date        ID                Description
  *  ----------  ----------------  ------------------------------------------------------------------  
- *  2013	    Fabian Brosig     Created.
+ *  2014/03/10  Jürgen Walter     Extracted from NetLoader
+ * 
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import cern.jet.random.AbstractContinousDistribution;
+import java.util.InputMismatchException;
 
+import cern.jet.random.AbstractDistribution;
+import cern.jet.random.Empirical;
+import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
+import de.tud.cs.simqpn.kernel.SimQPNException;
 
-public class Replay extends AbstractContinousDistribution {
+public class DiscreteEmpiricalCreator extends DistributionCreator {
 
-	private static final long serialVersionUID = 1L;
-	private double[] replayValues;
-	private int nextValue;
-	private String colorRefId;
-	
-	public Replay(double[] replayValues, String colorRefId) {
-		this.nextValue = 0;
-		this.replayValues = replayValues;
-		this.colorRefId = colorRefId;
+	double pdf[] = null;
+	String pdffilename = null;
+	double values[] = null;
+	String valuesfilename = null;
+
+	@Override
+	protected void loadParams() throws SimQPNException {
+		pdf = this.loadDoublesFromFile("pdf_filename");
+		pdffilename = this.loadStringParam("pdf_filename");
+		values = this.loadDoublesFromFile("values_filename");
+		valuesfilename = this.loadStringParam("values_filename");
+		if (pdf.length != values.length) {
+			throw new InputMismatchException("The length of the distribution and its corresponding values must match.");
+		}
 	}
 
 	@Override
-	public double nextDouble() {
-		if (nextValue == replayValues.length)
-			throw new IllegalStateException("There are only " + replayValues.length
-					+ " values in the replayfile for the colorRef " + colorRefId
-							+ ", but more were requested");
-		double next = replayValues[nextValue];
-		nextValue++;
-		return next;
+	public AbstractDistribution getDistribution() throws SimQPNException {
+		return new DiscreteEmpirical(values, pdf, Empirical.NO_INTERPOLATION, RandomNumberGenerator.nextRandNumGen());
 	}
 
+	@Override
+	public double getMean() {
+		double mean = 0;
+		for (int i = 0; i < values.length; i++) {
+			mean += pdf[i] * values[i];
+		}
+		return mean;
+	}
+
+	@Override
+	public String getConstructionText() {
+		return "(" + pdffilename + "/" + valuesfilename + ")";
+	}
+
+	@Override
+	public String getMeanComputationText() {
+		return "Computed Mean.";
+	}
 }

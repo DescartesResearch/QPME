@@ -69,7 +69,7 @@ import org.dom4j.Element;
 
 import cern.colt.list.AbstractDoubleList;
 import cern.colt.list.DoubleArrayList;
-import cern.jet.random.AbstractContinousDistribution;
+import cern.jet.random.AbstractDistribution;
 import cern.jet.random.Exponential;
 import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
@@ -131,7 +131,7 @@ public class QPlace extends Place {
 	public ArrayList<Token>[] queueTokens;
 
 	/** Random number generators for generating service times. */
-	public AbstractContinousDistribution[] randServTimeGen;
+	public AbstractDistribution[] randServTimeGen;
 
 	public QPlaceQueueStats qPlaceQueueStats;
 
@@ -183,9 +183,9 @@ public class QPlace extends Place {
 		this.queueTokenPop = ((QPlace) original).queueTokenPop.clone();
 
 		if (!(queues[((QPlace) original).queue.id].queueDiscip == QueueingDiscipline.PS && ((PSQueue) queues[((QPlace) original).queue.id]).expPS)) {
-			this.randServTimeGen = new AbstractContinousDistribution[this.numColors];
+			this.randServTimeGen = new AbstractDistribution[this.numColors];
 			for (int c = 0; c < numColors; c++) {
-				AbstractContinousDistribution distribution = ((QPlace) original).randServTimeGen[c];
+				AbstractDistribution distribution = ((QPlace) original).randServTimeGen[c];
 				if (((QPlace) original).randServTimeGen[c].getClass().equals(
 						Exponential.class)) {
 					String lambdaString = distribution.toString().split("\\(")[1]
