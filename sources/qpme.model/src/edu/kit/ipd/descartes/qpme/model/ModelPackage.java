@@ -1961,13 +1961,31 @@ public interface ModelPackage extends EPackage {
 	int QUEUEING_COLOR_REFERENCE__REPLAY_FILE = PLACE_COLOR_REFERENCE_FEATURE_COUNT + 19;
 
 	/**
+	 * The feature id for the '<em><b>Values File</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int QUEUEING_COLOR_REFERENCE__VALUES_FILE = PLACE_COLOR_REFERENCE_FEATURE_COUNT + 20;
+
+	/**
+	 * The feature id for the '<em><b>Probabilities File</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int QUEUEING_COLOR_REFERENCE__PROBABILITIES_FILE = PLACE_COLOR_REFERENCE_FEATURE_COUNT + 21;
+
+	/**
 	 * The number of structural features of the '<em>Queueing Color Reference</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int QUEUEING_COLOR_REFERENCE_FEATURE_COUNT = PLACE_COLOR_REFERENCE_FEATURE_COUNT + 20;
+	int QUEUEING_COLOR_REFERENCE_FEATURE_COUNT = PLACE_COLOR_REFERENCE_FEATURE_COUNT + 22;
 
 	/**
 	 * The meta object id for the '{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingPetriNetImpl <em>Queueing Petri Net</em>}' class.
@@ -4653,6 +4671,28 @@ public interface ModelPackage extends EPackage {
 	EAttribute getQueueingColorReference_ReplayFile();
 
 	/**
+	 * Returns the meta object for the attribute '{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getValuesFile <em>Values File</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Values File</em>'.
+	 * @see edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getValuesFile()
+	 * @see #getQueueingColorReference()
+	 * @generated
+	 */
+	EAttribute getQueueingColorReference_ValuesFile();
+
+	/**
+	 * Returns the meta object for the attribute '{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getProbabilitiesFile <em>Probabilities File</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Probabilities File</em>'.
+	 * @see edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getProbabilitiesFile()
+	 * @see #getQueueingColorReference()
+	 * @generated
+	 */
+	EAttribute getQueueingColorReference_ProbabilitiesFile();
+
+	/**
 	 * Returns the meta object for class '{@link edu.kit.ipd.descartes.qpme.model.QueueingPetriNet <em>Queueing Petri Net</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -6620,6 +6660,22 @@ public interface ModelPackage extends EPackage {
 		 * @generated
 		 */
 		EAttribute QUEUEING_COLOR_REFERENCE__REPLAY_FILE = eINSTANCE.getQueueingColorReference_ReplayFile();
+
+		/**
+		 * The meta object literal for the '<em><b>Values File</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute QUEUEING_COLOR_REFERENCE__VALUES_FILE = eINSTANCE.getQueueingColorReference_ValuesFile();
+
+		/**
+		 * The meta object literal for the '<em><b>Probabilities File</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute QUEUEING_COLOR_REFERENCE__PROBABILITIES_FILE = eINSTANCE.getQueueingColorReference_ProbabilitiesFile();
 
 		/**
 		 * The meta object literal for the '{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingPetriNetImpl <em>Queueing Petri Net</em>}' class.

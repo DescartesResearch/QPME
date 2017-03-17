@@ -1610,6 +1610,24 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EAttribute getQueueingColorReference_ValuesFile() {
+		return (EAttribute)queueingColorReferenceEClass.getEStructuralFeatures().get(20);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getQueueingColorReference_ProbabilitiesFile() {
+		return (EAttribute)queueingColorReferenceEClass.getEStructuralFeatures().get(21);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public EClass getQueueingPetriNet() {
 		return queueingPetriNetEClass;
 	}
@@ -2620,6 +2638,8 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__OFFSET);
 		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__SCALE);
 		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__REPLAY_FILE);
+		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__VALUES_FILE);
+		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__PROBABILITIES_FILE);
 
 		queueingPetriNetEClass = createEClass(QUEUEING_PETRI_NET);
 		createEReference(queueingPetriNetEClass, QUEUEING_PETRI_NET__COLORS);
@@ -2952,6 +2972,8 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 		initEAttribute(getQueueingColorReference_Offset(), theXMLTypePackage.getDouble(), "offset", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getQueueingColorReference_Scale(), theXMLTypePackage.getDouble(), "scale", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getQueueingColorReference_ReplayFile(), theXMLTypePackage.getString(), "replayFile", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getQueueingColorReference_ValuesFile(), theXMLTypePackage.getString(), "valuesFile", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getQueueingColorReference_ProbabilitiesFile(), theXMLTypePackage.getString(), "probabilitiesFile", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(queueingPetriNetEClass, QueueingPetriNet.class, "QueueingPetriNet", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEReference(getQueueingPetriNet_Colors(), this.getColorsContainer(), null, "colors", null, 0, 1, QueueingPetriNet.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);

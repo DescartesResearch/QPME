@@ -36,6 +36,8 @@ package edu.kit.ipd.descartes.qpme.model;
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getOffset <em>Offset</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getScale <em>Scale</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getReplayFile <em>Replay File</em>}</li>
+ *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getValuesFile <em>Values File</em>}</li>
+ *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getProbabilitiesFile <em>Probabilities File</em>}</li>
  * </ul>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getQueueingColorReference()
@@ -1071,5 +1073,57 @@ public interface QueueingColorReference extends PlaceColorReference {
 	 * @generated
 	 */
 	void setReplayFile(String value);
+
+	/**
+	 * Returns the value of the '<em><b>Values File</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Values File</em>' attribute isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Values File</em>' attribute.
+	 * @see #setValuesFile(String)
+	 * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getQueueingColorReference_ValuesFile()
+	 * @model dataType="org.eclipse.emf.ecore.xml.type.String"
+	 * @generated
+	 */
+	String getValuesFile();
+
+	/**
+	 * Sets the value of the '{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getValuesFile <em>Values File</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Values File</em>' attribute.
+	 * @see #getValuesFile()
+	 * @generated
+	 */
+	void setValuesFile(String value);
+
+	/**
+	 * Returns the value of the '<em><b>Probabilities File</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Probabilities File</em>' attribute isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Probabilities File</em>' attribute.
+	 * @see #setProbabilitiesFile(String)
+	 * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getQueueingColorReference_ProbabilitiesFile()
+	 * @model dataType="org.eclipse.emf.ecore.xml.type.String"
+	 * @generated
+	 */
+	String getProbabilitiesFile();
+
+	/**
+	 * Sets the value of the '{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getProbabilitiesFile <em>Probabilities File</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Probabilities File</em>' attribute.
+	 * @see #getProbabilitiesFile()
+	 * @generated
+	 */
+	void setProbabilitiesFile(String value);
 
 } // QueueingColorReference

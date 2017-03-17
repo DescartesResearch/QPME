@@ -42,6 +42,8 @@ import edu.kit.ipd.descartes.qpme.model.QueueingColorReference;
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getOffset <em>Offset</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getScale <em>Scale</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getReplayFile <em>Replay File</em>}</li>
+ *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getValuesFile <em>Values File</em>}</li>
+ *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getProbabilitiesFile <em>Probabilities File</em>}</li>
  * </ul>
  *
  * @generated
@@ -608,6 +610,46 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 	 * @ordered
 	 */
 	protected String replayFile = REPLAY_FILE_EDEFAULT;
+
+	/**
+	 * The default value of the '{@link #getValuesFile() <em>Values File</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getValuesFile()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final String VALUES_FILE_EDEFAULT = null;
+
+	/**
+	 * The cached value of the '{@link #getValuesFile() <em>Values File</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getValuesFile()
+	 * @generated
+	 * @ordered
+	 */
+	protected String valuesFile = VALUES_FILE_EDEFAULT;
+
+	/**
+	 * The default value of the '{@link #getProbabilitiesFile() <em>Probabilities File</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getProbabilitiesFile()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final String PROBABILITIES_FILE_EDEFAULT = null;
+
+	/**
+	 * The cached value of the '{@link #getProbabilitiesFile() <em>Probabilities File</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getProbabilitiesFile()
+	 * @generated
+	 * @ordered
+	 */
+	protected String probabilitiesFile = PROBABILITIES_FILE_EDEFAULT;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -1503,6 +1545,48 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public String getValuesFile() {
+		return valuesFile;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setValuesFile(String newValuesFile) {
+		String oldValuesFile = valuesFile;
+		valuesFile = newValuesFile;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET, ModelPackage.QUEUEING_COLOR_REFERENCE__VALUES_FILE, oldValuesFile, valuesFile));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public String getProbabilitiesFile() {
+		return probabilitiesFile;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setProbabilitiesFile(String newProbabilitiesFile) {
+		String oldProbabilitiesFile = probabilitiesFile;
+		probabilitiesFile = newProbabilitiesFile;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET, ModelPackage.QUEUEING_COLOR_REFERENCE__PROBABILITIES_FILE, oldProbabilitiesFile, probabilitiesFile));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	@Override
 	public Object eGet(int featureID, boolean resolve, boolean coreType) {
 		switch (featureID) {
@@ -1546,6 +1630,10 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 				return getScale();
 			case ModelPackage.QUEUEING_COLOR_REFERENCE__REPLAY_FILE:
 				return getReplayFile();
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__VALUES_FILE:
+				return getValuesFile();
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__PROBABILITIES_FILE:
+				return getProbabilitiesFile();
 		}
 		return super.eGet(featureID, resolve, coreType);
 	}
@@ -1617,6 +1705,12 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 				return;
 			case ModelPackage.QUEUEING_COLOR_REFERENCE__REPLAY_FILE:
 				setReplayFile((String)newValue);
+				return;
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__VALUES_FILE:
+				setValuesFile((String)newValue);
+				return;
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__PROBABILITIES_FILE:
+				setProbabilitiesFile((String)newValue);
 				return;
 		}
 		super.eSet(featureID, newValue);
@@ -1690,6 +1784,12 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 			case ModelPackage.QUEUEING_COLOR_REFERENCE__REPLAY_FILE:
 				setReplayFile(REPLAY_FILE_EDEFAULT);
 				return;
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__VALUES_FILE:
+				setValuesFile(VALUES_FILE_EDEFAULT);
+				return;
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__PROBABILITIES_FILE:
+				setProbabilitiesFile(PROBABILITIES_FILE_EDEFAULT);
+				return;
 		}
 		super.eUnset(featureID);
 	}
@@ -1742,6 +1842,10 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 				return isSetScale();
 			case ModelPackage.QUEUEING_COLOR_REFERENCE__REPLAY_FILE:
 				return REPLAY_FILE_EDEFAULT == null ? replayFile != null : !REPLAY_FILE_EDEFAULT.equals(replayFile);
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__VALUES_FILE:
+				return VALUES_FILE_EDEFAULT == null ? valuesFile != null : !VALUES_FILE_EDEFAULT.equals(valuesFile);
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__PROBABILITIES_FILE:
+				return PROBABILITIES_FILE_EDEFAULT == null ? probabilitiesFile != null : !PROBABILITIES_FILE_EDEFAULT.equals(probabilitiesFile);
 		}
 		return super.eIsSet(featureID);
 	}
@@ -1796,6 +1900,10 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 		if (scaleESet) result.append(scale); else result.append("<unset>");
 		result.append(", replayFile: ");
 		result.append(replayFile);
+		result.append(", valuesFile: ");
+		result.append(valuesFile);
+		result.append(", probabilitiesFile: ");
+		result.append(probabilitiesFile);
 		result.append(')');
 		return result.toString();
 	}
