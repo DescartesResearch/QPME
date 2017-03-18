@@ -194,7 +194,7 @@ public enum DistributionFunction implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	DISCRETE_EMPIRICAL(17, "DISCRETE_EMPIRICAL", "DISCRETE_EMPIRICAL");
+	DISCRETE_EMPIRICAL(17, "DISCRETE_EMPIRICAL", "DiscreteEmpirical");
 
 	/**
 	 * The '<em><b>BETA</b></em>' literal value.
@@ -460,7 +460,7 @@ public enum DistributionFunction implements Enumerator {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @see #DISCRETE_EMPIRICAL
-	 * @model
+	 * @model literal="DiscreteEmpirical"
 	 * @generated
 	 * @ordered
 	 */

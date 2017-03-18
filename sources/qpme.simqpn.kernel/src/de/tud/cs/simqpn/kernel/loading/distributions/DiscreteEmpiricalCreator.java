@@ -57,10 +57,10 @@ public class DiscreteEmpiricalCreator extends DistributionCreator {
 
 	@Override
 	protected void loadParams() throws SimQPNException {
-		pdf = this.loadDoublesFromFile("pdf_filename");
-		pdffilename = this.loadStringParam("pdf_filename");
-		values = this.loadDoublesFromFile("values_filename");
-		valuesfilename = this.loadStringParam("values_filename");
+		pdf = this.loadDoublesFromFile("probabilitiesFile");
+		pdffilename = this.loadStringParam("probabilitiesFile");
+		values = this.loadDoublesFromFile("valuesFile");
+		valuesfilename = this.loadStringParam("valuesFile");
 		if (pdf.length != values.length) {
 			throw new InputMismatchException("The length of the distribution and its corresponding values must match.");
 		}
