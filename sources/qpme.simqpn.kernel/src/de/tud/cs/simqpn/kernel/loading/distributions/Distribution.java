@@ -88,7 +88,10 @@ public enum Distribution {
 
 	VON_MISES("VonMises", new VonMisesCreator(), new String[] { "freedom" }, new String[] { "1" }, false),
 
-	DISCRETE_EMPIRICAL("DiscreteEmpirical", new DiscreteEmpiricalCreator(), new String[] {}, new String[] {}, true);
+	DISCRETE_EMPIRICAL("DiscreteEmpirical", new DiscreteEmpiricalCreator(), new String[] {}, new String[] {}, true),
+
+	CONTINUOUS_EMPIRICAL("ContinuousEmpirical", new ContinuousEmpiricalCreator(), new String[] {}, new String[] {},
+			true);
 
 	public static final Distribution DEFAULT_DISTRIBUTION = EXPONENTIAL;
 

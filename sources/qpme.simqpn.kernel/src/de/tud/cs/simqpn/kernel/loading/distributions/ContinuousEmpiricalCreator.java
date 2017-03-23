@@ -44,11 +44,10 @@ package de.tud.cs.simqpn.kernel.loading.distributions;
 import java.util.InputMismatchException;
 
 import cern.jet.random.AbstractDistribution;
-import cern.jet.random.Empirical;
 import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 
-public class DiscreteEmpiricalCreator extends DistributionCreator {
+public class ContinuousEmpiricalCreator extends DistributionCreator {
 
 	double pdf[] = null;
 	String pdffilename = null;
@@ -68,14 +67,18 @@ public class DiscreteEmpiricalCreator extends DistributionCreator {
 
 	@Override
 	public AbstractDistribution getDistribution() throws SimQPNException {
-		return new DiscreteEmpirical(values, pdf, Empirical.NO_INTERPOLATION, RandomNumberGenerator.nextRandNumGen());
+		return new ContinuousEmpirical(values, pdf, RandomNumberGenerator.nextRandNumGen());
 	}
 
 	@Override
 	public double getMean() {
 		double mean = 0;
-		for (int i = 0; i < values.length; i++) {
-			mean += pdf[i] * values[i];
+		for (int i = 0; i < pdf.length; i++) {
+			double upperBound = values[i];
+			double lowerBound = (i > 0) ? values[i - 1] : 0;
+			double range = upperBound - lowerBound;
+			double meanvalue = lowerBound + range / 2;
+			mean += pdf[i] * meanvalue;
 		}
 		return mean;
 	}

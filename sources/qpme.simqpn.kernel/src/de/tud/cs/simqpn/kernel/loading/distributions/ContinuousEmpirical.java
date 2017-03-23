@@ -26,8 +26,8 @@
  *                                
  * =============================================
  *
- * Original Author(s):  Jürgen Walter
- * Contributor(s):   
+ * Original Author(s):  Fabian Brosig
+ * Contributor(s):      
  * 
  * NOTE: The above list of contributors lists only the people that have
  * contributed to this source file - for a list of ALL contributors to 
@@ -36,57 +36,68 @@
  *  History:
  *  Date        ID                Description
  *  ----------  ----------------  ------------------------------------------------------------------  
- *  2014/03/10  Jürgen Walter     Extracted from NetLoader
- * 
+ *  2013	    Fabian Brosig     Created.
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
+import java.util.Arrays;
 import java.util.InputMismatchException;
+import java.util.stream.DoubleStream;
 
-import cern.jet.random.AbstractDistribution;
-import cern.jet.random.Empirical;
-import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
-import de.tud.cs.simqpn.kernel.SimQPNException;
+import cern.jet.random.Uniform;
+import cern.jet.random.engine.RandomEngine;
 
-public class DiscreteEmpiricalCreator extends DistributionCreator {
+/**
+ * An empirical distribution that maps discrete probabilites to entities.
+ * 
+ * @author Johannes
+ *
+ */
+public class ContinuousEmpirical extends Uniform {
 
-	double pdf[] = null;
-	String pdffilename = null;
-	double values[] = null;
-	String valuesfilename = null;
+	private static final long serialVersionUID = -2393973131060840418L;
 
-	@Override
-	protected void loadParams() throws SimQPNException {
-		pdf = this.loadDoublesFromFile("probabilitiesFile");
-		pdffilename = this.loadStringParam("probabilitiesFile");
-		values = this.loadDoublesFromFile("valuesFile");
-		valuesfilename = this.loadStringParam("valuesFile");
-		if (pdf.length != values.length) {
-			throw new InputMismatchException("The length of the distribution and its corresponding values must match.");
+	private double[] values;
+
+	private double[] cdf;
+
+	public ContinuousEmpirical(double[] values, double[] pdf, RandomEngine randomEngine) {
+		super(randomEngine);
+		this.values = values;
+		if (DoubleStream.of(pdf).sum() != 1) {
+			throw new InputMismatchException("The cumulated probabilities must be exactly 1.");
 		}
-	}
-
-	@Override
-	public AbstractDistribution getDistribution() throws SimQPNException {
-		return new DiscreteEmpirical(values, pdf, Empirical.NO_INTERPOLATION, RandomNumberGenerator.nextRandNumGen());
-	}
-
-	@Override
-	public double getMean() {
-		double mean = 0;
-		for (int i = 0; i < values.length; i++) {
-			mean += pdf[i] * values[i];
+		// convert pdf to cdf
+		cdf = new double[pdf.length];
+		double sum = 0;
+		for (int i = 0; i < cdf.length; i++) {
+			sum += pdf[i];
+			cdf[i] = sum;
 		}
-		return mean;
+
 	}
 
 	@Override
-	public String getConstructionText() {
-		return "(" + pdffilename + "/" + valuesfilename + ")";
+	public double nextDouble() {
+		// TODO this search is linear in time, which might cause some
+		// performance issues. If any problems occur, one could use a binary
+		// search.
+
+		// first random number gets us the bin we are in
+		double d = super.nextDouble();
+		Arrays.binarySearch(cdf, d);
+		int i = 0;
+		while (d > cdf[i]) {
+			i++;
+		}
+
+		// now, we have to get the random number of our bin
+		d = super.nextDouble();
+		double upperBound = values[i];
+		double lowerBound = (i > 0) ? values[i - 1] : 0;
+		double offset = lowerBound;
+		double scale = upperBound - lowerBound;
+		return d * scale + offset;
 	}
 
-	@Override
-	public String getMeanComputationText() {
-		return "Computing Mean.";
-	}
 }
