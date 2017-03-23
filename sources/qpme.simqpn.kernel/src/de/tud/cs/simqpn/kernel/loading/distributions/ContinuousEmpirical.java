@@ -40,9 +40,7 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import java.util.Arrays;
 import java.util.InputMismatchException;
-import java.util.stream.DoubleStream;
 
 import cern.jet.random.Uniform;
 import cern.jet.random.engine.RandomEngine;
@@ -64,12 +62,15 @@ public class ContinuousEmpirical extends Uniform {
 	public ContinuousEmpirical(double[] values, double[] pdf, RandomEngine randomEngine) {
 		super(randomEngine);
 		this.values = values;
-		if (DoubleStream.of(pdf).sum() != 1) {
+		double sum = 0;
+		for (double d : pdf)
+			sum += d;
+		if (sum != 1) {
 			throw new InputMismatchException("The cumulated probabilities must be exactly 1.");
 		}
 		// convert pdf to cdf
 		cdf = new double[pdf.length];
-		double sum = 0;
+		sum = 0;
 		for (int i = 0; i < cdf.length; i++) {
 			sum += pdf[i];
 			cdf[i] = sum;
@@ -85,7 +86,6 @@ public class ContinuousEmpirical extends Uniform {
 
 		// first random number gets us the bin we are in
 		double d = super.nextDouble();
-		Arrays.binarySearch(cdf, d);
 		int i = 0;
 		while (d > cdf[i]) {
 			i++;
