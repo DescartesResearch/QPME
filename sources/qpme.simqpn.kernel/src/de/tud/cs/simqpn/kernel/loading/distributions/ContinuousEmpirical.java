@@ -65,8 +65,10 @@ public class ContinuousEmpirical extends Uniform {
 		double sum = 0;
 		for (double d : pdf)
 			sum += d;
-		if (sum != 1) {
-			throw new InputMismatchException("The cumulated probabilities must be exactly 1.");
+		if (almostEqual(sum, 1, 0.00001)) {
+			throw new InputMismatchException(
+					"The cumulated probabilities must be exactly 1. The cumulated probabilty was " + sum
+							+ " in this case.");
 		}
 		// convert pdf to cdf
 		cdf = new double[pdf.length];
@@ -76,6 +78,22 @@ public class ContinuousEmpirical extends Uniform {
 			cdf[i] = sum;
 		}
 
+	}
+
+	/**
+	 * Compare two doubles with a given tolerance.
+	 * 
+	 * @param a
+	 *            the first double
+	 * @param b
+	 *            the double to compare with
+	 * @param eps
+	 *            the accepted tolerance
+	 * @return True, if the two doubles do not differ more than eps, false
+	 *         otherwise.
+	 */
+	public static boolean almostEqual(double a, double b, double eps) {
+		return Math.abs(a - b) < eps;
 	}
 
 	@Override
