@@ -65,7 +65,7 @@ public class ContinuousEmpirical extends Uniform {
 		double sum = 0;
 		for (double d : pdf)
 			sum += d;
-		if (almostEqual(sum, 1, 0.00001)) {
+		if (!almostEqual(sum, 1, 0.00001)) {
 			throw new InputMismatchException(
 					"The cumulated probabilities must be exactly 1. The cumulated probabilty was " + sum
 							+ " in this case.");
