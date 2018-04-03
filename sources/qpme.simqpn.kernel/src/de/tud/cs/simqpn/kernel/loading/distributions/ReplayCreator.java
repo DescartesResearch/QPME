@@ -51,8 +51,8 @@ public class ReplayCreator extends DistributionCreator {
 	
 	@Override
 	protected void loadParams() throws SimQPNException {
-		replayValues = this.loadDoublesFromFile("replay_filename");
-		replayFilename = this.loadStringParam("replay_filename");
+		replayValues = this.loadDoublesFromFile("pdf_filename");
+		replayFilename = this.loadStringParam("pdf_filename");
 	}
 
 	@Override

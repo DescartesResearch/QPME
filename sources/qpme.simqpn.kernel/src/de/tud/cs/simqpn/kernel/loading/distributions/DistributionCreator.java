@@ -125,7 +125,8 @@ public abstract class DistributionCreator {
 		String doublesFilename = loadStringParam(paramName);
 		File doublesFile = new File(doublesFilename);
 		if (!doublesFile.exists()) {
-			throw new SimQPNException("PDF file (" + doublesFilename + ") for " + this.getClass().getName() + " does not exist!");													
+			throw new SimQPNException(
+					"ReplayFile file (" + doublesFilename + ") for " + this.getClass().getName() + " does not exist!");
 		}
 		
 		BufferedReader input = null;
