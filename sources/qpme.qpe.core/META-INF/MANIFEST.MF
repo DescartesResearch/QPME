@@ -17,8 +17,8 @@ Require-Bundle: org.eclipse.ui,
  org.dom4j;bundle-version="1.6.1",
  org.jfreechart.core;bundle-version="1.0.12",
  org.jfreechart.jcommon;bundle-version="1.0.15",
- org.jfreechart.swt;bundle-version="1.0.12",
- org.rosuda.JRI;bundle-version="0.5.0",
+ org.jfreechart.swt;
+ org.rosuda.JRI;
  org.jaxen;bundle-version="1.1.0"
 Bundle-ActivationPolicy: lazy
 Export-Package: de.tud.cs.qpe,

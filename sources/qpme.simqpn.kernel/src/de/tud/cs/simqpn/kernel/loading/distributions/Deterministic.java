@@ -40,7 +40,7 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import cern.jet.random.AbstractContinousDistribution;
+import cern.jet.random.AbstractDistribution;
 
 /**
  * A deterministic distribution that always returns the double passed to the
@@ -51,7 +51,7 @@ import cern.jet.random.AbstractContinousDistribution;
  * @author Philipp Meier
  * 
  */
-public class Deterministic extends AbstractContinousDistribution {
+public class Deterministic extends AbstractDistribution {
 
 	private double value;
 

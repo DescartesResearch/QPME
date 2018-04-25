@@ -40,6 +40,6 @@
  * 
  */
 /**
- * This package contains factory methods and extensions to cern.jet.random.AbstractContinousDistribution.
+ * This package contains factory methods and extensions to cern.jet.random.AbstractDistribution.
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;

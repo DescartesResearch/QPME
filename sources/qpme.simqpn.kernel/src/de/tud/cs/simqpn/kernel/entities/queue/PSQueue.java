@@ -43,7 +43,7 @@ package de.tud.cs.simqpn.kernel.entities.queue;
 
 import org.apache.log4j.Logger;
 
-import cern.jet.random.AbstractContinousDistribution;
+import cern.jet.random.AbstractDistribution;
 import cern.jet.random.Empirical;
 import cern.jet.random.EmpiricalWalker;
 import cern.jet.random.Exponential;
@@ -124,7 +124,7 @@ public class PSQueue extends Queue {
 	 * Requires expPS==true: Random number generators for generating service
 	 * times.
 	 */
-	private AbstractContinousDistribution[] expRandServTimeGen;
+	private AbstractDistribution[] expRandServTimeGen;
 
 	/**
 	 * Requires expPS==true: Random number generator for generating token

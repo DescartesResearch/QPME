@@ -41,9 +41,9 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import cern.jet.random.AbstractContinousDistribution;
+import cern.jet.random.AbstractDistribution;
 
-public class Periodical extends AbstractContinousDistribution {
+public class Periodical extends AbstractDistribution {
 
 	private static final long serialVersionUID = -6171122408442436886L;
 

@@ -70,6 +70,7 @@ import org.dom4j.Element;
 import cern.colt.list.AbstractDoubleList;
 import cern.colt.list.DoubleArrayList;
 import cern.jet.random.AbstractDistribution;
+import cern.jet.random.AbstractDistribution;
 import cern.jet.random.Exponential;
 import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
@@ -493,6 +494,7 @@ public class QPlace extends Place {
 	 */
 	private void calculateServiceTimeIfFutureListIsEmpty(int color) {
 		if (futureList.get(color).isEmpty()) {
+			int concurrency = queueTokenPop[color];
 			double serviceTime = randServTimeGen[color].nextDouble();
 			if (serviceTime < 0) {
 				serviceTime = 0;

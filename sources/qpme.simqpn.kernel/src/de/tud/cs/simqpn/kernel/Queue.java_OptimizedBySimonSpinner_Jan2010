@@ -52,7 +52,7 @@ package de.tud.cs.simqpn.kernel;
 
 import java.util.LinkedList;
 
-import cern.jet.random.AbstractContinousDistribution;
+import cern.jet.random.AbstractDistribution;
 import cern.jet.random.Empirical;
 import cern.jet.random.EmpiricalWalker;
 import cern.jet.random.Exponential;
@@ -103,7 +103,7 @@ public class Queue {
 	public int			tkMinResidPos;		// PS queues: expPS==false: Index in QPlace.queueTokArrivTS[tkSchedCol] and QPlace.queueTokResidServTimes[tkSchedCol] of the token with the minimum residual service time.	
 	public double		lastEventClock;		// PS queues: expPS==false: Time of the last event scheduling, i.e. time of the last event with effect on this queue.		
 	public int			lastEventTkCnt;		// PS queues: expPS==false: Token population at the time of the last event scheduling.
-	public AbstractContinousDistribution[]
+	public AbstractDistribution[]
 	             		expRandServTimeGen;	// PS queues: expPS==true: Random number generators for generating service times.
 	public EmpiricalWalker					
 						randColorGen;		// PS queues: expPS==true: Random number generator for generating token colors.

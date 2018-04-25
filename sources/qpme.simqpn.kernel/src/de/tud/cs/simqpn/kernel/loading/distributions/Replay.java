@@ -40,10 +40,10 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import cern.jet.random.AbstractContinousDistribution;
+import cern.jet.random.AbstractDistribution;
 
 
-public class Replay extends AbstractContinousDistribution {
+public class Replay extends AbstractDistribution {
 
 	private static final long serialVersionUID = 1L;
 	private double[] replayValues;
