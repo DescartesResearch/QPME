@@ -41,11 +41,7 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import cern.jet.random.AbstractDistribution;
-
-public class Periodical extends AbstractDistribution {
-
-	private static final long serialVersionUID = -6171122408442436886L;
+public class Periodical implements AbstractDistribution {
 
 	private final double[] data;
 	private int currentPos = 0;
@@ -62,7 +58,7 @@ public class Periodical extends AbstractDistribution {
 	}
 	
 	@Override
-	public double nextDouble() {
+	public double nextDouble(int concurrency) {
 		double result = data[currentPos];
 		currentPos = (currentPos + 1) % data.length;
 		return result;

@@ -41,7 +41,6 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import cern.jet.random.AbstractDistribution;
 import cern.jet.random.BreitWigner;
 import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNException;
@@ -62,7 +61,8 @@ public class BreitWignerCreator extends DistributionCreator {
 	@Override
 	public AbstractDistribution getDistribution()
 			throws SimQPNException {
-		return new BreitWigner(mean, gamma, cut, RandomNumberGenerator.nextRandNumGen());
+		return new AbstractDistributionWrapper(
+				new BreitWigner(mean, gamma, cut, RandomNumberGenerator.nextRandNumGen()));
 	}
 
 	@Override

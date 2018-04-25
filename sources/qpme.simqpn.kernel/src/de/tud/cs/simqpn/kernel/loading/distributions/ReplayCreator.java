@@ -41,7 +41,7 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import cern.jet.random.AbstractDistribution;
+import de.tud.cs.simqpn.kernel.loading.distributions.AbstractDistribution;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 
 public class ReplayCreator extends DistributionCreator {

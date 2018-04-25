@@ -69,8 +69,6 @@ import org.dom4j.Element;
 
 import cern.colt.list.AbstractDoubleList;
 import cern.colt.list.DoubleArrayList;
-import cern.jet.random.AbstractDistribution;
-import cern.jet.random.AbstractDistribution;
 import cern.jet.random.Exponential;
 import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNConfiguration;
@@ -81,6 +79,8 @@ import de.tud.cs.simqpn.kernel.entities.queue.QueueingDiscipline;
 import de.tud.cs.simqpn.kernel.entities.stats.QPlaceQueueStats;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.loading.XMLWelch;
+import de.tud.cs.simqpn.kernel.loading.distributions.AbstractDistribution;
+import de.tud.cs.simqpn.kernel.loading.distributions.AbstractDistributionWrapper;
 import de.tud.cs.simqpn.kernel.loading.distributions.Deterministic;
 
 /**
@@ -192,12 +192,12 @@ public class QPlace extends Place {
 					String lambdaString = distribution.toString().split("\\(")[1]
 							.split("\\)")[0];
 					double lambda = Double.parseDouble(lambdaString);
-					this.randServTimeGen[c] = new Exponential(lambda,
-							RandomNumberGenerator.nextRandNumGen());
+					this.randServTimeGen[c] = new AbstractDistributionWrapper(
+							new Exponential(lambda, RandomNumberGenerator.nextRandNumGen()));
 				} else if (((QPlace) original).randServTimeGen[c].getClass()
 						.equals(Deterministic.class)) {
 					double value = ((QPlace) original).randServTimeGen[c]
-							.nextDouble();
+							.nextDouble(-1);
 					this.randServTimeGen[c] = new Deterministic(value);
 				} else {
 					// TODO implement copy of other distributions
@@ -495,7 +495,7 @@ public class QPlace extends Place {
 	private void calculateServiceTimeIfFutureListIsEmpty(int color) {
 		if (futureList.get(color).isEmpty()) {
 			int concurrency = queueTokenPop[color];
-			double serviceTime = randServTimeGen[color].nextDouble();
+			double serviceTime = randServTimeGen[color].nextDouble(concurrency);
 			if (serviceTime < 0) {
 				serviceTime = 0;
 			}

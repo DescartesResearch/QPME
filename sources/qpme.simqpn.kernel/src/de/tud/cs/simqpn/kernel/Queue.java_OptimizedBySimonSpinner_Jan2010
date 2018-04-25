@@ -52,7 +52,7 @@ package de.tud.cs.simqpn.kernel;
 
 import java.util.LinkedList;
 
-import cern.jet.random.AbstractDistribution;
+import de.tud.cs.simqpn.kernel.loading.distributions.AbstractDistribution;
 import cern.jet.random.Empirical;
 import cern.jet.random.EmpiricalWalker;
 import cern.jet.random.Exponential;

@@ -41,7 +41,6 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import cern.jet.random.AbstractDistribution;
 import cern.jet.random.StudentT;
 import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNException;
@@ -59,7 +58,7 @@ public class StudentTCreator extends DistributionCreator {
 	@Override
 	public AbstractDistribution getDistribution()
 			throws SimQPNException {
-		return new StudentT(freedom, RandomNumberGenerator.nextRandNumGen());
+		return new AbstractDistributionWrapper(new StudentT(freedom, RandomNumberGenerator.nextRandNumGen()));
 	}
 
 	@Override

@@ -89,7 +89,7 @@ public class PRIOQueue extends Queue {
 		int n = 0;
 		while (n < count && numBusyServers < numServers) {
 			// Schedule service completion event
-			double servTime = queueingPlace.randServTimeGen[color].nextDouble();
+			double servTime = queueingPlace.randServTimeGen[color].nextDouble(-1);
 			if (servTime < 0)
 				servTime = 0;
 			Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[n]
@@ -134,7 +134,7 @@ public class PRIOQueue extends Queue {
 		if (!priorityQueue.isEmpty()) {
 			Token tk = priorityQueue.remove();
 			QPlace qPl = (QPlace) tk.place;
-			double servTime = qPl.randServTimeGen[tk.color].nextDouble();
+			double servTime = qPl.randServTimeGen[tk.color].nextDouble(-1);
 			if (servTime < 0) {
 				servTime = 0;
 				executor.scheduleEvent(servTime, this, tk);

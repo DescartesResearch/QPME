@@ -43,7 +43,6 @@ package de.tud.cs.simqpn.kernel.entities.queue;
 
 import org.apache.log4j.Logger;
 
-import cern.jet.random.AbstractDistribution;
 import cern.jet.random.Empirical;
 import cern.jet.random.EmpiricalWalker;
 import cern.jet.random.Exponential;
@@ -55,6 +54,8 @@ import de.tud.cs.simqpn.kernel.entities.QPlace;
 import de.tud.cs.simqpn.kernel.entities.Token;
 import de.tud.cs.simqpn.kernel.executor.Executor;
 import de.tud.cs.simqpn.kernel.executor.QueueEvent;
+import de.tud.cs.simqpn.kernel.loading.distributions.AbstractDistribution;
+import de.tud.cs.simqpn.kernel.loading.distributions.AbstractDistributionWrapper;
 
 /**
  * This class implements the Processor Sharing(PS) scheduling strategy.
@@ -203,9 +204,9 @@ public class PSQueue extends Queue {
 
 		// PS Queues
 		if (expPS) {
-			expRandServTimeGen = new Exponential[1];
-			expRandServTimeGen[0] = new Exponential(0,
-					RandomNumberGenerator.nextRandNumGen());
+			expRandServTimeGen = new AbstractDistribution[1];
+			expRandServTimeGen[0] = new AbstractDistributionWrapper(
+					new Exponential(0, RandomNumberGenerator.nextRandNumGen()));
 			double[] pdf = new double[totNumColors];
 			for (int c = 0; c < totNumColors; c++)
 				pdf[c] = 1;
@@ -256,7 +257,7 @@ public class PSQueue extends Queue {
 
 				((Exponential) expRandServTimeGen[0]).setState(totServRate);
 				randColorGen.setState2(pdf);
-				double servTime = expRandServTimeGen[0].nextDouble();
+				double servTime = expRandServTimeGen[0].nextDouble(-1);
 				if (servTime < 0)
 					servTime = 0;
 				int color = randColorGen.nextInt();

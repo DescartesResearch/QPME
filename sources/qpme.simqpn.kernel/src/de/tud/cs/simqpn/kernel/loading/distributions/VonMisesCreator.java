@@ -41,7 +41,6 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import cern.jet.random.AbstractDistribution;
 import cern.jet.random.VonMises;
 import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNException;
@@ -59,7 +58,7 @@ public class VonMisesCreator extends DistributionCreator {
 	@Override
 	public AbstractDistribution getDistribution()
 			throws SimQPNException {
-		return new VonMises(freedom, RandomNumberGenerator.nextRandNumGen());
+		return new AbstractDistributionWrapper(new VonMises(freedom, RandomNumberGenerator.nextRandNumGen()));
 	}
 
 	@Override

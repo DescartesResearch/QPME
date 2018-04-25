@@ -43,7 +43,6 @@ package de.tud.cs.simqpn.kernel.loading.distributions;
 
 import java.util.InputMismatchException;
 
-import cern.jet.random.AbstractDistribution;
 import cern.jet.random.Empirical;
 import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNException;
@@ -68,7 +67,8 @@ public class DiscreteEmpiricalCreator extends DistributionCreator {
 
 	@Override
 	public AbstractDistribution getDistribution() throws SimQPNException {
-		return new DiscreteEmpirical(values, pdf, Empirical.NO_INTERPOLATION, RandomNumberGenerator.nextRandNumGen());
+		return new AbstractDistributionWrapper(
+				new DiscreteEmpirical(values, pdf, Empirical.NO_INTERPOLATION, RandomNumberGenerator.nextRandNumGen()));
 	}
 
 	@Override

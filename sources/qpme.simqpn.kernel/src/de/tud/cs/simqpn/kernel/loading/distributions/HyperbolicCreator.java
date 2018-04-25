@@ -41,7 +41,6 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import cern.jet.random.AbstractDistribution;
 import cern.jet.random.Hyperbolic;
 import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNException;
@@ -61,7 +60,7 @@ public class HyperbolicCreator extends DistributionCreator {
 	@Override
 	public AbstractDistribution getDistribution()
 			throws SimQPNException {
-		return new Hyperbolic(alpha, beta, RandomNumberGenerator.nextRandNumGen());
+		return new AbstractDistributionWrapper(new Hyperbolic(alpha, beta, RandomNumberGenerator.nextRandNumGen()));
 	}
 
 	@Override
