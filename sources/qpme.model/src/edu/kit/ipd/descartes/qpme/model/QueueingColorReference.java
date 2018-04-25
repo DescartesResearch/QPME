@@ -38,6 +38,8 @@ package edu.kit.ipd.descartes.qpme.model;
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getReplayFile <em>Replay File</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getValuesFile <em>Values File</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getProbabilitiesFile <em>Probabilities File</em>}</li>
+ *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getConcurrenciesFile <em>Concurrencies File</em>}</li>
+ *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getResponsetimesFile <em>Responsetimes File</em>}</li>
  * </ul>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getQueueingColorReference()
@@ -1125,5 +1127,57 @@ public interface QueueingColorReference extends PlaceColorReference {
 	 * @generated
 	 */
 	void setProbabilitiesFile(String value);
+
+	/**
+	 * Returns the value of the '<em><b>Concurrencies File</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Concurrencies File</em>' attribute isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Concurrencies File</em>' attribute.
+	 * @see #setConcurrenciesFile(String)
+	 * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getQueueingColorReference_ConcurrenciesFile()
+	 * @model
+	 * @generated
+	 */
+	String getConcurrenciesFile();
+
+	/**
+	 * Sets the value of the '{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getConcurrenciesFile <em>Concurrencies File</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Concurrencies File</em>' attribute.
+	 * @see #getConcurrenciesFile()
+	 * @generated
+	 */
+	void setConcurrenciesFile(String value);
+
+	/**
+	 * Returns the value of the '<em><b>Responsetimes File</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Responsetimes File</em>' attribute isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Responsetimes File</em>' attribute.
+	 * @see #setResponsetimesFile(String)
+	 * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getQueueingColorReference_ResponsetimesFile()
+	 * @model
+	 * @generated
+	 */
+	String getResponsetimesFile();
+
+	/**
+	 * Sets the value of the '{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getResponsetimesFile <em>Responsetimes File</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Responsetimes File</em>' attribute.
+	 * @see #getResponsetimesFile()
+	 * @generated
+	 */
+	void setResponsetimesFile(String value);
 
 } // QueueingColorReference

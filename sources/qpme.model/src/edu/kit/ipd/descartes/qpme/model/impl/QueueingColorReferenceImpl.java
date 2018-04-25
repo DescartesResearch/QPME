@@ -44,6 +44,8 @@ import edu.kit.ipd.descartes.qpme.model.QueueingColorReference;
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getReplayFile <em>Replay File</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getValuesFile <em>Values File</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getProbabilitiesFile <em>Probabilities File</em>}</li>
+ *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getConcurrenciesFile <em>Concurrencies File</em>}</li>
+ *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getResponsetimesFile <em>Responsetimes File</em>}</li>
  * </ul>
  *
  * @generated
@@ -650,6 +652,46 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 	 * @ordered
 	 */
 	protected String probabilitiesFile = PROBABILITIES_FILE_EDEFAULT;
+
+	/**
+	 * The default value of the '{@link #getConcurrenciesFile() <em>Concurrencies File</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getConcurrenciesFile()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final String CONCURRENCIES_FILE_EDEFAULT = null;
+
+	/**
+	 * The cached value of the '{@link #getConcurrenciesFile() <em>Concurrencies File</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getConcurrenciesFile()
+	 * @generated
+	 * @ordered
+	 */
+	protected String concurrenciesFile = CONCURRENCIES_FILE_EDEFAULT;
+
+	/**
+	 * The default value of the '{@link #getResponsetimesFile() <em>Responsetimes File</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getResponsetimesFile()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final String RESPONSETIMES_FILE_EDEFAULT = null;
+
+	/**
+	 * The cached value of the '{@link #getResponsetimesFile() <em>Responsetimes File</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getResponsetimesFile()
+	 * @generated
+	 * @ordered
+	 */
+	protected String responsetimesFile = RESPONSETIMES_FILE_EDEFAULT;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -1587,6 +1629,48 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public String getConcurrenciesFile() {
+		return concurrenciesFile;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setConcurrenciesFile(String newConcurrenciesFile) {
+		String oldConcurrenciesFile = concurrenciesFile;
+		concurrenciesFile = newConcurrenciesFile;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET, ModelPackage.QUEUEING_COLOR_REFERENCE__CONCURRENCIES_FILE, oldConcurrenciesFile, concurrenciesFile));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public String getResponsetimesFile() {
+		return responsetimesFile;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setResponsetimesFile(String newResponsetimesFile) {
+		String oldResponsetimesFile = responsetimesFile;
+		responsetimesFile = newResponsetimesFile;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET, ModelPackage.QUEUEING_COLOR_REFERENCE__RESPONSETIMES_FILE, oldResponsetimesFile, responsetimesFile));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	@Override
 	public Object eGet(int featureID, boolean resolve, boolean coreType) {
 		switch (featureID) {
@@ -1634,6 +1718,10 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 				return getValuesFile();
 			case ModelPackage.QUEUEING_COLOR_REFERENCE__PROBABILITIES_FILE:
 				return getProbabilitiesFile();
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__CONCURRENCIES_FILE:
+				return getConcurrenciesFile();
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__RESPONSETIMES_FILE:
+				return getResponsetimesFile();
 		}
 		return super.eGet(featureID, resolve, coreType);
 	}
@@ -1711,6 +1799,12 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 				return;
 			case ModelPackage.QUEUEING_COLOR_REFERENCE__PROBABILITIES_FILE:
 				setProbabilitiesFile((String)newValue);
+				return;
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__CONCURRENCIES_FILE:
+				setConcurrenciesFile((String)newValue);
+				return;
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__RESPONSETIMES_FILE:
+				setResponsetimesFile((String)newValue);
 				return;
 		}
 		super.eSet(featureID, newValue);
@@ -1790,6 +1884,12 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 			case ModelPackage.QUEUEING_COLOR_REFERENCE__PROBABILITIES_FILE:
 				setProbabilitiesFile(PROBABILITIES_FILE_EDEFAULT);
 				return;
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__CONCURRENCIES_FILE:
+				setConcurrenciesFile(CONCURRENCIES_FILE_EDEFAULT);
+				return;
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__RESPONSETIMES_FILE:
+				setResponsetimesFile(RESPONSETIMES_FILE_EDEFAULT);
+				return;
 		}
 		super.eUnset(featureID);
 	}
@@ -1846,6 +1946,10 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 				return VALUES_FILE_EDEFAULT == null ? valuesFile != null : !VALUES_FILE_EDEFAULT.equals(valuesFile);
 			case ModelPackage.QUEUEING_COLOR_REFERENCE__PROBABILITIES_FILE:
 				return PROBABILITIES_FILE_EDEFAULT == null ? probabilitiesFile != null : !PROBABILITIES_FILE_EDEFAULT.equals(probabilitiesFile);
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__CONCURRENCIES_FILE:
+				return CONCURRENCIES_FILE_EDEFAULT == null ? concurrenciesFile != null : !CONCURRENCIES_FILE_EDEFAULT.equals(concurrenciesFile);
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__RESPONSETIMES_FILE:
+				return RESPONSETIMES_FILE_EDEFAULT == null ? responsetimesFile != null : !RESPONSETIMES_FILE_EDEFAULT.equals(responsetimesFile);
 		}
 		return super.eIsSet(featureID);
 	}
@@ -1904,6 +2008,10 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 		result.append(valuesFile);
 		result.append(", probabilitiesFile: ");
 		result.append(probabilitiesFile);
+		result.append(", concurrenciesFile: ");
+		result.append(concurrenciesFile);
+		result.append(", responsetimesFile: ");
+		result.append(responsetimesFile);
 		result.append(')');
 		return result.toString();
 	}
