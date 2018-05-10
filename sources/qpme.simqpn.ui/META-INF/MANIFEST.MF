@@ -19,3 +19,4 @@ Export-Package: de.tud.cs.simqpn.ui,
  de.tud.cs.simqpn.ui.model,
  de.tud.cs.simqpn.ui.wizard,
  de.tud.cs.simqpn.ui.wizard.page
+Automatic-Module-Name: qpme.simqpn.ui

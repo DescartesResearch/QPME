@@ -7,3 +7,4 @@ Bundle-Vendor: qpme.sourceforge.net
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: edu.kit.ipd.descartes.qpme.model.migration
 Import-Package: org.osgi.framework;version="1.6.0"
+Automatic-Module-Name: qpme.model.migration
