@@ -12,7 +12,7 @@ Require-Bundle: qpme.simqpn.kernel,
  org.eclipse.ui,
  qpme.qpe.core;bundle-version="2.2.0",
  org.apache.log4j;bundle-version="1.2.15",
- org.dom4j;bundle-version="1.6.1"
+ org.dom4j
 Export-Package: de.tud.cs.simqpn.ui,
  de.tud.cs.simqpn.ui.actions,
  de.tud.cs.simqpn.ui.dialog,

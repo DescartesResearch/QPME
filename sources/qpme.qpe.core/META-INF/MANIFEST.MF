@@ -14,12 +14,12 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.views,
  org.eclipse.ui.console,
  qpme.model.migration;bundle-version="2.2.0",
- org.dom4j;bundle-version="1.6.1",
+ org.dom4j,
  org.jfreechart.core;bundle-version="1.0.12",
  org.jfreechart.jcommon;bundle-version="1.0.15",
  org.jfreechart.swt;bundle-version="1.0.12",
  org.rosuda.JRI;bundle-version="0.5.0",
- org.jaxen;bundle-version="1.1.0"
+ org.jaxen
 Bundle-ActivationPolicy: lazy
 Export-Package: de.tud.cs.qpe,
  de.tud.cs.qpe.editors.incidence,
