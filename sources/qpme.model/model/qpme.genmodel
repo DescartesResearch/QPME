@@ -31,6 +31,7 @@
       <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/REPLAY"/>
       <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/DISCRETE_EMPIRICAL"/>
       <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/CONTINUOUS_EMPIRICAL"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/DETERMINISTIC_CONCURRENCY"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="qpme.ecore#//FlowDirection">
       <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//FlowDirection/IN"/>

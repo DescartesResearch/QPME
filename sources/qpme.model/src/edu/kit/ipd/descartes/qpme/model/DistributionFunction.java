@@ -202,7 +202,15 @@ public enum DistributionFunction implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	CONTINUOUS_EMPIRICAL(18, "CONTINUOUS_EMPIRICAL", "ContinuousEmpirical");
+	CONTINUOUS_EMPIRICAL(18, "CONTINUOUS_EMPIRICAL", "ContinuousEmpirical"), /**
+	 * The '<em><b>DETERMINISTIC CONCURRENCY</b></em>' literal object.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #DETERMINISTIC_CONCURRENCY_VALUE
+	 * @generated
+	 * @ordered
+	 */
+	DETERMINISTIC_CONCURRENCY(19, "DETERMINISTIC_CONCURRENCY", "DeterministicConcurrency");
 
 	/**
 	 * The '<em><b>BETA</b></em>' literal value.
@@ -490,6 +498,21 @@ public enum DistributionFunction implements Enumerator {
 	public static final int CONTINUOUS_EMPIRICAL_VALUE = 18;
 
 	/**
+	 * The '<em><b>DETERMINISTIC CONCURRENCY</b></em>' literal value.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of '<em><b>DETERMINISTIC CONCURRENCY</b></em>' literal object isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @see #DETERMINISTIC_CONCURRENCY
+	 * @model literal="DeterministicConcurrency"
+	 * @generated
+	 * @ordered
+	 */
+	public static final int DETERMINISTIC_CONCURRENCY_VALUE = 19;
+
+	/**
 	 * An array of all the '<em><b>Distribution Function</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -516,6 +539,7 @@ public enum DistributionFunction implements Enumerator {
 			REPLAY,
 			DISCRETE_EMPIRICAL,
 			CONTINUOUS_EMPIRICAL,
+			DETERMINISTIC_CONCURRENCY,
 		};
 
 	/**
@@ -591,6 +615,7 @@ public enum DistributionFunction implements Enumerator {
 			case REPLAY_VALUE: return REPLAY;
 			case DISCRETE_EMPIRICAL_VALUE: return DISCRETE_EMPIRICAL;
 			case CONTINUOUS_EMPIRICAL_VALUE: return CONTINUOUS_EMPIRICAL;
+			case DETERMINISTIC_CONCURRENCY_VALUE: return DETERMINISTIC_CONCURRENCY;
 		}
 		return null;
 	}

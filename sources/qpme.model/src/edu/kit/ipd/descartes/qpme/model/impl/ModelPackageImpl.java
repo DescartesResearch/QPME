@@ -3121,6 +3121,7 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.REPLAY);
 		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.DISCRETE_EMPIRICAL);
 		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.CONTINUOUS_EMPIRICAL);
+		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.DETERMINISTIC_CONCURRENCY);
 
 		initEEnum(flowDirectionEEnum, FlowDirection.class, "FlowDirection");
 		addEEnumLiteral(flowDirectionEEnum, FlowDirection.IN);

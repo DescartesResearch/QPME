@@ -139,6 +139,7 @@
     <eLiterals name="REPLAY" value="16" literal="Replay"/>
     <eLiterals name="DISCRETE_EMPIRICAL" value="17" literal="DiscreteEmpirical"/>
     <eLiterals name="CONTINUOUS_EMPIRICAL" value="18" literal="ContinuousEmpirical"/>
+    <eLiterals name="DETERMINISTIC_CONCURRENCY" value="19" literal="DeterministicConcurrency"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EDataType" name="DistributionFunctionObject" instanceClassName="org.eclipse.emf.common.util.Enumerator">
     <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">

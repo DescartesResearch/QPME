@@ -91,7 +91,10 @@ public enum Distribution {
 	DISCRETE_EMPIRICAL("DiscreteEmpirical", new DiscreteEmpiricalCreator(), new String[] {}, new String[] {}, true),
 
 	CONTINUOUS_EMPIRICAL("ContinuousEmpirical", new ContinuousEmpiricalCreator(), new String[] {}, new String[] {},
-			true);
+			true),
+
+	DETERMINISTIC_CONCURRENCY("DeterministicConcurrency", new DeterministicConcurrencyCreator(),
+			new String[] { "concurrenciesFile", "responsetimesFile" }, new String[] { "", "" }, true);
 
 	public static final Distribution DEFAULT_DISTRIBUTION = EXPONENTIAL;
 
