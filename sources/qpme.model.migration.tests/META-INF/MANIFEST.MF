@@ -7,3 +7,4 @@ Bundle-Vendor: QPME
 Fragment-Host: qpme.model.migration;bundle-version="2.2.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.junit;bundle-version="4.8.2"
+Automatic-Module-Name: qpme.model.migration.tests

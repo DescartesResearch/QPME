@@ -26,7 +26,7 @@ Export-Package: de.tud.cs.simqpn.kernel,
  de.tud.cs.simqpn.kernel.persistency,
  de.tud.cs.simqpn.kernel.util
 Bundle-Vendor: Descartes Research Group
-Require-Bundle: org.dom4j;bundle-version="1.6.1",
+Require-Bundle: org.dom4j,
  org.apache.log4j;bundle-version="1.2.15",
  org.eclipse.equinox.app,
  org.eclipse.core.runtime;bundle-version="3.7.0",
@@ -35,3 +35,4 @@ Require-Bundle: org.dom4j;bundle-version="1.6.1",
  org.eclipse.equinox.concurrent;bundle-version="1.1.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Import-Package: org.apache.commons.math.distribution
+Automatic-Module-Name: qpme.simqpn.kernel
