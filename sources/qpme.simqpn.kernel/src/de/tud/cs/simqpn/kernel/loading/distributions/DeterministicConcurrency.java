@@ -41,19 +41,32 @@
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
 import java.util.Map;
+import java.util.Map.Entry;
 
 public class DeterministicConcurrency implements AbstractDistribution {
 
 	private Map<Integer, Double> concurrencyLevels;
+	private Integer min = -1;
 	private String colorRefId;
 	
 	public DeterministicConcurrency(Map<Integer, Double> concurrencyLevels, String colorRefId) {
+		if (concurrencyLevels.get(0) != null)
+			throw new IllegalArgumentException(
+					"Concurrency level can not be 0, as no response time can be calculated without a request");
+
 		this.concurrencyLevels = concurrencyLevels;
 		this.colorRefId = colorRefId;
+
+		for (Entry<Integer, Double> entry : this.concurrencyLevels.entrySet())
+			if (entry.getKey() < min)
+				min = entry.getKey();
 	}
 
 	@Override
 	public double nextDouble(int concurrency) {
+		if (concurrency < min)
+			return concurrencyLevels.get(min);
+
 		Double resp = concurrencyLevels.get(concurrency);
 		if (resp == null)
 			throw new IllegalStateException(

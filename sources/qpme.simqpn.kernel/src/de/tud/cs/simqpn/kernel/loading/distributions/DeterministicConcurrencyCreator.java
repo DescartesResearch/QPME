@@ -74,7 +74,7 @@ public class DeterministicConcurrencyCreator extends DistributionCreator {
 
 	@Override
 	public double getMean() {
-		throw new IllegalStateException("Cannot calculate mean for DeterministicConcurrency distribution");
+		return -1.0;
 	}
 
 	@Override
@@ -84,6 +84,6 @@ public class DeterministicConcurrencyCreator extends DistributionCreator {
 
 	@Override
 	public String getMeanComputationText() {
-		throw new IllegalStateException("Cannot calculate mean for DeterministicConcurrency distribution");
+		return "Returning placeholder -1 for mean of DeterministicConcurrency Distribution";
 	}
 }
