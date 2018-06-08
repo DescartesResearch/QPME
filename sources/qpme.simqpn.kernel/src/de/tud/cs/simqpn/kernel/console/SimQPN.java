@@ -89,7 +89,7 @@ public class SimQPN implements IApplication {
 			Document inputDoc = loadXMLFile(inputFilename);
 			runSimulatorOnDocument(inputDoc, configuration, outputFilename, logConfigFilename, progress, null);
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new IllegalStateException(e);
 		}
 	}
 
