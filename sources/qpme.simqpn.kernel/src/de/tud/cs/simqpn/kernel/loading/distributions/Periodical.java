@@ -58,7 +58,7 @@ public class Periodical implements AbstractDistribution {
 	}
 	
 	@Override
-	public double nextDouble(int concurrency) {
+	public double nextDouble(int concurrency, String[] colors, int[] tokenNumbers) {
 		double result = data[currentPos];
 		currentPos = (currentPos + 1) % data.length;
 		return result;

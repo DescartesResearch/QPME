@@ -257,7 +257,7 @@ public class PSQueue extends Queue {
 
 				((Exponential) expRandServTimeGen[0]).setState(totServRate);
 				randColorGen.setState2(pdf);
-				double servTime = expRandServTimeGen[0].nextDouble(-1);
+				double servTime = expRandServTimeGen[0].nextDouble(-1, null, null);
 				if (servTime < 0)
 					servTime = 0;
 				int color = randColorGen.nextInt();

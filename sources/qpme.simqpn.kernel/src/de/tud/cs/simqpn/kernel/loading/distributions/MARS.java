@@ -48,7 +48,7 @@ public class MARS implements AbstractDistribution {
 	}
 
 	@Override
-	public double nextDouble(int concurrency) {
+	public double nextDouble(int concurrency, String[] colors, int[] tokenNumbers) {
 		return 0.0;
 	}
 

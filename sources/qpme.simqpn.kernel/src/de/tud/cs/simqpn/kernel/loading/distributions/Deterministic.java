@@ -59,7 +59,7 @@ public class Deterministic implements AbstractDistribution {
 	}
 
 	@Override
-	public double nextDouble(int concurrency) {
+	public double nextDouble(int concurrency, String[] colors, int[] tokenNumbers) {
 		return value;
 	}
 

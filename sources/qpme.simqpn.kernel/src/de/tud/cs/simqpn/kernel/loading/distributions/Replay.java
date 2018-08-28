@@ -53,7 +53,7 @@ public class Replay implements AbstractDistribution {
 	}
 
 	@Override
-	public double nextDouble(int concurrency) {
+	public double nextDouble(int concurrency, String[] colors, int[] tokenNumbers) {
 		if (nextValue == replayValues.length)
 			throw new IllegalStateException("There are only " + replayValues.length
 					+ " values in the replayfile for the colorRef " + colorRefId

@@ -63,7 +63,7 @@ public class DeterministicConcurrency implements AbstractDistribution {
 	}
 
 	@Override
-	public double nextDouble(int concurrency) {
+	public double nextDouble(int concurrency, String[] colors, int[] tokenNumbers) {
 		if (concurrency < min)
 			return concurrencyLevels.get(min);
 
