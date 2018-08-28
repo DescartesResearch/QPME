@@ -1,8 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
- * $Id$
  */
 package edu.kit.ipd.descartes.qpme.model;
 

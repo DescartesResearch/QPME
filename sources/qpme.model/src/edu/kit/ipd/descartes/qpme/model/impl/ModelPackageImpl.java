@@ -1,19 +1,6 @@
 /**
- * <copyright>
- * </copyright>
- *
- * $Id$
  */
 package edu.kit.ipd.descartes.qpme.model.impl;
-
-import org.eclipse.emf.ecore.EAttribute;
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EDataType;
-import org.eclipse.emf.ecore.EEnum;
-import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.EReference;
-import org.eclipse.emf.ecore.impl.EPackageImpl;
-import org.eclipse.emf.ecore.xml.type.XMLTypePackage;
 
 import edu.kit.ipd.descartes.qpme.model.Color;
 import edu.kit.ipd.descartes.qpme.model.ColorReference;
@@ -78,6 +65,17 @@ import edu.kit.ipd.descartes.qpme.model.Transition;
 import edu.kit.ipd.descartes.qpme.model.TransitionMetaAttribute;
 import edu.kit.ipd.descartes.qpme.model.TransitionMetaAttributesContainer;
 import edu.kit.ipd.descartes.qpme.model.TransitionsContainer;
+
+import org.eclipse.emf.ecore.EAttribute;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EDataType;
+import org.eclipse.emf.ecore.EEnum;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EReference;
+
+import org.eclipse.emf.ecore.impl.EPackageImpl;
+
+import org.eclipse.emf.ecore.xml.type.XMLTypePackage;
 
 /**
  * <!-- begin-user-doc -->
@@ -1628,8 +1626,26 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EAttribute getQueueingColorReference_MarsFile() {
+	public EAttribute getQueueingColorReference_ConcurrenciesFile() {
 		return (EAttribute)queueingColorReferenceEClass.getEStructuralFeatures().get(22);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getQueueingColorReference_ResponsetimesFile() {
+		return (EAttribute)queueingColorReferenceEClass.getEStructuralFeatures().get(23);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getQueueingColorReference_MarsFile() {
+		return (EAttribute)queueingColorReferenceEClass.getEStructuralFeatures().get(24);
 	}
 
 	/**
@@ -2649,6 +2665,8 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__REPLAY_FILE);
 		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__VALUES_FILE);
 		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__PROBABILITIES_FILE);
+		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__CONCURRENCIES_FILE);
+		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__RESPONSETIMES_FILE);
 		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__MARS_FILE);
 
 		queueingPetriNetEClass = createEClass(QUEUEING_PETRI_NET);
@@ -2984,7 +3002,9 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 		initEAttribute(getQueueingColorReference_ReplayFile(), theXMLTypePackage.getString(), "replayFile", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getQueueingColorReference_ValuesFile(), theXMLTypePackage.getString(), "valuesFile", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getQueueingColorReference_ProbabilitiesFile(), theXMLTypePackage.getString(), "probabilitiesFile", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEAttribute(getQueueingColorReference_MarsFile(), theXMLTypePackage.getString(), "marsFile", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getQueueingColorReference_ConcurrenciesFile(), ecorePackage.getEString(), "concurrenciesFile", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getQueueingColorReference_ResponsetimesFile(), ecorePackage.getEString(), "responsetimesFile", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getQueueingColorReference_MarsFile(), ecorePackage.getEString(), "marsFile", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(queueingPetriNetEClass, QueueingPetriNet.class, "QueueingPetriNet", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEReference(getQueueingPetriNet_Colors(), this.getColorsContainer(), null, "colors", null, 0, 1, QueueingPetriNet.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -3110,6 +3130,7 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.REPLAY);
 		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.DISCRETE_EMPIRICAL);
 		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.CONTINUOUS_EMPIRICAL);
+		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.DETERMINISTIC_CONCURRENCY);
 		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.MARS);
 
 		initEEnum(flowDirectionEEnum, FlowDirection.class, "FlowDirection");
@@ -3164,6 +3185,12 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 	 */
 	protected void createExtendedMetaDataAnnotations() {
 		String source = "http:///org/eclipse/emf/ecore/util/ExtendedMetaData";
+		addAnnotation
+		  (this,
+		   source,
+		   new String[] {
+			   "qualified", "false"
+		   });
 		addAnnotation
 		  (colorEClass,
 		   source,

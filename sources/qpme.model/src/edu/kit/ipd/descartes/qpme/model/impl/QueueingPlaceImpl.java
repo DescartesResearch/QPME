@@ -1,18 +1,16 @@
 /**
- * <copyright>
- * </copyright>
- *
- * $Id$
  */
 package edu.kit.ipd.descartes.qpme.model.impl;
-
-import org.eclipse.emf.common.notify.Notification;
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.impl.ENotificationImpl;
 
 import edu.kit.ipd.descartes.qpme.model.ModelPackage;
 import edu.kit.ipd.descartes.qpme.model.Queue;
 import edu.kit.ipd.descartes.qpme.model.QueueingPlace;
+
+import org.eclipse.emf.common.notify.Notification;
+
+import org.eclipse.emf.ecore.EClass;
+
+import org.eclipse.emf.ecore.impl.ENotificationImpl;
 
 /**
  * <!-- begin-user-doc -->

@@ -1,23 +1,22 @@
 /**
- * <copyright>
- * </copyright>
- *
- * $Id$
  */
 package edu.kit.ipd.descartes.qpme.model.impl;
-
-import java.util.Collection;
-
-import org.eclipse.emf.common.notify.NotificationChain;
-import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.InternalEObject;
-import org.eclipse.emf.ecore.util.EObjectWithInverseEList;
-import org.eclipse.emf.ecore.util.InternalEList;
 
 import edu.kit.ipd.descartes.qpme.model.ModelPackage;
 import edu.kit.ipd.descartes.qpme.model.PlaceTransitionConnection;
 import edu.kit.ipd.descartes.qpme.model.PlaceTransitionElement;
+
+import java.util.Collection;
+
+import org.eclipse.emf.common.notify.NotificationChain;
+
+import org.eclipse.emf.common.util.EList;
+
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.InternalEObject;
+
+import org.eclipse.emf.ecore.util.EObjectWithInverseEList;
+import org.eclipse.emf.ecore.util.InternalEList;
 
 /**
  * <!-- begin-user-doc -->

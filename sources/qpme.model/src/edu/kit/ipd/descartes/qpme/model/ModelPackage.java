@@ -1,8 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
- * $Id$
  */
 package edu.kit.ipd.descartes.qpme.model;
 
@@ -26,6 +22,7 @@ import org.eclipse.emf.ecore.EReference;
  * <!-- end-user-doc -->
  * @see edu.kit.ipd.descartes.qpme.model.ModelFactory
  * @model kind="package"
+ *        extendedMetaData="qualified='false'"
  * @generated
  */
 public interface ModelPackage extends EPackage {
@@ -1978,13 +1975,31 @@ public interface ModelPackage extends EPackage {
 	int QUEUEING_COLOR_REFERENCE__PROBABILITIES_FILE = PLACE_COLOR_REFERENCE_FEATURE_COUNT + 21;
 
 	/**
+	 * The feature id for the '<em><b>Concurrencies File</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int QUEUEING_COLOR_REFERENCE__CONCURRENCIES_FILE = PLACE_COLOR_REFERENCE_FEATURE_COUNT + 22;
+
+	/**
+	 * The feature id for the '<em><b>Responsetimes File</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int QUEUEING_COLOR_REFERENCE__RESPONSETIMES_FILE = PLACE_COLOR_REFERENCE_FEATURE_COUNT + 23;
+
+	/**
 	 * The feature id for the '<em><b>Mars File</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int QUEUEING_COLOR_REFERENCE__MARS_FILE = PLACE_COLOR_REFERENCE_FEATURE_COUNT + 22;
+	int QUEUEING_COLOR_REFERENCE__MARS_FILE = PLACE_COLOR_REFERENCE_FEATURE_COUNT + 24;
 
 	/**
 	 * The number of structural features of the '<em>Queueing Color Reference</em>' class.
@@ -1993,7 +2008,7 @@ public interface ModelPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int QUEUEING_COLOR_REFERENCE_FEATURE_COUNT = PLACE_COLOR_REFERENCE_FEATURE_COUNT + 23;
+	int QUEUEING_COLOR_REFERENCE_FEATURE_COUNT = PLACE_COLOR_REFERENCE_FEATURE_COUNT + 25;
 
 	/**
 	 * The meta object id for the '{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingPetriNetImpl <em>Queueing Petri Net</em>}' class.
@@ -4701,6 +4716,28 @@ public interface ModelPackage extends EPackage {
 	EAttribute getQueueingColorReference_ProbabilitiesFile();
 
 	/**
+	 * Returns the meta object for the attribute '{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getConcurrenciesFile <em>Concurrencies File</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Concurrencies File</em>'.
+	 * @see edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getConcurrenciesFile()
+	 * @see #getQueueingColorReference()
+	 * @generated
+	 */
+	EAttribute getQueueingColorReference_ConcurrenciesFile();
+
+	/**
+	 * Returns the meta object for the attribute '{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getResponsetimesFile <em>Responsetimes File</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Responsetimes File</em>'.
+	 * @see edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getResponsetimesFile()
+	 * @see #getQueueingColorReference()
+	 * @generated
+	 */
+	EAttribute getQueueingColorReference_ResponsetimesFile();
+
+	/**
 	 * Returns the meta object for the attribute '{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getMarsFile <em>Mars File</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -6695,6 +6732,22 @@ public interface ModelPackage extends EPackage {
 		 * @generated
 		 */
 		EAttribute QUEUEING_COLOR_REFERENCE__PROBABILITIES_FILE = eINSTANCE.getQueueingColorReference_ProbabilitiesFile();
+
+		/**
+		 * The meta object literal for the '<em><b>Concurrencies File</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute QUEUEING_COLOR_REFERENCE__CONCURRENCIES_FILE = eINSTANCE.getQueueingColorReference_ConcurrenciesFile();
+
+		/**
+		 * The meta object literal for the '<em><b>Responsetimes File</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute QUEUEING_COLOR_REFERENCE__RESPONSETIMES_FILE = eINSTANCE.getQueueingColorReference_ResponsetimesFile();
 
 		/**
 		 * The meta object literal for the '<em><b>Mars File</b></em>' attribute feature.

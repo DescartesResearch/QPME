@@ -41,7 +41,7 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import cern.jet.random.AbstractContinousDistribution;
+import de.tud.cs.simqpn.kernel.loading.distributions.AbstractDistribution;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 
 public class ReplayCreator extends DistributionCreator {
@@ -56,7 +56,7 @@ public class ReplayCreator extends DistributionCreator {
 	}
 
 	@Override
-	public AbstractContinousDistribution getDistribution()
+	public AbstractDistribution getDistribution()
 			throws SimQPNException {
 		String colorRefId = loadStringParam("id");
 		return new Replay(replayValues, colorRefId);

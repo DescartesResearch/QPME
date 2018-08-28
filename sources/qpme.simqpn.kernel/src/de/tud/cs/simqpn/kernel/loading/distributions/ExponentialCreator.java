@@ -41,7 +41,6 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import cern.jet.random.AbstractContinousDistribution;
 import cern.jet.random.Exponential;
 import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNException;
@@ -56,9 +55,9 @@ public class ExponentialCreator extends DistributionCreator {
 	}
 
 	@Override
-	public AbstractContinousDistribution getDistribution()
+	public AbstractDistribution getDistribution()
 			throws SimQPNException {
-		return new Exponential(lambda, RandomNumberGenerator.nextRandNumGen());
+		return new AbstractDistributionWrapper(new Exponential(lambda, RandomNumberGenerator.nextRandNumGen()));
 	}
 
 	@Override

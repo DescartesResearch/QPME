@@ -1,19 +1,18 @@
 /**
- * <copyright>
- * </copyright>
- *
- * $Id$
  */
 package edu.kit.ipd.descartes.qpme.model.util;
+
+import edu.kit.ipd.descartes.qpme.model.ModelPackage;
 
 import java.util.Map;
 
 import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.impl.EPackageRegistryImpl;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.xmi.util.XMLProcessor;
 
-import edu.kit.ipd.descartes.qpme.model.ModelPackage;
+import org.eclipse.emf.ecore.impl.EPackageRegistryImpl;
+
+import org.eclipse.emf.ecore.resource.Resource;
+
+import org.eclipse.emf.ecore.xmi.util.XMLProcessor;
 
 /**
  * This class contains helper methods to serialize and deserialize XML documents
@@ -30,8 +29,8 @@ public class ModelXMLProcessor extends XMLProcessor {
 	 * @generated
 	 */
 	public ModelXMLProcessor() {
-		super((EPackage.Registry.INSTANCE));
-		ModelPackage.eINSTANCE.eClass();
+		super(new EPackageRegistryImpl(EPackage.Registry.INSTANCE));
+		extendedMetaData.putPackage(null, ModelPackage.eINSTANCE);
 	}
 	
 	/**

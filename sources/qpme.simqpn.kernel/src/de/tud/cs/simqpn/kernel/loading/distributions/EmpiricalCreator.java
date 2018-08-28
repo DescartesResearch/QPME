@@ -41,7 +41,6 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import cern.jet.random.AbstractContinousDistribution;
 import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.util.LogUtil;
@@ -62,10 +61,10 @@ public class EmpiricalCreator extends DistributionCreator {
 	}
 
 	@Override
-	public AbstractContinousDistribution getDistribution()
+	public AbstractDistribution getDistribution()
 			throws SimQPNException {
-		return new ScaledEmpirical( offset, scale, pdf, cern.jet.random.Empirical.LINEAR_INTERPOLATION,
-				RandomNumberGenerator.nextRandNumGen());
+		return new AbstractDistributionWrapper(new ScaledEmpirical(offset, scale, pdf,
+				cern.jet.random.Empirical.LINEAR_INTERPOLATION, RandomNumberGenerator.nextRandNumGen()));
 	}
 
 	@Override

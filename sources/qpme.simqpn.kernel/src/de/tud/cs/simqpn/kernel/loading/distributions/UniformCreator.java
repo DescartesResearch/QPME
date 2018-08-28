@@ -41,7 +41,6 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import cern.jet.random.AbstractContinousDistribution;
 import cern.jet.random.Uniform;
 import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNException;
@@ -63,9 +62,9 @@ public class UniformCreator extends DistributionCreator {
 	}
 
 	@Override
-	public AbstractContinousDistribution getDistribution()
+	public AbstractDistribution getDistribution()
 			throws SimQPNException {
-		return new Uniform(min, max, RandomNumberGenerator.nextRandNumGen());
+		return new AbstractDistributionWrapper(new Uniform(min, max, RandomNumberGenerator.nextRandNumGen()));
 	}
 
 	@Override

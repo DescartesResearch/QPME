@@ -2,6 +2,9 @@
 <ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="model" nsURI="http://www.descartes-research.net/qpme/model/1.0"
     nsPrefix="qpme">
+  <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+    <details key="qualified" value="false"/>
+  </eAnnotations>
   <eClassifiers xsi:type="ecore:EClass" name="Color" eSuperTypes="#//IdentifiableElement">
     <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
       <details key="name" value="color"/>
@@ -136,7 +139,8 @@
     <eLiterals name="REPLAY" value="16" literal="Replay"/>
     <eLiterals name="DISCRETE_EMPIRICAL" value="17" literal="DiscreteEmpirical"/>
     <eLiterals name="CONTINUOUS_EMPIRICAL" value="18" literal="ContinuousEmpirical"/>
-    <eLiterals name="MARS" value="22" literal="MARS"/>
+    <eLiterals name="DETERMINISTIC_CONCURRENCY" value="19" literal="DeterministicConcurrency"/>
+    <eLiterals name="MARS" value="20" literal="MARS"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EDataType" name="DistributionFunctionObject" instanceClassName="org.eclipse.emf.common.util.Enumerator">
     <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
@@ -864,7 +868,9 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="replayFile" eType="ecore:EDataType http://www.eclipse.org/emf/2003/XMLType#//String"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="valuesFile" eType="ecore:EDataType http://www.eclipse.org/emf/2003/XMLType#//String"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="probabilitiesFile" eType="ecore:EDataType http://www.eclipse.org/emf/2003/XMLType#//String"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="marsFile" eType="ecore:EDataType http://www.eclipse.org/emf/2003/XMLType#//String"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="concurrenciesFile" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="responsetimesFile" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="marsFile" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="QueueingPetriNet">
     <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">

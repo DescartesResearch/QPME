@@ -40,8 +40,6 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import cern.jet.random.AbstractContinousDistribution;
-
 /**
  * A deterministic distribution that always returns the double passed to the
  * constructor.
@@ -51,7 +49,7 @@ import cern.jet.random.AbstractContinousDistribution;
  * @author Philipp Meier
  * 
  */
-public class Deterministic extends AbstractContinousDistribution {
+public class Deterministic implements AbstractDistribution {
 
 	private double value;
 
@@ -60,13 +58,8 @@ public class Deterministic extends AbstractContinousDistribution {
 		this.value = value;
 	}
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-
 	@Override
-	public double nextDouble() {
+	public double nextDouble(int concurrency) {
 		return value;
 	}
 

@@ -41,40 +41,49 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import cern.jet.random.Normal;
-import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
+import java.util.HashMap;
+import java.util.Map;
+
 import de.tud.cs.simqpn.kernel.SimQPNException;
 
-public class NormalCreator extends DistributionCreator {
+public class DeterministicConcurrencyCreator extends DistributionCreator {
 
-	double mean = -1;
-	double stdDev = -1;
+	double concurrencies[] = null;
+	String concurrenciesFilename = null;
+	double responseTimes[] = null;
+	String responseTimesFilename = null;
 	
 	@Override
 	protected void loadParams() throws SimQPNException {
-		mean = this.loadDoubleParam("mean");
-		stdDev = this.loadPositiveDoubleParam("stdDev");
+		concurrencies = this.loadDoublesFromFile("concurrenciesFile");
+		concurrenciesFilename = this.loadStringParam("concurrenciesFile");
+		responseTimes = this.loadDoublesFromFile("responsetimesFile");
+		responseTimesFilename = this.loadStringParam("responsetimesFile");
 	}
 
 	@Override
 	public AbstractDistribution getDistribution()
 			throws SimQPNException {
-		return new AbstractDistributionWrapper(new Normal(mean, stdDev, RandomNumberGenerator.nextRandNumGen()));
+		String colorRefId = loadStringParam("id");
+		Map<Integer, Double> concurrencyLevel = new HashMap<Integer, Double>();
+		for (int i = 0; i < concurrencies.length; i++) {
+			concurrencyLevel.put((int) (concurrencies[i]), responseTimes[i]);
+		}
+		return new DeterministicConcurrency(concurrencyLevel, colorRefId);
 	}
 
 	@Override
 	public double getMean() {
-		return mean;
+		return -1.0;
 	}
 
 	@Override
 	public String getConstructionText() {
-		return "(" + mean + ", " + stdDev + ", Simulator.nextRandNumGen())";
+		return "(" + concurrenciesFilename + "|" + responseTimesFilename + ")";
 	}
 
 	@Override
 	public String getMeanComputationText() {
-		return "mean";
+		return "Returning placeholder -1 for mean of DeterministicConcurrency Distribution";
 	}
-
 }

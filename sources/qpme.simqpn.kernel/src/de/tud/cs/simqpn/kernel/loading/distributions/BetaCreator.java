@@ -41,7 +41,6 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import cern.jet.random.AbstractContinousDistribution;
 import cern.jet.random.Beta;
 import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNException;
@@ -52,8 +51,8 @@ public class BetaCreator extends DistributionCreator {
 	double beta = -1;
 	
 	@Override
-	public AbstractContinousDistribution getDistribution() throws SimQPNException {
-		return new Beta(alpha, beta, RandomNumberGenerator.nextRandNumGen());
+	public AbstractDistribution getDistribution() throws SimQPNException {
+		return new AbstractDistributionWrapper(new Beta(alpha, beta, RandomNumberGenerator.nextRandNumGen()));
 	}
 
 	@Override

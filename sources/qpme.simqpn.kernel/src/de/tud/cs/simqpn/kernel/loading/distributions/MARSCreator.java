@@ -41,7 +41,6 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import cern.jet.random.AbstractContinousDistribution;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 
 public class MARSCreator extends DistributionCreator {
@@ -60,7 +59,7 @@ public class MARSCreator extends DistributionCreator {
 	}
 
 	@Override
-	public AbstractContinousDistribution getDistribution()
+	public AbstractDistribution getDistribution()
 			throws SimQPNException {
 		return new MARS(constant, coefficients, knots, sides, colorIds);
 	}

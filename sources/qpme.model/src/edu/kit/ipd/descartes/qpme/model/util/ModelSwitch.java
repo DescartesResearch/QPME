@@ -1,71 +1,13 @@
 /**
- * <copyright>
- * </copyright>
- *
- * $Id$
  */
 package edu.kit.ipd.descartes.qpme.model.util;
 
 import edu.kit.ipd.descartes.qpme.model.*;
+
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.util.Switch;
 
-import edu.kit.ipd.descartes.qpme.model.Color;
-import edu.kit.ipd.descartes.qpme.model.ColorReference;
-import edu.kit.ipd.descartes.qpme.model.ColorReferenceMetaAttribute;
-import edu.kit.ipd.descartes.qpme.model.ColorReferencesContainer;
-import edu.kit.ipd.descartes.qpme.model.ColorReferencesMetaAttributesContainer;
-import edu.kit.ipd.descartes.qpme.model.ColorsContainer;
-import edu.kit.ipd.descartes.qpme.model.IdentifiableElement;
-import edu.kit.ipd.descartes.qpme.model.ImmediateTransition;
-import edu.kit.ipd.descartes.qpme.model.IncidenceFunctionConnection;
-import edu.kit.ipd.descartes.qpme.model.IncidenceFunctionConnectionsContainer;
-import edu.kit.ipd.descartes.qpme.model.IncidenceFunctionElement;
-import edu.kit.ipd.descartes.qpme.model.LocationAttribute;
-import edu.kit.ipd.descartes.qpme.model.Mode;
-import edu.kit.ipd.descartes.qpme.model.ModelPackage;
-import edu.kit.ipd.descartes.qpme.model.ModesContainer;
-import edu.kit.ipd.descartes.qpme.model.NetMetaAttribute;
-import edu.kit.ipd.descartes.qpme.model.NetMetaAttributesContainer;
-import edu.kit.ipd.descartes.qpme.model.OrdinaryColorReference;
-import edu.kit.ipd.descartes.qpme.model.OrdinaryPlace;
-import edu.kit.ipd.descartes.qpme.model.Place;
-import edu.kit.ipd.descartes.qpme.model.PlaceColorReference;
-import edu.kit.ipd.descartes.qpme.model.PlaceMetaAttribute;
-import edu.kit.ipd.descartes.qpme.model.PlaceMetaAttributesContainer;
-import edu.kit.ipd.descartes.qpme.model.PlaceTransitionConnection;
-import edu.kit.ipd.descartes.qpme.model.PlaceTransitionConnectionsContainer;
-import edu.kit.ipd.descartes.qpme.model.PlaceTransitionElement;
-import edu.kit.ipd.descartes.qpme.model.PlacesContainer;
-import edu.kit.ipd.descartes.qpme.model.Probe;
-import edu.kit.ipd.descartes.qpme.model.ProbeColorReference;
-import edu.kit.ipd.descartes.qpme.model.ProbeMetaAttribute;
-import edu.kit.ipd.descartes.qpme.model.ProbeMetaAttributesContainer;
-import edu.kit.ipd.descartes.qpme.model.ProbesContainer;
-import edu.kit.ipd.descartes.qpme.model.QpmeDocument;
-import edu.kit.ipd.descartes.qpme.model.Queue;
-import edu.kit.ipd.descartes.qpme.model.QueueingColorReference;
-import edu.kit.ipd.descartes.qpme.model.QueueingPetriNet;
-import edu.kit.ipd.descartes.qpme.model.QueueingPlace;
-import edu.kit.ipd.descartes.qpme.model.QueuesContainer;
-import edu.kit.ipd.descartes.qpme.model.SimqpnBatchMeansColorConfiguration;
-import edu.kit.ipd.descartes.qpme.model.SimqpnBatchMeansQueueingColorConfiguration;
-import edu.kit.ipd.descartes.qpme.model.SimqpnConfiguration;
-import edu.kit.ipd.descartes.qpme.model.SimqpnMetaAttribute;
-import edu.kit.ipd.descartes.qpme.model.SimqpnPlaceConfiguration;
-import edu.kit.ipd.descartes.qpme.model.SimqpnReplDelColorConfiguration;
-import edu.kit.ipd.descartes.qpme.model.SimqpnReplDelQueueingColorConfiguration;
-import edu.kit.ipd.descartes.qpme.model.SimqpnWelchColorConfiguration;
-import edu.kit.ipd.descartes.qpme.model.SimqpnWelchQueueingColorConfiguration;
-import edu.kit.ipd.descartes.qpme.model.Subnet;
-import edu.kit.ipd.descartes.qpme.model.SubnetColorReference;
-import edu.kit.ipd.descartes.qpme.model.SubnetPlace;
-import edu.kit.ipd.descartes.qpme.model.TimedTransition;
-import edu.kit.ipd.descartes.qpme.model.Transition;
-import edu.kit.ipd.descartes.qpme.model.TransitionMetaAttribute;
-import edu.kit.ipd.descartes.qpme.model.TransitionMetaAttributesContainer;
-import edu.kit.ipd.descartes.qpme.model.TransitionsContainer;
+import org.eclipse.emf.ecore.util.Switch;
 
 /**
  * <!-- begin-user-doc -->

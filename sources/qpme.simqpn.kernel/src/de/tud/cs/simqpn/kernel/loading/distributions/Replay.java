@@ -40,12 +40,8 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import cern.jet.random.AbstractContinousDistribution;
+public class Replay implements AbstractDistribution {
 
-
-public class Replay extends AbstractContinousDistribution {
-
-	private static final long serialVersionUID = 1L;
 	private double[] replayValues;
 	private int nextValue;
 	private String colorRefId;
@@ -57,7 +53,7 @@ public class Replay extends AbstractContinousDistribution {
 	}
 
 	@Override
-	public double nextDouble() {
+	public double nextDouble(int concurrency) {
 		if (nextValue == replayValues.length)
 			throw new IllegalStateException("There are only " + replayValues.length
 					+ " values in the replayfile for the colorRef " + colorRefId

@@ -26,8 +26,8 @@
  *                                
  * =============================================
  *
- * Original Author(s):  Jürgen Walter
- * Contributor(s):   
+ * Original Author(s):  Fabian Brosig
+ * Contributor(s):      
  * 
  * NOTE: The above list of contributors lists only the people that have
  * contributed to this source file - for a list of ALL contributors to 
@@ -36,45 +36,42 @@
  *  History:
  *  Date        ID                Description
  *  ----------  ----------------  ------------------------------------------------------------------  
- *  2014/03/10  Jürgen Walter     Extracted from NetLoader
- * 
+ *  2013	    Fabian Brosig     Created.
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import cern.jet.random.Normal;
-import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
-import de.tud.cs.simqpn.kernel.SimQPNException;
+import java.util.Map;
+import java.util.Map.Entry;
 
-public class NormalCreator extends DistributionCreator {
+public class DeterministicConcurrency implements AbstractDistribution {
 
-	double mean = -1;
-	double stdDev = -1;
+	private Map<Integer, Double> concurrencyLevels;
+	private Integer min = -1;
+	private String colorRefId;
 	
-	@Override
-	protected void loadParams() throws SimQPNException {
-		mean = this.loadDoubleParam("mean");
-		stdDev = this.loadPositiveDoubleParam("stdDev");
+	public DeterministicConcurrency(Map<Integer, Double> concurrencyLevels, String colorRefId) {
+		if (concurrencyLevels.get(0) != null)
+			throw new IllegalArgumentException(
+					"Concurrency level can not be 0, as no response time can be calculated without a request");
+
+		this.concurrencyLevels = concurrencyLevels;
+		this.colorRefId = colorRefId;
+
+		for (Entry<Integer, Double> entry : this.concurrencyLevels.entrySet())
+			if (entry.getKey() < min)
+				min = entry.getKey();
 	}
 
 	@Override
-	public AbstractDistribution getDistribution()
-			throws SimQPNException {
-		return new AbstractDistributionWrapper(new Normal(mean, stdDev, RandomNumberGenerator.nextRandNumGen()));
-	}
+	public double nextDouble(int concurrency) {
+		if (concurrency < min)
+			return concurrencyLevels.get(min);
 
-	@Override
-	public double getMean() {
-		return mean;
-	}
-
-	@Override
-	public String getConstructionText() {
-		return "(" + mean + ", " + stdDev + ", Simulator.nextRandNumGen())";
-	}
-
-	@Override
-	public String getMeanComputationText() {
-		return "mean";
+		Double resp = concurrencyLevels.get(concurrency);
+		if (resp == null)
+			throw new IllegalStateException(
+					"No values for concurrency level " + concurrency + " in the files for the colorRef " + colorRefId);
+		return resp;
 	}
 
 }

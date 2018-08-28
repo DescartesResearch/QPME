@@ -40,10 +40,7 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import cern.jet.random.AbstractContinousDistribution;
-
-
-public class MARS extends AbstractContinousDistribution {
+public class MARS implements AbstractDistribution {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -51,7 +48,7 @@ public class MARS extends AbstractContinousDistribution {
 	}
 
 	@Override
-	public double nextDouble() {
+	public double nextDouble(int concurrency) {
 		return 0.0;
 	}
 

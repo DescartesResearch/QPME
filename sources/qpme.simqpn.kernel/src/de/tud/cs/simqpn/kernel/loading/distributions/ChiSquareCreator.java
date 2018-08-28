@@ -41,7 +41,6 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import cern.jet.random.AbstractContinousDistribution;
 import cern.jet.random.ChiSquare;
 import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
 import de.tud.cs.simqpn.kernel.SimQPNException;
@@ -56,9 +55,9 @@ public class ChiSquareCreator extends DistributionCreator {
 	}
 
 	@Override
-	public AbstractContinousDistribution getDistribution()
+	public AbstractDistribution getDistribution()
 			throws SimQPNException {
-		return new ChiSquare(freedom, RandomNumberGenerator.nextRandNumGen());
+		return new AbstractDistributionWrapper(new ChiSquare(freedom, RandomNumberGenerator.nextRandNumGen()));
 	}
 
 	@Override

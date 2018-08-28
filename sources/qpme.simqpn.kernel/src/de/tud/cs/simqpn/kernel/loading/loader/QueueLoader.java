@@ -53,7 +53,7 @@ import org.apache.log4j.Logger;
 import org.dom4j.Element;
 import org.dom4j.XPath;
 
-import cern.jet.random.AbstractDistribution;
+import de.tud.cs.simqpn.kernel.loading.distributions.AbstractDistribution;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.Net;
 import de.tud.cs.simqpn.kernel.entities.QPlace;

@@ -1,21 +1,23 @@
 /**
- * <copyright>
- * </copyright>
- *
- * $Id$
  */
 package edu.kit.ipd.descartes.qpme.model.util;
 
+import edu.kit.ipd.descartes.qpme.model.ModelPackage;
+
 import org.eclipse.emf.common.util.URI;
+
 import org.eclipse.emf.ecore.EPackage;
+
 import org.eclipse.emf.ecore.impl.EPackageRegistryImpl;
+
 import org.eclipse.emf.ecore.resource.Resource;
+
 import org.eclipse.emf.ecore.resource.impl.ResourceFactoryImpl;
+
 import org.eclipse.emf.ecore.util.BasicExtendedMetaData;
 import org.eclipse.emf.ecore.util.ExtendedMetaData;
-import org.eclipse.emf.ecore.xmi.XMLResource;
 
-import edu.kit.ipd.descartes.qpme.model.ModelPackage;
+import org.eclipse.emf.ecore.xmi.XMLResource;
 
 /**
  * <!-- begin-user-doc -->
@@ -26,6 +28,13 @@ import edu.kit.ipd.descartes.qpme.model.ModelPackage;
  */
 public class ModelResourceFactoryImpl extends ResourceFactoryImpl {
 	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	protected ExtendedMetaData extendedMetaData;
+
+	/**
 	 * Creates an instance of the resource factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -33,6 +42,8 @@ public class ModelResourceFactoryImpl extends ResourceFactoryImpl {
 	 */
 	public ModelResourceFactoryImpl() {
 		super();
+		extendedMetaData = new BasicExtendedMetaData(new EPackageRegistryImpl(EPackage.Registry.INSTANCE));
+		extendedMetaData.putPackage(null, ModelPackage.eINSTANCE);
 	}
 
 	/**
@@ -44,8 +55,8 @@ public class ModelResourceFactoryImpl extends ResourceFactoryImpl {
 	@Override
 	public Resource createResource(URI uri) {
 		XMLResource result = new ModelResourceImpl(uri);
-		result.getDefaultSaveOptions().put(XMLResource.OPTION_EXTENDED_META_DATA, Boolean.TRUE);
-		result.getDefaultLoadOptions().put(XMLResource.OPTION_EXTENDED_META_DATA, Boolean.TRUE);
+		result.getDefaultSaveOptions().put(XMLResource.OPTION_EXTENDED_META_DATA, extendedMetaData);
+		result.getDefaultLoadOptions().put(XMLResource.OPTION_EXTENDED_META_DATA, extendedMetaData);
 
 		result.getDefaultSaveOptions().put(XMLResource.OPTION_SCHEMA_LOCATION, Boolean.TRUE);
 
