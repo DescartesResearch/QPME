@@ -1068,7 +1068,7 @@ public class SimqpnConfigurationImpl extends SimqpnMetaAttributeImpl implements 
 	public String toString() {
 		if (eIsProxy()) return super.toString();
 
-		StringBuffer result = new StringBuffer(super.toString());
+		StringBuilder result = new StringBuilder(super.toString());
 		result.append(" (configurationDescription: ");
 		result.append(configurationDescription);
 		result.append(", numberOfRuns: ");

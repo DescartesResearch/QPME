@@ -274,7 +274,7 @@ public class SimqpnWelchColorConfigurationImpl extends SimqpnMetaAttributeImpl i
 	public String toString() {
 		if (eIsProxy()) return super.toString();
 
-		StringBuffer result = new StringBuffer(super.toString());
+		StringBuilder result = new StringBuilder(super.toString());
 		result.append(" (maxObsrv: ");
 		if (maxObsrvESet) result.append(maxObsrv); else result.append("<unset>");
 		result.append(", minObsrv: ");

@@ -188,7 +188,7 @@ public class SimqpnReplDelColorConfigurationImpl extends SimqpnMetaAttributeImpl
 	public String toString() {
 		if (eIsProxy()) return super.toString();
 
-		StringBuffer result = new StringBuffer(super.toString());
+		StringBuilder result = new StringBuilder(super.toString());
 		result.append(" (signLevAvgST: ");
 		if (signLevAvgSTESet) result.append(signLevAvgST); else result.append("<unset>");
 		result.append(')');

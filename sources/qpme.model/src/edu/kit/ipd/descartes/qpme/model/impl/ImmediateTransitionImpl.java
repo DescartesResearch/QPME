@@ -188,7 +188,7 @@ public class ImmediateTransitionImpl extends TransitionImpl implements Immediate
 	public String toString() {
 		if (eIsProxy()) return super.toString();
 
-		StringBuffer result = new StringBuffer(super.toString());
+		StringBuilder result = new StringBuilder(super.toString());
 		result.append(" (weight: ");
 		if (weightESet) result.append(weight); else result.append("<unset>");
 		result.append(')');

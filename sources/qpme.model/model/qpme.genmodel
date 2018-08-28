@@ -31,6 +31,7 @@
       <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/REPLAY"/>
       <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/DISCRETE_EMPIRICAL"/>
       <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/CONTINUOUS_EMPIRICAL"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/MARS"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="qpme.ecore#//FlowDirection">
       <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//FlowDirection/IN"/>
@@ -202,6 +203,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/replayFile"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/valuesFile"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/probabilitiesFile"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/marsFile"/>
     </genClasses>
     <genClasses ecoreClass="qpme.ecore#//QueueingPetriNet">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//QueueingPetriNet/colors"/>

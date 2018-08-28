@@ -274,7 +274,7 @@ public class LocationAttributeImpl extends PlaceMetaAttributeImpl implements Loc
 	public String toString() {
 		if (eIsProxy()) return super.toString();
 
-		StringBuffer result = new StringBuffer(super.toString());
+		StringBuilder result = new StringBuilder(super.toString());
 		result.append(" (locationX: ");
 		if (locationXESet) result.append(locationX); else result.append("<unset>");
 		result.append(", locationY: ");

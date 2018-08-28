@@ -30,8 +30,8 @@ public class ModelXMLProcessor extends XMLProcessor {
 	 * @generated
 	 */
 	public ModelXMLProcessor() {
-		super(new EPackageRegistryImpl(EPackage.Registry.INSTANCE));
-		extendedMetaData.putPackage(null, ModelPackage.eINSTANCE);
+		super((EPackage.Registry.INSTANCE));
+		ModelPackage.eINSTANCE.eClass();
 	}
 	
 	/**

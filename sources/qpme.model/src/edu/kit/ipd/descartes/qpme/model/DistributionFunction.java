@@ -202,7 +202,15 @@ public enum DistributionFunction implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	CONTINUOUS_EMPIRICAL(18, "CONTINUOUS_EMPIRICAL", "ContinuousEmpirical");
+	CONTINUOUS_EMPIRICAL(18, "CONTINUOUS_EMPIRICAL", "ContinuousEmpirical"), /**
+	 * The '<em><b>MARS</b></em>' literal object.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #MARS_VALUE
+	 * @generated
+	 * @ordered
+	 */
+	MARS(22, "MARS", "MARS");
 
 	/**
 	 * The '<em><b>BETA</b></em>' literal value.
@@ -490,6 +498,21 @@ public enum DistributionFunction implements Enumerator {
 	public static final int CONTINUOUS_EMPIRICAL_VALUE = 18;
 
 	/**
+	 * The '<em><b>MARS</b></em>' literal value.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of '<em><b>MARS</b></em>' literal object isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @see #MARS
+	 * @model
+	 * @generated
+	 * @ordered
+	 */
+	public static final int MARS_VALUE = 22;
+
+	/**
 	 * An array of all the '<em><b>Distribution Function</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -516,6 +539,7 @@ public enum DistributionFunction implements Enumerator {
 			REPLAY,
 			DISCRETE_EMPIRICAL,
 			CONTINUOUS_EMPIRICAL,
+			MARS,
 		};
 
 	/**
@@ -591,6 +615,7 @@ public enum DistributionFunction implements Enumerator {
 			case REPLAY_VALUE: return REPLAY;
 			case DISCRETE_EMPIRICAL_VALUE: return DISCRETE_EMPIRICAL;
 			case CONTINUOUS_EMPIRICAL_VALUE: return CONTINUOUS_EMPIRICAL;
+			case MARS_VALUE: return MARS;
 		}
 		return null;
 	}

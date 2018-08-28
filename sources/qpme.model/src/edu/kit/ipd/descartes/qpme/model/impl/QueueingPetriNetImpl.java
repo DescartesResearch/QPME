@@ -638,7 +638,7 @@ public class QueueingPetriNetImpl extends EObjectImpl implements QueueingPetriNe
 	public String toString() {
 		if (eIsProxy()) return super.toString();
 
-		StringBuffer result = new StringBuffer(super.toString());
+		StringBuilder result = new StringBuilder(super.toString());
 		result.append(" (qpmeVersion: ");
 		result.append(qpmeVersion);
 		result.append(')');

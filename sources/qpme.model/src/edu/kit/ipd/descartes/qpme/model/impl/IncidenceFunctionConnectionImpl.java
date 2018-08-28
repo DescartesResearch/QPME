@@ -355,7 +355,7 @@ public class IncidenceFunctionConnectionImpl extends IdentifiableElementImpl imp
 	public String toString() {
 		if (eIsProxy()) return super.toString();
 
-		StringBuffer result = new StringBuffer(super.toString());
+		StringBuilder result = new StringBuilder(super.toString());
 		result.append(" (count: ");
 		if (countESet) result.append(count); else result.append("<unset>");
 		result.append(')');

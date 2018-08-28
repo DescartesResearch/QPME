@@ -597,7 +597,7 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 
 	/**
 	 * Creates, registers, and initializes the <b>Package</b> for this model, and for any others upon which it depends.
-	 * 
+	 *
 	 * <p>This method is used to initialize {@link ModelPackage#eINSTANCE} when that field is accessed.
 	 * Clients should not invoke it directly. Instead, they should simply access that field to obtain the package.
 	 * <!-- begin-user-doc -->
@@ -611,7 +611,8 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 		if (isInited) return (ModelPackage)EPackage.Registry.INSTANCE.getEPackage(ModelPackage.eNS_URI);
 
 		// Obtain or create and register package
-		ModelPackageImpl theModelPackage = (ModelPackageImpl)(EPackage.Registry.INSTANCE.get(eNS_URI) instanceof ModelPackageImpl ? EPackage.Registry.INSTANCE.get(eNS_URI) : new ModelPackageImpl());
+		Object registeredModelPackage = EPackage.Registry.INSTANCE.get(eNS_URI);
+		ModelPackageImpl theModelPackage = registeredModelPackage instanceof ModelPackageImpl ? (ModelPackageImpl)registeredModelPackage : new ModelPackageImpl();
 
 		isInited = true;
 
@@ -627,7 +628,6 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 		// Mark meta-data to indicate it can't be changed
 		theModelPackage.freeze();
 
-  
 		// Update the registry and return the package
 		EPackage.Registry.INSTANCE.put(ModelPackage.eNS_URI, theModelPackage);
 		return theModelPackage;
@@ -1621,6 +1621,15 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 	 */
 	public EAttribute getQueueingColorReference_ProbabilitiesFile() {
 		return (EAttribute)queueingColorReferenceEClass.getEStructuralFeatures().get(21);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getQueueingColorReference_MarsFile() {
+		return (EAttribute)queueingColorReferenceEClass.getEStructuralFeatures().get(22);
 	}
 
 	/**
@@ -2640,6 +2649,7 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__REPLAY_FILE);
 		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__VALUES_FILE);
 		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__PROBABILITIES_FILE);
+		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__MARS_FILE);
 
 		queueingPetriNetEClass = createEClass(QUEUEING_PETRI_NET);
 		createEReference(queueingPetriNetEClass, QUEUEING_PETRI_NET__COLORS);
@@ -2974,6 +2984,7 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 		initEAttribute(getQueueingColorReference_ReplayFile(), theXMLTypePackage.getString(), "replayFile", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getQueueingColorReference_ValuesFile(), theXMLTypePackage.getString(), "valuesFile", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getQueueingColorReference_ProbabilitiesFile(), theXMLTypePackage.getString(), "probabilitiesFile", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getQueueingColorReference_MarsFile(), theXMLTypePackage.getString(), "marsFile", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(queueingPetriNetEClass, QueueingPetriNet.class, "QueueingPetriNet", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEReference(getQueueingPetriNet_Colors(), this.getColorsContainer(), null, "colors", null, 0, 1, QueueingPetriNet.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -3099,6 +3110,7 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.REPLAY);
 		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.DISCRETE_EMPIRICAL);
 		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.CONTINUOUS_EMPIRICAL);
+		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.MARS);
 
 		initEEnum(flowDirectionEEnum, FlowDirection.class, "FlowDirection");
 		addEEnumLiteral(flowDirectionEEnum, FlowDirection.IN);
@@ -3151,1558 +3163,1535 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 	 * @generated
 	 */
 	protected void createExtendedMetaDataAnnotations() {
-		String source = "http:///org/eclipse/emf/ecore/util/ExtendedMetaData";	
+		String source = "http:///org/eclipse/emf/ecore/util/ExtendedMetaData";
 		addAnnotation
-		  (this, 
-		   source, 
+		  (colorEClass,
+		   source,
 		   new String[] {
-			 "qualified", "false"
-		   });	
-		addAnnotation
-		  (colorEClass, 
-		   source, 
-		   new String[] {
-			 "name", "color",
-			 "kind", "empty"
-		   });	
-		addAnnotation
-		  (getColor_Description(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "description",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getColor_Name(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "name",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getColor_RealColor(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "real-color",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (colorReferenceEClass, 
-		   source, 
-		   new String[] {
-			 "name", "color-reference",
-			 "kind", "elementOnly"
-		   });	
-		addAnnotation
-		  (getColorReference_MetaAttributes(), 
-		   source, 
-		   new String[] {
-			 "kind", "element",
-			 "name", "meta-attributes",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getColorReference_Color(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "color-id",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (colorReferenceMetaAttributeEClass, 
-		   source, 
-		   new String[] {
-			 "name", "color-reference-meta-attribute",
-			 "kind", "empty"
-		   });	
-		addAnnotation
-		  (colorReferencesContainerEClass, 
-		   source, 
-		   new String[] {
-			 "name", "color-references-container",
-			 "kind", "elementOnly"
-		   });	
-		addAnnotation
-		  (getColorReferencesContainer_Definitions(), 
-		   source, 
-		   new String[] {
-			 "kind", "element",
-			 "name", "color-ref",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (colorReferencesMetaAttributesContainerEClass, 
-		   source, 
-		   new String[] {
-			 "name", "color-reference-meta-attributes-container",
-			 "kind", "elementOnly"
-		   });	
-		addAnnotation
-		  (getColorReferencesMetaAttributesContainer_Entries(), 
-		   source, 
-		   new String[] {
-			 "kind", "element",
-			 "name", "meta-attribute",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (colorsContainerEClass, 
-		   source, 
-		   new String[] {
-			 "name", "colors-container",
-			 "kind", "elementOnly"
-		   });	
-		addAnnotation
-		  (getColorsContainer_Definitions(), 
-		   source, 
-		   new String[] {
-			 "kind", "element",
-			 "name", "color",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (departureDisciplineEEnum, 
-		   source, 
-		   new String[] {
-			 "name", "departure-discipline"
-		   });	
-		addAnnotation
-		  (departureDisciplineObjectEDataType, 
-		   source, 
-		   new String[] {
-			 "name", "departure-discipline:Object",
-			 "baseType", "departure-discipline"
-		   });	
-		addAnnotation
-		  (distributionFunctionEEnum, 
-		   source, 
-		   new String[] {
-			 "name", "distribution-function"
-		   });	
-		addAnnotation
-		  (distributionFunctionObjectEDataType, 
-		   source, 
-		   new String[] {
-			 "name", "distribution-function:Object",
-			 "baseType", "distribution-function"
-		   });	
-		addAnnotation
-		  (flowDirectionEEnum, 
-		   source, 
-		   new String[] {
-			 "name", "flow-direction"
-		   });	
-		addAnnotation
-		  (flowDirectionObjectEDataType, 
-		   source, 
-		   new String[] {
-			 "name", "flow-direction:Object",
-			 "baseType", "flow-direction"
-		   });	
-		addAnnotation
-		  (identifiableElementEClass, 
-		   source, 
-		   new String[] {
-			 "name", "identifiable-element",
-			 "kind", "empty"
-		   });	
-		addAnnotation
-		  (getIdentifiableElement_Id(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "id",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (immediateTransitionEClass, 
-		   source, 
-		   new String[] {
-			 "name", "immediate-transition",
-			 "kind", "elementOnly"
-		   });	
-		addAnnotation
-		  (getImmediateTransition_Weight(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "weight",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (incidenceFunctionConnectionEClass, 
-		   source, 
-		   new String[] {
-			 "name", "incidence-function-connection",
-			 "kind", "empty"
-		   });	
-		addAnnotation
-		  (getIncidenceFunctionConnection_Count(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "count",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getIncidenceFunctionConnection_Source(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "source-id",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getIncidenceFunctionConnection_Target(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "target-id",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (incidenceFunctionConnectionsContainerEClass, 
-		   source, 
-		   new String[] {
-			 "name", "incidence-function-connections-container",
-			 "kind", "elementOnly"
-		   });	
-		addAnnotation
-		  (getIncidenceFunctionConnectionsContainer_Definitions(), 
-		   source, 
-		   new String[] {
-			 "kind", "element",
-			 "name", "connection",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (incidenceFunctionElementEClass, 
-		   source, 
-		   new String[] {
-			 "name", "incidence-function-element",
-			 "kind", "empty"
-		   });	
-		addAnnotation
-		  (getIncidenceFunctionElement_IncomingConnections(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "incoming-connections",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getIncidenceFunctionElement_OutgoingConnections(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "outgoing-connections",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (locationAttributeEClass, 
-		   source, 
-		   new String[] {
-			 "name", "location-attribute",
-			 "kind", "empty"
-		   });	
-		addAnnotation
-		  (getLocationAttribute_LocationX(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "location-x",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getLocationAttribute_LocationY(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "location-y",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (modeEClass, 
-		   source, 
-		   new String[] {
-			 "name", "mode",
-			 "kind", "empty"
-		   });	
-		addAnnotation
-		  (getMode_FiringWeight(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "firing-weight",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getMode_MeanFiringDelay(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "mean-firing-delay",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getMode_Name(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "name",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getMode_RealColor(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "real-color",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (modesContainerEClass, 
-		   source, 
-		   new String[] {
-			 "name", "modes-container",
-			 "kind", "elementOnly"
-		   });	
-		addAnnotation
-		  (getModesContainer_Definitions(), 
-		   source, 
-		   new String[] {
-			 "kind", "element",
-			 "name", "mode",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (netMetaAttributeEClass, 
-		   source, 
-		   new String[] {
-			 "name", "net-meta-attribute",
-			 "kind", "empty"
-		   });	
-		addAnnotation
-		  (netMetaAttributesContainerEClass, 
-		   source, 
-		   new String[] {
-			 "name", "net-meta-attributes-container",
-			 "kind", "elementOnly"
-		   });	
-		addAnnotation
-		  (getNetMetaAttributesContainer_Entries(), 
-		   source, 
-		   new String[] {
-			 "kind", "element",
-			 "name", "meta-attribute",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (ordinaryColorReferenceEClass, 
-		   source, 
-		   new String[] {
-			 "name", "ordinary-color-reference",
-			 "kind", "elementOnly"
-		   });	
-		addAnnotation
-		  (ordinaryPlaceEClass, 
-		   source, 
-		   new String[] {
-			 "name", "ordinary-place",
-			 "kind", "elementOnly"
-		   });	
-		addAnnotation
-		  (placeEClass, 
-		   source, 
-		   new String[] {
-			 "name", "place",
-			 "kind", "elementOnly"
-		   });	
-		addAnnotation
-		  (getPlace_ColorReferences(), 
-		   source, 
-		   new String[] {
-			 "kind", "element",
-			 "name", "color-refs",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getPlace_MetaAttributes(), 
-		   source, 
-		   new String[] {
-			 "kind", "element",
-			 "name", "meta-attributes",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getPlace_DepartureDiscipline(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "departure-discipline",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getPlace_Locked(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "locked",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getPlace_Name(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "name",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (placeColorReferenceEClass, 
-		   source, 
-		   new String[] {
-			 "name", "place-color-reference",
-			 "kind", "elementOnly"
-		   });	
-		addAnnotation
-		  (getPlaceColorReference_InitialPopulation(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "initial-population",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getPlaceColorReference_MaximumCapacity(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "maximum-capacity",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (placeMetaAttributeEClass, 
-		   source, 
-		   new String[] {
-			 "name", "place-meta-attribute",
-			 "kind", "empty"
-		   });	
-		addAnnotation
-		  (placeMetaAttributesContainerEClass, 
-		   source, 
-		   new String[] {
-			 "name", "place-meta-attributes-container",
-			 "kind", "elementOnly"
-		   });	
-		addAnnotation
-		  (getPlaceMetaAttributesContainer_Entries(), 
-		   source, 
-		   new String[] {
-			 "kind", "element",
-			 "name", "meta-attribute",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (placesContainerEClass, 
-		   source, 
-		   new String[] {
-			 "name", "places-container",
-			 "kind", "elementOnly"
-		   });	
-		addAnnotation
-		  (getPlacesContainer_Definitions(), 
-		   source, 
-		   new String[] {
-			 "kind", "element",
-			 "name", "place",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (placeTransitionConnectionEClass, 
-		   source, 
-		   new String[] {
-			 "name", "place-transition-connection",
-			 "kind", "empty"
-		   });	
-		addAnnotation
-		  (getPlaceTransitionConnection_Source(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "source-id",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getPlaceTransitionConnection_Target(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "target-id",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (placeTransitionConnectionsContainerEClass, 
-		   source, 
-		   new String[] {
-			 "name", "place-transition-connections-container",
-			 "kind", "elementOnly"
-		   });	
-		addAnnotation
-		  (getPlaceTransitionConnectionsContainer_Definitions(), 
-		   source, 
-		   new String[] {
-			 "kind", "element",
-			 "name", "connection",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (placeTransitionElementEClass, 
-		   source, 
-		   new String[] {
-			 "name", "place-transition-element",
-			 "kind", "empty"
-		   });	
-		addAnnotation
-		  (getPlaceTransitionElement_IncomingConnections(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "incoming-connections",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getPlaceTransitionElement_OutgoingConnections(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "outgoing-connections",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (probeEClass, 
-		   source, 
-		   new String[] {
-			 "name", "probe",
-			 "kind", "elementOnly"
-		   });	
-		addAnnotation
-		  (getProbe_ColorReferences(), 
-		   source, 
-		   new String[] {
-			 "kind", "element",
-			 "name", "color-refs",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getProbe_MetaAttributes(), 
-		   source, 
-		   new String[] {
-			 "kind", "element",
-			 "name", "meta-attributes",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getProbe_EndPlace(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "end-place-id",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getProbe_EndTrigger(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "end-trigger",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getProbe_Name(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "name",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getProbe_StartPlace(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "start-place-id",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getProbe_StartTrigger(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "start-trigger",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (probeColorReferenceEClass, 
-		   source, 
-		   new String[] {
-			 "name", "probe-color-reference",
-			 "kind", "elementOnly"
-		   });	
-		addAnnotation
-		  (probeMetaAttributeEClass, 
-		   source, 
-		   new String[] {
-			 "name", "probe-meta-attribute",
-			 "kind", "empty"
-		   });	
-		addAnnotation
-		  (probeMetaAttributesContainerEClass, 
-		   source, 
-		   new String[] {
-			 "name", "probe-meta-attributes-container",
-			 "kind", "elementOnly"
-		   });	
-		addAnnotation
-		  (getProbeMetaAttributesContainer_Entries(), 
-		   source, 
-		   new String[] {
-			 "kind", "element",
-			 "name", "meta-attribute",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (probesContainerEClass, 
-		   source, 
-		   new String[] {
-			 "name", "probes-container",
-			 "kind", "elementOnly"
-		   });	
-		addAnnotation
-		  (getProbesContainer_Definitions(), 
-		   source, 
-		   new String[] {
-			 "kind", "element",
-			 "name", "probe",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (probeTriggerEEnum, 
-		   source, 
-		   new String[] {
-			 "name", "probe-trigger"
-		   });	
-		addAnnotation
-		  (probeTriggerObjectEDataType, 
-		   source, 
-		   new String[] {
-			 "name", "probe-trigger:Object",
-			 "baseType", "probe-trigger"
-		   });	
-		addAnnotation
-		  (qpmeDocumentEClass, 
-		   source, 
-		   new String[] {
-			 "name", "",
-			 "kind", "mixed"
-		   });	
-		addAnnotation
-		  (getQpmeDocument_Mixed(), 
-		   source, 
-		   new String[] {
-			 "kind", "elementWildcard",
-			 "name", ":mixed"
-		   });	
-		addAnnotation
-		  (getQpmeDocument_XMLNSPrefixMap(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "xmlns:prefix"
-		   });	
-		addAnnotation
-		  (getQpmeDocument_XSISchemaLocation(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "xsi:schemaLocation"
-		   });	
-		addAnnotation
-		  (getQpmeDocument_Net(), 
-		   source, 
-		   new String[] {
-			 "kind", "element",
-			 "name", "net",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (queueEClass, 
-		   source, 
-		   new String[] {
-			 "name", "queue",
-			 "kind", "empty"
-		   });	
-		addAnnotation
-		  (getQueue_Name(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "name",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getQueue_NumberOfServers(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "number-of-servers",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getQueue_Strategy(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "strategy",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (queueingColorReferenceEClass, 
-		   source, 
-		   new String[] {
-			 "name", "queueing-color-reference",
-			 "kind", "elementOnly"
-		   });	
-		addAnnotation
-		  (getQueueingColorReference_Alpha(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "alpha",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getQueueingColorReference_Beta(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "beta",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getQueueingColorReference_Cut(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "cut",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getQueueingColorReference_DistributionFunction(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "distribution-function",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getQueueingColorReference_Freedom(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "freedom",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getQueueingColorReference_Gamma(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "gamma",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getQueueingColorReference_InputFile(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "pdf_filename",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getQueueingColorReference_Lambda(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "lambda",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getQueueingColorReference_Max(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "max",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getQueueingColorReference_Mean(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "mean",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getQueueingColorReference_Min(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "min",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getQueueingColorReference_P(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "p",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getQueueingColorReference_C(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "c",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getQueueingColorReference_Priority(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "priority",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getQueueingColorReference_Ranking(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "ranking",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getQueueingColorReference_StdDev(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "stdDev",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getQueueingColorReference_Tau(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "tau",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getQueueingColorReference_Offset(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "offset",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getQueueingColorReference_Scale(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "scale",
-			 "namespace", "##targetNamespace"
-		   });	
-		addAnnotation
-		  (getQueueingColorReference_ReplayFile(), 
-		   source, 
-		   new String[] {
-			 "kind", "attribute",
-			 "name", "replay_filename",
-			 "namespace", "##targetNamespace"
+			   "name", "color",
+			   "kind", "empty"
 		   });
 		addAnnotation
-		  (getQueueingColorReference_ReplayFile(), 
-		   new boolean[] { true },
-		   "http:///org/eclipse/emf/ecore/util/ExtendedMetaData",
+		  (getColor_Description(),
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "replay_filename",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "attribute",
+			   "name", "description",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (queueingPetriNetEClass, 
-		   source, 
+		  (getColor_Name(),
+		   source,
 		   new String[] {
-			 "name", "queueing-petri-net",
-			 "kind", "elementOnly"
-		   });	
+			   "kind", "attribute",
+			   "name", "name",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getQueueingPetriNet_Colors(), 
-		   source, 
+		  (getColor_RealColor(),
+		   source,
 		   new String[] {
-			 "kind", "element",
-			 "name", "colors",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "attribute",
+			   "name", "real-color",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getQueueingPetriNet_Queues(), 
-		   source, 
+		  (colorReferenceEClass,
+		   source,
 		   new String[] {
-			 "kind", "element",
-			 "name", "queues",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "color-reference",
+			   "kind", "elementOnly"
+		   });
 		addAnnotation
-		  (getQueueingPetriNet_Places(), 
-		   source, 
+		  (getColorReference_MetaAttributes(),
+		   source,
 		   new String[] {
-			 "kind", "element",
-			 "name", "places",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "element",
+			   "name", "meta-attributes",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getQueueingPetriNet_Transitions(), 
-		   source, 
+		  (getColorReference_Color(),
+		   source,
 		   new String[] {
-			 "kind", "element",
-			 "name", "transitions",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "attribute",
+			   "name", "color-id",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getQueueingPetriNet_Connections(), 
-		   source, 
+		  (colorReferenceMetaAttributeEClass,
+		   source,
 		   new String[] {
-			 "kind", "element",
-			 "name", "connections",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "color-reference-meta-attribute",
+			   "kind", "empty"
+		   });
 		addAnnotation
-		  (getQueueingPetriNet_Probes(), 
-		   source, 
+		  (colorReferencesContainerEClass,
+		   source,
 		   new String[] {
-			 "kind", "element",
-			 "name", "probes",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "color-references-container",
+			   "kind", "elementOnly"
+		   });
 		addAnnotation
-		  (getQueueingPetriNet_MetaAttributes(), 
-		   source, 
+		  (getColorReferencesContainer_Definitions(),
+		   source,
 		   new String[] {
-			 "kind", "element",
-			 "name", "meta-attributes",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "element",
+			   "name", "color-ref",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getQueueingPetriNet_QpmeVersion(), 
-		   source, 
+		  (colorReferencesMetaAttributesContainerEClass,
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "qpme-version",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "color-reference-meta-attributes-container",
+			   "kind", "elementOnly"
+		   });
 		addAnnotation
-		  (queueingPlaceEClass, 
-		   source, 
+		  (getColorReferencesMetaAttributesContainer_Entries(),
+		   source,
 		   new String[] {
-			 "name", "queueing-place",
-			 "kind", "elementOnly"
-		   });	
+			   "kind", "element",
+			   "name", "meta-attribute",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getQueueingPlace_Queue(), 
-		   source, 
+		  (colorsContainerEClass,
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "queue-ref",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "colors-container",
+			   "kind", "elementOnly"
+		   });
 		addAnnotation
-		  (queueingStrategyEEnum, 
-		   source, 
+		  (getColorsContainer_Definitions(),
+		   source,
 		   new String[] {
-			 "name", "queueing-strategy"
-		   });	
+			   "kind", "element",
+			   "name", "color",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (queueingStrategyObjectEDataType, 
-		   source, 
+		  (departureDisciplineEEnum,
+		   source,
 		   new String[] {
-			 "name", "queueing-strategy:Object",
-			 "baseType", "queueing-strategy"
-		   });	
+			   "name", "departure-discipline"
+		   });
 		addAnnotation
-		  (queuesContainerEClass, 
-		   source, 
+		  (departureDisciplineObjectEDataType,
+		   source,
 		   new String[] {
-			 "name", "queues-container",
-			 "kind", "elementOnly"
-		   });	
+			   "name", "departure-discipline:Object",
+			   "baseType", "departure-discipline"
+		   });
 		addAnnotation
-		  (getQueuesContainer_Definitions(), 
-		   source, 
+		  (distributionFunctionEEnum,
+		   source,
 		   new String[] {
-			 "kind", "element",
-			 "name", "queue",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "distribution-function"
+		   });
 		addAnnotation
-		  (rgbValueEDataType, 
-		   source, 
+		  (distributionFunctionObjectEDataType,
+		   source,
 		   new String[] {
-			 "name", "rgb-value",
-			 "baseType", "http://www.eclipse.org/emf/2003/XMLType#string"
-		   });	
+			   "name", "distribution-function:Object",
+			   "baseType", "distribution-function"
+		   });
 		addAnnotation
-		  (simqpnBatchMeansColorConfigurationEClass, 
-		   source, 
+		  (flowDirectionEEnum,
+		   source,
 		   new String[] {
-			 "name", "simqpn-batch-means-color-configuration",
-			 "kind", "empty"
-		   });	
+			   "name", "flow-direction"
+		   });
 		addAnnotation
-		  (getSimqpnBatchMeansColorConfiguration_BatchSize(), 
-		   source, 
+		  (flowDirectionObjectEDataType,
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "batchSize",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "flow-direction:Object",
+			   "baseType", "flow-direction"
+		   });
 		addAnnotation
-		  (getSimqpnBatchMeansColorConfiguration_BucketSize(), 
-		   source, 
+		  (identifiableElementEClass,
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "bucketSize",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "identifiable-element",
+			   "kind", "empty"
+		   });
 		addAnnotation
-		  (getSimqpnBatchMeansColorConfiguration_MaxBuckets(), 
-		   source, 
+		  (getIdentifiableElement_Id(),
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "maxBuckets",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "attribute",
+			   "name", "id",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getSimqpnBatchMeansColorConfiguration_MinBatches(), 
-		   source, 
+		  (immediateTransitionEClass,
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "minBatches",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "immediate-transition",
+			   "kind", "elementOnly"
+		   });
 		addAnnotation
-		  (getSimqpnBatchMeansColorConfiguration_NumBMeansCorlTested(), 
-		   source, 
+		  (getImmediateTransition_Weight(),
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "numBMeansCorlTested",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "attribute",
+			   "name", "weight",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getSimqpnBatchMeansColorConfiguration_ReqAbsPrc(), 
-		   source, 
+		  (incidenceFunctionConnectionEClass,
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "reqAbsPrc",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "incidence-function-connection",
+			   "kind", "empty"
+		   });
 		addAnnotation
-		  (getSimqpnBatchMeansColorConfiguration_ReqRelPrc(), 
-		   source, 
+		  (getIncidenceFunctionConnection_Count(),
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "reqRelPrc",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "attribute",
+			   "name", "count",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getSimqpnBatchMeansColorConfiguration_SignLev(), 
-		   source, 
+		  (getIncidenceFunctionConnection_Source(),
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "signLev",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "attribute",
+			   "name", "source-id",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (simqpnBatchMeansQueueingColorConfigurationEClass, 
-		   source, 
+		  (getIncidenceFunctionConnection_Target(),
+		   source,
 		   new String[] {
-			 "name", "simqpn-batch-means-queueing-color-configuration",
-			 "kind", "empty"
-		   });	
+			   "kind", "attribute",
+			   "name", "target-id",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getSimqpnBatchMeansQueueingColorConfiguration_QueueBatchSize(), 
-		   source, 
+		  (incidenceFunctionConnectionsContainerEClass,
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "queueBatchSize",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "incidence-function-connections-container",
+			   "kind", "elementOnly"
+		   });
 		addAnnotation
-		  (getSimqpnBatchMeansQueueingColorConfiguration_QueueBucketSize(), 
-		   source, 
+		  (getIncidenceFunctionConnectionsContainer_Definitions(),
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "queueBucketSize",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "element",
+			   "name", "connection",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getSimqpnBatchMeansQueueingColorConfiguration_QueueMaxBuckets(), 
-		   source, 
+		  (incidenceFunctionElementEClass,
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "queueMaxBuckets",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "incidence-function-element",
+			   "kind", "empty"
+		   });
 		addAnnotation
-		  (getSimqpnBatchMeansQueueingColorConfiguration_QueueMinBatches(), 
-		   source, 
+		  (getIncidenceFunctionElement_IncomingConnections(),
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "queueMinBatches",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "attribute",
+			   "name", "incoming-connections",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getSimqpnBatchMeansQueueingColorConfiguration_QueueNumBMeansCorlTested(), 
-		   source, 
+		  (getIncidenceFunctionElement_OutgoingConnections(),
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "queueNumBMeansCorlTested",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "attribute",
+			   "name", "outgoing-connections",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getSimqpnBatchMeansQueueingColorConfiguration_QueueReqAbsPrc(), 
-		   source, 
+		  (locationAttributeEClass,
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "queueReqAbsPrc",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "location-attribute",
+			   "kind", "empty"
+		   });
 		addAnnotation
-		  (getSimqpnBatchMeansQueueingColorConfiguration_QueueReqRelPrc(), 
-		   source, 
+		  (getLocationAttribute_LocationX(),
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "queueReqRelPrc",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "attribute",
+			   "name", "location-x",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getSimqpnBatchMeansQueueingColorConfiguration_QueueSignLev(), 
-		   source, 
+		  (getLocationAttribute_LocationY(),
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "queueSignLev",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "attribute",
+			   "name", "location-y",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (simqpnConfigurationEClass, 
-		   source, 
+		  (modeEClass,
+		   source,
 		   new String[] {
-			 "name", "simqpn-configuration",
-			 "kind", "empty"
-		   });	
+			   "name", "mode",
+			   "kind", "empty"
+		   });
 		addAnnotation
-		  (getSimqpnConfiguration_ConfigurationDescription(), 
-		   source, 
+		  (getMode_FiringWeight(),
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "configuration-description",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "attribute",
+			   "name", "firing-weight",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getSimqpnConfiguration_NumberOfRuns(), 
-		   source, 
+		  (getMode_MeanFiringDelay(),
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "number-of-runs",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "attribute",
+			   "name", "mean-firing-delay",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getSimqpnConfiguration_OutputDirectory(), 
-		   source, 
+		  (getMode_Name(),
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "output-directory",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "attribute",
+			   "name", "name",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getSimqpnConfiguration_RampUpLength(), 
-		   source, 
+		  (getMode_RealColor(),
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "ramp-up-length",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "attribute",
+			   "name", "real-color",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getSimqpnConfiguration_Scenario(), 
-		   source, 
+		  (modesContainerEClass,
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "scenario",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "modes-container",
+			   "kind", "elementOnly"
+		   });
 		addAnnotation
-		  (getSimqpnConfiguration_SecondsBetweenHeartBeats(), 
-		   source, 
+		  (getModesContainer_Definitions(),
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "seconds-between-heart-beats",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "element",
+			   "name", "mode",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getSimqpnConfiguration_SecondsBetweenStopChecks(), 
-		   source, 
+		  (netMetaAttributeEClass,
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "seconds-between-stop-checks",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "net-meta-attribute",
+			   "kind", "empty"
+		   });
 		addAnnotation
-		  (getSimqpnConfiguration_StoppingRule(), 
-		   source, 
+		  (netMetaAttributesContainerEClass,
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "stopping-rule",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "net-meta-attributes-container",
+			   "kind", "elementOnly"
+		   });
 		addAnnotation
-		  (getSimqpnConfiguration_TimeBeforeInitialHeartBeat(), 
-		   source, 
+		  (getNetMetaAttributesContainer_Entries(),
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "time-before-initial-heart-beat",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "element",
+			   "name", "meta-attribute",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getSimqpnConfiguration_TimeBetweenStopChecks(), 
-		   source, 
+		  (ordinaryColorReferenceEClass,
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "time-between-stop-checks",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "ordinary-color-reference",
+			   "kind", "elementOnly"
+		   });
 		addAnnotation
-		  (getSimqpnConfiguration_TotalRunLength(), 
-		   source, 
+		  (ordinaryPlaceEClass,
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "total-run-length",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "ordinary-place",
+			   "kind", "elementOnly"
+		   });
 		addAnnotation
-		  (getSimqpnConfiguration_VerbosityLevel(), 
-		   source, 
+		  (placeEClass,
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "verbosity-level",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "place",
+			   "kind", "elementOnly"
+		   });
 		addAnnotation
-		  (simqpnMetaAttributeEClass, 
-		   source, 
+		  (getPlace_ColorReferences(),
+		   source,
 		   new String[] {
-			 "name", "simqpn-meta-attribute",
-			 "kind", "empty"
-		   });	
+			   "kind", "element",
+			   "name", "color-refs",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getSimqpnMetaAttribute_ConfigurationName(), 
-		   source, 
+		  (getPlace_MetaAttributes(),
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "configuration-name",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "element",
+			   "name", "meta-attributes",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (simqpnPlaceConfigurationEClass, 
-		   source, 
+		  (getPlace_DepartureDiscipline(),
+		   source,
 		   new String[] {
-			 "name", "simqpn-place-configuration",
-			 "kind", "empty"
-		   });	
+			   "kind", "attribute",
+			   "name", "departure-discipline",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getSimqpnPlaceConfiguration_StatsLevel(), 
-		   source, 
+		  (getPlace_Locked(),
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "statsLevel",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "attribute",
+			   "name", "locked",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (simqpnReplDelColorConfigurationEClass, 
-		   source, 
+		  (getPlace_Name(),
+		   source,
 		   new String[] {
-			 "name", "simqpn-replication-delection-color-configuration",
-			 "kind", "empty"
-		   });	
+			   "kind", "attribute",
+			   "name", "name",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getSimqpnReplDelColorConfiguration_SignLevAvgST(), 
-		   source, 
+		  (placeColorReferenceEClass,
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "signLevAvgST",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "place-color-reference",
+			   "kind", "elementOnly"
+		   });
 		addAnnotation
-		  (simqpnReplDelQueueingColorConfigurationEClass, 
-		   source, 
+		  (getPlaceColorReference_InitialPopulation(),
+		   source,
 		   new String[] {
-			 "name", "simqpn-replication-delection-queueing-color-configuration",
-			 "kind", "empty"
-		   });	
+			   "kind", "attribute",
+			   "name", "initial-population",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getSimqpnReplDelQueueingColorConfiguration_QueueSignLevAvgST(), 
-		   source, 
+		  (getPlaceColorReference_MaximumCapacity(),
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "queueSignLevAvgST",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "attribute",
+			   "name", "maximum-capacity",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (simqpnSimulationScenarioEEnum, 
-		   source, 
+		  (placeMetaAttributeEClass,
+		   source,
 		   new String[] {
-			 "name", "simqpn-simulation-scenario"
-		   });	
+			   "name", "place-meta-attribute",
+			   "kind", "empty"
+		   });
 		addAnnotation
-		  (simqpnSimulationScenarioObjectEDataType, 
-		   source, 
+		  (placeMetaAttributesContainerEClass,
+		   source,
 		   new String[] {
-			 "name", "simqpn-simulation-scenario:Object",
-			 "baseType", "simqpn-simulation-scenario"
-		   });	
+			   "name", "place-meta-attributes-container",
+			   "kind", "elementOnly"
+		   });
 		addAnnotation
-		  (simqpnStoppingRuleEEnum, 
-		   source, 
+		  (getPlaceMetaAttributesContainer_Entries(),
+		   source,
 		   new String[] {
-			 "name", "simqpn-stopping-rule"
-		   });	
+			   "kind", "element",
+			   "name", "meta-attribute",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (simqpnStoppingRuleObjectEDataType, 
-		   source, 
+		  (placesContainerEClass,
+		   source,
 		   new String[] {
-			 "name", "simqpn-stopping-rule:Object",
-			 "baseType", "simqpn-stopping-rule"
-		   });	
+			   "name", "places-container",
+			   "kind", "elementOnly"
+		   });
 		addAnnotation
-		  (simqpnWelchColorConfigurationEClass, 
-		   source, 
+		  (getPlacesContainer_Definitions(),
+		   source,
 		   new String[] {
-			 "name", "simqpn-welch-color-configuration",
-			 "kind", "empty"
-		   });	
+			   "kind", "element",
+			   "name", "place",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getSimqpnWelchColorConfiguration_MaxObsrv(), 
-		   source, 
+		  (placeTransitionConnectionEClass,
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "maxObsrv",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "place-transition-connection",
+			   "kind", "empty"
+		   });
 		addAnnotation
-		  (getSimqpnWelchColorConfiguration_MinObsrv(), 
-		   source, 
+		  (getPlaceTransitionConnection_Source(),
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "minObsrv",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "attribute",
+			   "name", "source-id",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (simqpnWelchQueueingColorConfigurationEClass, 
-		   source, 
+		  (getPlaceTransitionConnection_Target(),
+		   source,
 		   new String[] {
-			 "name", "simqpn-welch-queueing-color-configuration",
-			 "kind", "empty"
-		   });	
+			   "kind", "attribute",
+			   "name", "target-id",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getSimqpnWelchQueueingColorConfiguration_QueueMaxObsrv(), 
-		   source, 
+		  (placeTransitionConnectionsContainerEClass,
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "queueMaxObsrv",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "place-transition-connections-container",
+			   "kind", "elementOnly"
+		   });
 		addAnnotation
-		  (getSimqpnWelchQueueingColorConfiguration_QueueMinObsrv(), 
-		   source, 
+		  (getPlaceTransitionConnectionsContainer_Definitions(),
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "queueMinObsrv",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "element",
+			   "name", "connection",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (subnetEClass, 
-		   source, 
+		  (placeTransitionElementEClass,
+		   source,
 		   new String[] {
-			 "name", "subnet",
-			 "kind", "elementOnly"
-		   });	
+			   "name", "place-transition-element",
+			   "kind", "empty"
+		   });
 		addAnnotation
-		  (getSubnet_Colors(), 
-		   source, 
+		  (getPlaceTransitionElement_IncomingConnections(),
+		   source,
 		   new String[] {
-			 "kind", "element",
-			 "name", "colors",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "attribute",
+			   "name", "incoming-connections",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getSubnet_Places(), 
-		   source, 
+		  (getPlaceTransitionElement_OutgoingConnections(),
+		   source,
 		   new String[] {
-			 "kind", "element",
-			 "name", "places",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "attribute",
+			   "name", "outgoing-connections",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getSubnet_Transitions(), 
-		   source, 
+		  (probeEClass,
+		   source,
 		   new String[] {
-			 "kind", "element",
-			 "name", "transitions",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "probe",
+			   "kind", "elementOnly"
+		   });
 		addAnnotation
-		  (getSubnet_Connections(), 
-		   source, 
+		  (getProbe_ColorReferences(),
+		   source,
 		   new String[] {
-			 "kind", "element",
-			 "name", "connections",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "element",
+			   "name", "color-refs",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (subnetColorReferenceEClass, 
-		   source, 
+		  (getProbe_MetaAttributes(),
+		   source,
 		   new String[] {
-			 "name", "subnet-color-reference",
-			 "kind", "elementOnly"
-		   });	
+			   "kind", "element",
+			   "name", "meta-attributes",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getSubnetColorReference_Direction(), 
-		   source, 
+		  (getProbe_EndPlace(),
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "direction",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "attribute",
+			   "name", "end-place-id",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (subnetPlaceEClass, 
-		   source, 
+		  (getProbe_EndTrigger(),
+		   source,
 		   new String[] {
-			 "name", "subnet-place",
-			 "kind", "elementOnly"
-		   });	
+			   "kind", "attribute",
+			   "name", "end-trigger",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getSubnetPlace_Subnet(), 
-		   source, 
+		  (getProbe_Name(),
+		   source,
 		   new String[] {
-			 "kind", "element",
-			 "name", "subnet",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "attribute",
+			   "name", "name",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (timedTransitionEClass, 
-		   source, 
+		  (getProbe_StartPlace(),
+		   source,
 		   new String[] {
-			 "name", "timed-transition",
-			 "kind", "elementOnly"
-		   });	
+			   "kind", "attribute",
+			   "name", "start-place-id",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (transitionEClass, 
-		   source, 
+		  (getProbe_StartTrigger(),
+		   source,
 		   new String[] {
-			 "name", "transition",
-			 "kind", "elementOnly"
-		   });	
+			   "kind", "attribute",
+			   "name", "start-trigger",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getTransition_Modes(), 
-		   source, 
+		  (probeColorReferenceEClass,
+		   source,
 		   new String[] {
-			 "kind", "element",
-			 "name", "modes",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "probe-color-reference",
+			   "kind", "elementOnly"
+		   });
 		addAnnotation
-		  (getTransition_Connections(), 
-		   source, 
+		  (probeMetaAttributeEClass,
+		   source,
 		   new String[] {
-			 "kind", "element",
-			 "name", "connections",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "probe-meta-attribute",
+			   "kind", "empty"
+		   });
 		addAnnotation
-		  (getTransition_MetaAttributes(), 
-		   source, 
+		  (probeMetaAttributesContainerEClass,
+		   source,
 		   new String[] {
-			 "kind", "element",
-			 "name", "meta-attributes",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "probe-meta-attributes-container",
+			   "kind", "elementOnly"
+		   });
 		addAnnotation
-		  (getTransition_Name(), 
-		   source, 
+		  (getProbeMetaAttributesContainer_Entries(),
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "name",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "kind", "element",
+			   "name", "meta-attribute",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (getTransition_Priority(), 
-		   source, 
+		  (probesContainerEClass,
+		   source,
 		   new String[] {
-			 "kind", "attribute",
-			 "name", "priority",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "probes-container",
+			   "kind", "elementOnly"
+		   });
 		addAnnotation
-		  (transitionMetaAttributeEClass, 
-		   source, 
+		  (getProbesContainer_Definitions(),
+		   source,
 		   new String[] {
-			 "name", "transition-meta-attribute",
-			 "kind", "empty"
-		   });	
+			   "kind", "element",
+			   "name", "probe",
+			   "namespace", "##targetNamespace"
+		   });
 		addAnnotation
-		  (transitionMetaAttributesContainerEClass, 
-		   source, 
+		  (probeTriggerEEnum,
+		   source,
 		   new String[] {
-			 "name", "transition-meta-attributes-container",
-			 "kind", "elementOnly"
-		   });	
+			   "name", "probe-trigger"
+		   });
 		addAnnotation
-		  (getTransitionMetaAttributesContainer_Entries(), 
-		   source, 
+		  (probeTriggerObjectEDataType,
+		   source,
 		   new String[] {
-			 "kind", "element",
-			 "name", "meta-attribute",
-			 "namespace", "##targetNamespace"
-		   });	
+			   "name", "probe-trigger:Object",
+			   "baseType", "probe-trigger"
+		   });
 		addAnnotation
-		  (transitionsContainerEClass, 
-		   source, 
+		  (qpmeDocumentEClass,
+		   source,
 		   new String[] {
-			 "name", "transitions-container",
-			 "kind", "elementOnly"
-		   });	
+			   "name", "",
+			   "kind", "mixed"
+		   });
 		addAnnotation
-		  (getTransitionsContainer_Definitions(), 
-		   source, 
+		  (getQpmeDocument_Mixed(),
+		   source,
 		   new String[] {
-			 "kind", "element",
-			 "name", "transition",
-			 "namespace", "##targetNamespace"
+			   "kind", "elementWildcard",
+			   "name", ":mixed"
+		   });
+		addAnnotation
+		  (getQpmeDocument_XMLNSPrefixMap(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "xmlns:prefix"
+		   });
+		addAnnotation
+		  (getQpmeDocument_XSISchemaLocation(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "xsi:schemaLocation"
+		   });
+		addAnnotation
+		  (getQpmeDocument_Net(),
+		   source,
+		   new String[] {
+			   "kind", "element",
+			   "name", "net",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (queueEClass,
+		   source,
+		   new String[] {
+			   "name", "queue",
+			   "kind", "empty"
+		   });
+		addAnnotation
+		  (getQueue_Name(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "name",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueue_NumberOfServers(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "number-of-servers",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueue_Strategy(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "strategy",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (queueingColorReferenceEClass,
+		   source,
+		   new String[] {
+			   "name", "queueing-color-reference",
+			   "kind", "elementOnly"
+		   });
+		addAnnotation
+		  (getQueueingColorReference_Alpha(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "alpha",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingColorReference_Beta(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "beta",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingColorReference_Cut(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "cut",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingColorReference_DistributionFunction(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "distribution-function",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingColorReference_Freedom(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "freedom",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingColorReference_Gamma(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "gamma",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingColorReference_InputFile(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "pdf_filename",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingColorReference_Lambda(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "lambda",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingColorReference_Max(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "max",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingColorReference_Mean(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "mean",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingColorReference_Min(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "min",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingColorReference_P(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "p",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingColorReference_C(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "c",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingColorReference_Priority(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "priority",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingColorReference_Ranking(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "ranking",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingColorReference_StdDev(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "stdDev",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingColorReference_Tau(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "tau",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingColorReference_Offset(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "offset",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingColorReference_Scale(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "scale",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (queueingPetriNetEClass,
+		   source,
+		   new String[] {
+			   "name", "queueing-petri-net",
+			   "kind", "elementOnly"
+		   });
+		addAnnotation
+		  (getQueueingPetriNet_Colors(),
+		   source,
+		   new String[] {
+			   "kind", "element",
+			   "name", "colors",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingPetriNet_Queues(),
+		   source,
+		   new String[] {
+			   "kind", "element",
+			   "name", "queues",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingPetriNet_Places(),
+		   source,
+		   new String[] {
+			   "kind", "element",
+			   "name", "places",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingPetriNet_Transitions(),
+		   source,
+		   new String[] {
+			   "kind", "element",
+			   "name", "transitions",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingPetriNet_Connections(),
+		   source,
+		   new String[] {
+			   "kind", "element",
+			   "name", "connections",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingPetriNet_Probes(),
+		   source,
+		   new String[] {
+			   "kind", "element",
+			   "name", "probes",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingPetriNet_MetaAttributes(),
+		   source,
+		   new String[] {
+			   "kind", "element",
+			   "name", "meta-attributes",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getQueueingPetriNet_QpmeVersion(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "qpme-version",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (queueingPlaceEClass,
+		   source,
+		   new String[] {
+			   "name", "queueing-place",
+			   "kind", "elementOnly"
+		   });
+		addAnnotation
+		  (getQueueingPlace_Queue(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "queue-ref",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (queueingStrategyEEnum,
+		   source,
+		   new String[] {
+			   "name", "queueing-strategy"
+		   });
+		addAnnotation
+		  (queueingStrategyObjectEDataType,
+		   source,
+		   new String[] {
+			   "name", "queueing-strategy:Object",
+			   "baseType", "queueing-strategy"
+		   });
+		addAnnotation
+		  (queuesContainerEClass,
+		   source,
+		   new String[] {
+			   "name", "queues-container",
+			   "kind", "elementOnly"
+		   });
+		addAnnotation
+		  (getQueuesContainer_Definitions(),
+		   source,
+		   new String[] {
+			   "kind", "element",
+			   "name", "queue",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (rgbValueEDataType,
+		   source,
+		   new String[] {
+			   "name", "rgb-value",
+			   "baseType", "http://www.eclipse.org/emf/2003/XMLType#string"
+		   });
+		addAnnotation
+		  (simqpnBatchMeansColorConfigurationEClass,
+		   source,
+		   new String[] {
+			   "name", "simqpn-batch-means-color-configuration",
+			   "kind", "empty"
+		   });
+		addAnnotation
+		  (getSimqpnBatchMeansColorConfiguration_BatchSize(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "batchSize",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnBatchMeansColorConfiguration_BucketSize(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "bucketSize",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnBatchMeansColorConfiguration_MaxBuckets(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "maxBuckets",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnBatchMeansColorConfiguration_MinBatches(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "minBatches",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnBatchMeansColorConfiguration_NumBMeansCorlTested(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "numBMeansCorlTested",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnBatchMeansColorConfiguration_ReqAbsPrc(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "reqAbsPrc",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnBatchMeansColorConfiguration_ReqRelPrc(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "reqRelPrc",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnBatchMeansColorConfiguration_SignLev(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "signLev",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (simqpnBatchMeansQueueingColorConfigurationEClass,
+		   source,
+		   new String[] {
+			   "name", "simqpn-batch-means-queueing-color-configuration",
+			   "kind", "empty"
+		   });
+		addAnnotation
+		  (getSimqpnBatchMeansQueueingColorConfiguration_QueueBatchSize(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "queueBatchSize",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnBatchMeansQueueingColorConfiguration_QueueBucketSize(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "queueBucketSize",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnBatchMeansQueueingColorConfiguration_QueueMaxBuckets(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "queueMaxBuckets",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnBatchMeansQueueingColorConfiguration_QueueMinBatches(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "queueMinBatches",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnBatchMeansQueueingColorConfiguration_QueueNumBMeansCorlTested(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "queueNumBMeansCorlTested",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnBatchMeansQueueingColorConfiguration_QueueReqAbsPrc(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "queueReqAbsPrc",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnBatchMeansQueueingColorConfiguration_QueueReqRelPrc(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "queueReqRelPrc",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnBatchMeansQueueingColorConfiguration_QueueSignLev(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "queueSignLev",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (simqpnConfigurationEClass,
+		   source,
+		   new String[] {
+			   "name", "simqpn-configuration",
+			   "kind", "empty"
+		   });
+		addAnnotation
+		  (getSimqpnConfiguration_ConfigurationDescription(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "configuration-description",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnConfiguration_NumberOfRuns(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "number-of-runs",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnConfiguration_OutputDirectory(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "output-directory",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnConfiguration_RampUpLength(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "ramp-up-length",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnConfiguration_Scenario(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "scenario",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnConfiguration_SecondsBetweenHeartBeats(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "seconds-between-heart-beats",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnConfiguration_SecondsBetweenStopChecks(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "seconds-between-stop-checks",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnConfiguration_StoppingRule(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "stopping-rule",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnConfiguration_TimeBeforeInitialHeartBeat(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "time-before-initial-heart-beat",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnConfiguration_TimeBetweenStopChecks(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "time-between-stop-checks",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnConfiguration_TotalRunLength(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "total-run-length",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnConfiguration_VerbosityLevel(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "verbosity-level",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (simqpnMetaAttributeEClass,
+		   source,
+		   new String[] {
+			   "name", "simqpn-meta-attribute",
+			   "kind", "empty"
+		   });
+		addAnnotation
+		  (getSimqpnMetaAttribute_ConfigurationName(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "configuration-name",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (simqpnPlaceConfigurationEClass,
+		   source,
+		   new String[] {
+			   "name", "simqpn-place-configuration",
+			   "kind", "empty"
+		   });
+		addAnnotation
+		  (getSimqpnPlaceConfiguration_StatsLevel(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "statsLevel",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (simqpnReplDelColorConfigurationEClass,
+		   source,
+		   new String[] {
+			   "name", "simqpn-replication-delection-color-configuration",
+			   "kind", "empty"
+		   });
+		addAnnotation
+		  (getSimqpnReplDelColorConfiguration_SignLevAvgST(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "signLevAvgST",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (simqpnReplDelQueueingColorConfigurationEClass,
+		   source,
+		   new String[] {
+			   "name", "simqpn-replication-delection-queueing-color-configuration",
+			   "kind", "empty"
+		   });
+		addAnnotation
+		  (getSimqpnReplDelQueueingColorConfiguration_QueueSignLevAvgST(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "queueSignLevAvgST",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (simqpnSimulationScenarioEEnum,
+		   source,
+		   new String[] {
+			   "name", "simqpn-simulation-scenario"
+		   });
+		addAnnotation
+		  (simqpnSimulationScenarioObjectEDataType,
+		   source,
+		   new String[] {
+			   "name", "simqpn-simulation-scenario:Object",
+			   "baseType", "simqpn-simulation-scenario"
+		   });
+		addAnnotation
+		  (simqpnStoppingRuleEEnum,
+		   source,
+		   new String[] {
+			   "name", "simqpn-stopping-rule"
+		   });
+		addAnnotation
+		  (simqpnStoppingRuleObjectEDataType,
+		   source,
+		   new String[] {
+			   "name", "simqpn-stopping-rule:Object",
+			   "baseType", "simqpn-stopping-rule"
+		   });
+		addAnnotation
+		  (simqpnWelchColorConfigurationEClass,
+		   source,
+		   new String[] {
+			   "name", "simqpn-welch-color-configuration",
+			   "kind", "empty"
+		   });
+		addAnnotation
+		  (getSimqpnWelchColorConfiguration_MaxObsrv(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "maxObsrv",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnWelchColorConfiguration_MinObsrv(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "minObsrv",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (simqpnWelchQueueingColorConfigurationEClass,
+		   source,
+		   new String[] {
+			   "name", "simqpn-welch-queueing-color-configuration",
+			   "kind", "empty"
+		   });
+		addAnnotation
+		  (getSimqpnWelchQueueingColorConfiguration_QueueMaxObsrv(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "queueMaxObsrv",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSimqpnWelchQueueingColorConfiguration_QueueMinObsrv(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "queueMinObsrv",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (subnetEClass,
+		   source,
+		   new String[] {
+			   "name", "subnet",
+			   "kind", "elementOnly"
+		   });
+		addAnnotation
+		  (getSubnet_Colors(),
+		   source,
+		   new String[] {
+			   "kind", "element",
+			   "name", "colors",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSubnet_Places(),
+		   source,
+		   new String[] {
+			   "kind", "element",
+			   "name", "places",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSubnet_Transitions(),
+		   source,
+		   new String[] {
+			   "kind", "element",
+			   "name", "transitions",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getSubnet_Connections(),
+		   source,
+		   new String[] {
+			   "kind", "element",
+			   "name", "connections",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (subnetColorReferenceEClass,
+		   source,
+		   new String[] {
+			   "name", "subnet-color-reference",
+			   "kind", "elementOnly"
+		   });
+		addAnnotation
+		  (getSubnetColorReference_Direction(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "direction",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (subnetPlaceEClass,
+		   source,
+		   new String[] {
+			   "name", "subnet-place",
+			   "kind", "elementOnly"
+		   });
+		addAnnotation
+		  (getSubnetPlace_Subnet(),
+		   source,
+		   new String[] {
+			   "kind", "element",
+			   "name", "subnet",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (timedTransitionEClass,
+		   source,
+		   new String[] {
+			   "name", "timed-transition",
+			   "kind", "elementOnly"
+		   });
+		addAnnotation
+		  (transitionEClass,
+		   source,
+		   new String[] {
+			   "name", "transition",
+			   "kind", "elementOnly"
+		   });
+		addAnnotation
+		  (getTransition_Modes(),
+		   source,
+		   new String[] {
+			   "kind", "element",
+			   "name", "modes",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getTransition_Connections(),
+		   source,
+		   new String[] {
+			   "kind", "element",
+			   "name", "connections",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getTransition_MetaAttributes(),
+		   source,
+		   new String[] {
+			   "kind", "element",
+			   "name", "meta-attributes",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getTransition_Name(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "name",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (getTransition_Priority(),
+		   source,
+		   new String[] {
+			   "kind", "attribute",
+			   "name", "priority",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (transitionMetaAttributeEClass,
+		   source,
+		   new String[] {
+			   "name", "transition-meta-attribute",
+			   "kind", "empty"
+		   });
+		addAnnotation
+		  (transitionMetaAttributesContainerEClass,
+		   source,
+		   new String[] {
+			   "name", "transition-meta-attributes-container",
+			   "kind", "elementOnly"
+		   });
+		addAnnotation
+		  (getTransitionMetaAttributesContainer_Entries(),
+		   source,
+		   new String[] {
+			   "kind", "element",
+			   "name", "meta-attribute",
+			   "namespace", "##targetNamespace"
+		   });
+		addAnnotation
+		  (transitionsContainerEClass,
+		   source,
+		   new String[] {
+			   "name", "transitions-container",
+			   "kind", "elementOnly"
+		   });
+		addAnnotation
+		  (getTransitionsContainer_Definitions(),
+		   source,
+		   new String[] {
+			   "kind", "element",
+			   "name", "transition",
+			   "namespace", "##targetNamespace"
 		   });
 	}
 

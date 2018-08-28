@@ -378,7 +378,7 @@ public class ModeImpl extends IncidenceFunctionElementImpl implements Mode {
 	public String toString() {
 		if (eIsProxy()) return super.toString();
 
-		StringBuffer result = new StringBuffer(super.toString());
+		StringBuilder result = new StringBuilder(super.toString());
 		result.append(" (firingWeight: ");
 		if (firingWeightESet) result.append(firingWeight); else result.append("<unset>");
 		result.append(", meanFiringDelay: ");

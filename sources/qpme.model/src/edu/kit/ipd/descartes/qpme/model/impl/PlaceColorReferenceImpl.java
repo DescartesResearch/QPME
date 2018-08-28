@@ -274,7 +274,7 @@ public abstract class PlaceColorReferenceImpl extends ColorReferenceImpl impleme
 	public String toString() {
 		if (eIsProxy()) return super.toString();
 
-		StringBuffer result = new StringBuffer(super.toString());
+		StringBuilder result = new StringBuilder(super.toString());
 		result.append(" (initialPopulation: ");
 		if (initialPopulationESet) result.append(initialPopulation); else result.append("<unset>");
 		result.append(", maximumCapacity: ");

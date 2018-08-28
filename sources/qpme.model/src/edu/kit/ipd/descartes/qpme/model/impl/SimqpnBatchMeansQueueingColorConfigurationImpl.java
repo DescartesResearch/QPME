@@ -790,7 +790,7 @@ public class SimqpnBatchMeansQueueingColorConfigurationImpl extends SimqpnBatchM
 	public String toString() {
 		if (eIsProxy()) return super.toString();
 
-		StringBuffer result = new StringBuffer(super.toString());
+		StringBuilder result = new StringBuilder(super.toString());
 		result.append(" (queueBatchSize: ");
 		if (queueBatchSizeESet) result.append(queueBatchSize); else result.append("<unset>");
 		result.append(", queueBucketSize: ");

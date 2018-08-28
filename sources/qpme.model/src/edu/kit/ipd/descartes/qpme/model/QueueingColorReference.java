@@ -38,6 +38,7 @@ package edu.kit.ipd.descartes.qpme.model;
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getReplayFile <em>Replay File</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getValuesFile <em>Values File</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getProbabilitiesFile <em>Probabilities File</em>}</li>
+ *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getMarsFile <em>Mars File</em>}</li>
  * </ul>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getQueueingColorReference()
@@ -1059,7 +1060,6 @@ public interface QueueingColorReference extends PlaceColorReference {
 	 * @see #setReplayFile(String)
 	 * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getQueueingColorReference_ReplayFile()
 	 * @model dataType="org.eclipse.emf.ecore.xml.type.String"
-	 *        extendedMetaData="kind='attribute' name='replay_filename' namespace='##targetNamespace'"
 	 * @generated
 	 */
 	String getReplayFile();
@@ -1125,5 +1125,31 @@ public interface QueueingColorReference extends PlaceColorReference {
 	 * @generated
 	 */
 	void setProbabilitiesFile(String value);
+
+	/**
+	 * Returns the value of the '<em><b>Mars File</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Mars File</em>' attribute isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Mars File</em>' attribute.
+	 * @see #setMarsFile(String)
+	 * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getQueueingColorReference_MarsFile()
+	 * @model dataType="org.eclipse.emf.ecore.xml.type.String"
+	 * @generated
+	 */
+	String getMarsFile();
+
+	/**
+	 * Sets the value of the '{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getMarsFile <em>Mars File</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Mars File</em>' attribute.
+	 * @see #getMarsFile()
+	 * @generated
+	 */
+	void setMarsFile(String value);
 
 } // QueueingColorReference

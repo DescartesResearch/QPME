@@ -44,6 +44,7 @@ import edu.kit.ipd.descartes.qpme.model.QueueingColorReference;
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getReplayFile <em>Replay File</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getValuesFile <em>Values File</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getProbabilitiesFile <em>Probabilities File</em>}</li>
+ *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getMarsFile <em>Mars File</em>}</li>
  * </ul>
  *
  * @generated
@@ -650,6 +651,26 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 	 * @ordered
 	 */
 	protected String probabilitiesFile = PROBABILITIES_FILE_EDEFAULT;
+
+	/**
+	 * The default value of the '{@link #getMarsFile() <em>Mars File</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getMarsFile()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final String MARS_FILE_EDEFAULT = null;
+
+	/**
+	 * The cached value of the '{@link #getMarsFile() <em>Mars File</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getMarsFile()
+	 * @generated
+	 * @ordered
+	 */
+	protected String marsFile = MARS_FILE_EDEFAULT;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -1587,6 +1608,27 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public String getMarsFile() {
+		return marsFile;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setMarsFile(String newMarsFile) {
+		String oldMarsFile = marsFile;
+		marsFile = newMarsFile;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET, ModelPackage.QUEUEING_COLOR_REFERENCE__MARS_FILE, oldMarsFile, marsFile));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	@Override
 	public Object eGet(int featureID, boolean resolve, boolean coreType) {
 		switch (featureID) {
@@ -1634,6 +1676,8 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 				return getValuesFile();
 			case ModelPackage.QUEUEING_COLOR_REFERENCE__PROBABILITIES_FILE:
 				return getProbabilitiesFile();
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__MARS_FILE:
+				return getMarsFile();
 		}
 		return super.eGet(featureID, resolve, coreType);
 	}
@@ -1711,6 +1755,9 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 				return;
 			case ModelPackage.QUEUEING_COLOR_REFERENCE__PROBABILITIES_FILE:
 				setProbabilitiesFile((String)newValue);
+				return;
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__MARS_FILE:
+				setMarsFile((String)newValue);
 				return;
 		}
 		super.eSet(featureID, newValue);
@@ -1790,6 +1837,9 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 			case ModelPackage.QUEUEING_COLOR_REFERENCE__PROBABILITIES_FILE:
 				setProbabilitiesFile(PROBABILITIES_FILE_EDEFAULT);
 				return;
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__MARS_FILE:
+				setMarsFile(MARS_FILE_EDEFAULT);
+				return;
 		}
 		super.eUnset(featureID);
 	}
@@ -1846,6 +1896,8 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 				return VALUES_FILE_EDEFAULT == null ? valuesFile != null : !VALUES_FILE_EDEFAULT.equals(valuesFile);
 			case ModelPackage.QUEUEING_COLOR_REFERENCE__PROBABILITIES_FILE:
 				return PROBABILITIES_FILE_EDEFAULT == null ? probabilitiesFile != null : !PROBABILITIES_FILE_EDEFAULT.equals(probabilitiesFile);
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__MARS_FILE:
+				return MARS_FILE_EDEFAULT == null ? marsFile != null : !MARS_FILE_EDEFAULT.equals(marsFile);
 		}
 		return super.eIsSet(featureID);
 	}
@@ -1859,7 +1911,7 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 	public String toString() {
 		if (eIsProxy()) return super.toString();
 
-		StringBuffer result = new StringBuffer(super.toString());
+		StringBuilder result = new StringBuilder(super.toString());
 		result.append(" (alpha: ");
 		if (alphaESet) result.append(alpha); else result.append("<unset>");
 		result.append(", beta: ");
@@ -1904,6 +1956,8 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 		result.append(valuesFile);
 		result.append(", probabilitiesFile: ");
 		result.append(probabilitiesFile);
+		result.append(", marsFile: ");
+		result.append(marsFile);
 		result.append(')');
 		return result.toString();
 	}

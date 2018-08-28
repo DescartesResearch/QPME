@@ -475,7 +475,7 @@ public abstract class PlaceImpl extends PlaceTransitionElementImpl implements Pl
 	public String toString() {
 		if (eIsProxy()) return super.toString();
 
-		StringBuffer result = new StringBuffer(super.toString());
+		StringBuilder result = new StringBuilder(super.toString());
 		result.append(" (departureDiscipline: ");
 		if (departureDisciplineESet) result.append(departureDiscipline); else result.append("<unset>");
 		result.append(", locked: ");
