@@ -43,13 +43,80 @@ package de.tud.cs.simqpn.kernel.loading.distributions;
 public class MARS implements AbstractDistribution {
 
 	private static final long serialVersionUID = 1L;
+	private Function[] functions = null;
+	private double constant;
+	private double[] coefficients;
+	private double[] knots;
+	private int[] sides;
+	private String[] colorIds;
 	
 	public MARS(double constant, double[] coefficients, double[] knots, int[] sides, String[] colorIds) {
+		this.constant = constant;
+		this.coefficients = coefficients;
+		this.knots = knots;
+		this.sides = sides;
+		this.colorIds = colorIds;
 	}
 
 	@Override
 	public double nextDouble(int concurrency, String[] colors, int[] tokenNumbers) {
-		return 0.0;
+		if (functions == null)
+			createFunctions(colors);
+		double result = constant;
+		for (int i = 0; i < functions.length; i++)
+			result += functions[i].calculate(tokenNumbers[i]);
+		return result;
 	}
 
+	private void createFunctions(String[] colors) {
+		functions = new Function[colors.length];
+		for (int i = 0; i < colors.length; i++) {
+			for (int j = 0; j < colorIds.length; j++) {
+				if (colors[i].equals(colorIds[j])) {
+					if (sides[j] == 0)
+						functions[i] = new LeftFunction(knots[j], coefficients[j]);
+					else
+						functions[i] = new RightFunction(knots[j], coefficients[j]);
+				}
+			}
+		}
+	}
+
+	interface Function {
+		public double calculate(int tokenNumber);
+	}
+
+	class LeftFunction implements Function {
+
+		private double knot;
+		private double coefficient;
+
+		public LeftFunction(double knot, double coefficient) {
+			this.knot = knot;
+			this.coefficient = coefficient;
+		}
+
+		public double calculate(int tokenNumber) {
+			if (tokenNumber >= knot)
+				return 0.0;
+			return coefficient * (knot - tokenNumber);
+		}
+	}
+
+	class RightFunction implements Function {
+
+		private double knot;
+		private double coefficient;
+
+		public RightFunction(double knot, double coefficient) {
+			this.knot = knot;
+			this.coefficient = coefficient;
+		}
+
+		public double calculate(int tokenNumber) {
+			if (tokenNumber <= knot)
+				return 0.0;
+			return coefficient * (tokenNumber - knot);
+		}
+	}
 }
