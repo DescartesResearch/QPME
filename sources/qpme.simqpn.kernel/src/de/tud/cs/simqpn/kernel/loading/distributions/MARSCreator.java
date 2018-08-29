@@ -41,27 +41,58 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+
 import de.tud.cs.simqpn.kernel.SimQPNException;
 
 public class MARSCreator extends DistributionCreator {
 
 	double constant;
-	double[] coefficients;
-	double[] knots;
-	int[] sides;
-	String[] colorIds;
+	List<Double> coefficients = new LinkedList<Double>();
+	List<Double> knots = new LinkedList<Double>();
+	List<Integer> sides = new LinkedList<Integer>();
+	List<String> colorIds = new LinkedList<String>();
 	String marsFilename;
 	
 	@Override
 	protected void loadParams() throws SimQPNException {
-		loadDoublesFromFile("marsfilename");
-		marsFilename = this.loadStringParam("marsfilename");
+		loadMARSModelFromFile("marsFile");
+		marsFilename = this.loadStringParam("marsFile");
+	}
+
+	private void loadMARSModelFromFile(String fileName) {
+		try (BufferedReader br = new BufferedReader(new FileReader(new File(fileName)))) {
+		    String line = br.readLine();
+		    constant = Double.valueOf(line);
+		    while ((line = br.readLine()) != null) {
+		       String[] segments = line.split(" ");
+				coefficients.add(Double.valueOf(segments[0]));
+				knots.add(Double.valueOf(segments[1]));
+				sides.add(Integer.valueOf(segments[2]));
+				colorIds.add(segments[3]);
+		    }
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public AbstractDistribution getDistribution()
 			throws SimQPNException {
-		return new MARS(constant, coefficients, knots, sides, colorIds);
+		Double[] coefficientsArray = new Double[coefficients.size()];
+		Double[] knotsArray = new Double[knots.size()];
+		Integer[] sidesArray = new Integer[sides.size()];
+		String[] colorArray = new String[colorIds.size()];
+		return new MARS(constant, coefficients.toArray(coefficientsArray), knots.toArray(knotsArray),
+				sides.toArray(sidesArray), colorIds.toArray(colorArray));
 	}
 
 	@Override

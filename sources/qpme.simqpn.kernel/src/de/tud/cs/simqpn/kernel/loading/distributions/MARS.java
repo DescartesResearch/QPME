@@ -42,20 +42,19 @@ package de.tud.cs.simqpn.kernel.loading.distributions;
 
 public class MARS implements AbstractDistribution {
 
-	private static final long serialVersionUID = 1L;
 	private Function[] functions = null;
-	private double constant;
-	private double[] coefficients;
-	private double[] knots;
-	private int[] sides;
+	private Double constant;
+	private Double[] coefficients;
+	private Double[] knots;
+	private Integer[] sides;
 	private String[] colorIds;
 	
-	public MARS(double constant, double[] coefficients, double[] knots, int[] sides, String[] colorIds) {
+	public MARS(double constant, Double[] doubles, Double[] doubles2, Integer[] integers, String[] strings) {
 		this.constant = constant;
-		this.coefficients = coefficients;
-		this.knots = knots;
-		this.sides = sides;
-		this.colorIds = colorIds;
+		this.coefficients = doubles;
+		this.knots = doubles2;
+		this.sides = integers;
+		this.colorIds = strings;
 	}
 
 	@Override
