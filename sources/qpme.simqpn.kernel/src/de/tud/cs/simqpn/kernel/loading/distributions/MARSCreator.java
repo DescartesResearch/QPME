@@ -97,7 +97,7 @@ public class MARSCreator extends DistributionCreator {
 
 	@Override
 	public double getMean() {
-		throw new IllegalStateException();
+		return -1.0;
 	}
 
 	@Override
@@ -107,6 +107,6 @@ public class MARSCreator extends DistributionCreator {
 
 	@Override
 	public String getMeanComputationText() {
-		throw new IllegalStateException();
+		return "Returning placeholder -1 for mean of DeterministicConcurrency Distribution";
 	}
 }

@@ -68,6 +68,7 @@ public class MARS implements AbstractDistribution {
 	}
 
 	private void createFunctions(String[] colors) {
+		System.out.println(colors[0]);
 		functions = new Function[colors.length];
 		for (int i = 0; i < colors.length; i++) {
 			for (int j = 0; j < colorIds.length; j++) {
