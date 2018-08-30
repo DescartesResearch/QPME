@@ -114,7 +114,7 @@ public class MARS implements AbstractDistribution {
 		}
 
 		public double calculate(int tokenNumber) {
-			if (tokenNumber <= knot)
+			if (tokenNumber < knot)
 				return 0.0;
 			return coefficient * (tokenNumber - knot);
 		}
