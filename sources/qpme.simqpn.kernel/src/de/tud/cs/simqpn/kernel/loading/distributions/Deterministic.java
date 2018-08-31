@@ -40,6 +40,8 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
+import de.tud.cs.simqpn.kernel.entities.QPlace;
+
 /**
  * A deterministic distribution that always returns the double passed to the
  * constructor.
@@ -59,7 +61,7 @@ public class Deterministic implements AbstractDistribution {
 	}
 
 	@Override
-	public double nextDouble(int concurrency, String[] colors, int[] tokenNumbers) {
+	public double nextDouble(QPlace qplace, int color) {
 		return value;
 	}
 

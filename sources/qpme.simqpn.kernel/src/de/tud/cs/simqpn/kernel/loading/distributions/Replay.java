@@ -40,6 +40,8 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
+import de.tud.cs.simqpn.kernel.entities.QPlace;
+
 public class Replay implements AbstractDistribution {
 
 	private double[] replayValues;
@@ -53,7 +55,7 @@ public class Replay implements AbstractDistribution {
 	}
 
 	@Override
-	public double nextDouble(int concurrency, String[] colors, int[] tokenNumbers) {
+	public double nextDouble(QPlace qplace, int color) {
 		if (nextValue == replayValues.length)
 			throw new IllegalStateException("There are only " + replayValues.length
 					+ " values in the replayfile for the colorRef " + colorRefId

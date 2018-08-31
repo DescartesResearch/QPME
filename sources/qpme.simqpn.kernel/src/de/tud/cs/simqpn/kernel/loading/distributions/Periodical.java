@@ -41,6 +41,8 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
+import de.tud.cs.simqpn.kernel.entities.QPlace;
+
 public class Periodical implements AbstractDistribution {
 
 	private final double[] data;
@@ -58,7 +60,7 @@ public class Periodical implements AbstractDistribution {
 	}
 	
 	@Override
-	public double nextDouble(int concurrency, String[] colors, int[] tokenNumbers) {
+	public double nextDouble(QPlace qplace, int color) {
 		double result = data[currentPos];
 		currentPos = (currentPos + 1) % data.length;
 		return result;

@@ -192,7 +192,7 @@ public class ThreadSchedulingQueue extends Queue {
 			tokenData.alreadyScheduled = true;
 
 			tokenData.requiredProcessingTime = queingPlace.randServTimeGen[color]
-					.nextDouble(-1, null, null);
+					.nextDouble(null, -1);
 			if (tokenData.requiredProcessingTime < 0) {
 				tokenData.requiredProcessingTime = 0;
 			}

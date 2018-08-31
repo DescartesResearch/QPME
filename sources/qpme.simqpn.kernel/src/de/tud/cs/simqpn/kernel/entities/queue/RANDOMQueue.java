@@ -113,7 +113,7 @@ public class RANDOMQueue extends Queue {
 		int n = 0;
 		while (n < count && numBusyServers < numServers) {
 			// Schedule service completion event
-			double servTime = qPl.randServTimeGen[color].nextDouble(-1, null, null);
+			double servTime = qPl.randServTimeGen[color].nextDouble(null, -1);
 			if (servTime < 0)
 				servTime = 0;
 			Token tk = (tokensToBeAdded != null) ? tokensToBeAdded[n]
@@ -147,7 +147,7 @@ public class RANDOMQueue extends Queue {
 			int index = randomGenerator.nextInt(waitingLine.size());
 			Token tk = (Token) waitingLine.remove(index);
 			QPlace qPl = (QPlace) tk.place;
-			double servTime = qPl.randServTimeGen[tk.color].nextDouble(-1, null, null);
+			double servTime = qPl.randServTimeGen[tk.color].nextDouble(null, -1);
 			if (servTime < 0)
 				servTime = 0;
 			executor.scheduleEvent(servTime, this, tk);

@@ -197,7 +197,7 @@ public class QPlace extends Place {
 				} else if (((QPlace) original).randServTimeGen[c].getClass()
 						.equals(Deterministic.class)) {
 					double value = ((QPlace) original).randServTimeGen[c]
-							.nextDouble(-1, null, null);
+							.nextDouble(null, -1);
 					this.randServTimeGen[c] = new Deterministic(value);
 				} else {
 					// TODO implement copy of other distributions
@@ -494,8 +494,7 @@ public class QPlace extends Place {
 	 */
 	private void calculateServiceTimeIfFutureListIsEmpty(int color) {
 		if (futureList.get(color).isEmpty()) {
-			int concurrency = queueTokenPop[color];
-			double serviceTime = randServTimeGen[color].nextDouble(concurrency, this.colors, this.queueTokenPop);
+			double serviceTime = randServTimeGen[color].nextDouble(this, color);
 			if (serviceTime < 0) {
 				serviceTime = 0;
 			}

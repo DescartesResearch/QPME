@@ -43,6 +43,8 @@ package de.tud.cs.simqpn.kernel.loading.distributions;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import de.tud.cs.simqpn.kernel.entities.QPlace;
+
 public class DeterministicConcurrency implements AbstractDistribution {
 
 	private Map<Integer, Double> concurrencyLevels;
@@ -63,7 +65,8 @@ public class DeterministicConcurrency implements AbstractDistribution {
 	}
 
 	@Override
-	public double nextDouble(int concurrency, String[] colors, int[] tokenNumbers) {
+	public double nextDouble(QPlace qplace, int color) {
+		int concurrency = qplace.getQueueTokenPop()[color];
 		if (concurrency < min)
 			return concurrencyLevels.get(min);
 
