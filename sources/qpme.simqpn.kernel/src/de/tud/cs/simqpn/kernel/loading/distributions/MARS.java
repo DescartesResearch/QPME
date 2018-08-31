@@ -40,6 +40,10 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
+import cern.jet.random.Exponential;
+import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
+import de.tud.cs.simqpn.kernel.SimQPNException;
+
 public class MARS implements AbstractDistribution {
 
 	private Function[] functions = null;
@@ -64,11 +68,14 @@ public class MARS implements AbstractDistribution {
 		double result = constant;
 		for (int i = 0; i < functions.length; i++)
 			result += functions[i].calculate(tokenNumbers[i]);
-		return result;
+		try {
+			return new Exponential(1 / result, RandomNumberGenerator.nextRandNumGen()).nextDouble();
+		} catch (SimQPNException e) {
+			return -1;
+		}
 	}
 
 	private void createFunctions(String[] colors) {
-		System.out.println(colors[0]);
 		functions = new Function[colors.length];
 		for (int i = 0; i < colors.length; i++) {
 			for (int j = 0; j < colorIds.length; j++) {
