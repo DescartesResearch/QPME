@@ -68,7 +68,7 @@ public class MARS implements AbstractDistribution {
 			createFunctions(qplace.colors);
 		double result = constant;
 		for (int i = 0; i < functions.length; i++)
-			result += functions[i].calculate(qplace.getQueueTokenPop()[i]);
+			result += functions[i].calculate(qplace.getQueueTokenPop()[color]);
 		try {
 			return new Exponential(1 / result, RandomNumberGenerator.nextRandNumGen()).nextDouble();
 		} catch (SimQPNException e) {
@@ -77,17 +77,20 @@ public class MARS implements AbstractDistribution {
 	}
 
 	private void createFunctions(String[] colors) {
-		functions = new Function[colors.length];
+		functions = new Function[colorIds.length];
+		int id = 0;
 		for (int i = 0; i < colors.length; i++) {
 			for (int j = 0; j < colorIds.length; j++) {
 				if (colors[i].equals(colorIds[j])) {
 					if (sides[j] == 0)
-						functions[i] = new LeftFunction(knots[j], coefficients[j]);
+						functions[id] = new LeftFunction(knots[j], coefficients[j]);
 					else
-						functions[i] = new RightFunction(knots[j], coefficients[j]);
+						functions[id] = new RightFunction(knots[j], coefficients[j]);
+					id = id + 1;
 				}
 			}
 		}
+		System.out.println("Done");
 	}
 
 	interface Function {

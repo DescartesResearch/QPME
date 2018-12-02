@@ -67,6 +67,10 @@ public class MARSCreator extends DistributionCreator {
 	}
 
 	private void loadMARSModelFromFile(String fileName) {
+		coefficients.clear();
+		knots.clear();
+		sides.clear();
+		colorIds.clear();
 		try (BufferedReader br = new BufferedReader(new FileReader(new File(fileName)))) {
 		    String line = br.readLine();
 		    constant = Double.valueOf(line);
