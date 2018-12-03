@@ -40,9 +40,6 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import cern.jet.random.Exponential;
-import de.tud.cs.simqpn.kernel.RandomNumberGenerator;
-import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.entities.QPlace;
 
 public class MARS implements AbstractDistribution {
@@ -69,11 +66,7 @@ public class MARS implements AbstractDistribution {
 		double result = constant;
 		for (int i = 0; i < functions.length; i++)
 			result += functions[i].calculate(qplace.getQueueTokenPop()[color]);
-		try {
-			return new Exponential(1 / result, RandomNumberGenerator.nextRandNumGen()).nextDouble();
-		} catch (SimQPNException e) {
-			return -1;
-		}
+		return result;
 	}
 
 	private void createFunctions(String[] colors) {
