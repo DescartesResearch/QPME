@@ -65,6 +65,11 @@ import org.dom4j.io.SAXReader;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 
 import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.SimQPNException;
@@ -97,7 +102,22 @@ public class SimQPN implements IApplication {
 			String configurationName, String outputFilename, String logConfigFilename, SimulatorProgress progress, Date date) throws SimQPNException {
 		Element net = netDocument.getRootElement();
 		SimQPNController sim =  SimQPNController.createSimQPNController(net, configurationName, logConfigFilename, date);
+		long tic = System.currentTimeMillis();
 		sim.execute(configurationName, outputFilename, progress);
+		long toc = System.currentTimeMillis();
+		Display display = new Display ();
+		Shell shell = new Shell (display);
+		shell.setText ("Shell");
+		shell.setLayout(new GridLayout(1, true));
+		Text text = new Text(shell, SWT.SINGLE | SWT.BORDER);
+		text.setText("" + (toc - tic));
+		shell.pack();
+		shell.open();
+		while (!shell.isDisposed ()) {
+			if (!display.readAndDispatch ()) display.sleep ();
+		}
+		display.dispose ();
+		System.out.println("Simulation time: " + (toc - tic));
 		net = sim.getXMLDescription();
 	}
 
