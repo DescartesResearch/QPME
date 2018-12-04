@@ -55,6 +55,8 @@ import java.util.Map;
 import javax.xml.XMLConstants;
 
 import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -65,11 +67,6 @@ import org.dom4j.io.SAXReader;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 
 import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.SimQPNException;
@@ -78,6 +75,8 @@ import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 
 public class SimQPN implements IApplication {
 	
+	public static long runtime;
+
 	public static void main(String[] args) {
 		startSimQPNWithCommandLine(args);
 	}
@@ -88,11 +87,14 @@ public class SimQPN implements IApplication {
      * ATTENTION: This method is used by the DML solvers to trigger the simulation.
      * If the signature is changed, you will also need to adapt the DML tooling.
      */
-	public static void runSimulator(String inputFilename, String configuration, String outputFilename, 
+	public static long runSimulator(String inputFilename, String configuration, String outputFilename,
 			String logConfigFilename, SimulatorProgress progress) {
 		try {
+			BasicConfigurator.configure();
+			LogManager.getRootLogger().setLevel((Level) Level.FATAL);
 			Document inputDoc = loadXMLFile(inputFilename);
 			runSimulatorOnDocument(inputDoc, configuration, outputFilename, logConfigFilename, progress, null);
+			return runtime;
 		} catch (Exception e) {
 			throw new IllegalStateException(e);
 		}
@@ -105,19 +107,7 @@ public class SimQPN implements IApplication {
 		long tic = System.currentTimeMillis();
 		sim.execute(configurationName, outputFilename, progress);
 		long toc = System.currentTimeMillis();
-		Display display = new Display ();
-		Shell shell = new Shell (display);
-		shell.setText ("Shell");
-		shell.setLayout(new GridLayout(1, true));
-		Text text = new Text(shell, SWT.SINGLE | SWT.BORDER);
-		text.setText("" + (toc - tic));
-		shell.pack();
-		shell.open();
-		while (!shell.isDisposed ()) {
-			if (!display.readAndDispatch ()) display.sleep ();
-		}
-		display.dispose ();
-		System.out.println("Simulation time: " + (toc - tic));
+		SimQPN.runtime = toc - tic;
 		net = sim.getXMLDescription();
 	}
 
