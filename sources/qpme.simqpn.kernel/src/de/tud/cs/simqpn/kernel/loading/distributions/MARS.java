@@ -65,7 +65,7 @@ public class MARS implements AbstractDistribution {
 			createFunctions(qplace.colors);
 		double result = constant;
 		for (int i = 0; i < functions.length; i++)
-			result += functions[i].calculate(qplace.getQueueTokenPop()[color]);
+			result += functions[i].calculate(qplace.getQueueTokenPop(), color);
 		return result;
 	}
 
@@ -76,31 +76,37 @@ public class MARS implements AbstractDistribution {
 			for (int j = 0; j < colorIds.length; j++) {
 				if (colors[i].equals(colorIds[j])) {
 					if (sides[j] == 0)
-						functions[id] = new LeftFunction(knots[j], coefficients[j]);
+						functions[id] = new LeftFunction(knots[j], coefficients[j], colorIds[j], colors);
 					else
-						functions[id] = new RightFunction(knots[j], coefficients[j]);
+						functions[id] = new RightFunction(knots[j], coefficients[j], colorIds[j], colors);
 					id = id + 1;
 				}
 			}
 		}
-		System.out.println("Done");
 	}
 
 	interface Function {
-		public double calculate(int tokenNumber);
+		public double calculate(int[] tokenNumbers, int mainColor);
 	}
 
 	class LeftFunction implements Function {
 
 		private double knot;
 		private double coefficient;
+		private int colorId;
 
-		public LeftFunction(double knot, double coefficient) {
+		public LeftFunction(double knot, double coefficient, String colorId, String[] colors) {
 			this.knot = knot;
 			this.coefficient = coefficient;
+			for (int i = 0; i < colors.length; i++)
+				if (colors[i].equals(colorId))
+					this.colorId = i;
 		}
 
-		public double calculate(int tokenNumber) {
+		public double calculate(int[] tokenNumbers, int mainColor) {
+			int tokenNumber = tokenNumbers[colorId];
+			if (colorId == mainColor)
+				tokenNumber = tokenNumber - 1;
 			if (tokenNumber >= knot)
 				return 0.0;
 			return coefficient * (knot - tokenNumber);
@@ -111,13 +117,20 @@ public class MARS implements AbstractDistribution {
 
 		private double knot;
 		private double coefficient;
+		private int colorId;
 
-		public RightFunction(double knot, double coefficient) {
+		public RightFunction(double knot, double coefficient, String colorId, String[] colors) {
 			this.knot = knot;
 			this.coefficient = coefficient;
+			for (int i = 0; i < colors.length; i++)
+				if (colors[i].equals(colorId))
+					this.colorId = i;
 		}
 
-		public double calculate(int tokenNumber) {
+		public double calculate(int[] tokenNumbers, int mainColor) {
+			int tokenNumber = tokenNumbers[colorId];
+			if (colorId == mainColor)
+				tokenNumber = tokenNumber - 1;
 			if (tokenNumber < knot)
 				return 0.0;
 			return coefficient * (tokenNumber - knot);
