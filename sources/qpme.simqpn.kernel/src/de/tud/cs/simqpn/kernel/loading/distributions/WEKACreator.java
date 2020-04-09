@@ -41,51 +41,36 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 
 import de.tud.cs.simqpn.kernel.SimQPNException;
+import weka.classifiers.Classifier;
 
 public class WEKACreator extends DistributionCreator {
 
-	double constant;
-	List<Double> coefficients = new LinkedList<Double>();
-	List<Double> knots = new LinkedList<Double>();
-	List<Integer> sides = new LinkedList<Integer>();
-	List<String> colorIds = new LinkedList<String>();
-	String marsFilename;
+	String wekaFilename;
+	Classifier wekaModel;
 	
 	@Override
 	protected void loadParams() throws SimQPNException {
-		marsFilename = this.loadStringParam("wekaFile"); // TODO: model in memory laden
-		// loadMARSModelFromFile(marsFilename);
-	}
+		wekaFilename = this.loadStringParam("wekaFile");
+		try {
+			FileInputStream fis = new FileInputStream(wekaFilename);
+			ObjectInputStream ois = new ObjectInputStream(fis);
+			wekaModel = (Classifier) ois.readObject();
+			ois.close();
+			fis.close();
+		} catch (ClassNotFoundException | IOException e) {
+			e.printStackTrace();
+		}
 
-//	private void loadMARSModelFromFile(String fileName) {
-//		coefficients.clear();
-//		knots.clear();
-//		sides.clear();
-//		colorIds.clear();
-//		try (BufferedReader br = new BufferedReader(new FileReader(new File(fileName)))) {
-//		    String line = br.readLine();
-//		    constant = Double.valueOf(line);
-//		    while ((line = br.readLine()) != null) {
-//		       String[] segments = line.split(" ");
-//				coefficients.add(Double.valueOf(segments[0]));
-//				knots.add(Double.valueOf(segments[1]));
-//				sides.add(Integer.valueOf(segments[2]));
-//				colorIds.add(segments[3]);
-//		    }
-//		} catch (FileNotFoundException e) {
-//			e.printStackTrace();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-//	}
+	}
 
 	@Override
 	public AbstractDistribution getDistribution() throws SimQPNException {
-		return new WEKA();
+		return new WEKA(wekaModel);
 	}
 
 	@Override
@@ -95,7 +80,7 @@ public class WEKACreator extends DistributionCreator {
 
 	@Override
 	public String getConstructionText() {
-		return "(" + marsFilename + ")";
+		return "(" + wekaFilename + ")";
 	}
 
 	@Override
