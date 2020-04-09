@@ -37,6 +37,7 @@ package edu.kit.ipd.descartes.qpme.model;
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getConcurrenciesFile <em>Concurrencies File</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getResponsetimesFile <em>Responsetimes File</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getMarsFile <em>Mars File</em>}</li>
+ *   <li>{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getWekaFile <em>Weka File</em>}</li>
  * </ul>
  *
  * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getQueueingColorReference()
@@ -1201,5 +1202,31 @@ public interface QueueingColorReference extends PlaceColorReference {
 	 * @generated
 	 */
 	void setMarsFile(String value);
+
+	/**
+	 * Returns the value of the '<em><b>Weka File</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Weka File</em>' attribute isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Weka File</em>' attribute.
+	 * @see #setWekaFile(String)
+	 * @see edu.kit.ipd.descartes.qpme.model.ModelPackage#getQueueingColorReference_WekaFile()
+	 * @model
+	 * @generated
+	 */
+	String getWekaFile();
+
+	/**
+	 * Sets the value of the '{@link edu.kit.ipd.descartes.qpme.model.QueueingColorReference#getWekaFile <em>Weka File</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Weka File</em>' attribute.
+	 * @see #getWekaFile()
+	 * @generated
+	 */
+	void setWekaFile(String value);
 
 } // QueueingColorReference

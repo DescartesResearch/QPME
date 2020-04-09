@@ -33,6 +33,7 @@
       <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/CONTINUOUS_EMPIRICAL"/>
       <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/DETERMINISTIC_CONCURRENCY"/>
       <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/MARS"/>
+      <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//DistributionFunction/WEKA"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="qpme.ecore#//FlowDirection">
       <genEnumLiterals ecoreEnumLiteral="qpme.ecore#//FlowDirection/IN"/>
@@ -207,6 +208,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/concurrenciesFile"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/responsetimesFile"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/marsFile"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute qpme.ecore#//QueueingColorReference/wekaFile"/>
     </genClasses>
     <genClasses ecoreClass="qpme.ecore#//QueueingPetriNet">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference qpme.ecore#//QueueingPetriNet/colors"/>

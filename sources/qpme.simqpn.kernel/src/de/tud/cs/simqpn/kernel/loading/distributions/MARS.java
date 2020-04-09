@@ -64,8 +64,10 @@ public class MARS implements AbstractDistribution {
 		if (functions == null)
 			createFunctions(qplace.colors);
 		double result = constant;
-		for (int i = 0; i < functions.length; i++)
+		System.out.println("START");
+		for (int i = 0; i < functions.length; i++) {
 			result += functions[i].calculate(qplace.getQueueTokenPop(), color);
+		}
 		return result;
 	}
 
@@ -111,6 +113,10 @@ public class MARS implements AbstractDistribution {
 				return 0.0;
 			return coefficient * (knot - tokenNumber);
 		}
+
+		public String toString() {
+			return coefficient + "*max(0," + knot + "-WC" + colorId + ")";
+		}
 	}
 
 	class RightFunction implements Function {
@@ -131,9 +137,13 @@ public class MARS implements AbstractDistribution {
 			int tokenNumber = tokenNumbers[colorId];
 			if (colorId == mainColor)
 				tokenNumber = tokenNumber - 1;
-			if (tokenNumber < knot)
+			if (tokenNumber <= knot)
 				return 0.0;
 			return coefficient * (tokenNumber - knot);
+		}
+
+		public String toString() {
+			return coefficient + "*max(0,WC" + colorId + "-" + knot + ")";
 		}
 	}
 }

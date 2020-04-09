@@ -96,7 +96,9 @@ public enum Distribution {
 	DETERMINISTIC_CONCURRENCY("DeterministicConcurrency", new DeterministicConcurrencyCreator(),
 			new String[] { "concurrenciesFile", "responsetimesFile" }, new String[] { "", "" }, true),
 
-	MARS("MARS", new MARSCreator(), new String[] { "marsFile" }, new String[] { "" }, true);
+	MARS("MARS", new MARSCreator(), new String[] { "marsFile" }, new String[] { "" }, true),
+
+	WEKA("WEKA", new WEKACreator(), new String[] { "wekaFile" }, new String[] { "" }, true);
 
 	public static final Distribution DEFAULT_DISTRIBUTION = EXPONENTIAL;
 

@@ -226,7 +226,15 @@ public enum DistributionFunction implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	MARS(20, "MARS", "MARS");
+	MARS(20, "MARS", "MARS"), /**
+	 * The '<em><b>WEKA</b></em>' literal object.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #WEKA_VALUE
+	 * @generated
+	 * @ordered
+	 */
+	WEKA(21, "WEKA", "WEKA");
 
 	/**
 	 * The '<em><b>BETA</b></em>' literal value.
@@ -544,6 +552,21 @@ public enum DistributionFunction implements Enumerator {
 	public static final int MARS_VALUE = 20;
 
 	/**
+	 * The '<em><b>WEKA</b></em>' literal value.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of '<em><b>WEKA</b></em>' literal object isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @see #WEKA
+	 * @model
+	 * @generated
+	 * @ordered
+	 */
+	public static final int WEKA_VALUE = 21;
+
+	/**
 	 * An array of all the '<em><b>Distribution Function</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -572,6 +595,7 @@ public enum DistributionFunction implements Enumerator {
 			CONTINUOUS_EMPIRICAL,
 			DETERMINISTIC_CONCURRENCY,
 			MARS,
+			WEKA,
 		};
 
 	/**
@@ -649,6 +673,7 @@ public enum DistributionFunction implements Enumerator {
 			case CONTINUOUS_EMPIRICAL_VALUE: return CONTINUOUS_EMPIRICAL;
 			case DETERMINISTIC_CONCURRENCY_VALUE: return DETERMINISTIC_CONCURRENCY;
 			case MARS_VALUE: return MARS;
+			case WEKA_VALUE: return WEKA;
 		}
 		return null;
 	}

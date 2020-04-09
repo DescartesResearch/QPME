@@ -141,6 +141,7 @@
     <eLiterals name="CONTINUOUS_EMPIRICAL" value="18" literal="ContinuousEmpirical"/>
     <eLiterals name="DETERMINISTIC_CONCURRENCY" value="19" literal="DeterministicConcurrency"/>
     <eLiterals name="MARS" value="20" literal="MARS"/>
+    <eLiterals name="WEKA" value="21" literal="WEKA"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EDataType" name="DistributionFunctionObject" instanceClassName="org.eclipse.emf.common.util.Enumerator">
     <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
@@ -871,6 +872,7 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="concurrenciesFile" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="responsetimesFile" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="marsFile" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="wekaFile" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="QueueingPetriNet">
     <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">

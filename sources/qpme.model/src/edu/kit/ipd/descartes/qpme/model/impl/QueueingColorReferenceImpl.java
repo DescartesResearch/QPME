@@ -45,6 +45,7 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getConcurrenciesFile <em>Concurrencies File</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getResponsetimesFile <em>Responsetimes File</em>}</li>
  *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getMarsFile <em>Mars File</em>}</li>
+ *   <li>{@link edu.kit.ipd.descartes.qpme.model.impl.QueueingColorReferenceImpl#getWekaFile <em>Weka File</em>}</li>
  * </ul>
  *
  * @generated
@@ -711,6 +712,26 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 	 * @ordered
 	 */
 	protected String marsFile = MARS_FILE_EDEFAULT;
+
+	/**
+	 * The default value of the '{@link #getWekaFile() <em>Weka File</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getWekaFile()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final String WEKA_FILE_EDEFAULT = null;
+
+	/**
+	 * The cached value of the '{@link #getWekaFile() <em>Weka File</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getWekaFile()
+	 * @generated
+	 * @ordered
+	 */
+	protected String wekaFile = WEKA_FILE_EDEFAULT;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -1711,6 +1732,27 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public String getWekaFile() {
+		return wekaFile;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setWekaFile(String newWekaFile) {
+		String oldWekaFile = wekaFile;
+		wekaFile = newWekaFile;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET, ModelPackage.QUEUEING_COLOR_REFERENCE__WEKA_FILE, oldWekaFile, wekaFile));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	@Override
 	public Object eGet(int featureID, boolean resolve, boolean coreType) {
 		switch (featureID) {
@@ -1764,6 +1806,8 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 				return getResponsetimesFile();
 			case ModelPackage.QUEUEING_COLOR_REFERENCE__MARS_FILE:
 				return getMarsFile();
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__WEKA_FILE:
+				return getWekaFile();
 		}
 		return super.eGet(featureID, resolve, coreType);
 	}
@@ -1850,6 +1894,9 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 				return;
 			case ModelPackage.QUEUEING_COLOR_REFERENCE__MARS_FILE:
 				setMarsFile((String)newValue);
+				return;
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__WEKA_FILE:
+				setWekaFile((String)newValue);
 				return;
 		}
 		super.eSet(featureID, newValue);
@@ -1938,6 +1985,9 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 			case ModelPackage.QUEUEING_COLOR_REFERENCE__MARS_FILE:
 				setMarsFile(MARS_FILE_EDEFAULT);
 				return;
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__WEKA_FILE:
+				setWekaFile(WEKA_FILE_EDEFAULT);
+				return;
 		}
 		super.eUnset(featureID);
 	}
@@ -2000,6 +2050,8 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 				return RESPONSETIMES_FILE_EDEFAULT == null ? responsetimesFile != null : !RESPONSETIMES_FILE_EDEFAULT.equals(responsetimesFile);
 			case ModelPackage.QUEUEING_COLOR_REFERENCE__MARS_FILE:
 				return MARS_FILE_EDEFAULT == null ? marsFile != null : !MARS_FILE_EDEFAULT.equals(marsFile);
+			case ModelPackage.QUEUEING_COLOR_REFERENCE__WEKA_FILE:
+				return WEKA_FILE_EDEFAULT == null ? wekaFile != null : !WEKA_FILE_EDEFAULT.equals(wekaFile);
 		}
 		return super.eIsSet(featureID);
 	}
@@ -2064,6 +2116,8 @@ public class QueueingColorReferenceImpl extends PlaceColorReferenceImpl implemen
 		result.append(responsetimesFile);
 		result.append(", marsFile: ");
 		result.append(marsFile);
+		result.append(", wekaFile: ");
+		result.append(wekaFile);
 		result.append(')');
 		return result.toString();
 	}

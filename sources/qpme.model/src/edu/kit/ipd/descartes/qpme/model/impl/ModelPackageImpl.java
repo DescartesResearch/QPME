@@ -1653,6 +1653,15 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EAttribute getQueueingColorReference_WekaFile() {
+		return (EAttribute)queueingColorReferenceEClass.getEStructuralFeatures().get(25);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public EClass getQueueingPetriNet() {
 		return queueingPetriNetEClass;
 	}
@@ -2668,6 +2677,7 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__CONCURRENCIES_FILE);
 		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__RESPONSETIMES_FILE);
 		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__MARS_FILE);
+		createEAttribute(queueingColorReferenceEClass, QUEUEING_COLOR_REFERENCE__WEKA_FILE);
 
 		queueingPetriNetEClass = createEClass(QUEUEING_PETRI_NET);
 		createEReference(queueingPetriNetEClass, QUEUEING_PETRI_NET__COLORS);
@@ -3005,6 +3015,7 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 		initEAttribute(getQueueingColorReference_ConcurrenciesFile(), ecorePackage.getEString(), "concurrenciesFile", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getQueueingColorReference_ResponsetimesFile(), ecorePackage.getEString(), "responsetimesFile", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getQueueingColorReference_MarsFile(), ecorePackage.getEString(), "marsFile", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getQueueingColorReference_WekaFile(), ecorePackage.getEString(), "wekaFile", null, 0, 1, QueueingColorReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(queueingPetriNetEClass, QueueingPetriNet.class, "QueueingPetriNet", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEReference(getQueueingPetriNet_Colors(), this.getColorsContainer(), null, "colors", null, 0, 1, QueueingPetriNet.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -3132,6 +3143,7 @@ public class ModelPackageImpl extends EPackageImpl implements ModelPackage {
 		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.CONTINUOUS_EMPIRICAL);
 		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.DETERMINISTIC_CONCURRENCY);
 		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.MARS);
+		addEEnumLiteral(distributionFunctionEEnum, DistributionFunction.WEKA);
 
 		initEEnum(flowDirectionEEnum, FlowDirection.class, "FlowDirection");
 		addEEnumLiteral(flowDirectionEEnum, FlowDirection.IN);
