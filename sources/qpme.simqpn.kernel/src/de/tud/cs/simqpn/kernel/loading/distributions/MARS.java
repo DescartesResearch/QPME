@@ -65,7 +65,7 @@ public class MARS implements AbstractDistribution {
 			createFunctions(qplace.colors);
 		double result = constant;
 		for (int i = 0; i < functions.length; i++) {
-			result += functions[i].calculate(qplace.getQueueTokenPop(), color);
+			result += functions[i].calculate(qplace.getQueueTokenPop());
 		}
 		return result;
 	}
@@ -87,7 +87,7 @@ public class MARS implements AbstractDistribution {
 	}
 
 	interface Function {
-		public double calculate(int[] tokenNumbers, int mainColor);
+		public double calculate(int[] tokenNumbers);
 	}
 
 	class LeftFunction implements Function {
@@ -104,11 +104,8 @@ public class MARS implements AbstractDistribution {
 					this.colorId = i;
 		}
 
-		public double calculate(int[] tokenNumbers, int mainColor) {
+		public double calculate(int[] tokenNumbers) {
 			int tokenNumber = tokenNumbers[colorId];
-			if (colorId == mainColor) // TODO: this excludes the processed request from the concurrency -> change
-										// training data so this can be removed
-				tokenNumber = tokenNumber - 1;
 			if (tokenNumber >= knot)
 				return 0.0;
 			return coefficient * (knot - tokenNumber);
@@ -133,11 +130,8 @@ public class MARS implements AbstractDistribution {
 					this.colorId = i;
 		}
 
-		public double calculate(int[] tokenNumbers, int mainColor) {
+		public double calculate(int[] tokenNumbers) {
 			int tokenNumber = tokenNumbers[colorId];
-			if (colorId == mainColor) // TODO: this excludes the processed request from the concurrency -> change
-										// training data so this can be removed
-				tokenNumber = tokenNumber - 1;
 			if (tokenNumber <= knot)
 				return 0.0;
 			return coefficient * (tokenNumber - knot);
