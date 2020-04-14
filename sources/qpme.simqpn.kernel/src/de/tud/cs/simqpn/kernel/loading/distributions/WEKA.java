@@ -53,6 +53,7 @@ public class WEKA implements AbstractDistribution {
 	
 	Classifier wekaModel;
 	Instances dataStructure = null;
+	Instance dataPoint;
 
 	public WEKA(Classifier model) {
 		if (model == null)
@@ -66,9 +67,6 @@ public class WEKA implements AbstractDistribution {
 
 		if (dataStructure == null)
 			initializeDataStructure(tokenNumbers.length);
-
-		Instance dataPoint = new DenseInstance(dataStructure.numAttributes());
-		dataPoint.setDataset(dataStructure);
 
 		for (int i = 0; i < tokenNumbers.length; i++) {
 			dataPoint.setValue(i + 1, tokenNumbers[i]);
@@ -101,6 +99,9 @@ public class WEKA implements AbstractDistribution {
 		}
 		dataStructure = new Instances("Data Structure", attributes, 0);
 		dataStructure.setClass(attr_RT);
+
+		dataPoint = new DenseInstance(dataStructure.numAttributes());
+		dataPoint.setDataset(dataStructure);
 	}
 
 }
