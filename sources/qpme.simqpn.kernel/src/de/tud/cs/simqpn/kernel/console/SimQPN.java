@@ -76,6 +76,7 @@ import de.tud.cs.simqpn.kernel.monitor.SimulatorProgress;
 public class SimQPN implements IApplication {
 	
 	public static long runtime;
+	private static File qpeFile = null;
 
 	public static void main(String[] args) {
 		startSimQPNWithCommandLine(args);
@@ -100,10 +101,14 @@ public class SimQPN implements IApplication {
 		}
 	}
 
+	public static File getQPEFile() {
+		return qpeFile;
+	}
+
 	private static void runSimulatorOnDocument(Document netDocument,
 			String configurationName, String outputFilename, String logConfigFilename, SimulatorProgress progress, Date date) throws SimQPNException {
 		Element net = netDocument.getRootElement();
-		SimQPNController sim =  SimQPNController.createSimQPNController(net, configurationName, logConfigFilename, date);
+		SimQPNController sim = SimQPNController.createSimQPNController(net, configurationName, logConfigFilename, date);
 		long tic = System.currentTimeMillis();
 		sim.execute(configurationName, outputFilename, progress);
 		long toc = System.currentTimeMillis();
@@ -129,6 +134,7 @@ public class SimQPN implements IApplication {
 		} catch(URISyntaxException ex) {
 			xmlFile = new File(path);
 		}
+		qpeFile = xmlFile;
 		SAXReader xmlReader = new SAXReader();
 		return xmlReader.read(xmlFile);
 	}
