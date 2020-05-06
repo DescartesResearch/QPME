@@ -44,10 +44,8 @@ package de.tud.cs.simqpn.kernel.loading.distributions;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.nio.file.Paths;
 
 import de.tud.cs.simqpn.kernel.SimQPNException;
-import de.tud.cs.simqpn.kernel.console.SimQPN;
 import weka.classifiers.Classifier;
 
 public class WEKACreator extends DistributionCreator {
@@ -58,14 +56,6 @@ public class WEKACreator extends DistributionCreator {
 	@Override
 	protected void loadParams() throws SimQPNException {
 		wekaFilename = this.loadStringParam("wekaFile");
-		if (!Paths.get(wekaFilename).isAbsolute()) { // if not absolute filepath -> switch to DML environment mode
-			// switch from "DQL-Queries/results/" to "DML-Model/StatisticalModels/" folders
-			// treats wekaFile parameter as sole filename
-			wekaFilename = SimQPN.getQPEFile().getParentFile().getParentFile().getParent()
-					+ SimQPN.getQPEFile().separatorChar + "DML-Model"
-					+ SimQPN.getQPEFile().separatorChar + "StatisticalModels" + SimQPN.getQPEFile().separatorChar
-					+ wekaFilename;
-		}
 		try {
 			FileInputStream fis = new FileInputStream(wekaFilename);
 			ObjectInputStream ois = new ObjectInputStream(fis);
