@@ -36,5 +36,5 @@ Require-Bundle: org.dom4j,
  org.eclipse.swt,
  nz.ac.waikato.cms.weka;bundle-version="3.9.0",
  org.apache.commons.math
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6 
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Automatic-Module-Name: qpme.simqpn.kernel
