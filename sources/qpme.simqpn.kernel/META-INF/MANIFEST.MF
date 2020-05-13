@@ -34,7 +34,7 @@ Require-Bundle: org.dom4j,
  edu.bonn.cs.net.jbarrier;bundle-version="1.0.0",
  org.eclipse.equinox.concurrent;bundle-version="1.1.0",
  org.eclipse.swt,
- nz.ac.waikato.cms.weka;bundle-version="3.8.0"
+ nz.ac.waikato.cms.weka;bundle-version="3.9.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Import-Package: org.apache.commons.math.distribution
 Automatic-Module-Name: qpme.simqpn.kernel
