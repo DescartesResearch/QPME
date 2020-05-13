@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde?>
-<!-- generated with https://github.com/mbarbero/fr.obeo.releng.targetplatform -->
-<target name="QPME Target Platform" sequenceNumber="1490290356">
+<!-- generated with https://github.com/eclipse-cbi/targetplatform-dsl -->
+<target name="QPME Target Platform" sequenceNumber="1589368809">
   <locations>
     <location includeMode="planner" includeAllPlatforms="false" includeSource="true" includeConfigurePhase="false" type="InstallableUnit">
       <unit id="org.eclipse.equinox.executable.feature.group" version="3.6.300.v20161122-1740"/>
@@ -21,13 +21,14 @@
       <unit id="cern.colt" version="1.2.0.v02"/>
       <unit id="edu.oswego.cs.dl.util.concurrent" version="1.3.4.v03"/>
       <unit id="edu.bonn.cs.net.jbarrier" version="1.0.0.v2"/>
-      <unit id="org.dom4j" version="1.6.1.v02"/>
+      <unit id="org.dom4j" version="1.6.1.v201712101416"/>
       <unit id="org.jaxen" version="1.1.6.v02"/>
       <unit id="org.jfreechart.core" version="1.0.19.v00"/>
       <unit id="org.jfreechart.experimental" version="1.0.12.v02"/>
       <unit id="org.jfreechart.jcommon" version="1.0.19.v00"/>
       <unit id="org.jfreechart.swt" version="1.0.12.v02"/>
       <unit id="org.rosuda.JRI" version="0.5.0.v01"/>
+      <unit id="nz.ac.waikato.cms.weka" version="3.9.0.v01"/>
       <repository location="https://se4.informatik.uni-wuerzburg.de/thirdparty/repository/"/>
     </location>
   </locations>

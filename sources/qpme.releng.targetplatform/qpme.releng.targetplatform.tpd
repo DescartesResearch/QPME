@@ -27,4 +27,5 @@ location "https://se4.informatik.uni-wuerzburg.de/thirdparty/repository/" {
 	org.jfreechart.jcommon
 	org.jfreechart.swt
 	org.rosuda.JRI
+	nz.ac.waikato.cms.weka [3.9.0,3.9.1)
 }
