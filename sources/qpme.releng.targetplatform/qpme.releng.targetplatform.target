@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde?>
 <!-- generated with https://github.com/eclipse-cbi/targetplatform-dsl -->
-<target name="QPME Target Platform" sequenceNumber="1589368809">
+<target name="QPME Target Platform" sequenceNumber="1589369124">
   <locations>
     <location includeMode="planner" includeAllPlatforms="false" includeSource="true" includeConfigurePhase="false" type="InstallableUnit">
       <unit id="org.eclipse.equinox.executable.feature.group" version="3.6.300.v20161122-1740"/>
@@ -15,6 +15,7 @@
     <location includeMode="planner" includeAllPlatforms="false" includeSource="true" includeConfigurePhase="false" type="InstallableUnit">
       <unit id="org.apache.log4j" version="1.2.15.v201012070815"/>
       <unit id="org.junit" version="4.12.0.v201504281640"/>
+      <unit id="org.apache.commons.math" version="2.1.0.v201105210652"/>
       <repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20150821153341/repository/"/>
     </location>
     <location includeMode="planner" includeAllPlatforms="false" includeSource="true" includeConfigurePhase="false" type="InstallableUnit">
