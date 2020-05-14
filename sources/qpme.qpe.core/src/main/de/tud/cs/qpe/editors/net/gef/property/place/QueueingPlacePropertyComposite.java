@@ -363,7 +363,8 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 			super(viewer);
 			this.parameterIndex = parameterIndex;
 			this.cellEditor = new TextCellEditor((Composite)viewer.getControl());
-			this.cellEditor.setValidator(CellValidators.newDoubleValidator());
+			this.cellEditor.setValidator(null);// CellValidators.newDoubleValidator()); // Mit Double keine WEKA
+												// Dateipfadeingabe!
 		}
 
 		@Override
@@ -413,10 +414,10 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 		protected final String[] items = { "Beta", "BreitWigner",
 				"BreitWignerMeanSquare", "ChiSquare", "Gamma", "Hyperbolic",
 				"Exponential", "ExponentialPower", "Logarithmic", "Normal",
-				"StudentT", "Uniform", "VonMises", "Empirical", "Deterministic", "Replay" };
+				"StudentT", "Uniform", "VonMises", "Empirical", "Deterministic", "Replay", "MARS", "WEKA" };
 
 		protected final int numParams[] = { 2, 3, 3, 1, 2, 2, 1, 1, 1, 2, 1, 2,
-				1, 2, 1, 0 };
+				1, 2, 1, 0, 1, 1 };
 
 		protected final String paramNames[][] = { { "alpha", "beta", null },
 				{ "mean", "gamma", "cut" }, { "mean", "gamma", "cut" },
@@ -425,14 +426,14 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 				{ "tau", null, null }, { "p", null, null },
 				{ "mean", "stdDev", null }, { "freedom", null, null },
 				{ "min", "max", null }, { "freedom", null, null },
-				{ "scale", "offset", null }, { "c", null, null }, {} };
+				{ "scale", "offset", null }, { "c", null, null }, {}, { "marsFile" }, { "wekaFile" } };
 
 		protected final String defaultValues[][] = { { "1", "1", null },
 				{ "1", "1", "1" }, { "1", "1", "1" }, { "1", null, null },
 				{ "1", "1", null }, { "1", "1", null }, { "1", null, null },
 				{ "1", null, null }, { "1", null, null }, { "1", "1", null },
 				{ "1", null, null }, { "1", "1", null }, { "1", null, null },
-				{ "1", "0", null }, { "1", null, null }, {} };
+				{ "1", "0", null }, { "1", null, null }, {}, { null }, { null } };
 
 		public String[] getItems() {
 			return items;
@@ -552,6 +553,16 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 				removeAttributes(colorRef, new String[] { "alpha", "beta",
 						"cut", "freedom", "gamma", "lambda", "max", "mean",
 						"min", "p", "pdf_filename", "stdDev", "tau", "scale", "offset" });
+				break;
+			case 15:
+				break;
+			case 16: // MARS
+				removeAttributes(colorRef, new String[] { "alpha", "beta", "cut", "freedom", "gamma", "lambda", "max",
+						"mean", "min", "p", "p1", "p2", "p3", "stdDev", "tau", "scale", "offset", "wekaFile" });
+				break;
+			case 17: // WEKA
+				removeAttributes(colorRef, new String[] { "alpha", "beta", "cut", "freedom", "gamma", "lambda", "max",
+						"mean", "min", "p", "p1", "p2", "p3", "stdDev", "tau", "scale", "offset", "marsFile" });
 				break;
 			}
 		}
