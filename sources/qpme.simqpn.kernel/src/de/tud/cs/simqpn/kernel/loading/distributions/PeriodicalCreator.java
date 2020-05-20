@@ -41,7 +41,6 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import de.tud.cs.simqpn.kernel.loading.distributions.AbstractDistribution;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 import de.tud.cs.simqpn.kernel.util.LogUtil;
 
@@ -53,7 +52,7 @@ public class PeriodicalCreator extends DistributionCreator {
 	@Override
 	protected void loadParams() throws SimQPNException {
 		pdf = this.loadDoublesFromFile("pdf_filename");
-		pdfFilename = this.loadStringParam("pdf_filename");
+		pdfFilename = getAbsoluteFilepath(this.loadStringParam("pdf_filename"));
 	}
 
 	@Override

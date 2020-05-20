@@ -113,7 +113,7 @@ public class StartSimulatorAction extends AbstractHandler {
 				if (result == WizardDialog.OK) {
 					String configuration = wizard.getActiveConfiguration();
 					try {
-						Simulation simulation = new Simulation(net, shell,
+						Simulation simulation = new Simulation(qpeInput.getPath().toOSString(), net, shell,
 								configuration);
 
 						ProgressMonitorDialog progress = new ProgressMonitorDialog(
@@ -193,6 +193,7 @@ public class StartSimulatorAction extends AbstractHandler {
 		protected Element net;
 		protected Shell shell;
 		private String configuration;
+		private String qpeFilepath;
 		private IProgressMonitor monitor;
 		private int totalWork;
 		private int worked;
@@ -204,10 +205,11 @@ public class StartSimulatorAction extends AbstractHandler {
 		private long remainingTime; // (in seconds)
 		private String failedPlace = null;
 
-		public Simulation(Element net, Shell shell, String configuration) {
+		public Simulation(String qpeFilepath, Element net, Shell shell, String configuration) {
 			this.net = net;
 			this.shell = shell;
 			this.configuration = configuration;
+			this.qpeFilepath = qpeFilepath;
 		}
 
 		class EditorOpener implements Runnable {
@@ -249,7 +251,8 @@ public class StartSimulatorAction extends AbstractHandler {
 				if(date == null){
 					date = new Date(); //set random date
 				}
-				SimQPNController sim = SimQPNController.createSimQPNController(net, configuration, null, date);
+				SimQPNController sim = SimQPNController.createSimQPNController(qpeFilepath, net, configuration, null,
+						date);
 				File resultFile = sim.execute(configuration, null, this);
 				net = sim.getXMLDescription();
 

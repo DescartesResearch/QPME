@@ -73,7 +73,6 @@ import de.tud.cs.qpe.editors.net.QueueEditorPage;
 import de.tud.cs.qpe.model.DocumentManager;
 import de.tud.cs.qpe.model.NetHelper;
 import de.tud.cs.qpe.utils.CellValidators;
-import de.tud.cs.qpe.utils.FileCellEditor;
 import de.tud.cs.qpe.utils.XmlAttributeEditingSupport;
 import de.tud.cs.qpe.utils.XmlAttributeLabelProvider;
 import de.tud.cs.qpe.utils.XmlEnumerationAttributeEditingSupport;
@@ -253,61 +252,6 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 		col = colorTable.createColumn("p3", 40);
 		colorTable.setColumnLabelProvider(col, new DistributionFunctionParameterLabelProvider(2));
 		colorTable.setColumnEditingSupport(col, new DistributionFunctionParameterEditingSupport(col.getViewer(), 2));
-		
-		col = colorTable.createColumn("Input File", 80);
-		colorTable.setColumnLabelProvider(col, new CellLabelProvider() {
-			
-			@Override
-			public void update(ViewerCell cell) {
-				Element colorRef = (Element)cell.getElement();
-				String curDistFkt = colorRef.attributeValue(
-						"distribution-function", "Exponential");
-				if("Empirical".equals(curDistFkt)) {
-					cell.setText(colorRef.attributeValue("pdf_filename", ""));
-				} else if ("Replay".equals(curDistFkt)) {
-					cell.setText(colorRef.attributeValue("replay_filename", ""));
-				} else {
-					cell.setText("");
-				}
-			}
-		});
-		colorTable.setColumnEditingSupport(col, new XmlAttributeEditingSupport(col.getViewer(), "pdf_filename") {
-			
-			@Override
-			protected CellEditor createCellEditor(Composite parent) {
-				return new FileCellEditor(parent);
-			}
-			
-			@Override
-			protected boolean canEdit(Object element) {
-				Element colorRef = (Element)element;
-				String curDistFkt = colorRef.attributeValue(
-						"distribution-function", "Exponential");
-				return ("Empirical".equals(curDistFkt) || "Replay".equals(curDistFkt));
-			}
-
-			@Override
-			protected void setValue(Object element, Object value) {
-				updateInternalAttribute(element);
-				super.setValue(element, value);
-			}
-
-			@Override
-			protected Object getValue(Object element) {
-				updateInternalAttribute(element);
-				return ((Element) element).attributeValue(attribute, "");
-			}
-
-			private void updateInternalAttribute(Object element) {
-				Element colorRef = (Element) element;
-				String curDistFkt = colorRef.attributeValue("distribution-function", "Exponential");
-				if ("Empirical".equals(curDistFkt))
-					this.attribute = "pdf_filename";
-				else if ("Replay".equals(curDistFkt))
-					this.attribute = "replay_filename";
-			}
-			
-		});
 	}
 
 	protected void updatePropertyFields() {
@@ -417,7 +361,7 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 				"StudentT", "Uniform", "VonMises", "Empirical", "Deterministic", "Replay", "MARS", "WEKA" };
 
 		protected final int numParams[] = { 2, 3, 3, 1, 2, 2, 1, 1, 1, 2, 1, 2,
-				1, 2, 1, 0, 1, 1 };
+				1, 3, 1, 1, 1, 1 };
 
 		protected final String paramNames[][] = { { "alpha", "beta", null },
 				{ "mean", "gamma", "cut" }, { "mean", "gamma", "cut" },
@@ -426,14 +370,17 @@ public class QueueingPlacePropertyComposite extends PlacePropertyComposite {
 				{ "tau", null, null }, { "p", null, null },
 				{ "mean", "stdDev", null }, { "freedom", null, null },
 				{ "min", "max", null }, { "freedom", null, null },
-				{ "scale", "offset", null }, { "c", null, null }, {}, { "marsFile" }, { "wekaFile" } };
+				{ "pdf_filename", "scale", "offset" }, { "c", null, null }, { "replay_filename" }, { "marsFile" },
+				{ "wekaFile" } };
 
 		protected final String defaultValues[][] = { { "1", "1", null },
 				{ "1", "1", "1" }, { "1", "1", "1" }, { "1", null, null },
 				{ "1", "1", null }, { "1", "1", null }, { "1", null, null },
 				{ "1", null, null }, { "1", null, null }, { "1", "1", null },
 				{ "1", null, null }, { "1", "1", null }, { "1", null, null },
-				{ "1", "0", null }, { "1", null, null }, {}, { null }, { null } };
+				{ "pdf_filename", "1", "0" }, { "1", null, null }, { "replay_filename" },
+				{ "absolute_model_path_here" },
+				{ "absolute_model_path_here" } };
 
 		public String[] getItems() {
 			return items;

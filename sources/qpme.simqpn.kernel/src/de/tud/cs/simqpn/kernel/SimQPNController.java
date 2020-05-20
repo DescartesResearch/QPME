@@ -128,6 +128,8 @@ public class SimQPNController {
 	private Element XMLDescription;
 
 	private static boolean simulationCurrentlyRunning;
+	private static String qpeFilepath;
+
 	private AggregateStats[] aggregateStats;
 
 	/**
@@ -144,7 +146,7 @@ public class SimQPNController {
 	 * @return
 	 * @throws SimQPNException
 	 */
-	public static SimQPNController createSimQPNController(Element XMLDescription,
+	public static SimQPNController createSimQPNController(String qpeFilename, Element XMLDescription,
 			String configurationName, String logConfigFilename, Date randomSeed)
 			throws SimQPNException {
 		XMLValidator.validateInputNet(XMLDescription);
@@ -152,17 +154,17 @@ public class SimQPNController {
 		SimQPNController sim = new SimQPNController();
 		if(randomSeed == null){
 			Date currentTime = new Date(); // User current time as random seed
-			sim.initialize(XMLDescription, configurationName, logConfigFilename, currentTime);			
+			sim.initialize(qpeFilename, XMLDescription, configurationName, logConfigFilename, currentTime);
 		}else{
-			sim.initialize(XMLDescription, configurationName, logConfigFilename, randomSeed);						
+			sim.initialize(qpeFilename, XMLDescription, configurationName, logConfigFilename, randomSeed);
 		}
 		return sim;
 	}
 	
-	public static SimQPNController createSimQPNController(Element XMLDescription,
+	public static SimQPNController createSimQPNController(String qpeFilename, Element XMLDescription,
 			String configurationName, String logConfigFilename)
 			throws SimQPNException {
-		return createSimQPNController(XMLDescription, configurationName, logConfigFilename, null);
+		return createSimQPNController(qpeFilename, XMLDescription, configurationName, logConfigFilename, null);
 	}
 
 	/**
@@ -182,13 +184,16 @@ public class SimQPNController {
 	 * @return
 	 * @exception
 	 */
-	private void initialize(Element XMLDescription, String configurationName, String logConfigFilename, Date date)
+	private void initialize(String qpeFilename, Element XMLDescription, String configurationName,
+			String logConfigFilename, Date date)
 			throws SimQPNException {
 		LogUtil.initializeLogging(XMLDescription, configurationName, logConfigFilename);
 
 		// NOTE: Random needs to be initialized before starting the model definition
 		RandomNumberGenerator.initialize(date);
 		
+		this.qpeFilepath = qpeFilename;
+
 		this.configuration = ConfigurationLoader.loadConfiguration(
 				XMLDescription, configurationName);
 		
@@ -263,6 +268,10 @@ public class SimQPNController {
 	/** Should be reset if the simulation is interrupted */
 	public static void setSimRunning(boolean simRunning) {
 		SimQPNController.simulationCurrentlyRunning = simRunning;
+	}
+
+	public static String getQPEFilePath() {
+		return qpeFilepath;
 	}
 
 	public Element getXMLDescription() {

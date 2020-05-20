@@ -93,17 +93,19 @@ public class SimQPN implements IApplication {
 			BasicConfigurator.configure();
 			LogManager.getRootLogger().setLevel((Level) Level.FATAL);
 			Document inputDoc = loadXMLFile(inputFilename);
-			runSimulatorOnDocument(inputDoc, configuration, outputFilename, logConfigFilename, progress, null);
+			runSimulatorOnDocument(inputFilename, inputDoc, configuration, outputFilename, logConfigFilename, progress,
+					null);
 			return runtime;
 		} catch (Exception e) {
 			throw new IllegalStateException(e);
 		}
 	}
 
-	private static void runSimulatorOnDocument(Document netDocument,
+	private static void runSimulatorOnDocument(String qpeFilename, Document netDocument,
 			String configurationName, String outputFilename, String logConfigFilename, SimulatorProgress progress, Date date) throws SimQPNException {
 		Element net = netDocument.getRootElement();
-		SimQPNController sim = SimQPNController.createSimQPNController(net, configurationName, logConfigFilename, date);
+		SimQPNController sim = SimQPNController.createSimQPNController(qpeFilename, net, configurationName,
+				logConfigFilename, date);
 		long tic = System.currentTimeMillis();
 		sim.execute(configurationName, outputFilename, progress);
 		long toc = System.currentTimeMillis();
@@ -139,6 +141,7 @@ public class SimQPN implements IApplication {
 		BasicConfigurator.configure(); 
 		
 		Document netDocument = null;
+		String documentFilepath = null;
 		String configuration = null;
 		String outputFilename = null;
 		String logConfigFilename = null;
@@ -162,6 +165,7 @@ public class SimQPN implements IApplication {
 					logConfigFilename = args[++x];
 				} else {
 					netDocument = loadXMLFile(args[x]);
+					documentFilepath = args[x];
 				}
 			}
 
@@ -206,7 +210,7 @@ public class SimQPN implements IApplication {
 						System.out.println("Running configuration \"" + configuration + "\"");
 						System.out.println();
 						try {
-							runSimulatorOnDocument(netDocument, configuration,
+							runSimulatorOnDocument(documentFilepath, netDocument, configuration,
 									outputFilename, logConfigFilename, new ConsoleSimulatorProgress(), date);
 						} catch (SimQPNException e) {
 							e.printStackTrace();

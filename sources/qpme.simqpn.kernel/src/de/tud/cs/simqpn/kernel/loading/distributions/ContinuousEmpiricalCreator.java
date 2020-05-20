@@ -56,9 +56,9 @@ public class ContinuousEmpiricalCreator extends DistributionCreator {
 	@Override
 	protected void loadParams() throws SimQPNException {
 		pdf = this.loadDoublesFromFile("probabilitiesFile");
-		pdffilename = this.loadStringParam("probabilitiesFile");
+		pdffilename = getAbsoluteFilepath(this.loadStringParam("probabilitiesFile"));
 		values = this.loadDoublesFromFile("valuesFile");
-		valuesfilename = this.loadStringParam("valuesFile");
+		valuesfilename = getAbsoluteFilepath(this.loadStringParam("valuesFile"));
 		if (pdf.length != values.length) {
 			throw new InputMismatchException("The length of the distribution and its corresponding values must match.");
 		}

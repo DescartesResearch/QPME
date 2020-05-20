@@ -45,13 +45,15 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.dom4j.Element;
 
-import de.tud.cs.simqpn.kernel.loading.distributions.AbstractDistribution;
+import de.tud.cs.simqpn.kernel.SimQPNController;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 
 public abstract class DistributionCreator {
@@ -122,7 +124,7 @@ public abstract class DistributionCreator {
 	
 	protected double[] loadDoublesFromFile(String paramName) throws SimQPNException {
 		
-		String doublesFilename = loadStringParam(paramName);
+		String doublesFilename = getAbsoluteFilepath(loadStringParam(paramName));
 		File doublesFile = new File(doublesFilename);
 		if (!doublesFile.exists()) {
 			throw new SimQPNException(
@@ -184,5 +186,30 @@ public abstract class DistributionCreator {
 				throw new SimQPNException();
 			}
 		}		
+	}
+
+	/**
+	 * returns the absolute filepath of a filename. If path is relative, use
+	 * relation to .qpe file.
+	 **/
+	protected String getAbsoluteFilepath(String filename) {
+		filename = separatorsToSystem(filename);
+		if (!Paths.get(filename).isAbsolute()) {
+			Path qpePath = Paths.get(SimQPNController.getQPEFilePath());
+			filename = qpePath.getParent().toString() + File.separatorChar + filename;
+		}
+		return filename;
+	}
+
+	private String separatorsToSystem(String res) {
+		if (res == null)
+			return null;
+		if (File.separatorChar == '\\') {
+			// From Windows to Linux/Mac
+			return res.replace('/', File.separatorChar);
+		} else {
+			// From Linux/Mac to Windows
+			return res.replace('\\', File.separatorChar);
+		}
 	}
 }

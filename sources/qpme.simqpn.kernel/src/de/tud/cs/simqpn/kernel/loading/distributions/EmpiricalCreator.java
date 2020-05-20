@@ -55,7 +55,7 @@ public class EmpiricalCreator extends DistributionCreator {
 	@Override
 	protected void loadParams() throws SimQPNException {
 		pdf = this.loadDoublesFromFile("pdf_filename");
-		pdfFilename = this.loadStringParam("pdf_filename");
+		pdfFilename = getAbsoluteFilepath(this.loadStringParam("pdf_filename"));
 		scale = this.loadDoubleParam("scale");
 		offset = this.loadDoubleParam("offset");
 	}

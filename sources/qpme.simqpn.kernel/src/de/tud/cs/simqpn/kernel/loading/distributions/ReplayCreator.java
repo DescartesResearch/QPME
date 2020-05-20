@@ -41,7 +41,6 @@
  */
 package de.tud.cs.simqpn.kernel.loading.distributions;
 
-import de.tud.cs.simqpn.kernel.loading.distributions.AbstractDistribution;
 import de.tud.cs.simqpn.kernel.SimQPNException;
 
 public class ReplayCreator extends DistributionCreator {
@@ -51,8 +50,8 @@ public class ReplayCreator extends DistributionCreator {
 	
 	@Override
 	protected void loadParams() throws SimQPNException {
-		replayValues = this.loadDoublesFromFile("pdf_filename");
-		replayFilename = this.loadStringParam("pdf_filename");
+		replayValues = this.loadDoublesFromFile("replay_filename");
+		replayFilename = getAbsoluteFilepath(this.loadStringParam("replay_filename"));
 	}
 
 	@Override

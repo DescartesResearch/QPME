@@ -56,9 +56,9 @@ public class DeterministicConcurrencyCreator extends DistributionCreator {
 	@Override
 	protected void loadParams() throws SimQPNException {
 		concurrencies = this.loadDoublesFromFile("concurrenciesFile");
-		concurrenciesFilename = this.loadStringParam("concurrenciesFile");
+		concurrenciesFilename = getAbsoluteFilepath(this.loadStringParam("concurrenciesFile"));
 		responseTimes = this.loadDoublesFromFile("responsetimesFile");
-		responseTimesFilename = this.loadStringParam("responsetimesFile");
+		responseTimesFilename = getAbsoluteFilepath(this.loadStringParam("responsetimesFile"));
 	}
 
 	@Override

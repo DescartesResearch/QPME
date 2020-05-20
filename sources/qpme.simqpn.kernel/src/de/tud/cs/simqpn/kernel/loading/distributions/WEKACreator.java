@@ -55,7 +55,7 @@ public class WEKACreator extends DistributionCreator {
 	
 	@Override
 	protected void loadParams() throws SimQPNException {
-		wekaFilename = this.loadStringParam("wekaFile");
+		wekaFilename = getAbsoluteFilepath(this.loadStringParam("wekaFile"));
 		try {
 			FileInputStream fis = new FileInputStream(wekaFilename);
 			ObjectInputStream ois = new ObjectInputStream(fis);

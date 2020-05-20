@@ -62,7 +62,7 @@ public class MARSCreator extends DistributionCreator {
 	
 	@Override
 	protected void loadParams() throws SimQPNException {
-		marsFilename = this.loadStringParam("marsFile");
+		marsFilename = getAbsoluteFilepath(this.loadStringParam("marsFile"));
 		loadMARSModelFromFile(marsFilename);
 	}
 
